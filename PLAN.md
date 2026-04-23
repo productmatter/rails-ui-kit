@@ -230,6 +230,33 @@ Document overriding:
 3. A test/dummy Rails app inside the gem for integration testing
 4. CI setup
 
+### Phase 8: Migrate rails-foundation to Use the Gem
+
+The source material for this gem lives in [productmatter/rails-foundation](https://github.com/productmatter/rails-foundation). Once the gem is stable, rails-foundation should be rewired to consume it:
+
+1. Add `rails_ui_kit` to rails-foundation's Gemfile (pointing at this repo)
+2. Register the gem's Stimulus controllers in rails-foundation's `application.js`
+3. Import the gem's component CSS, replacing the inline modal animation/transform classes in `app/assets/tailwind/application.css`
+4. Delete the now-redundant source files from rails-foundation:
+   - `app/components/ui/modal_component.rb` + `.html.erb`
+   - `app/components/ui/dropdown_component.rb` + `.html.erb`
+   - `app/components/ui/confirm_dialog_component.rb` + `.html.erb`
+   - `app/components/ui/toast_component.rb` + `.html.erb`
+   - `app/javascript/controllers/modal_controller.js`
+   - `app/javascript/controllers/dropdown_controller.js`
+   - `app/javascript/controllers/dialog_controller.js`
+   - `app/javascript/controllers/toast_controller.js`
+   - `app/javascript/controllers/toast_container_controller.js`
+   - `app/javascript/controllers/form_change_controller.js`
+   - `app/javascript/controllers/turbo_confirm_controller.js`
+   - `app/javascript/controllers/turbo_disable_with_controller.js`
+   - `app/javascript/controllers/dark_mode_controller.js`
+   - Modal-related CSS from `app/assets/tailwind/application.css`
+5. Verify all existing views that reference these components still render correctly — the `Ui::` namespace and controller identifiers should match, so no template changes should be needed if the gem uses the same namespace
+6. Run the full test suite to confirm nothing broke
+
+This is the validation step for the gem — if rails-foundation works with zero template changes after the swap, the gem's API is correct.
+
 ---
 
 ## Decisions to Make During Implementation
