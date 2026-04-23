@@ -1,0 +1,12 @@
+project: rails-ui-kit
+
+# hooks:
+#   pre_setup:
+#     - echo "before setup"                 # aborts setup on failure
+#   post_setup:
+#     - echo "after setup"                  # warns on failure
+
+# editor:
+#   title: "{project} :{port} ({branch})"  # window title (VS Code, Cursor)
+#   color: auto                             # title/status bar color ("auto" = branch hash, or hex like "#1a5276")
+#   theme: ""                               # full IDE theme override (e.g. "Monokai", "GitHub Dark")
