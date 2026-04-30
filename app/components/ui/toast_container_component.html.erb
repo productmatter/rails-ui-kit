@@ -1,0 +1,8 @@
+<div data-controller="ui--toast-container" class="<%= container_class %>">
+  <div data-ui--toast-container-target="stack" class="pointer-events-auto"></div>
+  <% template_types.each do |type| %>
+    <template data-ui--toast-container-target="template" data-toast-type="<%= type %>">
+      <%= render template_toast(type) %>
+    </template>
+  <% end %>
+</div>
