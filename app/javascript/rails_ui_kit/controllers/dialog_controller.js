@@ -4,13 +4,23 @@ export default class extends Controller {
   static targets = ["dialog"]
 
   connect() {
-    window.customConfirmDialog = this.showCustomDialog.bind(this)
-    window.defaultConfirmDialog = this.showDefaultDialog.bind(this)
+    this.boundShowCustomDialog = this.showCustomDialog.bind(this)
+    this.boundShowDefaultDialog = this.showDefaultDialog.bind(this)
+
+    this.previousCustomConfirmDialog = window.customConfirmDialog
+    this.previousDefaultConfirmDialog = window.defaultConfirmDialog
+
+    window.customConfirmDialog = this.boundShowCustomDialog
+    window.defaultConfirmDialog = this.boundShowDefaultDialog
   }
 
   disconnect() {
-    delete window.customConfirmDialog
-    delete window.defaultConfirmDialog
+    if (window.customConfirmDialog === this.boundShowCustomDialog) {
+      window.customConfirmDialog = this.previousCustomConfirmDialog
+    }
+    if (window.defaultConfirmDialog === this.boundShowDefaultDialog) {
+      window.defaultConfirmDialog = this.previousDefaultConfirmDialog
+    }
   }
 
   async showCustomDialog(dialogSelector) {

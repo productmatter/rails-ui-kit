@@ -17,7 +17,7 @@ module RailsUiKit
     end
 
     initializer 'rails_ui_kit.importmap', before: 'importmap' do |app|
-      app.config.importmap.paths << root.join('config/importmap.rb') if defined?(Importmap) && app.config.respond_to?(:importmap)
+      app.config.importmap.paths << root.join('config/importmap.rb') if defined?(Importmap::Engine) && app.config.respond_to?(:importmap)
     end
   end
 end

@@ -31,5 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rails', '>= 7.0'
   spec.add_dependency 'stimulus-rails'
   spec.add_dependency 'turbo-rails'
-  spec.add_dependency 'view_component', '>= 3.0'
+  spec.add_dependency 'view_component', '>= 3.0', '< 5.0'
 end

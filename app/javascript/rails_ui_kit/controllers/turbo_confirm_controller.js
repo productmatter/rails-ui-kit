@@ -2,12 +2,21 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    this.setupConfirmMethod()
+    if (typeof Turbo === "undefined" || !Turbo.config?.forms) {
+      console.warn("ui--turbo-confirm: Turbo is not loaded; controller is inert.")
+      return
+    }
+
+    this.boundConfirm = (message, element, submitter) => this.showConfirmDialog(message, submitter)
+    this.previousConfirm = Turbo.config.forms.confirm
+    Turbo.config.forms.confirm = this.boundConfirm
   }
 
-  setupConfirmMethod() {
-    Turbo.config.forms.confirm = (message, element, submitter) => {
-      return this.showConfirmDialog(message, submitter)
+  disconnect() {
+    if (typeof Turbo === "undefined" || !Turbo.config?.forms) return
+
+    if (Turbo.config.forms.confirm === this.boundConfirm) {
+      Turbo.config.forms.confirm = this.previousConfirm
     }
   }
 
@@ -30,12 +39,6 @@ export default class extends Controller {
       return await window.defaultConfirmDialog(message)
     } catch (error) {
       console.error("Error showing confirmation dialog:", error)
-      return window.confirm(message)
-    }
-  }
-
-  disconnect() {
-    Turbo.config.forms.confirm = (message) => {
       return window.confirm(message)
     }
   }

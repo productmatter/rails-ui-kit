@@ -60,16 +60,36 @@ registerControllers(application)
 
 ### CSS
 
-Import the gem's component styles (modal transform-state classes):
+#### Tailwind 4
+
+Tailwind 4 only scans content paths registered with `@source`. Import the gem's index file so the gem's templates and Stimulus controllers are added to the scan:
 
 ```css
-/* Tailwind / PostCSS */
+@import "tailwindcss";
+@import "rails_ui_kit/index";
+```
+
+`rails_ui_kit/index` registers `@source` directives for the gem's component templates and JS, then re-imports the modal transform-state classes from `rails_ui_kit/components`. Without this, Tailwind will not see the utility classes referenced inside the gem's `*.html.erb` files or controller string templates and will purge them from your build.
+
+#### Tailwind 3 / Sprockets
+
+```css
+/* Tailwind 3 / PostCSS */
 @import "rails_ui_kit/components";
 ```
 
 ```css
 /* Sprockets */
 *= require rails_ui_kit/components
+```
+
+For Tailwind 3, also add the gem's templates to your `tailwind.config.js` `content` array so they are scanned:
+
+```js
+content: [
+  // ...
+  "./node_modules/rails-ui-kit/app/**/*.{html.erb,rb,js}"
+]
 ```
 
 ## Usage

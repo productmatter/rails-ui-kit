@@ -8,13 +8,20 @@ export default class extends Controller {
 
   connect() {
     this.boundEventHandler = this.handleToastEvent.bind(this)
+    this.boundShowToast = this.showToast.bind(this)
+
     document.addEventListener(TOAST_EVENT, this.boundEventHandler)
-    window.triggerToast = this.showToast.bind(this)
+
+    this.previousTriggerToast = window.triggerToast
+    window.triggerToast = this.boundShowToast
   }
 
   disconnect() {
     document.removeEventListener(TOAST_EVENT, this.boundEventHandler)
-    delete window.triggerToast
+
+    if (window.triggerToast === this.boundShowToast) {
+      window.triggerToast = this.previousTriggerToast
+    }
   }
 
   handleToastEvent(event) {
