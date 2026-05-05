@@ -5,9 +5,12 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
-- `app/assets/stylesheets/rails_ui_kit/index.css` Tailwind 4 entry point that registers `@source` directives for the gem's component templates and Stimulus controllers, ensuring utility classes survive Tailwind's content scan in consumer apps.
+- `app/assets/tailwind/rails_ui_kit/engine.css` — Tailwind 4 entry point auto-discovered by `tailwindcss-rails` 4.x. Registers `@source` directives for the gem's component templates, Ruby class-list constants, and Stimulus controllers, and re-imports the modal transform-state classes. Consumers `@import` the build artifact (`app/assets/builds/tailwind/rails_ui_kit.css`) emitted by `tailwindcss:engines` instead of relying on a vendor-copy task.
 - `RELEASING.md` documenting the release-and-tag procedure for this internal gem.
 - `CHANGELOG.md` (this file).
+
+### Removed
+- `app/assets/stylesheets/rails_ui_kit/index.css`. Its `@import "rails_ui_kit/index"` entrypoint did not resolve under Tailwind 4's CLI; replaced by the `tailwindcss-rails` engine convention above.
 
 ### Changed
 - `lib/rails_ui_kit/engine.rb` importmap initializer now guards on `defined?(Importmap::Engine)` instead of the bare `Importmap` constant, removing a boot-order race.

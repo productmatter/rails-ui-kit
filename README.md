@@ -60,16 +60,18 @@ registerControllers(application)
 
 ### CSS
 
-#### Tailwind 4
+#### Tailwind 4 (with `tailwindcss-rails`)
 
-Tailwind 4 only scans content paths registered with `@source`. Import the gem's index file so the gem's templates and Stimulus controllers are added to the scan:
+Tailwind 4 only scans content paths registered via `@source`. The gem ships an engine entrypoint at `app/assets/tailwind/rails_ui_kit/engine.css` which `tailwindcss-rails` 4.x auto-discovers — its `tailwindcss:engines` task (run automatically before `tailwindcss:build`/`watch`) emits `app/assets/builds/tailwind/rails_ui_kit.css` containing an absolute `@import` to the gem's engine.css.
+
+In your application's `app/assets/tailwind/application.css`:
 
 ```css
 @import "tailwindcss";
-@import "rails_ui_kit/index";
+@import "../../app/assets/builds/tailwind/rails_ui_kit.css";
 ```
 
-`rails_ui_kit/index` registers `@source` directives for the gem's component templates and JS, then re-imports the modal transform-state classes from `rails_ui_kit/components`. Without this, Tailwind will not see the utility classes referenced inside the gem's `*.html.erb` files or controller string templates and will purge them from your build.
+The build artifact is generated for you — don't create or commit it manually. With this in place Tailwind sees every utility referenced by the gem's `*.html.erb` templates, the Ruby class-list constants in `app/components/ui/*.rb`, and the gem's Stimulus controllers, and the modal transform-state classes from `app/assets/stylesheets/rails_ui_kit/components.css` are bundled in too.
 
 #### Tailwind 3 / Sprockets
 
