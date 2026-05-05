@@ -1,0 +1,72 @@
+/*
+ * rails-ui-kit component styles
+ *
+ * Modal transform states used by Ui::ModalComponent / ui--modal controller.
+ * The controller swaps the *-hidden / *-visible class to transition between states;
+ * the surrounding `transition-all duration-300 ease-in-out` (set on the dialog element
+ * by the component) animates the transform.
+ */
+
+.modal-center-hidden {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.modal-center-visible {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-full-screen-hidden {
+  transform: scale(0.95);
+}
+
+.modal-full-screen-visible {
+  transform: scale(1);
+}
+
+.modal-right-hidden {
+  transform: translateX(100%);
+}
+
+.modal-right-visible {
+  transform: translateX(0);
+}
+
+.modal-left-hidden {
+  transform: translateX(-100%);
+}
+
+.modal-left-visible {
+  transform: translateX(0);
+}
+
+.modal-top-hidden {
+  transform: translate(-50%, -100%);
+}
+
+.modal-top-visible {
+  transform: translate(-50%, 0);
+}
+
+.modal-top-full-hidden {
+  transform: translateY(-100%);
+}
+
+.modal-top-full-visible {
+  transform: translateY(0);
+}
+
+.modal-bottom-hidden {
+  transform: translate(-50%, 100%);
+}
+
+.modal-bottom-visible {
+  transform: translate(-50%, 0);
+}
+
+.modal-bottom-full-hidden {
+  transform: translateY(100%);
+}
+
+.modal-bottom-full-visible {
+  transform: translateY(0);
+}

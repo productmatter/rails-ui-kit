@@ -1,0 +1,57 @@
+<div data-controller="ui--toast"
+     data-ui--toast-enter-from-value='["opacity-0", "translate-y-2", "sm:translate-y-0", "sm:translate-x-2"]'
+     data-ui--toast-enter-to-value='["translate-y-0", "opacity-100", "sm:translate-x-0"]'
+     data-ui--toast-leave-from-value='["opacity-100", "mt-4"]'
+     data-ui--toast-leave-to-value='["opacity-0", "-mt-14"]'
+     data-ui--toast-self-destruct-value="<%= timeout %>"
+     role="<%= aria_role %>"
+     aria-live="<%= aria_live %>"
+     aria-atomic="true"
+     class="mt-4 transform ease-out duration-500 transition-all max-w-xs w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg ring-1 ring-black/5 dark:ring-white/10 overflow-hidden pointer-events-auto">
+
+  <div class="p-4 relative overflow-hidden">
+    <span class="block absolute bottom-0 left-0 right-0 <%= bg_light_class %> h-1 scale-x-100">
+      <span
+        data-ui--toast-target="timer"
+        class="block absolute top-0 left-0 right-0 bottom-0 ease-linear transition origin-left scale-x-0 <%= bg_dark_class %>"
+        style="transition-duration: <%= timeout %>ms;"
+      ></span>
+    </span>
+
+    <div class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg class="h-6 w-6 <%= text_color_class %>"
+             xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke-width="2"
+             stroke="currentColor"
+             aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="<%= icon_path %>" />
+        </svg>
+      </div>
+
+      <div class="ml-3 w-0 flex-1 pt-0.5">
+        <p data-ui--toast-target="title" class="text-sm font-medium text-gray-900 dark:text-gray-100 m-0">
+          <%= title %>
+        </p>
+        <p data-ui--toast-target="body" class="mb-0 mt-1 text-sm leading-5 text-gray-600 dark:text-gray-400 <%= 'hidden' unless body.present? %>">
+          <%= body %>
+        </p>
+      </div>
+
+      <div class="ml-4 flex-shrink-0 flex">
+        <button
+          type="button"
+          data-action="click->ui--toast#close"
+          class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
+          aria-label="Close notification">
+          <span class="sr-only">Close</span>
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+*.gem
+.bundle/
+Gemfile.lock
+pkg/
+tmp/
+log/
+test/dummy/db/*.sqlite3
+test/dummy/db/*.sqlite3-*
+test/dummy/log/*.log
+test/dummy/storage/
+test/dummy/tmp/
+node_modules/
+.byebug_history
+.DS_Store

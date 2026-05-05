@@ -1,0 +1,4 @@
+@import "../../stylesheets/rails_ui_kit/components.css";
+
+@source "../../../components/**/*.{rb,erb}";
+@source "../../../javascript/**/*.js";
