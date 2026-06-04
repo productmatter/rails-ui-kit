@@ -7,6 +7,8 @@ import FormChangeController from "rails_ui_kit/controllers/form_change_controlle
 import TurboConfirmController from "rails_ui_kit/controllers/turbo_confirm_controller"
 import TurboDisableWithController from "rails_ui_kit/controllers/turbo_disable_with_controller"
 import DarkModeController from "rails_ui_kit/controllers/dark_mode_controller"
+import TooltipController from "rails_ui_kit/controllers/tooltip_controller"
+import PopoverController from "rails_ui_kit/controllers/popover_controller"
 
 export {
   ModalController,
@@ -17,7 +19,9 @@ export {
   FormChangeController,
   TurboConfirmController,
   TurboDisableWithController,
-  DarkModeController
+  DarkModeController,
+  TooltipController,
+  PopoverController
 }
 
 export function registerControllers(application) {
@@ -30,4 +34,6 @@ export function registerControllers(application) {
   application.register("ui--turbo-confirm", TurboConfirmController)
   application.register("ui--turbo-disable-with", TurboDisableWithController)
   application.register("ui--dark-mode", DarkModeController)
+  application.register("ui--tooltip", TooltipController)
+  application.register("ui--popover", PopoverController)
 }

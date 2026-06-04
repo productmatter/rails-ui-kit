@@ -1,0 +1,8 @@
+<div <%= tag.attributes(controller_data) %>>
+  <%= content_tag :div, data: { "ui--tooltip-target": "trigger" } do %>
+    <%= trigger %>
+  <% end %>
+  <div class="<%= tooltip_classes %>" data-ui--tooltip-target="content">
+    <%= text %>
+  </div>
+</div>

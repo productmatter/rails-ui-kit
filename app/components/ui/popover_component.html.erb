@@ -1,0 +1,8 @@
+<div <%= tag.attributes(controller_data) %>>
+  <%= content_tag :div, data: { "ui--popover-target": "trigger", action: "click->ui--popover#toggle" } do %>
+    <%= trigger %>
+  <% end %>
+  <div class="<%= panel_wrapper_classes %>" data-ui--popover-target="content">
+    <%= panel %>
+  </div>
+</div>
