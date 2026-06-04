@@ -15,6 +15,5 @@ module Dummy
     config.eager_load = false
     config.secret_key_base = 'rails-ui-kit-dummy'
     config.hosts.clear
-    config.logger = Logger.new(IO::NULL)
   end
 end

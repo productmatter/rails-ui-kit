@@ -9,4 +9,5 @@ Rails.application.configure do
   config.action_dispatch.show_exceptions = false
   config.active_support.deprecation = :stderr
   config.action_mailer.delivery_method = :test if config.respond_to?(:action_mailer)
+  config.logger = Logger.new(IO::NULL)
 end

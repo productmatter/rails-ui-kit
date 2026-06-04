@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "../../../../../app/assets/stylesheets/rails_ui_kit/components.css";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Gem component templates + JS (for Tailwind class detection) */
+@source "../../../../../app/components/**/*.{rb,html.erb}";
+@source "../../../../../app/javascript/**/*.js";
+
+/* Docs app views */
+@source "../../**/*.{rb,html.erb}";

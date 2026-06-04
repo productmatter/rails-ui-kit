@@ -1,0 +1,37 @@
+<% content_for :title, "Dark Mode" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Dark Mode</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Toggles the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.documentElement</code>. Persists preference to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage</code> and syncs across tabs.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#dark-mode-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dark-mode-usage" class="text-neutral-200"><%= h(example_dark_mode_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Behaviour</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>On <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>, reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage.theme</code>; falls back to the OS <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">prefers-color-scheme</code> media query.</li>
+  <li>Adds or removes the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">html</code>.</li>
+  <li>Listens to the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">storage</code> event to sync across tabs.</li>
+  <li>Getter: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">this.currentTheme</code> returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"dark"</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"light"</code>.</li>
+</ul>
+
+<h2 class="text-base font-semibold mt-8 mb-3">Tailwind setup</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Tailwind 4 requires an explicit dark variant declaration to use class-based dark mode:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">app/assets/tailwind/application.css</span>
+    <button data-copy-target="#dark-mode-css" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dark-mode-css" class="text-neutral-200"><%= h(example_dark_mode_css) %></code></pre>
+</div>

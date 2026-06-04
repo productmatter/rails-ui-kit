@@ -1,0 +1,57 @@
+<% content_for :title, "Turbo Disable With" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Turbo Disable With</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Disables form submit buttons during Turbo form submissions and shows a loading indicator — text, spinner, or pulse animation.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Setup</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">Mount once in your layout:</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Layout — ERB</span>
+    <button data-copy-target="#disable-with-setup" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="disable-with-setup" class="text-neutral-200"><%= h(example_disable_with_setup) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#disable-with-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="disable-with-usage" class="text-neutral-200"><%= h(example_disable_with_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Attribute</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["data-turbo-disable-with",          "Text to show while submitting. Defaults to 'Processing...' (or the meta global default)."],
+        ["data-turbo-disable-style",          "Loading style: text (default), spinner (animated spinner), or pulse (fades the button)."],
+        ["meta[turbo-disable-with-default]",  "Global fallback text for any button without an explicit data-turbo-disable-with value."],
+      ].each do |attr, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400 whitespace-nowrap"><%= attr %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Announces the loading state via an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-live="polite"</code> region so screen readers are notified.</li>
+  <li>Re-enables and restores the original button text on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:submit-end</code>.</li>
+</ul>

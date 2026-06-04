@@ -10,6 +10,7 @@ group :development, :test do
   gem 'propshaft'
   gem 'puma'
   gem 'sqlite3'
+  gem 'tailwindcss-rails'
 end
 
 group :test do

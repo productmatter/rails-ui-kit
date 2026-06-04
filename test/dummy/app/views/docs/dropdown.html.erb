@@ -1,0 +1,112 @@
+<% content_for :title, "Dropdown" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A floating menu, listbox, or dialog positioned with Floating UI. Full keyboard navigation — arrow keys, Home/End, Escape. Supports three interaction modes.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start justify-center gap-6 p-12 mb-8">
+  <%# Menu %>
+  <%= render Ui::DropdownComponent.new(kind: :menu) do |d| %>
+    <% d.with_trigger do %>
+      <button data-action="click->ui--dropdown#toggle"
+              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+        Menu
+        <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
+    <% end %>
+    <% d.with_menu do %>
+      <div class="py-1 min-w-[10rem]">
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Edit</a>
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Duplicate</a>
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">Delete</a>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Listbox %>
+  <%= render Ui::DropdownComponent.new(kind: :listbox, placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
+    <% d.with_trigger do %>
+      <button data-action="click->ui--dropdown#toggle"
+              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+        Listbox
+        <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
+    <% end %>
+    <% d.with_menu do %>
+      <div class="py-1 min-w-[10rem]">
+        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option A</div>
+        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option B</div>
+        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option C</div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#dropdown-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dropdown-usage" class="text-neutral-200"><%= h(example_dropdown_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (arrow-key nav, menuitem roles), :listbox (option roles), :dialog (generic)."],
+        ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
+        ["offset",         "Integer", "4",             "Gap between trigger and content in pixels."],
+        ["match_width",    "Boolean", "false",          "Makes the dropdown match the trigger's width."],
+        ["content_classes","String",  '""',            "Additional classes on the floating content wrapper."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Slots %>
+<h2 class="text-base font-semibold mb-3">Slots</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">trigger</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The button that opens the dropdown. Wire <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--dropdown#toggle"</code> to your button.</td>
+      </tr>
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">menu</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render menu items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">option</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

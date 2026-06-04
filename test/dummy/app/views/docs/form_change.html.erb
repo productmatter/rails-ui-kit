@@ -1,0 +1,47 @@
+<% content_for :title, "Form Change" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Form Change</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Tracks whether a form has unsaved changes and dispatches events that other controllers can react to.
+    Powers the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes</code> option on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ModalComponent</code>.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#form-change-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="form-change-usage" class="text-neutral-200"><%= h(example_form_change_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Events</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Event</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fires when</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">form:changed</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">Any input changes from its original value (form becomes dirty).</td>
+      </tr>
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">form:pristine</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">Form returns to its original state (reset or after successful submit).</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Public API</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markDirty()</code> — manually mark the form dirty.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markPristine()</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">reset()</code> — reset dirty state and capture new baseline.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">isDirty</code> getter — returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">true/false</code>.</li>
+</ul>

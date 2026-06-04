@@ -1,0 +1,84 @@
+<% content_for :title, "Modal" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Modal</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A full-featured modal with 8 position variants. Opens automatically when rendered — control visibility
+    via Turbo Frames or conditional rendering. Optionally tracks unsaved form changes.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+  <turbo-frame id="modal-demo-frame" class="contents"></turbo-frame>
+  <% [[:center, "Center"], [:right, "Right panel"], [:bottom, "Bottom sheet"]].each do |pos, label| %>
+    <%= link_to label, modal_demo_path(position: pos),
+        data: { turbo_frame: "modal-demo-frame" },
+        class: "rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors" %>
+  <% end %>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  The modal opens as soon as it is rendered. The typical Rails pattern is to render it
+  on demand via a Turbo Frame:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB — trigger</span>
+    <button data-copy-target="#modal-trigger" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-trigger" class="text-neutral-200"><%= h(example_modal_trigger) %></code></pre>
+</div>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB — response view</span>
+    <button data-copy-target="#modal-response" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-neutral-200"><%= h(example_modal_response) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["position",         "Symbol",   ":center",  "One of: :center, :full_screen, :right, :left, :top, :top_full, :bottom, :bottom_full."],
+        ["track_changes",    "Boolean",  "false",    "When true, warns before closing if a form inside is dirty."],
+        ["close_on_backdrop","Boolean",  "true",     "Close the modal when clicking the backdrop."],
+        ["max_width",        "String",   "nil",      "Override the default max-width Tailwind class."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Controller %>
+<h2 class="text-base font-semibold mb-3">Stimulus Controller</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--modal</code>
+</p>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Calls <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">open()</code> automatically via <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dialogTargetConnected()</code>.</li>
+  <li>When <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes: true</code>, listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:changed</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:pristine</code> events from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>.</li>
+  <li>Closes on backdrop click (if enabled) and Escape key.</li>
+  <li>Locks <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.body</code> scroll while open.</li>
+  <li>Public action: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">close()</code> — add <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--modal#close"</code> to any button inside the modal.</li>
+</ul>

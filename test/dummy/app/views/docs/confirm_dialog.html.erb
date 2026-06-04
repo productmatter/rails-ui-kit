@@ -1,0 +1,87 @@
+<% content_for :title, "Confirm Dialog" %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Confirm Dialog</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;dialog&gt;</code>-based confirmation prompt.
+    Returns a Promise so it can replace <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.confirm()</code> anywhere —
+    including Turbo's built-in confirmation flow.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center gap-4 p-12 mb-8">
+  <button onclick="window.defaultConfirmDialog('Are you sure you want to delete this item?').then(ok => { if (ok) window.triggerToast('success', 'Deleted.') })"
+          class="rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors">
+    Delete item
+  </button>
+  <button onclick="window.defaultConfirmDialog({ title: 'Publish post?', message: 'This will make the post visible to all users.' }).then(ok => { if (ok) window.triggerToast('success', 'Published!') })"
+          class="rounded-md bg-neutral-900 dark:bg-white hover:bg-neutral-700 dark:hover:bg-neutral-200 px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 transition-colors">
+    Publish
+  </button>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Render once in your layout:</strong>
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Layout — ERB</span>
+    <button data-copy-target="#confirm-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-layout" class="text-neutral-200"><%= h(example_confirm_layout) %></code></pre>
+</div>
+
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Call from JavaScript:</strong>
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">JavaScript</span>
+    <button data-copy-target="#confirm-js" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-js" class="text-neutral-200">const ok = await window.defaultConfirmDialog("Delete this item?")
+if (ok) { /* proceed */ }
+
+// With title:
+const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This is permanent." })</code></pre>
+</div>
+
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Turbo confirmation (drop-in replace):</strong>
+  Add <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--turbo-confirm</code> to your layout. See <a href="<%= turbo_confirm_path %>" class="text-violet-600 dark:text-violet-400 hover:underline">Turbo Confirm utility</a>.
+</p>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Theming</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  All visual elements accept class overrides. Pass any combination of these to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ConfirmDialogComponent.new</code>:
+</p>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Option</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["confirm_label / cancel_label", "Button text."],
+        ["confirm_class / cancel_class", "Tailwind classes on the confirm/cancel buttons."],
+        ["title_class / message_class",  "Classes on the title and message text elements."],
+        ["wrapper_class",                "Classes on the dialog's inner wrapper div."],
+        ["icon_class / icon_wrapper_class", "Classes on the warning icon and its container."],
+      ].each do |name, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400 whitespace-nowrap"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
