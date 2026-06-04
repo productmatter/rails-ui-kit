@@ -4,7 +4,11 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-04
+
 ### Added
+- `Ui::TooltipComponent` with `ui--tooltip` controller — hover/focus-triggered text tooltip using Floating UI. Sets `role="tooltip"` and `aria-describedby` automatically. Supports all 12 Floating UI placements with auto-flip and shift middleware.
+- `Ui::PopoverComponent` with `ui--popover` controller — click-triggered floating panel for rich HTML content. Click-outside and Escape-to-close. Manages `aria-expanded` and `aria-haspopup` on the trigger.
 - `app/assets/tailwind/rails_ui_kit/engine.css` — Tailwind 4 entry point auto-discovered by `tailwindcss-rails` 4.x. Registers `@source` directives for the gem's component templates, Ruby class-list constants, and Stimulus controllers, and re-imports the modal transform-state classes. Consumers `@import` the build artifact (`app/assets/builds/tailwind/rails_ui_kit.css`) emitted by `tailwindcss:engines` instead of relying on a vendor-copy task.
 - `RELEASING.md` documenting the release-and-tag procedure for this internal gem.
 - `CHANGELOG.md` (this file).

@@ -1,6 +1,6 @@
 {
   "name": "rails-ui-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Reusable Rails UI components: ViewComponents paired with Stimulus controllers.",
   "main": "app/javascript/rails_ui_kit/index.js",
   "module": "app/javascript/rails_ui_kit/index.js",
