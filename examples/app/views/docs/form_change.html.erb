@@ -1,0 +1,80 @@
+<% content_for :title, "Form Change" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Form Change</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Tracks whether a form has unsaved changes and dispatches events that other controllers can react to.
+    Powers the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes</code> option on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ModalComponent</code>.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+  <form data-controller="ui--form-change" id="fc-demo-form" class="w-full max-w-sm space-y-3">
+    <div>
+      <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Title</label>
+      <input type="text" name="title" placeholder="Edit to trigger dirty state"
+             class="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Body</label>
+      <textarea name="body" rows="2" placeholder="Or edit this field…"
+                class="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"></textarea>
+    </div>
+  </form>
+  <div id="fc-status" class="hidden mt-4 flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400">
+    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+    </svg>
+    Unsaved changes —
+    <button onclick="document.getElementById('fc-demo-form').reset()"
+            class="underline underline-offset-2 hover:no-underline">Reset</button>
+  </div>
+</div>
+<script>
+  (function() {
+    var form = document.getElementById('fc-demo-form')
+    var status = document.getElementById('fc-status')
+    if (!form || !status) return
+    form.addEventListener('form:changed', function() { status.classList.remove('hidden') })
+    form.addEventListener('form:pristine', function() { status.classList.add('hidden') })
+  })()
+</script>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#form-change-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="form-change-usage" class="text-neutral-200"><%= h(example_form_change_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Events</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Event</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fires when</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">form:changed</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">Any input changes from its original value (form becomes dirty).</td>
+      </tr>
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">form:pristine</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">Form returns to its original state (reset or after successful submit).</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Public API</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markDirty()</code> — manually mark the form dirty.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markPristine()</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">reset()</code> — reset dirty state and capture new baseline.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">isDirty</code> getter — returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">true/false</code>.</li>
+</ul>

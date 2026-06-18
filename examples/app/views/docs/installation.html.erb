@@ -1,0 +1,81 @@
+<% content_for :title, "Installation" %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Getting Started</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Installation</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">Add rails-ui-kit to your Rails app in four steps.</p>
+</div>
+
+<div class="space-y-10">
+
+  <div>
+    <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">1</span>
+      Add to your Gemfile
+    </h2>
+    <div class="rounded-lg overflow-hidden border border-neutral-800">
+      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+        <span class="text-xs text-neutral-400">Gemfile</span>
+        <button data-copy-target="#install-gem" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+      </div>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-gem" class="text-neutral-200">gem "rails-ui-kit", git: "git@github.com:productmatter/rails-ui-kit.git", branch: "main"</code></pre>
+    </div>
+    <p class="mt-2 text-sm text-neutral-500">Then run <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">bundle install</code>.</p>
+  </div>
+
+  <div>
+    <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">2</span>
+      Run the install generator
+    </h2>
+    <div class="rounded-lg overflow-hidden border border-neutral-800">
+      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+        <span class="text-xs text-neutral-400">Terminal</span>
+        <button data-copy-target="#install-gen" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+      </div>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-gen" class="text-neutral-200">bin/rails generate rails_ui_kit:install</code></pre>
+    </div>
+    <p class="mt-2 text-sm text-neutral-500">
+      This wires the JavaScript controllers into <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">application.js</code>
+      and imports the built CSS into your Tailwind entry point.
+    </p>
+  </div>
+
+  <div>
+    <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">3</span>
+      Add layout singletons
+    </h2>
+    <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+      Render these once in your application layout — they provide the global confirm dialog, toast stack, and utility controllers.
+    </p>
+    <div class="rounded-lg overflow-hidden border border-neutral-800">
+      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+        <span class="text-xs text-neutral-400">app/views/layouts/application.html.erb</span>
+        <button data-copy-target="#install-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+      </div>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-layout" class="text-neutral-200">&lt;%= render Ui::ConfirmDialogComponent.new %&gt;
+&lt;%= render Ui::ToastContainerComponent.new %&gt;
+&lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;</code></pre>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">4</span>
+      Install peer dependencies
+    </h2>
+    <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+      Dropdown, Tooltip, and Popover require <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">@floating-ui/dom</code>.
+      If you're using importmap (the default), it's already pinned for you. For bundler setups:
+    </p>
+    <div class="rounded-lg overflow-hidden border border-neutral-800">
+      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+        <span class="text-xs text-neutral-400">Terminal</span>
+        <button data-copy-target="#install-npm" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+      </div>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-npm" class="text-neutral-200">npm install @floating-ui/dom @hotwired/stimulus</code></pre>
+    </div>
+  </div>
+
+</div>

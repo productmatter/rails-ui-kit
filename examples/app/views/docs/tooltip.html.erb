@@ -1,0 +1,89 @@
+<% content_for :title, "Tooltip" %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Tooltip</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A text-only tooltip anchored to any trigger element. Shown on hover and focus.
+    Positioned with Floating UI and fully accessible via <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code>.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
+  <% [["top", "Top"], ["bottom", "Bottom"], ["left", "Left"], ["right", "Right"]].each do |placement, label| %>
+    <%= render Ui::TooltipComponent.new(text: "Tooltip #{label.downcase}", placement: placement) do |t| %>
+      <% t.with_trigger do %>
+        <button class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+          <%= label %>
+        </button>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#tooltip-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="tooltip-usage" class="text-neutral-200"><%= h(example_tooltip_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["text",      "String",  "required", "The tooltip text content."],
+        ["placement", "String",  '"top"',    "Floating UI placement. One of: top, top-start, top-end, bottom, bottom-start, bottom-end, left, left-start, left-end, right, right-start, right-end."],
+        ["offset",    "Integer", "6",        "Gap in pixels between the trigger and the tooltip."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Slots</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">trigger</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The element that receives hover and focus events to show the tooltip.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Stimulus Controller</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--tooltip</code>
+  — registered automatically by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">registerControllers(application)</code>.
+</p>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Assigns a unique <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">id</code> and wires <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code> on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>.</li>
+  <li>Uses Floating UI <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">computePosition</code> with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">flip</code> + <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">shift</code> — auto-flips near viewport edges.</li>
+  <li>Listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusin</code>, and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusout</code> on the wrapper.</li>
+</ul>

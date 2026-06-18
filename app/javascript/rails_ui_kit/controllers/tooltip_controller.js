@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
-import { computePosition, flip, shift, offset } from "@floating-ui/dom"
+import { computePosition, flip, shift, offset, arrow } from "@floating-ui/dom"
 
 export default class extends Controller {
-  static targets = ["trigger", "content"]
+  static targets = ["trigger", "content", "arrow"]
 
   static values = {
     placement: { type: String, default: "top" },
@@ -34,17 +34,31 @@ export default class extends Controller {
   }
 
   position() {
+    const arrowEl = this.arrowTarget
+
     computePosition(this.triggerTarget, this.contentTarget, {
       placement: this.placementValue,
       middleware: [
         offset(this.offsetValue),
         flip(),
-        shift({ padding: 8 })
+        shift({ padding: 8 }),
+        arrow({ element: arrowEl })
       ]
-    }).then(({ x, y }) => {
+    }).then(({ x, y, placement, middlewareData }) => {
       Object.assign(this.contentTarget.style, {
         left: `${x}px`,
         top: `${y}px`
+      })
+
+      const { x: arrowX, y: arrowY } = middlewareData.arrow
+      const staticSide = { top: 'bottom', right: 'left', bottom: 'top', left: 'right' }[placement.split('-')[0]]
+
+      Object.assign(arrowEl.style, {
+        left: arrowX != null ? `${arrowX}px` : '',
+        top: arrowY != null ? `${arrowY}px` : '',
+        right: '',
+        bottom: '',
+        [staticSide]: '-4px'
       })
     })
   }

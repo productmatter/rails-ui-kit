@@ -1,4 +1,10 @@
-project: rails-ui-kit
+project: rails_ui_kit
+
+commands:
+  setup:
+    - bundle install
+    - npm install --prefix ..
+  start: PORT={port} bin/dev
 
 # hooks:
 #   pre_setup:

@@ -1,0 +1,359 @@
+<%= turbo_stream.update "modal" do %>
+  <%= render Ui::ModalComponent.new(position: @position) do %>
+
+    <%# ─── CENTER: Destructive confirmation ──────────────────────────────── %>
+    <% if @position == :center %>
+      <div class="p-6 sm:p-8">
+        <div class="flex items-start gap-4">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 ring-1 ring-red-100 dark:ring-red-500/20">
+            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Delete project</h2>
+            <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              Are you sure you want to delete <span class="font-medium text-neutral-900 dark:text-white">Acme rebrand</span>?
+              All assets, comments, and version history will be permanently removed.
+              This action cannot be undone.
+            </p>
+          </div>
+        </div>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button data-action="click->ui--modal#close"
+                  class="w-full sm:w-auto rounded-lg border border-neutral-200 dark:border-neutral-700 px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-300 dark:focus:ring-neutral-600">
+            Cancel
+          </button>
+          <button data-action="click->ui--modal#close"
+                  class="w-full sm:w-auto rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+            Delete project
+          </button>
+        </div>
+      </div>
+
+    <%# ─── RIGHT: Edit member slide-in panel ──────────────────────────────── %>
+    <% elsif @position == :right %>
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div>
+            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Edit member</h2>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Update profile and permissions</p>
+          </div>
+          <button data-action="click->ui--modal#close"
+                  class="rounded-md p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          <div class="px-6 py-5">
+            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-100 dark:border-neutral-800">
+              <div class="h-14 w-14 rounded-full bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center shrink-0">
+                <span class="text-lg font-semibold text-violet-700 dark:text-violet-300">JD</span>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-white">Jane Doe</p>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">jane@acme.com</p>
+                <span class="inline-flex items-center mt-1 rounded-full bg-green-50 dark:bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:text-green-400 ring-1 ring-green-100 dark:ring-green-500/20">Active</span>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">First name</label>
+                  <input type="text" value="Jane" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"/>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Last name</label>
+                  <input type="text" value="Doe" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"/>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email address</label>
+                <input type="email" value="jane@acme.com" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
+                <select class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
+                  <option>Viewer — read only access</option>
+                  <option selected>Editor — can edit content</option>
+                  <option>Admin — full access</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Department</label>
+                <input type="text" value="Design" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Notes</label>
+                <textarea rows="3" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition-shadow">Lead designer on the Acme account.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-3 border-t border-neutral-100 dark:border-neutral-800 px-6 py-4">
+          <button class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium transition-colors">Remove member</button>
+          <div class="flex gap-2">
+            <button data-action="click->ui--modal#close" class="rounded-lg border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">Cancel</button>
+            <button data-action="click->ui--modal#close" class="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors">Save changes</button>
+          </div>
+        </div>
+      </div>
+
+    <%# ─── LEFT: Filters panel ──────────────────────────────────────────────── %>
+    <% elsif @position == :left %>
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Filters</h2>
+          <div class="flex items-center gap-3">
+            <button class="text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 transition-colors">Clear all</button>
+            <button data-action="click->ui--modal#close"
+                    class="rounded-md p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div class="px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">Status</p>
+            <div class="space-y-3">
+              <% [["Active", true, "bg-green-500"], ["Draft", false, "bg-neutral-400"], ["Archived", false, "bg-neutral-300"], ["Scheduled", true, "bg-blue-500"]].each do |label, checked, dot| %>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-violet-600 focus:ring-violet-500 focus:ring-offset-0"/>
+                  <div class="h-2 w-2 rounded-full <%= dot %>"></div>
+                  <span class="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+          <div class="px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">Assignee</p>
+            <div class="space-y-3">
+              <% [["Jane Doe", true, "JD", "bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300"], ["Alex Smith", false, "AS", "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"], ["Maria Garcia", true, "MG", "bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300"], ["Tom Chen", false, "TC", "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"]].each do |label, checked, initials, avatar| %>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-violet-600 focus:ring-violet-500 focus:ring-offset-0"/>
+                  <div class="h-6 w-6 rounded-full <%= avatar %> flex items-center justify-center text-[10px] font-semibold shrink-0"><%= initials %></div>
+                  <span class="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+          <div class="px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">Priority</p>
+            <div class="space-y-3">
+              <% [["Urgent", false, "text-red-500"], ["High", true, "text-orange-500"], ["Medium", true, "text-amber-500"], ["Low", false, "text-neutral-400"]].each do |label, checked, color| %>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-violet-600 focus:ring-violet-500 focus:ring-offset-0"/>
+                  <svg class="h-3.5 w-3.5 <%= color %>" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="8"/></svg>
+                  <span class="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-neutral-100 dark:border-neutral-800 px-6 py-4">
+          <button data-action="click->ui--modal#close"
+                  class="w-full rounded-lg bg-neutral-900 dark:bg-white px-4 py-2.5 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">
+            Apply 4 filters
+          </button>
+        </div>
+      </div>
+
+    <%# ─── TOP: Invite team member ────────────────────────────────────────── %>
+    <% elsif @position == :top %>
+      <div class="px-6 py-6 sm:px-8">
+        <div class="flex items-start justify-between mb-5">
+          <div>
+            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Invite team member</h2>
+            <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">They'll receive an email with a link to join your workspace.</p>
+          </div>
+          <button data-action="click->ui--modal#close"
+                  class="ml-4 rounded-md p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="email" placeholder="colleague@company.com"
+                 class="flex-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"/>
+          <select class="sm:w-36 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2.5 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
+            <option>Viewer</option>
+            <option selected>Editor</option>
+            <option>Admin</option>
+          </select>
+          <button data-action="click->ui--modal#close"
+                  class="shrink-0 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-700 transition-colors">
+            Send invite
+          </button>
+        </div>
+        <p class="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
+          Invites expire after 7 days. You can resend or revoke them from <span class="text-violet-600 dark:text-violet-400 cursor-pointer hover:underline">Team settings</span>.
+        </p>
+      </div>
+
+    <%# ─── TOP FULL: Command palette ──────────────────────────────────────── %>
+    <% elsif @position == :top_full %>
+      <div>
+        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-neutral-100 dark:border-neutral-800">
+          <svg class="h-4 w-4 text-neutral-400 dark:text-neutral-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+          <input type="text" placeholder="Search or jump to…" autofocus
+                 class="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"/>
+          <button data-action="click->ui--modal#close"
+                  class="shrink-0 rounded border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 text-[10px] font-medium text-neutral-400 dark:text-neutral-500 hover:border-neutral-300 transition-colors">
+            ESC
+          </button>
+        </div>
+        <div class="max-h-72 overflow-y-auto py-2">
+          <div class="px-3 mb-1">
+            <p class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Recent</p>
+          </div>
+          <% [
+            ["Acme rebrand", "Project", "📁"],
+            ["Q3 campaign brief", "Document", "📄"],
+            ["Jane Doe", "Member", "👤"],
+            ["Invoice #1042", "Finance", "💳"],
+            ["Brand guidelines v2", "Document", "📄"],
+          ].each_with_index do |(name, type, icon), i| %>
+            <button class="flex w-full items-center gap-3 rounded-md mx-1 px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors <%= i == 0 ? 'bg-neutral-50 dark:bg-neutral-800/60' : '' %>">
+              <span class="text-base w-5 text-center shrink-0"><%= icon %></span>
+              <span class="flex-1 text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate"><%= name %></span>
+              <span class="text-xs text-neutral-400 dark:text-neutral-500 shrink-0"><%= type %></span>
+              <% if i == 0 %>
+                <span class="ml-1 rounded border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 dark:text-neutral-500">↵</span>
+              <% end %>
+            </button>
+          <% end %>
+        </div>
+        <div class="border-t border-neutral-100 dark:border-neutral-800 px-4 py-2.5 flex items-center gap-4">
+          <div class="flex items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+            <kbd class="rounded border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 font-mono text-[10px]">↑↓</kbd> navigate
+          </div>
+          <div class="flex items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+            <kbd class="rounded border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 font-mono text-[10px]">↵</kbd> open
+          </div>
+          <div class="flex items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+            <kbd class="rounded border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 font-mono text-[10px]">esc</kbd> close
+          </div>
+        </div>
+      </div>
+
+    <%# ─── BOTTOM: Share sheet ────────────────────────────────────────────── %>
+    <% elsif @position == :bottom %>
+      <div class="px-6 pt-3 pb-8 sm:pb-6">
+        <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+        <h2 class="text-base font-semibold text-neutral-900 dark:text-white mb-1">Share</h2>
+        <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-5">Share this project with others via link or app.</p>
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <% [["Copy link", "🔗"], ["Email", "✉️"], ["Slack", "💬"], ["More", "•••"]].each do |label, icon| %>
+            <button class="flex flex-col items-center gap-2">
+              <div class="h-14 w-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-2xl hover:bg-neutral-200 dark:hover:bg-neutral-700 active:scale-95 transition-all"><%= icon %></div>
+              <span class="text-xs font-medium text-neutral-600 dark:text-neutral-400"><%= label %></span>
+            </button>
+          <% end %>
+        </div>
+        <div class="flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 pl-4 pr-2 py-2 mb-3">
+          <svg class="h-3.5 w-3.5 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 1 1.242 7.244"/></svg>
+          <span class="flex-1 text-xs text-neutral-500 dark:text-neutral-400 truncate">https://app.example.com/projects/acme-rebrand</span>
+          <button class="shrink-0 rounded-lg bg-neutral-900 dark:bg-white px-3 py-1.5 text-xs font-semibold text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">Copy</button>
+        </div>
+        <button data-action="click->ui--modal#close"
+                class="w-full rounded-xl py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+          Cancel
+        </button>
+      </div>
+
+    <%# ─── BOTTOM FULL: Move to project ──────────────────────────────────── %>
+    <% elsif @position == :bottom_full %>
+      <div class="pt-3 pb-8 sm:pb-4">
+        <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+        <div class="px-6 mb-4">
+          <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Move to project</h2>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Select where you'd like to move <span class="font-medium text-neutral-700 dark:text-neutral-300">Homepage redesign</span>.</p>
+        </div>
+        <div class="px-3 mb-3">
+          <div class="flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 py-2">
+            <svg class="h-3.5 w-3.5 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+            <input type="text" placeholder="Search projects…" class="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"/>
+          </div>
+        </div>
+        <div class="max-h-56 overflow-y-auto px-3">
+          <% [["Acme rebrand", "12 tasks", "bg-violet-500"], ["Q3 campaign", "8 tasks", "bg-blue-500"], ["Website refresh", "24 tasks", "bg-emerald-500"], ["Brand guidelines", "5 tasks", "bg-amber-500"], ["Mobile app", "17 tasks", "bg-pink-500"]].each do |name, count, color| %>
+            <button class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 active:bg-neutral-100 dark:active:bg-neutral-700 transition-colors group">
+              <div class="h-8 w-8 rounded-lg <%= color %> flex items-center justify-center shrink-0">
+                <svg class="h-4 w-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate"><%= name %></p>
+                <p class="text-xs text-neutral-400 dark:text-neutral-500"><%= count %></p>
+              </div>
+              <svg class="h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-violet-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          <% end %>
+        </div>
+        <div class="border-t border-neutral-100 dark:border-neutral-800 mt-3 px-6 pt-4">
+          <button data-action="click->ui--modal#close"
+                  class="w-full rounded-xl py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    <%# ─── FULL SCREEN: Workspace settings ───────────────────────────────── %>
+    <% elsif @position == :full_screen %>
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
+          <div class="flex items-center gap-3">
+            <button data-action="click->ui--modal#close"
+                    class="rounded-md p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+            </button>
+            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Workspace settings</h2>
+          </div>
+          <button data-action="click->ui--modal#close"
+                  class="rounded-lg bg-neutral-900 dark:bg-white px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">
+            Save changes
+          </button>
+        </div>
+        <div class="flex flex-1 overflow-hidden">
+          <nav class="w-48 shrink-0 border-r border-neutral-100 dark:border-neutral-800 px-3 py-4 overflow-y-auto">
+            <% [["General", true], ["Members", false], ["Billing", false], ["Integrations", false], ["Notifications", false], ["Security", false], ["API", false]].each do |label, active| %>
+              <button class="w-full text-left px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors <%= active ? 'bg-neutral-100 dark:bg-neutral-800 font-semibold text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white' %>"><%= label %></button>
+            <% end %>
+          </nav>
+          <div class="flex-1 overflow-y-auto px-8 py-6">
+            <div class="max-w-lg space-y-8">
+              <div>
+                <h3 class="text-sm font-semibold text-neutral-900 dark:text-white mb-1">General</h3>
+                <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-5">Manage your workspace name, slug, and public information.</p>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Workspace name</label>
+                    <input type="text" value="Acme Corp" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Slug</label>
+                    <div class="flex">
+                      <span class="flex items-center rounded-l-lg border border-r-0 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-3 py-2 text-sm text-neutral-400 whitespace-nowrap">app.example.com/</span>
+                      <input type="text" value="acme-corp" class="block flex-1 rounded-r-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-0"/>
+                    </div>
+                    <p class="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500">Changing the slug will break existing links.</p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Description</label>
+                    <textarea rows="3" class="block w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none">Design & brand agency based in NYC.</textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-neutral-100 dark:border-neutral-800 pt-8">
+                <div class="rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-500/5 p-5">
+                  <h3 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
+                  <p class="text-sm text-red-600/80 dark:text-red-400/70 mb-4">Permanently delete this workspace and all of its contents. This action cannot be undone and all data will be lost.</p>
+                  <button class="rounded-lg border border-red-200 dark:border-red-800 px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 transition-colors">Delete workspace</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  <% end %>
+<% end %>

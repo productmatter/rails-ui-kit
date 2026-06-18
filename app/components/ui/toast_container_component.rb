@@ -2,7 +2,7 @@
 
 module Ui
   class ToastContainerComponent < ViewComponent::Base
-    DEFAULT_CLASSES = 'fixed top-20 right-4 z-[70] max-w-sm pointer-events-none'
+    DEFAULT_CLASSES = 'fixed top-4 right-4 z-[70] w-80 pointer-events-none'
 
     attr_reader :container_class
 

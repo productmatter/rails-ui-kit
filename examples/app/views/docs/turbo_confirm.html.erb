@@ -1,0 +1,51 @@
+<% content_for :title, "Turbo Confirm" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Turbo Confirm</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Intercepts Turbo's native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">confirm()</code> and replaces it with the kit's styled dialog — so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm</code> attributes just work.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-4 p-12 mb-8">
+  <%= link_to "Delete item", demo_delete_path,
+      data: { turbo_method: :delete, turbo_confirm: "Delete this item? This cannot be undone." },
+      class: "rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors" %>
+  <%= link_to "Publish post", demo_delete_path,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: "This will make the post visible to all users.",
+        turbo_confirm_title: "Publish post?"
+      },
+      class: "rounded-md bg-neutral-900 dark:bg-white hover:bg-neutral-700 dark:hover:bg-neutral-200 px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 transition-colors" %>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Setup</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Mount the controller once in your layout alongside the confirm dialog singleton:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Layout — ERB</span>
+    <button data-copy-target="#turbo-confirm-setup" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="turbo-confirm-setup" class="text-neutral-200"><%= h(example_turbo_confirm_setup) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#turbo-confirm-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="turbo-confirm-usage" class="text-neutral-200"><%= h(example_turbo_confirm_usage) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">How it works</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Patches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Turbo.config.forms.confirm</code> in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>.</li>
+  <li>Reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm-title</code> on the submitter element for a custom title.</li>
+  <li>Falls back to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> if present, then to browser <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">confirm()</code>.</li>
+  <li>Restores the original handler in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disconnect()</code>.</li>
+</ul>

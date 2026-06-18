@@ -1,0 +1,91 @@
+<% content_for :title, "Toast" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Toast</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Auto-dismissing notification cards. Five type variants with accessible announcements.
+    Triggered from Ruby (Turbo Streams), JavaScript (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.triggerToast</code>),
+    or custom events.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+  <% [["success", "Success"], ["error", "Error"], ["info", "Info"], ["notice", "Notice"], ["alert", "Alert"]].each do |type, label| %>
+    <button onclick="window.triggerToast('<%= type %>', '<%= label %> toast message')"
+            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+      <%= label %>
+    </button>
+  <% end %>
+</div>
+
+<%# Usage — Ruby %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Render once in your layout.</strong>
+  The container renders five <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;template&gt;</code> tags — one per type.
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Layout — ERB</span>
+    <button data-copy-target="#toast-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="toast-layout" class="text-neutral-200"><%= h(example_toast_layout) %></code></pre>
+</div>
+
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">From a Turbo Stream action:</strong>
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB — Turbo Stream</span>
+    <button data-copy-target="#toast-stream" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="toast-stream" class="text-neutral-200"><%= h(example_toast_stream) %></code></pre>
+</div>
+
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <strong class="font-medium text-neutral-900 dark:text-neutral-100">From JavaScript:</strong>
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">JavaScript</span>
+    <button data-copy-target="#toast-js" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="toast-js" class="text-neutral-200"><%= h(example_toast_js) %></code></pre>
+</div>
+
+<%# Options — ToastComponent %>
+<h2 class="text-base font-semibold mb-3">Ui::ToastComponent options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["type",    "Symbol",       "Required. :success, :error, :notice, :alert, or :info."],
+        ["message", "String / Hash","A plain string, or a Hash with :title, :body, and :timeout keys."],
+      ].each do |name, type, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Global API %>
+<h2 class="text-base font-semibold mb-3">Global API</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.triggerToast(type, message)</code> — programmatic trigger from anywhere in JavaScript.</li>
+  <li>Custom event: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", { detail: { type, message } }))</code></li>
+  <li>Error toasts default to a 20 second timeout; all others default to 3 seconds.</li>
+</ul>

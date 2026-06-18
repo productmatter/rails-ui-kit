@@ -3,7 +3,7 @@ AllCops:
   NewCops: enable
   SuggestExtensions: false
   Exclude:
-    - test/dummy/**/*
+    - examples/**/*
     - bin/**/*
     - vendor/**/*
 
