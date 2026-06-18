@@ -7,12 +7,15 @@
   <%= stylesheet_link_tag "tailwind", data: { turbo_track: "reload" } %>
   <%= javascript_importmap_tags %>
 </head>
-<body class="h-full bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 antialiased">
+<body class="h-full bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 antialiased" data-controller="ui--dark-mode">
 
   <%# Singletons required by toast + confirm demos %>
-  <%= render Ui::ConfirmDialogComponent.new %>
+  <div data-controller="ui--dialog">
+    <%= render Ui::ConfirmDialogComponent.new %>
+  </div>
   <%= render Ui::ToastContainerComponent.new %>
-  <div data-controller="ui--turbo-confirm ui--turbo-disable-with ui--dark-mode" class="hidden"></div>
+  <div data-controller="ui--turbo-confirm ui--turbo-disable-with" class="hidden"></div>
+  <turbo-frame id="modal"></turbo-frame>
 
   <div class="flex h-full">
 

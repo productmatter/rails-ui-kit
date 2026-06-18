@@ -9,11 +9,11 @@ require 'action_view/railtie'
 Bundler.require(*Rails.groups)
 require 'rails_ui_kit'
 
-module Dummy
+module Examples
   class Application < Rails::Application
     config.load_defaults Rails::VERSION::STRING.to_f
     config.eager_load = false
-    config.secret_key_base = 'rails-ui-kit-dummy'
+    config.secret_key_base = 'rails-ui-kit-examples'
     config.hosts.clear
   end
 end

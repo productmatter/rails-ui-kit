@@ -7,6 +7,34 @@
   </p>
 </div>
 
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
+  <%= form_with url: demo_submit_path do %>
+    <button type="submit"
+            data-turbo-disable-with="Saving..."
+            data-turbo-disable-style="text"
+            class="rounded-md bg-violet-600 hover:bg-violet-700 px-4 py-2 text-sm font-medium text-white transition-colors">
+      Text style
+    </button>
+  <% end %>
+  <%= form_with url: demo_submit_path do %>
+    <button type="submit"
+            data-turbo-disable-with="Saving..."
+            data-turbo-disable-style="spinner"
+            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+      Spinner style
+    </button>
+  <% end %>
+  <%= form_with url: demo_submit_path do %>
+    <button type="submit"
+            data-turbo-disable-with="Saving..."
+            data-turbo-disable-style="pulse"
+            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+      Pulse style
+    </button>
+  <% end %>
+</div>
+
 <h2 class="text-base font-semibold mb-3">Setup</h2>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">Mount once in your layout:</p>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">

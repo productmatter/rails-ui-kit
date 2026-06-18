@@ -11,10 +11,18 @@
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
-  <turbo-frame id="modal-demo-frame" class="contents"></turbo-frame>
-  <% [[:center, "Center"], [:right, "Right panel"], [:bottom, "Bottom sheet"]].each do |pos, label| %>
+  <% [
+    [:center,      "Confirm dialog"],
+    [:right,       "Edit panel"],
+    [:left,        "Filters"],
+    [:top,         "Invite"],
+    [:top_full,    "Command palette"],
+    [:bottom,      "Share sheet"],
+    [:bottom_full, "Action sheet"],
+    [:full_screen, "Full screen"],
+  ].each do |pos, label| %>
     <%= link_to label, modal_demo_path(position: pos),
-        data: { turbo_frame: "modal-demo-frame" },
+        data: { turbo_stream: true },
         class: "rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors" %>
   <% end %>
 </div>

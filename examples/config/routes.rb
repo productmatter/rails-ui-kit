@@ -17,5 +17,7 @@ Rails.application.routes.draw do
   get 'utilities/turbo_confirm',      to: 'docs#turbo_confirm',      as: :turbo_confirm
   get 'utilities/turbo_disable_with', to: 'docs#turbo_disable_with', as: :turbo_disable_with
 
-  get 'demos/modal', to: 'docs#modal_demo', as: :modal_demo
+  get    'demos/modal',  to: 'docs#modal_demo',   as: :modal_demo
+  post   'demos/submit', to: 'docs#demo_submit',  as: :demo_submit
+  delete 'demos/item',   to: 'docs#demo_delete',  as: :demo_delete
 end

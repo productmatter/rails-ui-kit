@@ -7,6 +7,20 @@
   </p>
 </div>
 
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-4 p-12 mb-8">
+  <%= link_to "Delete item", demo_delete_path,
+      data: { turbo_method: :delete, turbo_confirm: "Delete this item? This cannot be undone." },
+      class: "rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors" %>
+  <%= link_to "Publish post", demo_delete_path,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: "This will make the post visible to all users.",
+        turbo_confirm_title: "Publish post?"
+      },
+      class: "rounded-md bg-neutral-900 dark:bg-white hover:bg-neutral-700 dark:hover:bg-neutral-200 px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 transition-colors" %>
+</div>
+
 <h2 class="text-base font-semibold mb-3">Setup</h2>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
   Mount the controller once in your layout alongside the confirm dialog singleton:

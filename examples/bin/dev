@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+PORT=${PORT:-3000}
+
+echo "=> Building Tailwind CSS..."
+RAILS_ENV=development bundle exec rake tailwindcss:build
+
+echo "=> Starting examples at http://localhost:$PORT"
+RAILS_ENV=development bundle exec ruby bin/rails server -p "$PORT" -b 127.0.0.1

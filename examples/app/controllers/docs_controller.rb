@@ -17,6 +17,18 @@ class DocsController < ApplicationController
   def turbo_disable_with; end
 
   def modal_demo
-    render layout: false
+    @position = (params[:position] || "center").to_sym
+    respond_to do |format|
+      format.turbo_stream
+    end
+  end
+
+  def demo_submit
+    sleep 1.5
+    head :no_content
+  end
+
+  def demo_delete
+    head :no_content
   end
 end

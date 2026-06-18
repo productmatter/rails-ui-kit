@@ -11,7 +11,7 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start justify-center gap-6 p-12 mb-8">
   <%# Menu %>
-  <%= render Ui::DropdownComponent.new(kind: :menu) do |d| %>
+  <%= render Ui::DropdownComponent.new(kind: :menu, placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
     <% d.with_trigger do %>
       <button data-action="click->ui--dropdown#toggle"
               class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">

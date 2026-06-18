@@ -7,6 +7,24 @@
   </p>
 </div>
 
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8 flex flex-col items-start gap-4">
+  <div class="flex items-center gap-4">
+    <button data-action="click->ui--dark-mode#toggle"
+            class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-xs font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">
+      Toggle dark mode
+    </button>
+    <span class="text-sm text-neutral-500 dark:text-neutral-400">
+      <span class="dark:hidden">Currently: light</span>
+      <span class="hidden dark:inline">Currently: dark</span>
+    </span>
+  </div>
+  <div class="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 shadow-sm">
+    <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Sample card</p>
+    <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">This card adapts to the current theme.</p>
+  </div>
+</div>
+
 <h2 class="text-base font-semibold mb-3">Usage</h2>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
   <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
