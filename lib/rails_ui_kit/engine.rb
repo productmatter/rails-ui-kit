@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'rails/engine'
+require 'class_variants'
+require 'tailwind_merge'
 require 'view_component'
 require 'stimulus-rails'
 require 'turbo-rails'

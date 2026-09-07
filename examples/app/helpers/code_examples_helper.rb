@@ -3,6 +3,33 @@
 # Code examples for the docs site. Defined in a Ruby helper (not in ERB templates)
 # so that ERB sequences in the example strings aren't processed by the ERB scanner.
 module CodeExamplesHelper
+  def example_button_usage
+    <<~'RUBY'
+      <%= render(Ui::ButtonComponent.new) { "Save changes" } %>
+
+      <%= render Ui::ButtonComponent.new(variant: :outline, size: :sm) do %>
+        Cancel
+      <% end %>
+
+      <%# href renders an <a> instead of a <button> %>
+      <%= render Ui::ButtonComponent.new(href: settings_path, variant: :link) do %>
+        Settings
+      <% end %>
+
+      <%# Anything else is forwarded to the root element %>
+      <%= render Ui::ButtonComponent.new(
+            variant: :destructive,
+            type: "submit",
+            data: { turbo_confirm: "Delete this record?" }
+          ) do %>
+        Delete
+      <% end %>
+
+      <%# A caller class beats the variant default — bg-red-500 wins, bg-primary is dropped %>
+      <%= render(Ui::ButtonComponent.new(class: "bg-red-500 w-full")) { "Custom" } %>
+    RUBY
+  end
+
   def example_tooltip_usage
     <<~'RUBY'
       <%= render Ui::TooltipComponent.new(text: "Save your changes", placement: "top") do |t| %>

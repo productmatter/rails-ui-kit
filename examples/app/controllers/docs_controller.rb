@@ -5,6 +5,7 @@ class DocsController < ApplicationController
 
   def index; end
   def installation; end
+  def button; end
   def modal; end
   def dropdown; end
   def tooltip; end

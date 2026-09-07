@@ -4,6 +4,16 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- Design tokens in `app/assets/tailwind/rails_ui_kit/engine.css` — shadcn/ui's CSS-variable names verbatim with Product Matter's own `oklch()` values, defined under `:root` and redefined under `.dark`, and mapped through `@theme inline` so `bg-primary`, `text-muted-foreground`, `border-border`, `ring-ring` and their siblings compile. A host app reskins the kit by redefining the same variable names after the import; an external shadcn theme drops in unchanged. `--radius` drives the `rounded-*` scale and resolves to Tailwind's own defaults at its shipped value, so no existing component's radius changes.
+- `Ui::Base` — the shared component foundation. A class-level `class_variants` declaration wraps `ClassVariants.build`, and the resolved classes are merged through a single process-wide `TailwindMerge::Merger` with the caller's `class:` merged last, so a caller's utility replaces a conflicting variant default instead of racing it in stylesheet order. Also carries generic HTML attribute forwarding (`data:`/`aria:` hashes merge by key) and the `data-slot` styling hook.
+- `Ui::ButtonComponent` — six variants (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`) across four sizes (`default`, `sm`, `lg`, `icon`). Renders a `<button>`, or an `<a>` when given `href:`. Token-backed focus-visible ring, disabled styling for both element forms, and automatic sizing for an unsized inline `<svg>` child. A disabled `href` button drops its href and reports `role="link" aria-disabled="true"`, so it is inert without JavaScript.
+- `class_variants` and `tailwind_merge` as runtime dependencies.
+- Button page in the `examples/` docs app.
+
+### Changed
+- `README.md` component table now lists `Ui::PopoverComponent` and `Ui::TooltipComponent`, which shipped in 0.2.0 but were never added, alongside the new `Ui::ButtonComponent`. Added a design-tokens and class-merge section under Overriding.
+
 ## [0.2.0] - 2026-06-04
 
 ### Added

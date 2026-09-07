@@ -20,3 +20,7 @@ Metrics/BlockLength:
   Exclude:
     - rails_ui_kit.gemspec
     - test/**/*
+
+Metrics/ClassLength:
+  Exclude:
+    - test/**/*

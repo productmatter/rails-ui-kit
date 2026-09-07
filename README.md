@@ -6,8 +6,11 @@ A Rails Engine packaging reusable UI components as paired ViewComponents and Sti
 
 | Component | Stimulus identifier(s) | Description |
 |---|---|---|
+| `Ui::ButtonComponent` | — | 6 variants × 4 sizes on the design tokens; renders `<a>` when given `href` |
 | `Ui::ModalComponent` | `ui--modal` | 8-position modal dialog with backdrop, form-change tracking, Turbo Frame support |
 | `Ui::DropdownComponent` | `ui--dropdown` | Floating-UI-positioned dropdown with keyboard nav, 3 modes (menu/listbox/dialog) |
+| `Ui::PopoverComponent` | `ui--popover` | Click-triggered floating panel for rich HTML, click-outside and Escape to close |
+| `Ui::TooltipComponent` | `ui--tooltip` | Hover/focus text tooltip with `role="tooltip"` and automatic `aria-describedby` |
 | `Ui::ConfirmDialogComponent` | `ui--dialog` | Native dialog with Promise-based API, themable via component options |
 | `Ui::ToastComponent` | `ui--toast` | Auto-dismissing notification with type styling and timer bar |
 | `Ui::ToastContainerComponent` | `ui--toast-container` | Stack container that renders toasts client-side from a `<template>` clone |
@@ -262,6 +265,25 @@ application.register("ui--modal", MyModalController) // overrides gem's
 
 **CSS:** Override with higher-specificity selectors, or skip the gem's stylesheet entirely and write your own using the same class names.
 
+**Design tokens:** components read colour and radius from CSS variables that use shadcn/ui's names verbatim, so a shadcn theme (a tweakcn export, for instance) drops in unchanged. Redefine any of them after the kit's import and the cascade does the rest — no component override, no generator:
+
+```css
+@import "tailwindcss";
+@import "../../app/assets/builds/tailwind/rails_ui_kit.css";
+
+:root  { --primary: oklch(0.55 0.19 145); --radius: 0.375rem; }
+.dark  { --primary: oklch(0.62 0.17 145); }
+```
+
+The full set is `background`/`foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent` (each with a `-foreground` pair), `destructive`, `border`, `input`, `ring`, `chart-1`…`chart-5`, `sidebar` and its variants, and `radius` — defined under `:root` and `.dark` in `app/assets/tailwind/rails_ui_kit/engine.css`. `ui--dark-mode` toggles the `.dark` class on `<html>`.
+
+**A component's classes:** every component merges a `class:` you pass through `tailwind_merge`, so your utility replaces the component's conflicting default rather than racing it in stylesheet order:
+
+```erb
+<%# renders bg-red-500, not bg-primary %>
+<%= render(Ui::ButtonComponent.new(class: "bg-red-500")) { "Delete" } %>
+```
+
 ## Dependencies
 
 - Rails >= 7.0
@@ -269,6 +291,8 @@ application.register("ui--modal", MyModalController) // overrides gem's
 - view_component >= 3.0
 - stimulus-rails
 - turbo-rails
+- class_variants (the variant layer behind `Ui::Base`)
+- tailwind_merge (the class-merge layer that makes a caller's `class:` win)
 - `@floating-ui/dom` >= 1.6 (peer dependency, only required if you use `Ui::DropdownComponent`)
 
 ## Development

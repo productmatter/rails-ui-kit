@@ -1,0 +1,156 @@
+<% content_for :title, "Button" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Button</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Six variants across four sizes, drawn entirely from the design tokens. Renders a real
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;button&gt;</code>,
+    or an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;a&gt;</code>
+    when you pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href</code>.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+  <% %i[default secondary outline ghost link destructive].each do |variant| %>
+    <%= render(Ui::ButtonComponent.new(variant: variant)) { variant.to_s.capitalize } %>
+  <% end %>
+</div>
+
+<%# Variants %>
+<h2 class="text-base font-semibold mb-3">Variants</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-8">
+  <% [
+    [:default,     "The primary action. One per view, ideally."],
+    [:secondary,   "A supporting action of equal weight to the page, less weight than default."],
+    [:outline,     "A bordered action that sits quietly on any surface."],
+    [:ghost,       "Toolbar and icon actions — no chrome until hover."],
+    [:link,        "Reads as text; use when the action is navigation."],
+    [:destructive, "Irreversible actions. Pair it with a confirm."],
+  ].each do |variant, description| %>
+    <div class="flex items-center gap-6 px-5 py-4">
+      <div class="w-36 shrink-0"><%= render(Ui::ButtonComponent.new(variant: variant)) { variant.to_s.capitalize } %></div>
+      <div>
+        <p class="font-mono text-xs text-violet-600 dark:text-violet-400 mb-0.5">variant: :<%= variant %></p>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400"><%= description %></p>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<%# Sizes %>
+<h2 class="text-base font-semibold mb-3">Sizes</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center gap-4 p-8 mb-8">
+  <%= render(Ui::ButtonComponent.new(size: :sm)) { "Small" } %>
+  <%= render(Ui::ButtonComponent.new) { "Default" } %>
+  <%= render(Ui::ButtonComponent.new(size: :lg)) { "Large" } %>
+  <%= render Ui::ButtonComponent.new(size: :icon, variant: :outline, aria: { label: "Add item" }) do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  <% end %>
+</div>
+
+<%# Full matrix %>
+<h2 class="text-base font-semibold mb-3">Variant × size</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Variant</th>
+        <% %i[sm default lg icon].each do |size| %>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider"><%= size %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% %i[default secondary outline ghost link destructive].each do |variant| %>
+        <tr>
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= variant %></td>
+          <% %i[sm default lg].each do |size| %>
+            <td class="px-4 py-3"><%= render(Ui::ButtonComponent.new(variant: variant, size: size)) { "Button" } %></td>
+          <% end %>
+          <td class="px-4 py-3">
+            <%= render Ui::ButtonComponent.new(variant: variant, size: :icon, aria: { label: "Add" }) do %>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# States %>
+<h2 class="text-base font-semibold mb-3">States</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center gap-4 p-8 mb-4">
+  <%= render(Ui::ButtonComponent.new) { "Enabled" } %>
+  <%= render(Ui::ButtonComponent.new(disabled: true)) { "Disabled" } %>
+  <%= render(Ui::ButtonComponent.new(href: "#", variant: :outline)) { "Link" } %>
+  <%= render(Ui::ButtonComponent.new(href: "#", variant: :outline, disabled: true)) { "Disabled link" } %>
+  <%= render Ui::ButtonComponent.new(variant: :secondary) do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    Icon + label
+  <% end %>
+</div>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+  Tab to a button to see the focus ring — it is drawn from the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code> token,
+  so it follows the theme. A disabled <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href</code> button
+  drops its href and reports <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled</code>, so it is inert without JavaScript.
+</p>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#button-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="button-usage" class="text-neutral-200"><%= h(example_button_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["variant", "Symbol", ":default",  "One of :default, :destructive, :outline, :secondary, :ghost, :link."],
+        ["size",    "Symbol", ":default",  "One of :default, :sm, :lg, :icon."],
+        ["href",    "String", "nil",       "When present the component renders an <a> instead of a <button>."],
+        ["type",    "String", '"button"',  "Button type. Ignored on the <a> form."],
+        ["class",   "String", "nil",       "Merged over the variant classes with tailwind_merge — the caller always wins."],
+        ["…",       "Any",    "—",         "Every other keyword (id:, name:, disabled:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>No Stimulus controller. Button is presentational; behaviour comes from the form, link, or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-*</code> attribute you forward to it.</li>
+  <li>The root element carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-slot="button"</code> as a styling and testing hook that survives class changes.</li>
+  <li>An inline <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;svg&gt;</code> child is sized to 1rem and padding tightens automatically; pass your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">size-*</code> class on the svg to override.</li>
+  <li>Every colour comes from a token, so a host app reskins Button by redefining <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--primary</code> and friends — no component override needed.</li>
+</ul>
