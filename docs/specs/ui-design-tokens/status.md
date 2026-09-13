@@ -1,11 +1,12 @@
 ## State
 
-blocked: ui-test-harness
+unblocked
 
-Every agent-loopable check that can run today is green. The one that can't —
-the `.dark`-on-`<html>` regression check — needs the system-test lane
-`ui-test-harness` owns, and `bundle exec rake test:system` is not a defined
-task yet.
+`ui-test-harness` has shipped the browser lane. The `.dark`-on-`<html>`
+regression check now has somewhere to run and is green:
+`bundle exec rake test:system TEST=test/system/dark_mode_toggle_test.rb` — 1
+run, 3 assertions, 0 failures. Every agent-loopable check for this scope is
+green.
 
 ## Done
 - Read the parent spec (`ui-component-library/spec.md`) in full, plus
@@ -29,15 +30,15 @@ task yet.
 - Ran the agent-loopable checks against the current tree:
   - `grep -c -- "--color-background: var(--background)" app/assets/tailwind/rails_ui_kit/engine.css` → `1` (pass).
   - `grep -q "^@theme inline {" app/assets/tailwind/rails_ui_kit/engine.css` → exits 0 (pass).
-  - `bundle exec rake test:system TEST=test/system/dark_mode_toggle_test.rb` → `rake aborted! Don't know how to build task 'test:system'` — the lane doesn't exist yet; this is the `ui-test-harness` dependency, not a defect in this scope.
+  - `bundle exec rake test:system TEST=test/system/dark_mode_toggle_test.rb` → at the time, `rake aborted! Don't know how to build task 'test:system'` — the lane didn't exist yet; not a defect in this scope. Now that `ui-test-harness` has shipped the lane and written that test file (pinning the `.dark`-on-`<html>` contract per its own § Acceptance checks), the command is green: 1 run, 3 assertions, 0 failures.
 - Counted the shadcn-contract names actually defined in `engine.css`: 32 (31
   color tokens + `radius`), not 33 — the old closure claim's own enumeration
   only ever listed 32 names, and separately mislabeled the sidebar group's
   seven variants as five. Corrected in § Business rules, rule 1.
 
 ## In progress
-None — blocked on `ui-test-harness`; nothing else to advance until that lane
-exists.
+None — the `ui-test-harness` dependency has shipped and the regression check
+now runs green (see § State). Nothing else queued for this scope.
 
 ## Last green checkpoint
 cdd9820 (extended by 4361a6f) — full unit lane green (`bundle exec rake test`,

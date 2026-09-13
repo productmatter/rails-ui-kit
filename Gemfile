@@ -15,6 +15,11 @@ group :development, :test do
 end
 
 group :test do
-  gem 'capybara'
-  gem 'selenium-webdriver'
+  # require: false -- these are the browser lane's dependencies and must only be
+  # loaded by test/application_system_test_case.rb, never by Bundler.require at
+  # boot, or they leak into the unit lane. See docs/specs/ui-test-harness/spec.md.
+  gem 'axe-core-api', require: false
+  gem 'axe-core-capybara', require: false
+  gem 'capybara', require: false
+  gem 'selenium-webdriver', require: false
 end
