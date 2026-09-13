@@ -15,11 +15,23 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 - Kit parts default their border color to `--border`. Tailwind v4 draws a border with no color utility in `currentColor`, so a bare separator such as a card footer's `border-t` rendered near-black. The default is a base-layer rule scoped to `[data-slot]`, so any border color utility still wins and borders in host-app markup are unaffected.
 
 ### Fixed
+- `Ui::ModalComponent` no longer leaves an invisible backdrop that blocks every click after it closes. Closing removed markup only when the modal sat inside a turbo-frame, and then emptied that whole frame; it now removes the modal's own element wherever it is, and leaves the rest of a frame alone.
+- `ui--modal` releases the scroll lock and restores focus however the modal leaves the page, including a Turbo Stream emptying or replacing its container.
+- `ui--modal` and `ui--dialog` survive Turbo's page cache. Pressing Back used to restore a non-modal `<dialog open>`: `showModal()` threw, the stale backdrop blocked clicks, and every later confirm failed until a reload. Both now return to a closed state on `turbo:before-cache`, and never call `showModal()` on a dialog that is already open.
+- `ui--modal`'s unsaved-changes guard falls back to the browser's `confirm()` when the kit's confirm dialog is missing or fails, instead of trapping the user in the modal.
+- `ui--modal` moves focus to the dialog when an in-modal turbo-frame swap removes the focused element, rather than dropping it to `<body>`.
+- `Ui::ConfirmDialogComponent` works under a Content Security Policy that blocks inline scripts. Its buttons were inline `onclick` handlers; they are now submit buttons in a `<form method="dialog">`.
+- `Ui::ConfirmDialogComponent` focuses Cancel when it opens, so Enter no longer carries out a destructive action, and its keyboard order now matches its visual order.
+- `Ui::ConfirmDialogComponent` is announced as an `alertdialog` with its message as the description, and Cancel shows a visible focus indicator.
+- `ui--turbo-confirm` reads `data-turbo-confirm-title` from forms and from `link_to … data: { turbo_method: }` links, not only from submit buttons.
 - `rails_ui_kit:install` writes a CSS import that resolves. It previously wrote `@import "../../app/assets/builds/tailwind/rails_ui_kit.css"` into `app/assets/tailwind/application.css`, which points at `app/app/assets/…` and fails the host's Tailwind build; it now writes `@import "../builds/tailwind/rails_ui_kit.css"`, where `tailwindcss:engines` puts the artifact. README corrected to match.
 - `rails_ui_kit:install` registers controllers where Stimulus's `application` is in scope. On a default `rails new` importmap app, `application` lives in `app/javascript/controllers/application.js`, so appending `registerControllers(application)` to `application.js` threw `ReferenceError` and registered nothing. The generator now inserts the call after `Application.start()` in whichever file has it, and skips with a message when it finds neither.
 - `ui--dropdown` puts `aria-haspopup` and `aria-expanded` on the caller's trigger control — normally a `<button>` — instead of the wrapper `<div>` the component renders around it, and returns focus to that control on Escape. A `<div>` is neither focusable nor announced with state, so a screen reader previously got no indication that a menu existed or was open, and closing with Escape dropped focus to `<body>`. No markup changes; the component resolves the first focusable element inside the trigger slot and falls back to the wrapper when there is none.
 
 ### Changed
+- `Ui::ModalComponent` accepts `aria:`, applied to the `<dialog>`, so a modal can be named, e.g. `aria: { labelledby: "edit-title" }`.
+- A closed `Ui::ModalComponent` removes its element, so it cannot be reopened in place by calling `open()` again. Render it again to reopen.
+- `Ui::ConfirmDialogComponent` renders Cancel before Confirm, and its default `footer_class`, `confirm_class` and `cancel_class` changed to match. Overrides that relied on `sm:flex-row-reverse` or on the old button margins will lay out differently.
 - Minimum Ruby is now 3.2. `tailwind_merge`, a runtime dependency, requires it.
 - `README.md` component table now lists `Ui::PopoverComponent` and `Ui::TooltipComponent`, which shipped in 0.2.0 but were never added, alongside the new `Ui::ButtonComponent`. Added a design-tokens and class-merge section under Overriding.
 

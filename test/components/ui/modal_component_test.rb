@@ -37,5 +37,25 @@ module Ui
 
       assert_selector "div[data-ui--modal-track-changes-value='true']"
     end
+
+    test 'names the dialog from a heading id via aria labelledby' do
+      render_inline(Ui::ModalComponent.new(aria: { labelledby: 'edit-title' })) { '<h2 id="edit-title">Edit</h2>'.html_safe }
+
+      assert_selector "dialog[aria-labelledby='edit-title']"
+      assert_no_selector 'dialog[aria-label]'
+    end
+
+    test 'renders no aria naming attributes by default' do
+      render_inline(Ui::ModalComponent.new)
+
+      assert_no_selector 'dialog[aria-labelledby], dialog[aria-label]'
+    end
+
+    test 'names the dialog with an aria label when there is no visible title' do
+      render_inline(Ui::ModalComponent.new(aria: { label: 'Command palette' }))
+
+      assert_selector "dialog[aria-label='Command palette']"
+      assert_no_selector 'dialog[aria-labelledby]'
+    end
   end
 end

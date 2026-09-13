@@ -45,7 +45,7 @@
 <h2 class="text-base font-semibold mb-3">How it works</h2>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
   <li>Patches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Turbo.config.forms.confirm</code> in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>.</li>
-  <li>Reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm-title</code> on the submitter element for a custom title.</li>
+  <li>Reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm-title</code> for a custom title from the submit button, the form, or a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-method</code> link.</li>
   <li>Falls back to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> if present, then to browser <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">confirm()</code>.</li>
   <li>Restores the original handler in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disconnect()</code>.</li>
 </ul>

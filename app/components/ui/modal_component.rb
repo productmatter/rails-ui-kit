@@ -5,7 +5,7 @@ module Ui
     BASE_CLASSES = %w[
       fixed z-[61] p-0 m-0 max-h-none max-w-none
       backdrop:bg-transparent bg-white dark:bg-gray-900 shadow-2xl
-      opacity-0 transition-all duration-300 ease-in-out
+      opacity-0 transition-all duration-300 ease-in-out focus-visible:outline-none
     ].freeze
 
     DEFAULT_WIDE = 'w-full sm:w-[42rem]'
@@ -55,14 +55,16 @@ module Ui
 
     POSITIONS = POSITION_CLASSES.keys.freeze
 
-    attr_reader :position, :track_changes, :close_on_backdrop, :max_width
+    attr_reader :position, :track_changes, :close_on_backdrop, :max_width, :aria
 
-    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil)
+    # aria: attributes for the <dialog>, e.g. { labelledby: 'heading-id' } or { label: 'Command palette' } to name it.
+    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil, aria: {})
       super()
       @position = POSITIONS.include?(position.to_sym) ? position.to_sym : :center
       @track_changes = track_changes
       @close_on_backdrop = close_on_backdrop
       @max_width = max_width
+      @aria = aria
     end
 
     def controller_data
@@ -75,6 +77,10 @@ module Ui
           action: 'click->ui--modal#closeOnBackdropClick keydown->ui--modal#closeOnEscape'
         }
       }
+    end
+
+    def dialog_attributes
+      { class: dialog_classes, aria: aria }
     end
 
     def dialog_classes

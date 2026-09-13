@@ -19,15 +19,27 @@ export default class extends Controller {
       this.element.addEventListener('form:changed', this.boundFormChanged)
       this.element.addEventListener('form:pristine', this.boundFormPristine)
     }
+
+    this.boundBeforeCache = this.resetBeforeCache.bind(this)
+    document.addEventListener('turbo:before-cache', this.boundBeforeCache)
+
+    this.boundKeepFocus = this.keepFocusInDialog.bind(this)
+    this.element.addEventListener('turbo:frame-render', this.boundKeepFocus)
   }
 
+  // Runs however the modal leaves the page: closed, emptied by a Turbo Stream, or navigated away.
   disconnect() {
     if (this.trackChangesValue) {
       this.element.removeEventListener('form:changed', this.boundFormChanged)
       this.element.removeEventListener('form:pristine', this.boundFormPristine)
     }
 
+    document.removeEventListener('turbo:before-cache', this.boundBeforeCache)
+    this.element.removeEventListener('turbo:frame-render', this.boundKeepFocus)
+    clearTimeout(this.closeTimeout)
     this.removeBeforeUnloadHandler()
+    this.unlockScroll()
+    this.restoreFocus()
   }
 
   dialogTargetConnected() {
@@ -39,8 +51,14 @@ export default class extends Controller {
   }
 
   open() {
-    this.dialogTarget.showModal()
-    document.body.style.overflow = 'hidden'
+    const dialog = this.dialogTarget
+    if (dialog.matches(':modal')) return
+    // A page restored from Turbo's cache can carry a non-modal `open` attribute; showModal() throws on it.
+    if (dialog.open) dialog.removeAttribute('open')
+
+    this.previouslyFocused = document.activeElement
+    dialog.showModal()
+    this.lockScroll()
 
     if (this.hasBackdropTarget) {
       requestAnimationFrame(() => {
@@ -73,21 +91,20 @@ export default class extends Controller {
   }
 
   async confirmClose() {
-    if (typeof window.defaultConfirmDialog === 'function') {
-      const confirmed = await window.defaultConfirmDialog({
-        title: "Unsaved Changes",
-        message: "You have unsaved changes. Are you sure you want to close?"
-      })
+    const message = "You have unsaved changes. Are you sure you want to close?"
+    let confirmed
 
-      if (confirmed) {
-        this.formDirty = false
-        this.performClose()
-      }
-    } else {
-      if (confirm("You have unsaved changes. Are you sure you want to close?")) {
-        this.formDirty = false
-        this.performClose()
-      }
+    try {
+      if (typeof window.defaultConfirmDialog !== 'function') throw new Error("Confirm dialog not available")
+      confirmed = await window.defaultConfirmDialog({ title: "Unsaved Changes", message })
+    } catch (error) {
+      console.error("ui--modal: falling back to browser confirm()", error)
+      confirmed = confirm(message)
+    }
+
+    if (confirmed) {
+      this.formDirty = false
+      this.performClose()
     }
   }
 
@@ -102,17 +119,48 @@ export default class extends Controller {
     this.dialogTarget.classList.remove('opacity-100', ...this.translateInClasses())
     this.dialogTarget.classList.add('opacity-0', ...this.translateOutClasses())
 
-    setTimeout(() => {
-      this.dialogTarget.close()
-      document.body.style.overflow = ''
+    clearTimeout(this.closeTimeout)
+    this.closeTimeout = setTimeout(() => this.teardown(), 300)
+  }
 
-      setTimeout(() => {
-        const frame = this.element.closest('turbo-frame')
-        if (frame) {
-          frame.innerHTML = ''
-        }
-      }, 50)
-    }, 300)
+  // Closed is the resting state: the modal's own element leaves the page, its container stays reusable.
+  teardown() {
+    if (this.dialogTarget.open) this.dialogTarget.close()
+    this.unlockScroll()
+    this.element.remove()
+  }
+
+  resetBeforeCache() {
+    clearTimeout(this.closeTimeout)
+    this.removeBeforeUnloadHandler()
+    this.teardown()
+  }
+
+  lockScroll() {
+    document.body.style.overflow = 'hidden'
+    this.scrollLocked = true
+  }
+
+  unlockScroll() {
+    if (!this.scrollLocked) return
+    document.body.style.overflow = ''
+    this.scrollLocked = false
+  }
+
+  // Swapping a turbo-frame inside the modal removes the focused element; keep focus in the dialog, not on <body>.
+  keepFocusInDialog() {
+    if (document.activeElement && document.activeElement !== document.body) return
+    if (!this.dialogTarget.open) return
+
+    this.dialogTarget.tabIndex = -1
+    this.dialogTarget.focus({ preventScroll: true })
+  }
+
+  restoreFocus() {
+    const target = this.previouslyFocused
+    this.previouslyFocused = null
+    const focusLost = !document.activeElement || document.activeElement === document.body
+    if (focusLost && target?.isConnected) target.focus({ preventScroll: true })
   }
 
   closeOnBackdropClick(event) {

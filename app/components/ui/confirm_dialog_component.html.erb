@@ -1,6 +1,8 @@
 <dialog
   id="<%= id %>"
+  role="alertdialog"
   aria-labelledby="<%= id %>-title"
+  aria-describedby="<%= id %>-message"
   class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-gray-900/50"
   data-ui--dialog-target="dialog"
 >
@@ -21,14 +23,14 @@
           </div>
         </div>
       </div>
-      <div class="<%= footer_class %>">
-        <button type="button" value="confirm" onclick="this.closest('dialog').close('confirm')" class="<%= confirm_class %>">
-          <%= confirm_label %>
-        </button>
-        <button type="button" value="cancel" onclick="this.closest('dialog').close('cancel')" class="<%= cancel_class %>">
+      <form method="dialog" class="<%= footer_class %>">
+        <button type="submit" value="cancel" autofocus class="<%= cancel_class %>">
           <%= cancel_label %>
         </button>
-      </div>
+        <button type="submit" value="confirm" class="<%= confirm_class %>">
+          <%= confirm_label %>
+        </button>
+      </form>
     </div>
   </div>
 </dialog>

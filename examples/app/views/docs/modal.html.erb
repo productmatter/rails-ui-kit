@@ -48,6 +48,119 @@
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-neutral-200"><%= h(example_modal_response) %></code></pre>
 </div>
 
+<%# Turbo Stream pattern %>
+<h2 class="text-base font-semibold mb-3">Turbo Stream pattern</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Or keep a plain container in the layout and render the modal into it from a
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">*.turbo_stream.erb</code> response.
+  A turbo-frame inside the modal handles in-modal navigation and validation re-renders without reopening it.
+  Closing removes only the modal, so the container is ready for the next stream.
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB — layout, and edit.turbo_stream.erb</span>
+    <button data-copy-target="#modal-stream" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-stream" class="text-neutral-200">&lt;div id="modal"&gt;&lt;/div&gt;
+
+&lt;%= turbo_stream.update "modal" do %&gt;
+  &lt;%= render Ui::ModalComponent.new(aria: { labelledby: "project_modal_title" }) do %&gt;
+    &lt;%= turbo_frame_tag "project_modal_content" do %&gt;
+      &lt;%= render "form", project: @project %&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;</code></pre>
+</div>
+
+<%
+  stream_name = params[:name].to_s.strip
+  stream_invalid = params[:commit].present? && stream_name.blank?
+  stream_saved = params[:commit].present? && !stream_invalid
+  stream_editing = params[:modal_step] == "edit" && !stream_saved
+  stream_input_class = "block w-full rounded-lg border bg-white dark:bg-neutral-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+  stream_button_class = "rounded-lg border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+  stream_modal_content = capture do
+%>
+  <%= turbo_frame_tag "stream_modal_content" do %>
+    <div class="p-6 sm:p-8">
+      <% if stream_saved %>
+        <h2 id="stream-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Project saved</h2>
+        <p class="mt-1.5 mb-6 text-sm text-neutral-500 dark:text-neutral-400">Renamed to <strong><%= stream_name %></strong>. The content frame swapped; the modal stayed open.</p>
+      <% elsif stream_editing %>
+        <h2 id="stream-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Edit project</h2>
+        <%= form_with url: modal_path, method: :get, class: "mt-4 mb-6 space-y-2" do |f| %>
+          <%= hidden_field_tag :modal_step, "edit" %>
+          <%= f.label :name, "Project name", class: "block text-xs font-medium text-neutral-700 dark:text-neutral-300" %>
+          <%= f.text_field :name, value: stream_name, class: "#{stream_input_class} #{stream_invalid ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-700'}",
+                aria: { describedby: ("stream-name-error" if stream_invalid), invalid: stream_invalid } %>
+          <% if stream_invalid %>
+            <p id="stream-name-error" class="text-xs text-red-600 dark:text-red-400">Name can't be blank. Submit empty to re-render with errors.</p>
+          <% end %>
+          <div class="flex justify-end gap-2 pt-2">
+            <%= link_to "Back", modal_path, class: stream_button_class %>
+            <%= f.submit "Save", class: "rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors" %>
+          </div>
+        <% end %>
+      <% else %>
+        <h2 id="stream-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Acme rebrand</h2>
+        <p class="mt-1.5 mb-6 text-sm text-neutral-500 dark:text-neutral-400">Rendered into a plain <code>div</code> by a Turbo Stream.</p>
+      <% end %>
+      <div class="flex flex-wrap justify-end gap-2">
+        <% unless stream_editing %>
+          <%= link_to "Edit", modal_path(modal_step: "edit"), class: stream_button_class %>
+        <% end %>
+        <button type="button" class="<%= stream_button_class %>"
+                onclick="document.body.append(document.getElementById('stream-modal-replace').content.cloneNode(true))">Replace via stream</button>
+        <button type="button" class="<%= stream_button_class %>"
+                onclick="document.body.append(document.getElementById('stream-modal-empty').content.cloneNode(true))">Empty via stream</button>
+        <button type="button" data-action="click->ui--modal#close" class="<%= stream_button_class %>">Close</button>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Frame requests from the demos below get their frame first, ahead of the empty placeholders. %>
+<% if turbo_frame_request_id == "stream_modal_content" %>
+  <%= stream_modal_content %>
+<% elsif turbo_frame_request_id == "frame-modal" %>
+  <%= turbo_frame_tag "frame-modal" do %>
+    <%= render Ui::ModalComponent.new(aria: { labelledby: "stream-modal-title" }) do %><%= stream_modal_content %><% end %>
+  <% end %>
+<% end %>
+
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+  <button type="button" id="stream-modal-trigger"
+          onclick="document.body.append(document.getElementById('stream-modal-open').content.cloneNode(true))"
+          class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+    Open with a Turbo Stream
+  </button>
+  <%= link_to "Open in a Turbo Frame", modal_path, id: "frame-modal-trigger", data: { turbo_frame: "frame-modal" },
+      class: "rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors" %>
+</div>
+<div id="stream-modal"></div>
+<%= turbo_frame_tag "frame-modal" %>
+
+<%# Client-side stand-ins for the server's turbo_stream responses, so the demo needs no extra endpoints. %>
+<template id="stream-modal-open">
+  <turbo-stream action="update" target="stream-modal"><template>
+    <%= render Ui::ModalComponent.new(aria: { labelledby: "stream-modal-title" }) do %><%= stream_modal_content %><% end %>
+  </template></turbo-stream>
+</template>
+<template id="stream-modal-replace">
+  <turbo-stream action="update" target="stream-modal"><template>
+    <%= render Ui::ModalComponent.new(position: :right, aria: { labelledby: "stream-modal-replaced-title" }) do %>
+      <div class="p-6">
+        <h2 id="stream-modal-replaced-title" class="text-base font-semibold text-neutral-900 dark:text-white">A different modal</h2>
+        <p class="mt-1.5 mb-6 text-sm text-neutral-500 dark:text-neutral-400">The stream replaced the previous modal. Scroll stays locked.</p>
+        <button type="button" data-action="click->ui--modal#close" class="<%= stream_button_class %>">Close</button>
+      </div>
+    <% end %>
+  </template></turbo-stream>
+</template>
+<template id="stream-modal-empty">
+  <turbo-stream action="update" target="stream-modal"><template></template></turbo-stream>
+</template>
+
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Options</h2>
 <div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
@@ -66,6 +179,7 @@
         ["track_changes",    "Boolean",  "false",    "When true, warns before closing if a form inside is dirty."],
         ["close_on_backdrop","Boolean",  "true",     "Close the modal when clicking the backdrop."],
         ["max_width",        "String",   "nil",      "Override the default max-width Tailwind class."],
+        ["aria",             "Hash",     "{}",       "ARIA attributes for the dialog. Name every modal: { labelledby: \"heading-id\" } for a visible title, or { label: \"…\" } when there is none."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
           <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
@@ -87,6 +201,7 @@
   <li>Calls <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">open()</code> automatically via <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dialogTargetConnected()</code>.</li>
   <li>When <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes: true</code>, listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:changed</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:pristine</code> events from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>.</li>
   <li>Closes on backdrop click (if enabled) and Escape key.</li>
-  <li>Locks <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.body</code> scroll while open.</li>
+  <li>Locks <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.body</code> scroll while open, and releases it and restores focus however the modal leaves the page.</li>
+  <li>Closing removes the modal's own element, not its container. Before Turbo caches the page, an open modal is removed immediately, so Back never restores it.</li>
   <li>Public action: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">close()</code> — add <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--modal#close"</code> to any button inside the modal.</li>
 </ul>

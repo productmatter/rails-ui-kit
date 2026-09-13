@@ -12,6 +12,10 @@ export default class extends Controller {
 
     window.customConfirmDialog = this.boundShowCustomDialog
     window.defaultConfirmDialog = this.boundShowDefaultDialog
+
+    this.openDialogs = new Set()
+    this.boundBeforeCache = this.closeBeforeCache.bind(this)
+    document.addEventListener("turbo:before-cache", this.boundBeforeCache)
   }
 
   disconnect() {
@@ -21,6 +25,13 @@ export default class extends Controller {
     if (window.defaultConfirmDialog === this.boundShowDefaultDialog) {
       window.defaultConfirmDialog = this.previousDefaultConfirmDialog
     }
+
+    document.removeEventListener("turbo:before-cache", this.boundBeforeCache)
+  }
+
+  // Cancel any open confirm so Turbo never caches, and later restores, a dialog in its open state.
+  closeBeforeCache() {
+    this.openDialogs.forEach((dialog) => dialog.close("cancel"))
   }
 
   async showCustomDialog(dialogSelector) {
@@ -91,13 +102,18 @@ export default class extends Controller {
   }
 
   showDialog(dialog) {
+    // A page restored from Turbo's cache can carry a non-modal `open` attribute; showModal() throws on it.
+    if (dialog.open && !dialog.matches(":modal")) dialog.removeAttribute("open")
+
     dialog.returnValue = ""
     dialog.showModal()
+    this.openDialogs.add(dialog)
 
     return new Promise((resolve) => {
       const handleClose = () => {
         const confirmed = dialog.returnValue === "confirm"
         dialog.removeEventListener("close", handleClose)
+        this.openDialogs.delete(dialog)
         resolve(confirmed)
       }
 
