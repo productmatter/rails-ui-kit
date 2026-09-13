@@ -4,17 +4,18 @@ module Ui
   class DropdownComponent < ViewComponent::Base
     KINDS = %i[menu listbox dialog].freeze
 
-    attr_reader :kind, :placement, :offset, :match_width, :content_classes
+    attr_reader :kind, :placement, :offset, :match_width, :content_classes, :label
 
     renders_one :trigger
     renders_one :menu
 
-    def initialize(kind: :menu, placement: 'bottom-start', offset: 4, match_width: false, content_classes: '')
+    def initialize(kind: :menu, placement: 'bottom-start', offset: 4, match_width: false, content_classes: '', label: nil)
       @kind = KINDS.include?(kind.to_sym) ? kind.to_sym : :menu
       @placement = placement
       @offset = offset
       @match_width = match_width
       @content_classes = content_classes
+      @label = label
       super()
     end
 

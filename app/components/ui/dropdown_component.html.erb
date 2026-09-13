@@ -6,7 +6,8 @@
   <%= content_tag :div,
       class: content_wrapper_classes,
       data: { "ui--dropdown-target": "content" },
-      role: kind do %>
+      role: kind,
+      aria: { label: label } do %>
     <%= menu %>
   <% end %>
 </div>

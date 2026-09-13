@@ -51,14 +51,15 @@ module Ui
       assert_selector "div[data-ui--popover-offset-value='16']"
     end
 
-    test 'trigger wrapper wires click to toggle' do
+    # The controller binds the click to the focusable control inside the trigger slot, so
+    # clicking empty wrapper space beside the button doesn't toggle the panel.
+    test 'trigger wrapper does not wire click itself' do
       render_inline(Ui::PopoverComponent.new) do |popover|
-        popover.with_trigger { 'x' }
+        popover.with_trigger { '<button>Open</button>'.html_safe }
         popover.with_panel { 'y' }
       end
 
-      action = page.find("[data-ui--popover-target='trigger']")['data-action']
-      assert_includes action, 'click->ui--popover#toggle'
+      assert_nil page.find("[data-ui--popover-target='trigger']")['data-action']
     end
 
     test 'merges panel_classes onto content wrapper' do

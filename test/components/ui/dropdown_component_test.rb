@@ -43,5 +43,23 @@ module Ui
       assert_selector "div[data-ui--dropdown-placement-value='top-end']"
       assert_selector "div[data-ui--dropdown-offset-value='8']"
     end
+
+    test 'label names the content' do
+      render_inline(Ui::DropdownComponent.new(kind: :dialog, label: 'Filter results')) do |dropdown|
+        dropdown.with_trigger { 'x' }
+        dropdown.with_menu { 'y' }
+      end
+
+      assert_selector "div[role='dialog'][aria-label='Filter results']"
+    end
+
+    test 'content has no aria-label without a label' do
+      render_inline(Ui::DropdownComponent.new) do |dropdown|
+        dropdown.with_trigger { 'x' }
+        dropdown.with_menu { 'y' }
+      end
+
+      assert_no_selector '[aria-label]'
+    end
   end
 end

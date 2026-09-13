@@ -96,9 +96,9 @@
   <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--popover</code>
 </p>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>Click on the trigger wrapper toggles the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">openValue</code> boolean; open/close animate via opacity + scale.</li>
-  <li>Click-outside and <kbd class="text-xs border border-neutral-300 dark:border-neutral-600 rounded px-1">Esc</kbd> close the panel and return focus to the trigger.</li>
-  <li>Manages <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-expanded</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-haspopup</code> on the trigger element.</li>
+  <li>Clicking the control in the trigger slot (its first focusable element, normally your button) toggles the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">openValue</code> boolean; open/close animate via opacity + scale. The panel is positioned against that control.</li>
+  <li>Clicking outside closes the panel, including opening another popover or dropdown. <kbd class="text-xs border border-neutral-300 dark:border-neutral-600 rounded px-1">Esc</kbd> closes it while focus is on the trigger or inside the panel, and returns focus to the trigger.</li>
+  <li>Manages <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-expanded</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-haspopup="dialog"</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-controls</code> on that control.</li>
   <li>Reposition on scroll/resize while open.</li>
   <li>Public methods: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">toggle()</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">open()</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">close()</code>.</li>
 </ul>

@@ -45,6 +45,23 @@
       </div>
     <% end %>
   <% end %>
+
+  <%# Dialog %>
+  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
+    <% d.with_trigger do %>
+      <button data-action="click->ui--dropdown#toggle"
+              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+        Dialog
+        <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
+    <% end %>
+    <% d.with_menu do %>
+      <label class="block w-56 p-3 text-sm">
+        <span class="mb-1.5 block font-medium">Name contains</span>
+        <input type="text" class="w-full rounded-md border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1.5 text-sm">
+      </label>
+    <% end %>
+  <% end %>
 </div>
 
 <%# Usage %>
@@ -71,11 +88,12 @@
     </thead>
     <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
       <% [
-        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (arrow-key nav, menuitem roles), :listbox (option roles), :dialog (generic)."],
+        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (arrow-key nav, menuitem roles; choosing an item or pressing Tab closes it), :listbox (option roles), :dialog (focus moves to the first field on open)."],
         ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
         ["offset",         "Integer", "4",             "Gap between trigger and content in pixels."],
         ["match_width",    "Boolean", "false",          "Makes the dropdown match the trigger's width."],
         ["content_classes","String",  '""',            "Additional classes on the floating content wrapper."],
+        ["label",          "String",  "nil",           "Accessible name for the floating content. Give every :dialog one."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
           <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>

@@ -14,18 +14,34 @@ export default class extends Controller {
     open: Boolean
   }
 
+  initialize() {
+    this.onKeydown = this.handleKeydown.bind(this)
+    this.onFocusout = this.handleFocusout.bind(this)
+    this.onContentClick = this.handleContentClick.bind(this)
+    this.onBeforeCache = () => this.reset()
+  }
+
   connect() {
-    this.openValue = false
     this.setupAccessibility()
+    this.reset()
+    this.element.addEventListener("keydown", this.onKeydown)
+    this.element.addEventListener("focusout", this.onFocusout)
+    this.contentTarget.addEventListener("click", this.onContentClick)
+    document.addEventListener("turbo:before-cache", this.onBeforeCache)
+    this.connected = true
   }
 
   disconnect() {
-    this.cleanup()
+    this.connected = false
+    this.element.removeEventListener("keydown", this.onKeydown)
+    this.element.removeEventListener("focusout", this.onFocusout)
+    this.contentTarget.removeEventListener("click", this.onContentClick)
+    document.removeEventListener("turbo:before-cache", this.onBeforeCache)
+    this.reset()
   }
 
   toggle(event) {
-    event.preventDefault()
-    event.stopPropagation()
+    event?.preventDefault()
     this.openValue = !this.openValue
   }
 
@@ -37,7 +53,11 @@ export default class extends Controller {
     this.openValue = false
   }
 
+  // Stimulus replays a stored open-value before connect(), which is how a page restored
+  // from Turbo's cache used to reopen the menu and pull focus into it. Only act once connected.
   openValueChanged() {
+    if (!this.connected) return
+
     if (this.openValue) {
       this.show()
     } else {
@@ -46,10 +66,14 @@ export default class extends Controller {
   }
 
   show() {
+    if (this.shown) return
+    this.shown = true
+    this.cancelPending()
+
     this.position()
 
     this.contentTarget.classList.remove("hidden")
-    requestAnimationFrame(() => {
+    this.frame = requestAnimationFrame(() => {
       this.contentTarget.classList.remove("opacity-0", "scale-95")
       this.contentTarget.classList.add("opacity-100", "scale-100")
     })
@@ -57,42 +81,56 @@ export default class extends Controller {
     this.triggerControl.setAttribute("aria-expanded", "true")
 
     this.setupListeners()
-
-    this.scrollHandler = () => this.position()
-    window.addEventListener("scroll", this.scrollHandler, true)
-    window.addEventListener("resize", this.scrollHandler)
-
-    if (this.kindValue === "menu" || this.kindValue === "listbox") {
-      setTimeout(() => this.focusFirstItem(), 10)
-    }
+    this.focusTimer = setTimeout(() => this.focusContent(), 10)
   }
 
   hide() {
+    if (!this.shown) return
+    this.shown = false
+    this.cancelPending()
+    this.cleanup()
+
     this.contentTarget.classList.remove("opacity-100", "scale-100")
     this.contentTarget.classList.add("opacity-0", "scale-95")
-
-    setTimeout(() => {
+    this.hideTimer = setTimeout(() => {
       this.contentTarget.classList.add("hidden")
     }, 100)
 
     this.triggerControl.setAttribute("aria-expanded", "false")
-    this.cleanup()
   }
 
-  // The trigger target wraps the caller's control, normally a <button>. ARIA state and
-  // focus belong on that control: a wrapping <div> is neither focusable nor announced
-  // with state. Falls back to the wrapper when it holds nothing focusable.
+  // The closed resting state, applied at once: no animation, no pending timers or frames,
+  // no open-state listeners. Runs on connect, on disconnect and on turbo:before-cache, so
+  // the cached snapshot is always closed.
+  reset() {
+    this.shown = false
+    this.cancelPending()
+    this.cleanup()
+
+    this.contentTarget.classList.remove("opacity-100", "scale-100")
+    this.contentTarget.classList.add("hidden", "opacity-0", "scale-95")
+    this.triggerControl.setAttribute("aria-expanded", "false")
+
+    if (this.openValue) this.openValue = false
+  }
+
+  // The trigger target wraps the caller's control, normally a <button>. ARIA state, focus
+  // and positioning belong on that control: a wrapping <div> is neither focusable nor
+  // announced with state, and in a block layout it spans the full width. Falls back to the
+  // wrapper when it holds nothing focusable.
   get triggerControl() {
     if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
     return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
   position() {
+    const reference = this.triggerControl
+
     if (this.matchWidthValue) {
-      this.contentTarget.style.width = `${this.triggerTarget.offsetWidth}px`
+      this.contentTarget.style.width = `${reference.offsetWidth}px`
     }
 
-    computePosition(this.triggerTarget, this.contentTarget, {
+    computePosition(reference, this.contentTarget, {
       placement: this.placementValue,
       middleware: [
         offset(this.offsetValue),
@@ -123,27 +161,26 @@ export default class extends Controller {
   }
 
   setupListeners() {
+    // Registered after the current click finishes dispatching, so a click that opened the
+    // menu from outside this element (an outlet, say) doesn't close it straight away.
     this.clickOutsideHandler = (event) => {
       if (!this.element.contains(event.target)) {
         this.close()
       }
     }
-    setTimeout(() => {
+    this.listenTimer = setTimeout(() => {
       document.addEventListener("click", this.clickOutsideHandler)
-    }, 10)
+    }, 0)
 
-    this.escapeHandler = (event) => {
-      if (event.key === "Escape") {
-        this.close()
-        this.triggerControl.focus()
-      }
+    this.documentKeydownHandler = (event) => {
+      const active = document.activeElement
+      if (event.key === "Escape" && (!active || active === document.body)) this.closeOnEscape(event)
     }
-    document.addEventListener("keydown", this.escapeHandler)
+    document.addEventListener("keydown", this.documentKeydownHandler)
 
-    if (this.kindValue === "menu" || this.kindValue === "listbox") {
-      this.keyNavigationHandler = this.handleKeyNavigation.bind(this)
-      this.contentTarget.addEventListener("keydown", this.keyNavigationHandler)
-    }
+    this.scrollHandler = () => this.position()
+    window.addEventListener("scroll", this.scrollHandler, true)
+    window.addEventListener("resize", this.scrollHandler)
   }
 
   cleanup() {
@@ -152,14 +189,9 @@ export default class extends Controller {
       this.clickOutsideHandler = null
     }
 
-    if (this.escapeHandler) {
-      document.removeEventListener("keydown", this.escapeHandler)
-      this.escapeHandler = null
-    }
-
-    if (this.keyNavigationHandler) {
-      this.contentTarget.removeEventListener("keydown", this.keyNavigationHandler)
-      this.keyNavigationHandler = null
+    if (this.documentKeydownHandler) {
+      document.removeEventListener("keydown", this.documentKeydownHandler)
+      this.documentKeydownHandler = null
     }
 
     if (this.scrollHandler) {
@@ -167,6 +199,59 @@ export default class extends Controller {
       window.removeEventListener("resize", this.scrollHandler)
       this.scrollHandler = null
     }
+  }
+
+  cancelPending() {
+    clearTimeout(this.hideTimer)
+    clearTimeout(this.focusTimer)
+    clearTimeout(this.listenTimer)
+    cancelAnimationFrame(this.frame)
+  }
+
+  // Bound to this element, so it only sees keys pressed while focus is inside the dropdown:
+  // on the trigger or in the content. Escape never pulls focus back from elsewhere.
+  handleKeydown(event) {
+    if (event.key === "Escape") return this.closeOnEscape(event)
+    if (!this.shown || event.defaultPrevented || event.isComposing) return
+
+    if (this.kindValue === "dialog" || !this.contentTarget.contains(event.target)) return
+
+    if (event.key === "Tab") {
+      // Move focus to the trigger and hide at once, without animating: the browser's own Tab
+      // then moves on from the trigger, past the hidden items. Shift+Tab stops on the trigger.
+      this.triggerControl.focus()
+      this.reset()
+      if (event.shiftKey) event.preventDefault()
+      return
+    }
+
+    this.handleKeyNavigation(event)
+  }
+
+  // Escape reaches this from two paths that never overlap: the element listener while focus
+  // is inside, and the document listener while nothing has focus (a click on plain text in the
+  // content leaves focus on <body>). preventDefault() marks it handled for everyone after.
+  closeOnEscape(event) {
+    if (!this.shown || event.defaultPrevented || event.isComposing) return
+
+    event.preventDefault()
+    this.close()
+    this.triggerControl.focus()
+  }
+
+  handleFocusout(event) {
+    if (!this.shown || !event.relatedTarget) return
+    if (!this.element.contains(event.relatedTarget)) this.close()
+  }
+
+  handleContentClick(event) {
+    const item = event.target.closest('[role="menuitem"]')
+    if (!this.shown || !item || !this.contentTarget.contains(item)) return
+    if (item.getAttribute("aria-disabled") === "true") return
+
+    const focusWasInside = this.contentTarget.contains(document.activeElement)
+    this.close()
+    if (focusWasInside) this.triggerControl.focus()
   }
 
   handleKeyNavigation(event) {
@@ -206,9 +291,14 @@ export default class extends Controller {
     }
   }
 
-  focusFirstItem() {
-    const items = this.getFocusableItems()
-    items[0]?.focus()
+  focusContent() {
+    const first = this.getFocusableItems()[0]
+    if (first) return first.focus()
+
+    if (this.kindValue === "dialog") {
+      if (!this.contentTarget.hasAttribute("tabindex")) this.contentTarget.setAttribute("tabindex", "-1")
+      this.contentTarget.focus()
+    }
   }
 
   getFocusableItems() {
