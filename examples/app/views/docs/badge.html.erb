@@ -1,0 +1,99 @@
+<% content_for :title, "Badge" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Badge</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    An inline status label, drawn entirely from the design tokens. Renders a
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;span&gt;</code>,
+    or an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;a&gt;</code>
+    when you pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href</code>.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="badge-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+  <% %i[default secondary destructive outline].each do |variant| %>
+    <%= render(Ui::BadgeComponent.new(variant: variant)) { variant.to_s.capitalize } %>
+  <% end %>
+  <%= render(Ui::BadgeComponent.new(variant: :outline, href: "#")) { "Link badge" } %>
+</div>
+
+<%# Variants %>
+<h2 class="text-base font-semibold mb-3">Variants</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-8">
+  <% [
+    [:default,     "The default status, for the common case."],
+    [:secondary,   "A quieter label of equal weight to the page."],
+    [:destructive, "A failed, blocked or at-risk state."],
+    [:outline,     "A bordered label that sits quietly on any surface."],
+  ].each do |variant, description| %>
+    <div class="flex items-center gap-6 px-5 py-4">
+      <div class="w-28 shrink-0"><%= render(Ui::BadgeComponent.new(variant: variant)) { variant.to_s.capitalize } %></div>
+      <div>
+        <p class="font-mono text-xs text-violet-600 dark:text-violet-400 mb-0.5">variant: :<%= variant %></p>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400"><%= description %></p>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<%# href %>
+<h2 class="text-base font-semibold mb-3">As a link</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center gap-4 p-8 mb-4">
+  <%= render(Ui::BadgeComponent.new(href: "#")) { "Default link" } %>
+  <%= render(Ui::BadgeComponent.new(variant: :outline, href: "#")) { "Outline link" } %>
+</div>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+  Tab to a link badge to see the focus ring -- drawn the same way Button draws it, from the
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code> token.
+</p>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#badge-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="badge-usage" class="text-neutral-200"><%= h(example_badge_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["variant", "Symbol", ":default",  "One of :default, :secondary, :destructive, :outline."],
+        ["href",    "String", "nil",       "When present the component renders an <a> instead of a <span>."],
+        ["class",   "String", "nil",       "Merged over the variant classes with tailwind_merge -- the caller always wins."],
+        ["…",       "Any",    "—",         "Every other keyword (id:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>No Stimulus controller. Badge is presentational; a caller drives it from server state or a link.</li>
+  <li>The root element carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-slot="badge"</code> as a styling and testing hook that survives class changes.</li>
+  <li>The outline variant's border reaches 3:1 in light and dark, like a control boundary, because a badge's edge is often the only thing marking where it ends.</li>
+  <li>Every colour comes from a token, so a host app reskins Badge by redefining <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--primary</code> and friends -- no component override needed.</li>
+</ul>

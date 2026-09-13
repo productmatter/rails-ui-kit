@@ -1,0 +1,81 @@
+<% content_for :title, "Label" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Label</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label&gt;</code>,
+    dimmed when the control it names — or the group it sits in — is disabled. No variants.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="label-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="grid gap-2 w-56">
+    <p class="text-xs font-mono text-neutral-600 dark:text-neutral-400">default</p>
+    <%= render(Ui::LabelComponent.new(for: "label-email")) { "Email" } %>
+    <%= render Ui::InputComponent.new(id: "label-email", name: "email", class: "peer") %>
+  </div>
+  <div class="flex items-center gap-2 w-56">
+    <%= render Ui::InputComponent.new(type: "checkbox", id: "label-terms-disabled", name: "terms_disabled", class: "peer size-4 shrink-0", disabled: true) %>
+    <%= render(Ui::LabelComponent.new(for: "label-terms-disabled")) { "Accept the terms" } %>
+  </div>
+  <div class="grid gap-2 w-56 group" data-disabled="true">
+    <p class="text-xs font-mono text-neutral-600 dark:text-neutral-400">dimmed (group disabled)</p>
+    <%= render(Ui::LabelComponent.new(for: "label-notes-group")) { "Notes" } %>
+    <%= render Ui::InputComponent.new(id: "label-notes-group", name: "notes_group", disabled: true) %>
+  </div>
+</div>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+  The second example's checkbox carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "peer"</code> and is disabled, so
+  the label after it dims automatically — no Ruby keyword on the label itself, and the control has to precede the label in markup for the
+  CSS sibling selector to reach it. The third wraps both in a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">group</code>
+  carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, which works whichever order they're in.
+</p>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#label-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="label-usage" class="text-neutral-200"><%= h(example_label_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["for",    "String", "nil", "The id of the control this label names."],
+        ["class",  "String", "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
+        ["…",      "Any",    "—",   "Every other keyword (id:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Dimming is CSS-only: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">peer-disabled:*</code> tracks a sibling control carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">class: "peer"</code> and the native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code> attribute; the sibling must come before the label in markup order for the CSS selector to reach it.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">group-data-[disabled=true]:*</code> tracks any ancestor carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">class: "group"</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-disabled="true"</code> — put the label itself in that group when the label and its control sit inside a shared wrapper.</li>
+  <li>No Stimulus controller. Pair it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::InputComponent</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::TextareaComponent</code>.</li>
+</ul>

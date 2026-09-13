@@ -55,6 +55,98 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_badge_usage
+    <<~'RUBY'
+      <%= render(Ui::BadgeComponent.new) { "New" } %>
+
+      <%= render(Ui::BadgeComponent.new(variant: :secondary)) { "Draft" } %>
+
+      <%# href renders an <a> instead of a <span> %>
+      <%= render Ui::BadgeComponent.new(variant: :outline, href: release_path(release)) do %>
+        v1.4.0
+      <% end %>
+
+      <%# A caller class beats the variant default — bg-red-500 wins, bg-primary is dropped %>
+      <%= render(Ui::BadgeComponent.new(class: "bg-red-500")) { "Custom" } %>
+    RUBY
+  end
+
+  def example_alert_usage
+    <<~'RUBY'
+      <%= render Ui::AlertComponent.new do |alert| %>
+        <% alert.with_icon do %>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4M12 16h.01"/></svg>
+        <% end %>
+        <% alert.with_title { "Update available" } %>
+        <% alert.with_description { "Restart the app to install it." } %>
+      <% end %>
+
+      <%# No icon: the alert drops the icon column entirely %>
+      <%= render Ui::AlertComponent.new(variant: :destructive) do |alert| %>
+        <% alert.with_title { "Payment failed" } %>
+        <% alert.with_description { "Update your card to keep your subscription active." } %>
+      <% end %>
+
+      <%# Injected dynamically (e.g. after a Turbo Stream update)? Add the live-region role yourself %>
+      <%= render Ui::AlertComponent.new(role: "alert") do |alert| %>
+        <% alert.with_title { "Saved" } %>
+      <% end %>
+    RUBY
+  end
+
+  def example_separator_usage
+    <<~'RUBY'
+      <%# Between stacked content — decorative by default %>
+      <%= render(Ui::SeparatorComponent.new) %>
+
+      <%# Between inline content, at a fixed height %>
+      <div class="flex h-5 items-center gap-4">
+        <span>Blog</span>
+        <%= render Ui::SeparatorComponent.new(orientation: :vertical) %>
+        <span>Docs</span>
+      </div>
+
+      <%# A separator that carries meaning gets its role and orientation announced %>
+      <%= render(Ui::SeparatorComponent.new(decorative: false)) %>
+    RUBY
+  end
+
+  def example_input_usage
+    <<~'RUBY'
+      <div class="grid gap-2">
+        <%= render(Ui::LabelComponent.new(for: "email")) { "Email" } %>
+        <%= render Ui::InputComponent.new(type: "email", id: "email", name: "email", placeholder: "you@example.com") %>
+      </div>
+
+      <%# Invalid state is driven by aria-invalid, not a keyword, so field binding can set it later %>
+      <%= render Ui::InputComponent.new(id: "email", name: "email", aria: { invalid: true }) %>
+
+      <%= render Ui::InputComponent.new(id: "email", name: "email", disabled: true) %>
+    RUBY
+  end
+
+  def example_label_usage
+    <<~'RUBY'
+      <%= render(Ui::LabelComponent.new(for: "terms")) { "Accept the terms" } %>
+
+      <%# peer-disabled dims the label when the control it names is disabled %>
+      <input id="terms" type="checkbox" class="peer" disabled>
+      <%= render(Ui::LabelComponent.new(for: "terms")) { "Accept the terms" } %>
+    RUBY
+  end
+
+  def example_textarea_usage
+    <<~'RUBY'
+      <div class="grid gap-2">
+        <%= render(Ui::LabelComponent.new(for: "notes")) { "Notes" } %>
+        <%= render Ui::TextareaComponent.new(id: "notes", name: "notes", placeholder: "Add a note") %>
+      </div>
+
+      <%# The block is the textarea's value — a <textarea> has no value attribute %>
+      <%= render Ui::TextareaComponent.new(id: "notes", name: "notes") do %>Existing notes<% end %>
+    RUBY
+  end
+
   def example_tooltip_usage
     <<~'RUBY'
       <%= render Ui::TooltipComponent.new(text: "Save your changes", placement: "top") do |t| %>
@@ -218,6 +310,53 @@ module CodeExamplesHelper
 
       <%# Global default — add to your layout <head> %>
       <meta name="turbo-disable-with-default" content="Processing...">
+    RUBY
+  end
+
+  def example_skeleton_usage
+    <<~'RUBY'
+      <div class="flex items-center gap-4">
+        <%= render Ui::SkeletonComponent.new(class: "size-12 rounded-full") %>
+        <div class="grid gap-2">
+          <%= render Ui::SkeletonComponent.new(class: "h-4 w-40") %>
+          <%= render Ui::SkeletonComponent.new(class: "h-4 w-24") %>
+        </div>
+      </div>
+    RUBY
+  end
+
+  def example_spinner_usage
+    <<~'RUBY'
+      <%= render Ui::SpinnerComponent.new %>
+
+      <%# The block is the accessible name, not visible content %>
+      <%= render(Ui::SpinnerComponent.new) { "Saving changes" } %>
+
+      <%# Colour comes from currentColor, so text-* controls it %>
+      <%= render Ui::SpinnerComponent.new(class: "text-primary") %>
+    RUBY
+  end
+
+  def example_kbd_usage
+    <<~'RUBY'
+      <%= render(Ui::KbdComponent.new) { "Enter" } %>
+
+      <%# A chord: several key caps in call order %>
+      <%= render Ui::Kbd::GroupComponent.new do |group| %>
+        <% group.with_key { "⌘" } %>
+        <% group.with_key { "K" } %>
+      <% end %>
+    RUBY
+  end
+
+  def example_aspect_ratio_usage
+    <<~'RUBY'
+      <%= render Ui::AspectRatioComponent.new(ratio: :video, class: "overflow-hidden rounded-lg") do %>
+        <img src="/photo.jpg" alt="" class="object-cover">
+      <% end %>
+
+      <%# A ratio outside the fixed set comes from class: %>
+      <%= render Ui::AspectRatioComponent.new(class: "aspect-[21/9]") do %>…<% end %>
     RUBY
   end
 end

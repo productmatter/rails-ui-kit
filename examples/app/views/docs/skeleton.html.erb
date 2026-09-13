@@ -1,0 +1,72 @@
+<% content_for :title, "Skeleton" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Skeleton</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A decorative loading placeholder. Shape it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>
+    — height, width and radius all come from the caller.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="skeleton-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start justify-center gap-8 p-12 mb-8">
+  <div class="flex items-center gap-4">
+    <%= render Ui::SkeletonComponent.new(class: "size-12 rounded-full") %>
+    <div class="grid gap-2">
+      <%= render Ui::SkeletonComponent.new(class: "h-4 w-40") %>
+      <%= render Ui::SkeletonComponent.new(class: "h-4 w-24") %>
+    </div>
+  </div>
+  <div class="grid gap-2">
+    <%= render Ui::SkeletonComponent.new(class: "h-32 w-56 rounded-xl") %>
+    <%= render Ui::SkeletonComponent.new(class: "h-4 w-40") %>
+    <%= render Ui::SkeletonComponent.new(class: "h-4 w-28") %>
+  </div>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#skeleton-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="skeleton-usage" class="text-neutral-200"><%= h(example_skeleton_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["class", "String", "nil", "Merged over the default classes with tailwind_merge — set size and shape here (h-*, w-*, rounded-*)."],
+        ["…",     "Any",    "—",   "Every other keyword (id:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Purely decorative: the root carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-hidden="true"</code> so screen readers skip it. Put a visually hidden "Loading…" label on the real content it stands in for, not on the skeleton itself.</li>
+  <li>The pulse animation stops under <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">prefers-reduced-motion: reduce</code>, so it never becomes unwanted motion for someone who's asked for less.</li>
+  <li>No Stimulus controller. Swap it for the real content once it's loaded.</li>
+</ul>

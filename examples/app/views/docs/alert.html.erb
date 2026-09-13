@@ -1,0 +1,104 @@
+<% content_for :title, "Alert" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Alert</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A callout with an optional icon, title and description, drawn from the
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--card</code> tokens.
+    It carries no live-region role by default; add one yourself if you inject it dynamically.
+  </p>
+</div>
+
+<div id="alert-preview">
+  <%# Preview %>
+  <h2 class="text-base font-semibold mb-3">Preview</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col gap-4 p-8 mb-8">
+    <%= render Ui::AlertComponent.new(class: "max-w-md") do |alert| %>
+      <% alert.with_icon do %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <% end %>
+      <% alert.with_title { "Update available" } %>
+      <% alert.with_description { "Restart the app to install it." } %>
+    <% end %>
+
+    <%= render Ui::AlertComponent.new(variant: :destructive, class: "max-w-md") do |alert| %>
+      <% alert.with_icon do %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <% end %>
+      <% alert.with_title { "Payment failed" } %>
+      <% alert.with_description { "Update your card to keep your subscription active." } %>
+    <% end %>
+
+    <%= render Ui::AlertComponent.new(class: "max-w-md") do |alert| %>
+      <% alert.with_title { "No icon" } %>
+      <% alert.with_description { "The icon column only opens up when you set one." } %>
+    <% end %>
+  </div>
+
+  <%# Variants %>
+  <h2 class="text-base font-semibold mb-3">Variants</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-8">
+    <% [
+      [:default,     "A neutral callout."],
+      [:destructive, "A failed or blocking state."],
+    ].each do |variant, description| %>
+      <div class="flex items-center gap-6 px-5 py-4">
+        <div class="w-full max-w-xs shrink-0">
+          <%= render Ui::AlertComponent.new(variant: variant) do |alert| %>
+            <% alert.with_title { variant.to_s.capitalize } %>
+          <% end %>
+        </div>
+        <div>
+          <p class="font-mono text-xs text-violet-600 dark:text-violet-400 mb-0.5">variant: :<%= variant %></p>
+          <p class="text-sm text-neutral-600 dark:text-neutral-400"><%= description %></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#alert-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="alert-usage" class="text-neutral-200"><%= h(example_alert_usage) %></code></pre>
+</div>
+
+<%# Slots %>
+<h2 class="text-base font-semibold mb-3">Slots</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_icon",        "alert-icon",        "Optional. Hidden from assistive tech (aria-hidden) unless you override it. Opens a second grid column when set."],
+        ["with_title",       "alert-title",       "The alert's heading text."],
+        ["with_description", "alert-description", "Supporting text, in the muted foreground colour."],
+      ].each do |slot, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Parts always render in the same order -- icon, title, description -- whatever order you call them in. Parts you don't set render nothing.</li>
+  <li>No <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role</code> by default: a static alert on the page doesn't need one. If you inject an alert dynamically (a Turbo Stream, a form error), pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role: "alert"</code> yourself so assistive tech announces it.</li>
+  <li>The border comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--input</code> (default) or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--destructive</code>, reaching 3:1 like a control boundary, and both variants' text reaches 4.5:1 in light and dark.</li>
+  <li>An icon you pass is decorative by default (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-hidden="true"</code>). If it carries meaning on its own, override it: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">alert.with_icon(aria: { hidden: false, label: "Error" })</code>.</li>
+</ul>

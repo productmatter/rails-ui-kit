@@ -1,0 +1,69 @@
+<% content_for :title, "Spinner" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Spinner</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    An inline SVG loading indicator. Renders <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="status"</code>
+    with an accessible name — "Loading" by default, or your own text passed as the block.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="spinner-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-8 p-12 mb-8">
+  <%= render Ui::SpinnerComponent.new %>
+  <%= render Ui::SpinnerComponent.new(class: "size-6 text-primary") %>
+  <%= render(Ui::SpinnerComponent.new(class: "text-muted-foreground")) { "Saving changes" } %>
+  <%= render(Ui::ButtonComponent.new(disabled: true, class: "gap-2")) do %>
+    <%= render Ui::SpinnerComponent.new(class: "text-current", aria: { hidden: true }) %>
+    Saving…
+  <% end %>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#spinner-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="spinner-usage" class="text-neutral-200"><%= h(example_spinner_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["block",  "String", '"Loading"', "The accessible name, read by a screen reader. Rendered visually hidden — it never shows on screen, so pass whatever text describes the wait."],
+        ["class",  "String", "nil",       "Merged over the default classes with tailwind_merge — size the icon with [:where(&>svg)]:size-* or colour it with text-*."],
+        ["…",      "Any",    "—",         "Every other keyword (id:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="status"</code> plus a visually hidden name announces the spinner once, the way a live region should — it doesn't renarrate on every animation frame.</li>
+  <li>The svg itself is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-hidden="true"</code>; the accessible name comes only from the hidden text, so an icon-only spinner is never announced as blank.</li>
+  <li>Colour comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">currentColor</code>, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">text-*</code> classes (or a parent's text colour, inside a disabled button) control it.</li>
+  <li>No Stimulus controller. Show it conditionally from your own state — a Turbo Stream, a disabled button, a loading flag.</li>
+</ul>
