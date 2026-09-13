@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
                      'form-change tracking, Turbo confirm/disable-with, and dark mode.'
   spec.license     = 'MIT'
 
-  spec.required_ruby_version = '>= 3.1'
+  spec.required_ruby_version = '>= 3.2'
 
   spec.metadata['homepage_uri']    = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage

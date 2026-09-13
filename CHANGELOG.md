@@ -15,9 +15,12 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 - Kit parts default their border color to `--border`. Tailwind v4 draws a border with no color utility in `currentColor`, so a bare separator such as a card footer's `border-t` rendered near-black. The default is a base-layer rule scoped to `[data-slot]`, so any border color utility still wins and borders in host-app markup are unaffected.
 
 ### Fixed
+- `rails_ui_kit:install` writes a CSS import that resolves. It previously wrote `@import "../../app/assets/builds/tailwind/rails_ui_kit.css"` into `app/assets/tailwind/application.css`, which points at `app/app/assets/…` and fails the host's Tailwind build; it now writes `@import "../builds/tailwind/rails_ui_kit.css"`, where `tailwindcss:engines` puts the artifact. README corrected to match.
+- `rails_ui_kit:install` registers controllers where Stimulus's `application` is in scope. On a default `rails new` importmap app, `application` lives in `app/javascript/controllers/application.js`, so appending `registerControllers(application)` to `application.js` threw `ReferenceError` and registered nothing. The generator now inserts the call after `Application.start()` in whichever file has it, and skips with a message when it finds neither.
 - `ui--dropdown` puts `aria-haspopup` and `aria-expanded` on the caller's trigger control — normally a `<button>` — instead of the wrapper `<div>` the component renders around it, and returns focus to that control on Escape. A `<div>` is neither focusable nor announced with state, so a screen reader previously got no indication that a menu existed or was open, and closing with Escape dropped focus to `<body>`. No markup changes; the component resolves the first focusable element inside the trigger slot and falls back to the wrapper when there is none.
 
 ### Changed
+- Minimum Ruby is now 3.2. `tailwind_merge`, a runtime dependency, requires it.
 - `README.md` component table now lists `Ui::PopoverComponent` and `Ui::TooltipComponent`, which shipped in 0.2.0 but were never added, alongside the new `Ui::ButtonComponent`. Added a design-tokens and class-merge section under Overriding.
 
 ## [0.2.0] - 2026-06-04
