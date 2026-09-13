@@ -47,7 +47,11 @@ paths README.md documents.
 - Shipping shadcn's own `@layer base { * { border-color: var(--border) } }` reset.
   That rule recolors every bare `border` utility in every host app, shadcn theme or
   not — it is a global default, not an additive token — so it isn't part of this
-  scope's delivery. A deliberate non-goal, not an oversight.
+  scope's delivery. A deliberate non-goal, not an oversight. What ships instead is
+  the same default scoped to `[data-slot]` in the base layer: Tailwind v4 draws an
+  uncolored border in `currentColor`, and the kit's parts invite bare separators
+  (a card footer's `border-t`), so kit parts default to `--border` while host markup
+  is untouched.
 
 ## Behavior
 

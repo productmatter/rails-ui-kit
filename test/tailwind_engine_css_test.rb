@@ -26,5 +26,12 @@ module RailsUiKit
       assert File.directory?(File.expand_path('../../../components', base))
       assert File.directory?(File.expand_path('../../../javascript', base))
     end
+
+    test 'engine.css defaults border color to the token on kit parts only' do
+      contents = File.read(ENGINE_CSS)
+
+      assert_match(/@layer base\s*\{\s*\[data-slot\]\s*\{\s*border-color:\s*var\(--border\);/, contents)
+      refute_match(/^\s*\*\s*\{/, contents, 'a global * reset would recolor bare borders in host apps')
+    end
   end
 end
