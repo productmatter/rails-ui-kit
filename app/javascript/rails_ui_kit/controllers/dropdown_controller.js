@@ -2,6 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 import { computePosition, flip, shift, offset } from "@floating-ui/dom"
 
 const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+const MENU_ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]'
+// Ordinary host markup for a menu: links and buttons, which kind: :menu adopts as its items
+// when the caller hasn't written the roles itself.
+const MENU_ITEM_CANDIDATE = 'a[href], button:not([disabled])'
+const TYPEAHEAD_TIMEOUT = 500
 
 export default class extends Controller {
   static targets = ["trigger", "content"]
@@ -70,6 +75,7 @@ export default class extends Controller {
     this.shown = true
     this.cancelPending()
 
+    this.prepareMenuItems()
     this.position()
 
     this.contentTarget.classList.remove("hidden")
@@ -87,6 +93,7 @@ export default class extends Controller {
   hide() {
     if (!this.shown) return
     this.shown = false
+    this.initialFocus = null
     this.cancelPending()
     this.cleanup()
 
@@ -104,6 +111,7 @@ export default class extends Controller {
   // the cached snapshot is always closed.
   reset() {
     this.shown = false
+    this.initialFocus = null
     this.cancelPending()
     this.cleanup()
 
@@ -158,6 +166,26 @@ export default class extends Controller {
     if (!this.contentTarget.hasAttribute("role")) {
       this.contentTarget.setAttribute("role", ariaPopupType)
     }
+
+    this.prepareMenuItems()
+  }
+
+  // A menu is one tab stop: the trigger. Its items are reached with the arrow keys and take
+  // focus from script only, so Tab never walks through them. Markup that carries no menu roles
+  // -- plain links and buttons, which is what a host app usually writes -- is adopted as the
+  // items, so it navigates like a menu rather than not at all. Runs on connect and on every
+  // open, so content swapped in later (a lazy Turbo frame, say) is picked up too.
+  prepareMenuItems() {
+    if (this.kindValue !== "menu") return
+
+    let items = Array.from(this.contentTarget.querySelectorAll(MENU_ITEM))
+
+    if (items.length === 0) {
+      items = Array.from(this.contentTarget.querySelectorAll(MENU_ITEM_CANDIDATE))
+      items.forEach(item => item.setAttribute("role", "menuitem"))
+    }
+
+    items.forEach(item => item.setAttribute("tabindex", "-1"))
   }
 
   setupListeners() {
@@ -205,15 +233,22 @@ export default class extends Controller {
     clearTimeout(this.hideTimer)
     clearTimeout(this.focusTimer)
     clearTimeout(this.listenTimer)
+    clearTimeout(this.typeaheadTimer)
     cancelAnimationFrame(this.frame)
+    this.typeahead = ""
   }
 
   // Bound to this element, so it only sees keys pressed while focus is inside the dropdown:
   // on the trigger or in the content. Escape never pulls focus back from elsewhere.
   handleKeydown(event) {
     if (event.key === "Escape") return this.closeOnEscape(event)
-    if (!this.shown || event.defaultPrevented || event.isComposing) return
+    if (event.defaultPrevented || event.isComposing) return
 
+    if (this.kindValue === "menu" && this.triggerTarget.contains(event.target)) {
+      return this.handleTriggerKeydown(event)
+    }
+
+    if (!this.shown) return
     if (this.kindValue === "dialog" || !this.contentTarget.contains(event.target)) return
 
     if (event.key === "Tab") {
@@ -225,7 +260,121 @@ export default class extends Controller {
       return
     }
 
+    if (this.kindValue === "menu") return this.handleMenuKeydown(event)
+
     this.handleKeyNavigation(event)
+  }
+
+  // Menu button keys, pressed on the trigger. Enter and Space reach the trigger's own click
+  // handler and open it the way a mouse does; the arrows have no default of their own here
+  // (ArrowDown would scroll the page), so they open the menu themselves and say which end to
+  // focus. While the menu is already open they just move focus into it.
+  handleTriggerKeydown(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+
+    const end = { ArrowDown: "first", ArrowUp: "last" }[event.key]
+    if (!end) return
+
+    event.preventDefault()
+
+    if (this.shown) return this.focusEnd(end)
+
+    this.initialFocus = end
+    this.open()
+  }
+
+  handleMenuKeydown(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault()
+        return this.moveFocus(1)
+      case "ArrowUp":
+        event.preventDefault()
+        return this.moveFocus(-1)
+      case "Home":
+        event.preventDefault()
+        return this.focusEnd("first")
+      case "End":
+        event.preventDefault()
+        return this.focusEnd("last")
+      case "Enter":
+      case " ":
+        return this.activateItem(event)
+      default:
+        if (event.key.length === 1) this.typeaheadTo(event)
+    }
+  }
+
+  // Enter and Space activate the focused item. A link or button already activates itself on
+  // Enter -- including Ctrl/Cmd+Enter to open in a new tab -- so that is left alone; Space, and
+  // anything that isn't natively activatable, is clicked from here. Choosing an item closes the
+  // menu through the content click handler. A disabled item takes focus but never activates:
+  // cancelling the keydown also stops a disabled link following its href on Enter.
+  activateItem(event) {
+    const item = event.target.closest(MENU_ITEM)
+    if (!item || !this.contentTarget.contains(item)) return
+
+    if (!this.isEnabled(item)) return event.preventDefault()
+    if (event.key === "Enter" && item.matches("a[href], button")) return
+
+    event.preventDefault()
+    item.click()
+  }
+
+  // Printable characters move to the next item whose name starts with what's been typed. The
+  // buffer holds for half a second, so "du" reaches Duplicate rather than stopping at Delete.
+  typeaheadTo(event) {
+    clearTimeout(this.typeaheadTimer)
+    this.typeahead = (this.typeahead || "") + event.key.toLowerCase()
+    this.typeaheadTimer = setTimeout(() => { this.typeahead = "" }, TYPEAHEAD_TIMEOUT)
+
+    const items = this.menuItems
+    if (items.length === 0) return
+
+    // A single character searches from the item after the focused one, so repeating it steps
+    // through the items that share an initial; further characters refine from the current one.
+    const from = items.indexOf(document.activeElement) + (this.typeahead.length > 1 ? 0 : 1)
+
+    for (let step = 0; step < items.length; step++) {
+      const item = items[(from + step + items.length) % items.length]
+      if (this.itemLabel(item).startsWith(this.typeahead)) {
+        event.preventDefault()
+        return item.focus()
+      }
+    }
+  }
+
+  // Steps to the next or previous item, wrapping at both ends.
+  moveFocus(step) {
+    const items = this.menuItems
+    if (items.length === 0) return
+
+    const index = items.indexOf(document.activeElement)
+    const from = index === -1 && step < 0 ? items.length : index
+    items[(from + step + items.length) % items.length].focus()
+  }
+
+  focusEnd(end) {
+    const items = this.getFocusableItems()
+    const item = end === "last" ? items[items.length - 1] : items[0]
+    item?.focus()
+  }
+
+  itemLabel(item) {
+    return (item.getAttribute("aria-label") || item.textContent || "").trim().toLowerCase()
+  }
+
+  isEnabled(item) {
+    return item.getAttribute("aria-disabled") !== "true"
+  }
+
+  // Every item, aria-disabled ones included: per the APG, a disabled menu item stays focusable
+  // so it can be discovered, and only activation is refused.
+  get menuItems() {
+    return Array.from(this.contentTarget.querySelectorAll(MENU_ITEM))
+      .filter(item => !item.disabled && item.offsetParent !== null)
   }
 
   // Escape reaches this from two paths that never overlap: the element listener while focus
@@ -247,7 +396,8 @@ export default class extends Controller {
   handleContentClick(event) {
     const item = event.target.closest('[role="menuitem"]')
     if (!this.shown || !item || !this.contentTarget.contains(item)) return
-    if (item.getAttribute("aria-disabled") === "true") return
+    // A disabled item is inert: it doesn't close the menu, and a disabled link doesn't navigate.
+    if (!this.isEnabled(item)) return event.preventDefault()
 
     const focusWasInside = this.contentTarget.contains(document.activeElement)
     this.close()
@@ -292,8 +442,11 @@ export default class extends Controller {
   }
 
   focusContent() {
-    const first = this.getFocusableItems()[0]
-    if (first) return first.focus()
+    // ArrowUp on the closed trigger asks for the last item; everything else opens on the first.
+    const end = this.initialFocus || "first"
+    this.initialFocus = null
+
+    if (this.getFocusableItems().length > 0) return this.focusEnd(end)
 
     if (this.kindValue === "dialog") {
       if (!this.contentTarget.hasAttribute("tabindex")) this.contentTarget.setAttribute("tabindex", "-1")
@@ -302,11 +455,11 @@ export default class extends Controller {
   }
 
   getFocusableItems() {
-    const selector = this.kindValue === "menu"
-      ? '[role="menuitem"]'
-      : this.kindValue === "listbox"
-        ? '[role="option"]'
-        : 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    if (this.kindValue === "menu") return this.menuItems
+
+    const selector = this.kindValue === "listbox"
+      ? '[role="option"]'
+      : 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
     return Array.from(this.contentTarget.querySelectorAll(selector))
       .filter(item => !item.disabled && item.offsetParent !== null)

@@ -3,7 +3,7 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
   <p class="text-neutral-600 dark:text-neutral-400">
-    A floating menu, listbox, or dialog positioned with Floating UI. Full keyboard navigation — arrow keys, Home/End, Escape. Supports three interaction modes.
+    A floating menu, listbox, or dialog positioned with Floating UI. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports three interaction modes.
   </p>
 </div>
 
@@ -23,6 +23,7 @@
       <div class="py-1 min-w-[10rem]">
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Edit</a>
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Duplicate</a>
+        <a href="#" role="menuitem" aria-disabled="true" class="flex px-3 py-2 text-sm text-neutral-400 dark:text-neutral-500 cursor-default">Archive</a>
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">Delete</a>
       </div>
     <% end %>
@@ -88,7 +89,7 @@
     </thead>
     <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
       <% [
-        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (arrow-key nav, menuitem roles; choosing an item or pressing Tab closes it), :listbox (option roles), :dialog (focus moves to the first field on open)."],
+        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (the menu button pattern — see Keyboard below), :listbox (option roles), :dialog (focus moves to the first field on open)."],
         ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
         ["offset",         "Integer", "4",             "Gap between trigger and content in pixels."],
         ["match_width",    "Boolean", "false",          "Makes the dropdown match the trigger's width."],
@@ -104,6 +105,66 @@
       <% end %>
     </tbody>
   </table>
+</div>
+
+<%# Keyboard %>
+<h2 class="text-base font-semibold mb-3">Keyboard</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">kind: :menu</code>
+  implements the <a class="text-violet-600 dark:text-violet-400 hover:underline" href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">WAI-ARIA menu button pattern</a>.
+</p>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-4">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Key</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On the trigger</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">In the open menu</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["Enter / Space", "Opens the menu on the first item.", "Activates the focused item and closes the menu."],
+        ["↓",             "Opens the menu on the first item.", "Moves to the next item, wrapping to the first."],
+        ["↑",             "Opens the menu on the last item.",  "Moves to the previous item, wrapping to the last."],
+        ["Home / End",    "—",                                 "Moves to the first or last item."],
+        ["A–Z, 0–9",      "—",                                 "Moves to the next item whose label starts with what you type (500ms buffer)."],
+        ["Esc",           "—",                                 "Closes the menu and returns focus to the trigger."],
+        ["Tab",           "Moves on to the next control.",     "Closes the menu; focus continues past it."],
+      ].each do |key, on_trigger, in_menu| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400 whitespace-nowrap"><%= key %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= on_trigger %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= in_menu %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 mb-8 text-sm text-neutral-600 dark:text-neutral-400 space-y-3">
+  <p>
+    The menu is a single tab stop. Items are given <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="-1"</code>
+    and take focus from the arrow keys, so Tab moves past the whole menu rather than through its items.
+  </p>
+  <p>
+    Items don't have to carry roles. If the menu slot contains no
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>,
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemcheckbox</code> or
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemradio</code>, its links and enabled buttons
+    become the items and are given <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="menuitem"</code> —
+    so ordinary markup, including content swapped in later by Turbo, navigates like a menu. Writing the roles yourself stays the clearer option.
+  </p>
+  <p>
+    Mark an unavailable item <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-disabled="true"</code>
+    (as Archive is above) rather than hiding it. It still takes focus from the arrows and typeahead, so users can
+    discover it, but Enter, Space and clicks don't choose it and a disabled link doesn't navigate.
+  </p>
+  <p>
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:listbox</code> and
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> don't follow this pattern:
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> moves focus to its first field and
+    leaves Tab to the browser.
+  </p>
 </div>
 
 <%# Slots %>
@@ -123,7 +184,7 @@
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">menu</td>
-        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render menu items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">option</code>).</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">option</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
       </tr>
     </tbody>
   </table>

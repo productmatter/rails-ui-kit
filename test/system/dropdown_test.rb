@@ -211,7 +211,276 @@ class DropdownTest < ApplicationSystemTestCase
     assert_selector "[role='menu']", visible: true
   end
 
+  test 'DD9: Tab reaches the trigger and Space opens the menu with focus on the first item' do
+    visit dropdown_path
+    trigger = menu_trigger
+
+    tab_to(trigger)
+    assert focused?(trigger)
+
+    press :space
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Edit'
+  end
+
+  test 'DD10: ArrowDown and ArrowUp move and wrap, Home and End jump to the ends' do
+    visit dropdown_path
+    open_menu_with_keyboard
+
+    press :arrow_down
+    assert_focused_item 'Duplicate'
+    # Archive is aria-disabled, and still takes focus in both directions.
+    press :arrow_down
+    assert_focused_item 'Archive'
+    press :arrow_down
+    assert_focused_item 'Delete'
+    press :arrow_down
+    assert_focused_item 'Edit'
+
+    press :arrow_up
+    assert_focused_item 'Delete'
+    press :arrow_up
+    assert_focused_item 'Archive'
+
+    press :end
+    assert_focused_item 'Delete'
+    press :home
+    assert_focused_item 'Edit'
+  end
+
+  test 'DD11: arrow keys on the closed trigger open the menu at the first or last item' do
+    visit dropdown_path
+    trigger = menu_trigger
+
+    page.execute_script('arguments[0].focus()', trigger)
+    press :arrow_up
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Delete'
+
+    press :escape
+    assert_equal 'false', trigger['aria-expanded']
+    assert focused?(trigger)
+
+    press :arrow_down
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Edit'
+  end
+
+  test 'DD12: typing moves to the item that starts with what was typed' do
+    visit dropdown_path
+    open_menu_with_keyboard
+
+    press 'd', 'u'
+    assert_focused_item 'Duplicate'
+
+    # A fresh single character searches on from the focused item, so it steps between the
+    # items sharing an initial rather than sticking on the first of them.
+    sleep 0.6
+    press 'd'
+    assert_focused_item 'Delete'
+    sleep 0.6
+    press 'd'
+    assert_focused_item 'Duplicate'
+
+    # The disabled item is reachable by typeahead too.
+    sleep 0.6
+    press 'a'
+    assert_focused_item 'Archive'
+  end
+
+  test 'DD13: Enter and Space activate the focused item and close the menu' do
+    visit dropdown_path
+    prevent_menu_item_navigation
+    trigger = menu_trigger
+
+    open_menu_with_keyboard
+    press :arrow_down
+    assert_focused_item 'Duplicate'
+    press :enter
+    assert_equal 'Duplicate', last_activated_item
+    assert_equal 'false', trigger['aria-expanded']
+    assert focused?(trigger)
+
+    open_menu_with_keyboard
+    press :space
+    assert_equal 'Edit', last_activated_item
+    assert_equal 'false', trigger['aria-expanded']
+    assert focused?(trigger)
+  end
+
+  test 'DD14: an aria-disabled item takes focus but Enter, Space and a click neither activate it nor close the menu' do
+    visit dropdown_path
+    trigger = menu_trigger
+    # Point the disabled item at a real page, so a guard that failed would visibly navigate
+    # away. Record every click on a menu item that reaches the window, without cancelling any.
+    archive = find("[role='menu'] [role='menuitem']", text: 'Archive', visible: false)
+    page.execute_script("arguments[0].setAttribute('href', arguments[1])", archive, installation_path)
+    page.execute_script(<<~JS)
+      window.__ddClicks = []
+      window.addEventListener('click', function(event) {
+        if (event.target.closest('[role="menuitem"]')) window.__ddClicks.push(event.defaultPrevented)
+      })
+    JS
+
+    open_menu_with_keyboard
+    press :arrow_down, :arrow_down
+    assert_focused_item 'Archive'
+
+    # Enter on a link would normally dispatch a click and follow the href; Space would be
+    # clicked by the controller. Neither may happen.
+    press :enter
+    press :space
+    assert_focused_item 'Archive'
+    assert_equal 'true', trigger['aria-expanded']
+    assert_empty page.evaluate_script('window.__ddClicks')
+
+    # A pointer click does reach the item, and is cancelled before it can navigate.
+    find("[role='menu'] [role='menuitem']", text: 'Archive').click
+    assert_equal [true], page.evaluate_script('window.__ddClicks')
+    assert_equal 'true', trigger['aria-expanded']
+
+    # Give any navigation that slipped through time to land before checking it didn't.
+    sleep 0.5
+    assert_current_path dropdown_path
+    assert_selector 'h1', text: 'Dropdown'
+
+    # Opening from the trigger lands on the end item even when that item is disabled.
+    press :escape
+    assert focused?(trigger)
+    delete_item = find("[role='menu'] [role='menuitem']", text: 'Delete', visible: false)
+    page.execute_script("arguments[0].setAttribute('aria-disabled', 'true')", delete_item)
+    press :arrow_up
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Delete'
+  end
+
+  test 'DD15: the trigger is the only tab stop -- items are tabindex="-1" and Tab leaves the menu' do
+    visit dropdown_path
+    trigger = menu_trigger
+    open_menu_with_keyboard
+
+    items = all("[role='menu'] [role='menuitem']", visible: true)
+    assert_equal 4, items.size
+    items.each { |item| assert_equal '-1', item['tabindex'] }
+
+    press :tab
+    assert_equal 'false', trigger['aria-expanded']
+    refute page.evaluate_script('!!document.activeElement.closest(\'[role="menuitem"]\')')
+  end
+
+  test 'DD16: a menu of plain links with no roles is navigable and is given menuitem roles' do
+    visit dropdown_path
+    page.execute_script(<<~JS)
+      var container = document.createElement('div')
+      container.id = 'dd16'
+      container.innerHTML = `
+        <div data-controller="ui--dropdown" data-ui--dropdown-kind-value="menu">
+          <div data-ui--dropdown-target="trigger">
+            <button type="button" data-action="click->ui--dropdown#toggle">Plain</button>
+          </div>
+          <div class="hidden absolute z-50 opacity-0 scale-95 bg-white" data-ui--dropdown-target="content">
+            <a href="#">Alpha</a>
+            <a href="#">Beta</a>
+            <button type="button">Gamma</button>
+          </div>
+        </div>`
+      document.body.appendChild(container)
+    JS
+
+    trigger = find('#dd16 button', text: 'Plain')
+    page.execute_script('arguments[0].focus()', trigger)
+    press :space
+    assert_equal 'true', trigger['aria-expanded']
+
+    within('#dd16') do
+      assert_selector "[role='menu'] [role='menuitem']", count: 3, visible: true
+      assert_focused_item 'Alpha'
+      press :arrow_down
+      assert_focused_item 'Beta'
+      press :end
+      assert_focused_item 'Gamma'
+      press :arrow_down
+      assert_focused_item 'Alpha'
+    end
+  end
+
+  test "DD17: the Card header's dropdown is fully operable from the keyboard" do
+    visit card_path
+    prevent_menu_item_navigation
+    trigger = find("button[aria-label='Billing options']")
+
+    tab_to(trigger)
+    press :enter
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Change plan'
+
+    press :arrow_up
+    assert_focused_item 'Cancel subscription'
+    press 'u'
+    assert_focused_item 'Update payment method'
+
+    press :enter
+    assert_equal 'Update payment method', last_activated_item
+    assert_equal 'false', trigger['aria-expanded']
+    assert focused?(trigger)
+  end
+
+  test 'DD18: the open menu passes an axe audit' do
+    visit dropdown_path
+    open_menu_with_keyboard
+
+    assert_accessible(within: "[data-ui--dropdown-kind-value='menu']")
+  end
+
   private
+
+  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike
+  # Capybara's element.send_keys, which focuses the element it's called on first.
+  def press(*keys)
+    page.driver.browser.action.send_keys(*keys).perform
+  end
+
+  def tab_to(element, limit: 80)
+    limit.times do
+      break if focused?(element)
+
+      press :tab
+    end
+    element
+  end
+
+  def open_menu_with_keyboard
+    trigger = menu_trigger
+    page.execute_script('arguments[0].focus()', trigger)
+    press :space
+    assert_equal 'true', trigger['aria-expanded']
+    assert_focused_item 'Edit'
+    trigger
+  end
+
+  # Waits, the way any Capybara assertion does, for focus to settle on the named item:
+  # CSS :focus matches the focused element itself, never an ancestor.
+  def assert_focused_item(text)
+    assert_selector "[role='menuitem']:focus", text: text, exact_text: true
+  end
+
+  # The demo items are href="#" links, which would scroll the page to the top and, on the
+  # Card page, take the trigger out of view. Record the activation and cancel it instead.
+  def prevent_menu_item_navigation
+    page.execute_script(<<~JS)
+      window.__ddActivated = null
+      document.addEventListener('click', function(event) {
+        var item = event.target.closest('[role="menuitem"]')
+        if (!item) return
+        window.__ddActivated = item.textContent.trim()
+        event.preventDefault()
+      })
+    JS
+  end
+
+  def last_activated_item
+    page.evaluate_script('window.__ddActivated')
+  end
 
   def menu_trigger
     find("[data-ui--dropdown-target='trigger'] button", text: 'Menu')
