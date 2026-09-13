@@ -4,9 +4,6 @@ module Ui
   class ButtonComponent < Ui::Base
     data_slot 'button'
 
-    # `text-primary-foreground` carries the destructive label because the token
-    # contract has no `destructive-foreground`; it is the kit's one near-white ink
-    # for saturated surfaces, in both modes.
     class_variants(
       base: 'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap ' \
             'rounded-md text-sm font-medium transition-colors outline-none ' \
@@ -17,7 +14,7 @@ module Ui
       variants: {
         variant: {
           default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
-          destructive: 'bg-destructive text-primary-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/40',
+          destructive: 'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/40',
           outline: 'border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground',
           secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
           ghost: 'hover:bg-accent hover:text-accent-foreground',

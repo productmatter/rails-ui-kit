@@ -44,6 +44,9 @@
   --input: oklch(0.915 0.005 75);
   --ring: oklch(0.52 0.17 277);
 
+  /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
+  --destructive-foreground: oklch(0.985 0.006 27);
+
   --chart-1: oklch(0.55 0.17 277);
   --chart-2: oklch(0.64 0.115 225);
   --chart-3: oklch(0.72 0.12 165);
@@ -89,6 +92,9 @@
   --border: oklch(0.305 0.01 75);
   --input: oklch(0.345 0.011 75);
   --ring: oklch(0.558 0.176 277);
+
+  /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
+  --destructive-foreground: oklch(0.985 0.006 27);
 
   --chart-1: oklch(0.66 0.16 277);
   --chart-2: oklch(0.72 0.12 225);
@@ -138,6 +144,9 @@
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
+
+  /* Kit extensions */
+  --color-destructive-foreground: var(--destructive-foreground);
 
   --color-border: var(--border);
   --color-input: var(--input);

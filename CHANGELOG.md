@@ -10,6 +10,7 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 - `Ui::ButtonComponent` — six variants (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`) across four sizes (`default`, `sm`, `lg`, `icon`). Renders a `<button>`, or an `<a>` when given `href:`. Token-backed focus-visible ring, disabled styling for both element forms, and automatic sizing for an unsized inline `<svg>` child. A disabled `href` button drops its href and reports `role="link" aria-disabled="true"`, so it is inert without JavaScript.
 - `class_variants` and `tailwind_merge` as runtime dependencies.
 - Button page in the `examples/` docs app.
+- `--destructive-foreground` design token in `app/assets/tailwind/rails_ui_kit/engine.css` — a kit extension beyond shadcn's token contract, since current shadcn has none. `Ui::ButtonComponent`'s destructive variant now sets its label from this token instead of `text-primary-foreground`, so the label no longer depends on `--primary-foreground`'s value.
 
 ### Changed
 - `README.md` component table now lists `Ui::PopoverComponent` and `Ui::TooltipComponent`, which shipped in 0.2.0 but were never added, alongside the new `Ui::ButtonComponent`. Added a design-tokens and class-merge section under Overriding.

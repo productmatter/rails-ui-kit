@@ -60,6 +60,13 @@ module Ui
       assert_not_includes button_classes, 'bg-destructive'
     end
 
+    test 'renders the destructive variant label in destructive-foreground, not primary-foreground' do
+      render_inline(Ui::ButtonComponent.new(variant: :destructive)) { 'Delete' }
+
+      assert_includes button_classes, 'text-destructive-foreground'
+      assert_not_includes button_classes, 'text-primary-foreground'
+    end
+
     SIZE_MARKERS.each do |size, marker|
       test "renders the #{size} size" do
         render_inline(Ui::ButtonComponent.new(size: size)) { 'Save' }
