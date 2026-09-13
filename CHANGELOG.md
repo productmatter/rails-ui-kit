@@ -14,6 +14,9 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 - `--destructive-foreground` design token in `app/assets/tailwind/rails_ui_kit/engine.css` — a kit extension beyond shadcn's token contract, since current shadcn has none. `Ui::ButtonComponent`'s destructive variant now sets its label from this token instead of `text-primary-foreground`, so the label no longer depends on `--primary-foreground`'s value.
 - Kit parts default their border color to `--border`. Tailwind v4 draws a border with no color utility in `currentColor`, so a bare separator such as a card footer's `border-t` rendered near-black. The default is a base-layer rule scoped to `[data-slot]`, so any border color utility still wins and borders in host-app markup are unaffected.
 
+### Fixed
+- `ui--dropdown` puts `aria-haspopup` and `aria-expanded` on the caller's trigger control — normally a `<button>` — instead of the wrapper `<div>` the component renders around it, and returns focus to that control on Escape. A `<div>` is neither focusable nor announced with state, so a screen reader previously got no indication that a menu existed or was open, and closing with Escape dropped focus to `<body>`. No markup changes; the component resolves the first focusable element inside the trigger slot and falls back to the wrapper when there is none.
+
 ### Changed
 - `README.md` component table now lists `Ui::PopoverComponent` and `Ui::TooltipComponent`, which shipped in 0.2.0 but were never added, alongside the new `Ui::ButtonComponent`. Added a design-tokens and class-merge section under Overriding.
 

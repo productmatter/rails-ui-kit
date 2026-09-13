@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import { computePosition, flip, shift, offset } from "@floating-ui/dom"
 
+const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
 export default class extends Controller {
   static targets = ["trigger", "content"]
 
@@ -52,7 +54,7 @@ export default class extends Controller {
       this.contentTarget.classList.add("opacity-100", "scale-100")
     })
 
-    this.triggerTarget.setAttribute("aria-expanded", "true")
+    this.triggerControl.setAttribute("aria-expanded", "true")
 
     this.setupListeners()
 
@@ -73,8 +75,16 @@ export default class extends Controller {
       this.contentTarget.classList.add("hidden")
     }, 100)
 
-    this.triggerTarget.setAttribute("aria-expanded", "false")
+    this.triggerControl.setAttribute("aria-expanded", "false")
     this.cleanup()
+  }
+
+  // The trigger target wraps the caller's control, normally a <button>. ARIA state and
+  // focus belong on that control: a wrapping <div> is neither focusable nor announced
+  // with state. Falls back to the wrapper when it holds nothing focusable.
+  get triggerControl() {
+    if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
+    return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
   position() {
@@ -104,8 +114,8 @@ export default class extends Controller {
       dialog: "dialog"
     }[this.kindValue] || "menu"
 
-    this.triggerTarget.setAttribute("aria-haspopup", ariaPopupType)
-    this.triggerTarget.setAttribute("aria-expanded", "false")
+    this.triggerControl.setAttribute("aria-haspopup", ariaPopupType)
+    this.triggerControl.setAttribute("aria-expanded", "false")
 
     if (!this.contentTarget.hasAttribute("role")) {
       this.contentTarget.setAttribute("role", ariaPopupType)
@@ -125,7 +135,7 @@ export default class extends Controller {
     this.escapeHandler = (event) => {
       if (event.key === "Escape") {
         this.close()
-        this.triggerTarget.focus()
+        this.triggerControl.focus()
       }
     }
     document.addEventListener("keydown", this.escapeHandler)
