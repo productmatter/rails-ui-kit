@@ -12,7 +12,7 @@
 
 <%# Plain %>
 <h2 class="text-base font-semibold mb-3">Plain</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
   <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
     <% card.with_header do |header| %>
       <% header.with_title { "Monthly active users" } %>
@@ -26,7 +26,7 @@
 
 <%# Header action %>
 <h2 class="text-base font-semibold mb-3">With a header action</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
   <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
     <% card.with_header do |header| %>
       <% header.with_title { "Billing" } %>
@@ -62,7 +62,7 @@
 
 <%# Footer %>
 <h2 class="text-base font-semibold mb-3">With a footer</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
   <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
     <% card.with_header do |header| %>
       <% header.with_title { "Delete project" } %>
@@ -77,7 +77,7 @@
 
 <%# Form %>
 <h2 class="text-base font-semibold mb-3">Containing a form</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
   <%= form_with url: demo_submit_path, method: :post, class: "w-full max-w-sm" do |f| %>
     <%= render Ui::CardComponent.new do |card| %>
       <% card.with_header do |header| %>
@@ -146,6 +146,18 @@
       <% end %>
     </tbody>
   </table>
+</div>
+
+<%# Overriding classes %>
+<h2 class="text-base font-semibold mb-3">Overriding classes</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code> replaces a conflicting default,
+  but only a default with the same modifier. A footer with a top border uses
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">[.border-t]:pt-6</code>, which still applies over a plain
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">pt-2</code>. To override it, pass the same modifier:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code class="text-neutral-200">&lt;% card.with_footer(class: "border-t pt-2 [.border-t]:pt-2") { … } %&gt;</code></pre>
 </div>
 
 <%# Notes %>

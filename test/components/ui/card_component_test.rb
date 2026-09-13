@@ -89,7 +89,7 @@ module Ui
     test 'header lays out a second column only when an action is present' do
       render_full_card
 
-      assert_includes classes_for('card-header'), 'grid-cols-[1fr_auto]'
+      assert_includes classes_for('card-header'), 'grid-cols-[minmax(0,1fr)_auto]'
       assert_includes classes_for('card-action'), 'col-start-2'
     end
 
@@ -110,8 +110,33 @@ module Ui
         end
       end
 
-      assert_not_includes classes_for('card-header'), 'grid-cols-[1fr_auto]'
+      assert_empty classes_for('card-header').grep(/grid-cols-/)
       assert_includes classes_for('card-header'), 'grid'
+    end
+
+    # CARD1
+    test 'a long unbroken title or description can shrink and wrap inside its column' do
+      render_full_card
+
+      %w[card-title card-description].each do |slot|
+        assert_includes classes_for(slot), 'min-w-0'
+        assert_includes classes_for(slot), 'break-words'
+      end
+    end
+
+    # CARD3
+    test 'header rows are implicit so a title-only header has no empty second row' do
+      render_inline(Ui::CardComponent.new) { |card| card.with_header { |header| header.with_title { 'Title' } } }
+
+      assert_includes classes_for('card-header'), 'auto-rows-min'
+      assert_empty classes_for('card-header').grep(/grid-rows-/)
+    end
+
+    # CARD4
+    test 'an action with no title beside it takes its own height' do
+      render_inline(Ui::CardComponent.new) { |card| card.with_header { |header| header.with_action { 'Edit' } } }
+
+      assert_includes classes_for('card-action'), 'only:h-auto'
     end
 
     test 'caller class on the root wins over a conflicting default' do

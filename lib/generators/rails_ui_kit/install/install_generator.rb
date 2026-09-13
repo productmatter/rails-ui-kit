@@ -17,6 +17,13 @@ module RailsUiKit
       # app/assets/builds/tailwind/rails_ui_kit.css (Tailwindcss::Engines.bundle). From
       # CSS_PATH (app/assets/tailwind/application.css), that's one level up.
       CSS_IMPORT_LINE = '@import "../builds/tailwind/rails_ui_kit.css";'
+      # The kit's tokens switch on `.dark` (what ui--dark-mode toggles). Tailwind 4's
+      # own `dark:` follows the OS preference unless the host redefines it, so the
+      # generator does that in the host's file; the engine can't ship it without
+      # changing `dark:` for every host that imports it.
+      DARK_VARIANT_LINE = '@custom-variant dark (&:where(.dark, .dark *));'
+      # Any existing definition, including Tailwind 4.0's older top-level `@variant dark (…)`.
+      DARK_VARIANT = /^\s*@(custom-variant\s+dark\b|variant\s+dark\s*\()/
 
       APPLICATION_START = /Application\.start\(\).*\n/
 
@@ -40,17 +47,12 @@ module RailsUiKit
 
       def wire_tailwind
         unless File.exist?(destination_path(CSS_PATH))
-          say_status :skip, "#{CSS_PATH} not found — see README 'Alternative setups' for Sprockets / Tailwind 3.", :yellow
+          say_status :skip, "#{CSS_PATH} not found — rails_ui_kit requires Tailwind CSS 4 via tailwindcss-rails (see README).", :yellow
           return
         end
 
-        contents = File.read(destination_path(CSS_PATH))
-        if contents.include?(CSS_IMPORT_LINE)
-          say_status :identical, CSS_PATH, :blue
-          return
-        end
-
-        append_to_file CSS_PATH, "#{CSS_IMPORT_LINE}\n"
+        inject_css_import
+        inject_dark_variant
       end
 
       def print_next_steps
@@ -87,6 +89,30 @@ module RailsUiKit
       def application_start_in?(relative_path)
         full_path = destination_path(relative_path)
         File.exist?(full_path) && File.read(full_path).match?(APPLICATION_START)
+      end
+
+      def inject_css_import
+        if File.read(destination_path(CSS_PATH)).include?(CSS_IMPORT_LINE)
+          say_status :identical, "#{CSS_PATH} (import already present)", :blue
+          return
+        end
+
+        append_to_file CSS_PATH, "#{CSS_IMPORT_LINE}\n"
+      end
+
+      def inject_dark_variant
+        contents = File.read(destination_path(CSS_PATH))
+        if contents.include?(DARK_VARIANT_LINE)
+          say_status :identical, "#{CSS_PATH} (dark variant already present)", :blue
+        elsif contents.match?(DARK_VARIANT)
+          say_status :skip, "#{CSS_PATH} already defines its own `@custom-variant dark`. The kit's tokens switch " \
+                            'on the `.dark` class on <html>; make sure your variant matches it, or `dark:` utilities ' \
+                            'and the kit will disagree about what dark mode is.', :yellow
+        else
+          append_to_file CSS_PATH, "#{DARK_VARIANT_LINE}\n"
+          say_status :notice, "#{CSS_PATH}: `dark:` utilities now follow the `.dark` class on <html> (what " \
+                              'ui--dark-mode toggles and the kit\'s tokens use), not the OS colour-scheme preference.', :yellow
+        end
       end
 
       def inject_js_import(path)

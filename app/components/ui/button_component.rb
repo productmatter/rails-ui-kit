@@ -4,18 +4,26 @@ module Ui
   class ButtonComponent < Ui::Base
     data_slot 'button'
 
+    # The focus indicator is an outline, not a box-shadow ring: forced-colors mode
+    # (Windows High Contrast) drops box-shadows but keeps outlines, and the offset
+    # gap shows the surface behind the button, so the ring contrasts with that
+    # surface rather than blending into the button's own fill.
+    #
+    # A direct child <svg> gets a default size inside :where(), which has zero
+    # specificity, so any sizing class the caller puts on the svg (size-*, h-*, w-*)
+    # wins. Nested svgs are the caller's markup and are left alone.
     class_variants(
       base: 'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap ' \
-            'rounded-md text-sm font-medium transition-colors outline-none ' \
-            'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 ' \
+            'rounded-md text-sm font-medium transition-colors ' \
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
             'disabled:pointer-events-none disabled:opacity-50 ' \
             'aria-disabled:pointer-events-none aria-disabled:opacity-50 ' \
-            "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            '[&_svg]:pointer-events-none [&>svg]:shrink-0 [:where(&>svg)]:size-4',
       variants: {
         variant: {
           default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
-          destructive: 'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/40',
-          outline: 'border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground',
+          destructive: 'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90',
+          outline: 'border border-input bg-background text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground',
           secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
           ghost: 'hover:bg-accent hover:text-accent-foreground',
           link: 'text-primary underline-offset-4 hover:underline'
@@ -30,17 +38,21 @@ module Ui
       defaults: { variant: :default, size: :default }
     )
 
+    # `disabled:` values that leave the button enabled, as form params spell false.
+    NOT_DISABLED = ['', 'false', '0'].freeze
+
     attr_reader :variant, :size, :href, :type
 
+    # `variant:`/`size:` accept a symbol or string; nil means the default.
     def initialize(variant: :default, size: :default, href: nil, type: 'button', **html_attributes)
-      @variant = variant.to_sym
-      @size = size.to_sym
+      @variant = variant
+      @size = size
       @href = href
       @type = type
-      @disabled = html_attributes[:disabled]
-      # An <a> ignores `disabled` entirely, so it is translated below rather than forwarded.
-      html_attributes.delete(:disabled) if link?
       super(**html_attributes)
+      # Taken out of the forwarded attributes and rendered from here: an <a> ignores
+      # `disabled` entirely, and on a <button> the string "false" would still disable.
+      @disabled = !NOT_DISABLED.include?(self.html_attributes.delete(:disabled).to_s)
     end
 
     def variant_values
@@ -54,7 +66,7 @@ module Ui
     # A disabled link drops its href: without one the anchor is inert and
     # unfocusable without JavaScript, and role/aria-disabled keep it announced.
     def element_attributes
-      return { type: type } unless link?
+      return { type: type, disabled: disabled? } unless link?
       return { href: href } unless disabled?
 
       { role: 'link', aria: { disabled: true } }
@@ -67,7 +79,7 @@ module Ui
     end
 
     def disabled?
-      @disabled.present?
+      @disabled
     end
   end
 end

@@ -6,6 +6,15 @@
   <p class="text-neutral-600 dark:text-neutral-400">Add rails-ui-kit to your Rails app in four steps.</p>
 </div>
 
+<div class="mb-10 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-5 py-4">
+  <p class="text-sm text-neutral-600 dark:text-neutral-400">
+    <span class="font-semibold text-neutral-900 dark:text-neutral-100">Requires Tailwind CSS 4</span>, through
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tailwindcss-rails</code> 4.x.
+    Every colour and radius in the kit comes from design tokens that only a Tailwind 4 build can compile — there is no
+    Tailwind 3, PostCSS or Sprockets path for them.
+  </p>
+</div>
+
 <div class="space-y-10">
 
   <div>
@@ -36,8 +45,12 @@
       <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-gen" class="text-neutral-200">bin/rails generate rails_ui_kit:install</code></pre>
     </div>
     <p class="mt-2 text-sm text-neutral-500">
-      This wires the JavaScript controllers into <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">application.js</code>
-      and imports the built CSS into your Tailwind entry point.
+      This wires the JavaScript controllers into <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">application.js</code>,
+      imports the built CSS into your Tailwind entry point, and adds
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">@custom-variant dark (&amp;:where(.dark, .dark *));</code>
+      so Tailwind's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">dark:</code> utilities follow the same
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">.dark</code> class the kit's tokens do, rather than the
+      OS preference. If your stylesheet already defines a dark variant, the generator leaves it alone and says so.
     </p>
   </div>
 

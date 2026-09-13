@@ -8,15 +8,19 @@ class DarkModeToggleTest < ApplicationSystemTestCase
     page.execute_script('localStorage.clear()')
     visit root_path # reload so the controller re-evaluates with a clean theme
 
-    toggle = find("button[aria-label='Toggle dark mode']")
+    # Found by its Stimulus target, not its label: the controller rewrites the
+    # label to describe the action it would take next.
+    toggle = find("button[data-ui--dark-mode-target='toggle']", match: :first)
 
     refute dark_mode_enabled?
 
     toggle.click
     assert dark_mode_enabled?
+    assert_equal 'true', toggle['aria-pressed']
 
     toggle.click
     refute dark_mode_enabled?
+    assert_equal 'false', toggle['aria-pressed']
   end
 
   private

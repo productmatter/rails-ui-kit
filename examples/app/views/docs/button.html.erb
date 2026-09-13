@@ -12,7 +12,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+<div id="button-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
   <% %i[default secondary outline ghost link destructive].each do |variant| %>
     <%= render(Ui::ButtonComponent.new(variant: variant)) { variant.to_s.capitalize } %>
   <% end %>
@@ -146,11 +146,24 @@
   </table>
 </div>
 
+<%# Overriding classes %>
+<h2 class="text-base font-semibold mb-3">Overriding classes</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code> replaces a conflicting default,
+  but only a default with the same modifier. Some defaults carry one: a button with an icon uses
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">has-[&gt;svg]:px-3</code>, which still applies over a plain
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">px-2</code>. To override it, pass the same modifier:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code class="text-neutral-200">&lt;%= render Ui::ButtonComponent.new(class: "px-2 has-[&gt;svg]:px-2") do %&gt;…&lt;% end %&gt;</code></pre>
+</div>
+
 <%# Notes %>
 <h2 class="text-base font-semibold mb-3">Notes</h2>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
   <li>No Stimulus controller. Button is presentational; behaviour comes from the form, link, or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-*</code> attribute you forward to it.</li>
   <li>The root element carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-slot="button"</code> as a styling and testing hook that survives class changes.</li>
-  <li>An inline <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;svg&gt;</code> child is sized to 1rem and padding tightens automatically; pass your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">size-*</code> class on the svg to override.</li>
+  <li>An <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;svg&gt;</code> placed directly inside the button is sized to 1rem and padding tightens automatically. Any sizing class on the svg (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">size-*</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">h-*</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">w-*</code>) overrides it; svgs nested deeper are left alone.</li>
+  <li>The focus ring is an outline, so it stays visible in Windows High Contrast (forced-colors) mode.</li>
   <li>Every colour comes from a token, so a host app reskins Button by redefining <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--primary</code> and friends — no component override needed.</li>
 </ul>

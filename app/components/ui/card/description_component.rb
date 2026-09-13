@@ -5,7 +5,7 @@ module Ui
     class DescriptionComponent < Ui::Base
       data_slot 'card-description'
 
-      class_variants(base: 'text-sm text-muted-foreground')
+      class_variants(base: 'min-w-0 text-sm text-muted-foreground break-words')
 
       def call
         content_tag(:div, content, root_attributes)

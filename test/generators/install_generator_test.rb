@@ -147,6 +147,52 @@ module RailsUiKit
       assert_equal first, second
     end
 
+    # --- TOK2: `dark:` must follow the same `.dark` class the kit's tokens do ---
+
+    DARK_VARIANT_LINE = '@custom-variant dark (&:where(.dark, .dark *));'
+
+    test 'adds the .dark custom variant to tailwind/application.css with a notice when it is missing' do
+      write_host_file('app/assets/tailwind/application.css', SAMPLE_CSS)
+
+      output = run_generator
+
+      result = File.read(host_path('app/assets/tailwind/application.css'))
+      assert_equal 1, result.scan(DARK_VARIANT_LINE).size
+      assert_operator result.index(DARK_VARIANT_LINE), :>, result.index('rails_ui_kit.css'),
+                      'the variant must come after the @import lines'
+      assert_match(/notice.*`dark:` utilities now follow the `\.dark` class/, output)
+    end
+
+    test 'does not add the dark variant twice' do
+      write_host_file('app/assets/tailwind/application.css', "#{SAMPLE_CSS}#{DARK_VARIANT_LINE}\n")
+
+      output = run_generator
+
+      result = File.read(host_path('app/assets/tailwind/application.css'))
+      assert_equal 1, result.scan('@custom-variant dark').size
+      assert_match(/identical.*dark variant already present/, output)
+    end
+
+    test 'leaves a host-defined dark variant alone and warns that it must match .dark' do
+      own_variant = "@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));\n"
+      write_host_file('app/assets/tailwind/application.css', "#{SAMPLE_CSS}#{own_variant}")
+
+      output = run_generator
+
+      result = File.read(host_path('app/assets/tailwind/application.css'))
+      assert_equal 1, result.scan('@custom-variant dark').size
+      assert_includes result, own_variant
+      assert_match(/skip.*already defines its own `@custom-variant dark`/, output)
+    end
+
+    test 'treats a Tailwind 4.0 style top-level @variant dark definition as already defined' do
+      write_host_file('app/assets/tailwind/application.css', "#{SAMPLE_CSS}@variant dark (&:where(.dark, .dark *));\n")
+
+      run_generator
+
+      assert_not_includes File.read(host_path('app/assets/tailwind/application.css')), '@custom-variant'
+    end
+
     test 'skips with notice when application.js is missing' do
       output = run_generator
       assert_match(/skip.*application\.js/i, output)
@@ -155,6 +201,7 @@ module RailsUiKit
     test 'skips with notice when tailwind/application.css is missing' do
       output = run_generator
       assert_match(/skip.*application\.css/i, output)
+      assert_match(/requires Tailwind CSS 4 via tailwindcss-rails/, output)
     end
 
     private
