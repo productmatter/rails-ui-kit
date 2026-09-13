@@ -475,6 +475,25 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_progress_usage
+    <<~'RUBY'
+      <%= render Ui::ProgressComponent.new(value: 60, label: "Uploading photo.png") %>
+
+      <%# max: for a scale other than 0-100 %>
+      <%= render Ui::ProgressComponent.new(value: 3, max: 5, label: "Step 3 of 5") %>
+
+      <%# No value: renders at 0 -- always a real number, never indeterminate %>
+      <%= render Ui::ProgressComponent.new(label: "Waiting to start") %>
+
+      <%# A visible heading can serve as the name instead of label: %>
+      <h3 id="disk-usage-heading">Disk usage</h3>
+      <%= render Ui::ProgressComponent.new(value: 82, aria: { labelledby: "disk-usage-heading" }) %>
+
+      <%# class: recolours the track; the fill stays on --primary, the token that carries the meaning %>
+      <%= render Ui::ProgressComponent.new(value: 90, label: "Storage nearly full", class: "bg-destructive/20") %>
+    RUBY
+  end
+
   def example_kbd_usage
     <<~'RUBY'
       <%= render(Ui::KbdComponent.new) { "Enter" } %>

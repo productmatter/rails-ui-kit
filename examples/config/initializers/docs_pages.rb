@@ -35,6 +35,7 @@ module DocsPages
     { slug: :native_select, title: 'Native Select', section: 'Components' },
     { slug: :pagination, title: 'Pagination', section: 'Components' },
     { slug: :popover, title: 'Popover', section: 'Components' },
+    { slug: :progress, title: 'Progress', section: 'Components' },
     { slug: :separator, title: 'Separator', section: 'Components' },
     { slug: :skeleton, title: 'Skeleton', section: 'Components' },
     { slug: :spinner, title: 'Spinner', section: 'Components' },
