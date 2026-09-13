@@ -65,14 +65,6 @@ module Ui
       data[:body]
     end
 
-    def aria_role
-      type == :error ? 'alert' : 'status'
-    end
-
-    def aria_live
-      type == :error ? 'assertive' : 'polite'
-    end
-
     private
 
     def normalize_type(type)

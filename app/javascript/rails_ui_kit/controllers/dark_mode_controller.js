@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = ["toggle"]
 
   initialize() {
-    const savedTheme = localStorage.getItem("theme")
+    const savedTheme = this.readStoredTheme()
 
     if (savedTheme) {
       this.applyTheme(savedTheme, false)
@@ -30,7 +30,7 @@ export default class extends Controller {
   toggle(event) {
     const newTheme = this.currentTheme === "dark" ? "light" : "dark"
     this.applyTheme(newTheme, true)
-    localStorage.setItem("theme", newTheme)
+    this.writeStoredTheme(newTheme)
   }
 
   applyTheme(theme, updateButton = true) {
@@ -47,7 +47,10 @@ export default class extends Controller {
 
   updateToggleButton(theme) {
     const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-    this.toggleTarget.setAttribute("aria-label", label)
+    this.toggleTargets.forEach(target => {
+      target.setAttribute("aria-label", label)
+      target.setAttribute("aria-pressed", theme === "dark" ? "true" : "false")
+    })
   }
 
   handleStorageChange(event) {
@@ -58,5 +61,23 @@ export default class extends Controller {
 
   get currentTheme() {
     return document.documentElement.classList.contains("dark") ? "dark" : "light"
+  }
+
+  readStoredTheme() {
+    try {
+      return localStorage.getItem("theme")
+    } catch (error) {
+      return null
+    }
+  }
+
+  writeStoredTheme(theme) {
+    try {
+      localStorage.setItem("theme", theme)
+    } catch (error) {
+      // Storage can throw in private browsing, embedded/sandboxed contexts,
+      // or when disabled by the user — the toggle still works, it just
+      // won't persist across reloads.
+    }
   }
 }

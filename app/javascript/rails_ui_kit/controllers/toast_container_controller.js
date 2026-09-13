@@ -53,6 +53,9 @@ export default class extends Controller {
     this.applyContent(root, data)
     this.applyTimeout(root, data.timeout, resolvedType)
 
+    // The toast carries no live-region role of its own -- ui--toast#connect
+    // announces it through the container's persistent polite/assertive
+    // regions once it's in the DOM (and already has its final text).
     const target = this.hasStackTarget ? this.stackTarget : this.element
     target.appendChild(root)
   }
@@ -75,7 +78,8 @@ export default class extends Controller {
   }
 
   applyTimeout(root, explicitTimeout, type) {
-    const timeout = explicitTimeout || (type === "error" ? 20000 : 3000)
+    const hasExplicitTimeout = explicitTimeout !== undefined && explicitTimeout !== null
+    const timeout = hasExplicitTimeout ? explicitTimeout : (type === "error" ? 20000 : 3000)
     root.setAttribute("data-ui--toast-self-destruct-value", String(timeout))
 
     const timerInner = root.querySelector('[data-ui--toast-target="timer"]')

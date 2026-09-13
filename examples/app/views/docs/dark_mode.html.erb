@@ -10,7 +10,8 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8 flex flex-col items-start gap-4">
   <div class="flex items-center gap-4">
-    <button data-action="click->ui--dark-mode#toggle"
+    <button data-ui--dark-mode-target="toggle"
+            data-action="click->ui--dark-mode#toggle"
             class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-xs font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">
       Toggle dark mode
     </button>
@@ -34,12 +35,39 @@
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dark-mode-usage" class="text-neutral-200"><%= h(example_dark_mode_usage) %></code></pre>
 </div>
 
+<h2 class="text-base font-semibold mb-3">Avoiding the flash of the wrong theme</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  The controller only applies <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">.dark</code> once Stimulus connects, which is after the stylesheet has already painted. Add this inline, before any stylesheet, in your own layout's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;head&gt;</code> — it mirrors the controller's own resolution order and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage</code> guarding, so the two never disagree:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Layout &lt;head&gt; — ERB, before any stylesheet</span>
+    <button data-copy-target="#dark-mode-head-snippet" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dark-mode-head-snippet" class="text-neutral-200">&lt;%= javascript_tag nonce: true do %&gt;
+  (function () {
+    var theme = null;
+    try {
+      theme = localStorage.getItem("theme");
+    } catch (e) {}
+    var prefersDark = window.matchMedia &amp;&amp; window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (theme === "dark" || (theme !== "light" &amp;&amp; prefersDark)) {
+      document.documentElement.classList.add("dark");
+    }
+  })();
+&lt;% end %&gt;</code></pre>
+</div>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">nonce: true</code> keeps this working under a nonce-based Content-Security-Policy; it's a no-op if your app doesn't set one.
+</p>
+
 <h2 class="text-base font-semibold mb-3">Behaviour</h2>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
   <li>On <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>, reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage.theme</code>; falls back to the OS <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">prefers-color-scheme</code> media query.</li>
   <li>Adds or removes the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">html</code>.</li>
   <li>Listens to the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">storage</code> event to sync across tabs.</li>
   <li>Getter: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">this.currentTheme</code> returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"dark"</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"light"</code>.</li>
+  <li>Tag the toggle button with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-ui--dark-mode-target="toggle"</code> to get a synced <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-pressed</code> and label on connect, toggle, and cross-tab sync.</li>
 </ul>
 
 <h2 class="text-base font-semibold mt-8 mb-3">Tailwind setup</h2>

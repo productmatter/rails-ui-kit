@@ -1,5 +1,13 @@
 <div data-controller="ui--toast-container" class="<%= container_class %>">
   <div data-ui--toast-container-target="stack" class="pointer-events-auto"></div>
+
+  <%# Persistent live regions: present on the page before any toast arrives, so
+      assistive tech has already registered them by the time a toast writes its
+      announcement text in. The visible toast cards carry no live-region role of
+      their own -- this is the only thing that gets announced. %>
+  <div data-ui--toast-container-target="politeRegion" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <div data-ui--toast-container-target="assertiveRegion" role="alert" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
   <% template_types.each do |type| %>
     <template data-ui--toast-container-target="template" data-toast-type="<%= type %>">
       <%= render template_toast(type) %>

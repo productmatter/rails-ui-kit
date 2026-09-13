@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= content_for?(:title) ? "#{yield :title} — rails-ui-kit" : "rails-ui-kit" %></title>
   <%= csrf_meta_tags %>
+  <%# Apply the stored/OS theme before any stylesheet loads, so the page
+      never flashes the wrong theme on first paint. Mirrors
+      Ui::DarkModeController's own resolution order and localStorage
+      guarding; see the Dark Mode docs page for this as host-app setup. %>
+  <%= javascript_tag nonce: true do %>
+    (function () {
+      var theme = null;
+      try {
+        theme = localStorage.getItem("theme");
+      } catch (e) {}
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (theme === "dark" || (theme !== "light" && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  <% end %>
   <%= stylesheet_link_tag "tailwind", data: { turbo_track: "reload" } %>
   <%= javascript_importmap_tags %>
 </head>
@@ -83,7 +99,8 @@
           </svg>
           GitHub
         </a>
-        <button data-action="click->ui--dark-mode#toggle"
+        <button data-ui--dark-mode-target="toggle"
+                data-action="click->ui--dark-mode#toggle"
                 class="ml-auto text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
                 aria-label="Toggle dark mode">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -9,8 +9,7 @@ module Ui
 
       assert_selector "div[data-controller='ui--toast']"
       assert_selector "[data-ui--toast-target='title']", text: 'Saved!'
-      assert_selector "[role='status']"
-      assert_selector "[aria-live='polite']"
+      assert_selector "div[data-ui--toast-type-value='success']"
     end
 
     test 'renders title and body from a hash message' do
@@ -18,8 +17,14 @@ module Ui
 
       assert_selector "[data-ui--toast-target='title']", text: 'Oops'
       assert_selector "[data-ui--toast-target='body']", text: 'Try again.'
-      assert_selector "[role='alert']"
-      assert_selector "[aria-live='assertive']"
+      assert_selector "div[data-ui--toast-type-value='error']"
+    end
+
+    test 'the toast itself carries no live-region role, only the container does' do
+      render_inline(Ui::ToastComponent.new(type: :error, message: 'Boom'))
+
+      assert_no_selector '[role]'
+      assert_no_selector '[aria-live]'
     end
 
     test 'default timeout is 3000ms for non-error types' do
@@ -40,10 +45,16 @@ module Ui
       assert_selector "div[data-ui--toast-self-destruct-value='1500']"
     end
 
+    test 'explicit timeout of 0 persists instead of falling back to the default' do
+      render_inline(Ui::ToastComponent.new(type: :info, message: { title: 'x', timeout: 0 }))
+
+      assert_selector "div[data-ui--toast-self-destruct-value='0']"
+    end
+
     test 'unknown types fall back to :info' do
       render_inline(Ui::ToastComponent.new(type: :weird, message: 'x'))
 
-      assert_selector "[role='status']"
+      assert_selector "div[data-ui--toast-type-value='info']"
     end
   end
 end
