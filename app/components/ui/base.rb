@@ -17,6 +17,18 @@ module Ui
     PREFIXED_ATTRIBUTES = %w[data aria].freeze
     FLAT_PREFIXED_ATTRIBUTE = /\A(data|aria)-(.+)\z/
 
+    # HTML attributes Rails' tag helpers render present when truthy, absent when
+    # false or nil -- Ruby truthiness, so a non-empty string like "false" still
+    # renders it, exactly what a form param forwards per rule 1. Limited to the
+    # boolean attributes this kit's components plausibly forward, not Rails' full
+    # list. aria-*/data-* are untouched by this: `aria-invalid="false"` is a
+    # meaningful string and Stimulus data values are literally "true"/"false".
+    BOOLEAN_ATTRIBUTES = %i[disabled readonly required checked selected multiple hidden open].freeze
+
+    # String forms of "false" for a BOOLEAN_ATTRIBUTES key: the literal word, the
+    # ActiveRecord/form-params zero, and blank.
+    FALSE_STRINGS = ['false', '0', ''].freeze
+
     class << self
       # Declares the component's variant axes. Arguments are handed to
       # ClassVariants.build verbatim: base:, variants:, compound_variants:, defaults:.
@@ -94,7 +106,15 @@ module Ui
     def root_attributes(**component_attributes)
       attributes = merge_attributes(slot_attributes, normalize_attributes(component_attributes))
       attributes = merge_attributes(attributes, html_attributes)
-      attributes.merge(class: root_class)
+      normalize_booleans(attributes).merge(class: root_class)
+    end
+
+    # Coerces a value forwarded for a boolean HTML attribute into a real Ruby
+    # boolean. `root_attributes` already applies this before rendering; exposed for
+    # a component whose own logic needs to branch on the value too (Button deciding
+    # whether a disabled link drops its href), not only render it.
+    def boolean_attribute?(value)
+      !FALSE_STRINGS.include?(value.to_s)
     end
 
     private
@@ -160,6 +180,12 @@ module Ui
 
       nested = normalized[prefix].is_a?(Hash) ? normalized[prefix] : {}
       normalized[prefix] = nested.merge(value.to_h { |key, nested_value| [key.to_s.tr('-', '_').to_sym, nested_value] })
+    end
+
+    # Runs after data/aria fold into nested hashes, so `slice` only ever sees flat
+    # top-level keys and never touches an aria-*/data-* value.
+    def normalize_booleans(attributes)
+      attributes.merge(attributes.slice(*BOOLEAN_ATTRIBUTES).transform_values { |value| boolean_attribute?(value) })
     end
 
     def merge_attributes(own, other)

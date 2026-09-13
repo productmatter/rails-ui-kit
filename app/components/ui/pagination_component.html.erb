@@ -1,0 +1,5 @@
+<%= tag.nav(**root_attributes(aria: { label: 'pagination' })) do %>
+  <%= tag.ul(class: 'flex flex-row items-center gap-1') do %>
+    <% items.each do |item| %><%= item %><% end %>
+  <% end %>
+<% end %>

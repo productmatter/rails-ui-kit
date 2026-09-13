@@ -1,0 +1,96 @@
+<% content_for :title, "Avatar" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Avatar</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    An image with a fallback (initials) layered beneath it. No load-detection controller (rule 8):
+    the fallback is always in the DOM, and the image sits on top of it, so a missing or failed image
+    leaves the fallback showing on its own.
+  </p>
+</div>
+
+<div id="avatar-preview">
+  <%# Preview %>
+  <h2 class="text-base font-semibold mb-3">Preview</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
+    <%# A working image, decorative -- the name sits next to it as text %>
+    <div class="flex items-center gap-3">
+      <%= render Ui::AvatarComponent.new do |avatar| %>
+        <% avatar.with_image(src: "https://i.pravatar.cc/64?img=12") %>
+        <% avatar.with_fallback { "JD" } %>
+      <% end %>
+      <span class="text-sm font-medium">Jane Doe</span>
+    </div>
+
+    <%# A failed image -- the fallback shows through on its own %>
+    <%= render Ui::AvatarComponent.new(alt: "Alex Rivera") do |avatar| %>
+      <% avatar.with_image(src: "https://broken.example/missing.png") %>
+      <% avatar.with_fallback { "AR" } %>
+    <% end %>
+
+    <%# No image at all %>
+    <%= render(Ui::AvatarComponent.new(alt: "Sam Okafor")) { |avatar| avatar.with_fallback { "SO" } } %>
+
+    <%# Sized entirely from class: -- no size axis on the component %>
+    <%= render Ui::AvatarComponent.new(alt: "Priya Nair", class: "size-12") do |avatar| %>
+      <% avatar.with_image(src: "https://i.pravatar.cc/96?img=47") %>
+      <% avatar.with_fallback(class: "text-base") { "PN" } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#avatar-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="avatar-usage" class="text-neutral-200"><%= h(example_avatar_usage) %></code></pre>
+</div>
+
+<%# Slots %>
+<h2 class="text-base font-semibold mb-3">Slots</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_image",    "avatar-image",    "The photo. Layered over the fallback; alt is always empty, since the avatar's own alt: carries the accessible name."],
+        ["with_fallback", "avatar-fallback", "Initials or an icon, underneath the image. Hidden from assistive tech unless you override it."],
+      ].each do |slot, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Alt text %>
+<h2 class="text-base font-semibold mb-3">Alt text</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">alt:</code> lives on
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::AvatarComponent</code> itself, not on the image part.
+</p>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside mb-8">
+  <li><strong>Omitted</strong> (the default): the avatar is decorative. Use this whenever a name is already visible as text next to it -- a comment row, a table cell with a name column. Repeating the name in alt text would just double-announce it.</li>
+  <li><strong>Present</strong>: this avatar is the only identification of who it is. The root becomes <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="img"</code> with that <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-label</code>, and both the image and the fallback stay presentational underneath it -- one name for the whole avatar, never two.</li>
+</ul>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>No Stimulus controller. The image is always in the DOM, positioned over the fallback; a missing <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">src</code> or a failed load paints nothing, so the fallback beneath it shows through on its own.</li>
+  <li>No size axis: size and shape come from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">class:</code> (the default is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">size-8</code>).</li>
+  <li>Fallback text reaches 4.5:1 on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--muted</code> in both light and dark mode.</li>
+  <li>A caller whose fallback carries its own meaning (an icon that isn't just initials) can override the default hiding with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">avatar.with_fallback(aria: { hidden: false })</code>.</li>
+</ul>

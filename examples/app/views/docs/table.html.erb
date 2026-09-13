@@ -1,0 +1,103 @@
+<% content_for :title, "Table" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Table</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A semantic <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;table&gt;</code> in a horizontally
+    scrolling container, with caption, header, body, footer, row, head and cell parts.
+  </p>
+</div>
+
+<div id="table-preview">
+  <%# Preview %>
+  <h2 class="text-base font-semibold mb-3">Preview</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+    <%= render Ui::TableComponent.new do |table| %>
+      <% table.with_caption { "A list of recent invoices." } %>
+      <% table.with_header do |header| %>
+        <% header.with_row do |row| %>
+          <% row.with_head(scope: "col") { "Invoice" } %>
+          <% row.with_head(scope: "col") { "Status" } %>
+          <% row.with_head(scope: "col", class: "text-right") { "Amount" } %>
+        <% end %>
+      <% end %>
+      <% table.with_body do |body| %>
+        <% [
+          ["INV001", "Paid", "$250.00"],
+          ["INV002", "Pending", "$150.00"],
+          ["INV003", "Unpaid", "$350.00"],
+        ].each do |number, status, amount| %>
+          <% body.with_row do |row| %>
+            <% row.with_head(scope: "row", class: "font-medium") { number } %>
+            <% row.with_cell { status } %>
+            <% row.with_cell(class: "text-right") { amount } %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% table.with_footer do |footer| %>
+        <% footer.with_row do |row| %>
+          <% row.with_cell(class: "text-foreground") { "Total" } %>
+          <% row.with_cell { "" } %>
+          <% row.with_cell(class: "text-right") { "$750.00" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    Each row's first cell is a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_head(scope: "row")</code>,
+    interleaved with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_cell</code> in call order --
+    the polymorphic part of the row.
+  </p>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#table-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="table-usage" class="text-neutral-200"><%= h(example_table_usage) %></code></pre>
+</div>
+
+<%# Parts %>
+<h2 class="text-base font-semibold mb-3">Parts</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_caption", "table",  "table-caption", "The table's <caption>. Always its first child, whatever order you call it in."],
+        ["with_header",  "table",  "table-header",  "The <thead>. Holds rows in call order."],
+        ["with_body",    "table",  "table-body",    "The <tbody>. Holds rows in call order."],
+        ["with_footer",  "table",  "table-footer",  "The <tfoot>. Holds rows in call order."],
+        ["with_row",     "header/body/footer", "table-row", "A <tr>. Repeats in call order under whichever section calls it."],
+        ["with_head",    "row",    "table-head",    "A <th>. Interleaves with with_cell in call order -- a row-header column mixes both in the same row."],
+        ["with_cell",    "row",    "table-cell",    "A <td>."],
+      ].each do |slot, parent, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= parent %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Caption, header, body and footer always render in that order -- HTML only allows <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;caption&gt;</code> as a table's first child anyway.</li>
+  <li>The table sits in a scrolling container, so a wide table degrades to a horizontal scrollbar instead of breaking the page's layout.</li>
+  <li>Row dividers are decoration, not a control boundary, so they come from the default <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--border</code> token every kit part already carries.</li>
+  <li>Neither <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_head</code> nor <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_cell</code> sets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">scope</code> for you -- pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">scope: "col"</code> on a column header and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">scope: "row"</code> on a row header yourself.</li>
+</ul>

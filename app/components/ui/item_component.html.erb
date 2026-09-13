@@ -1,0 +1,12 @@
+<%= tag.div(**root_attributes) do %>
+  <%= header %>
+  <%= media %>
+  <% if title? || description? %>
+    <%= tag.div(data: { slot: 'item-content' }, class: 'flex flex-1 flex-col gap-1') do %>
+      <%= title %>
+      <%= description %>
+    <% end %>
+  <% end %>
+  <%= actions %>
+  <%= footer %>
+<% end %>

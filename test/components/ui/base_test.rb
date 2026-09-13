@@ -298,5 +298,74 @@ module Ui
     test 'one merger instance is shared by every component' do
       assert_same Ui::Base::MERGER, Ui::ButtonComponent::MERGER
     end
+
+    # --- BASE6: boolean HTML attributes normalise false-ish strings to absent ---
+
+    # `visible: :all` throughout: Capybara treats a rendered `hidden` attribute as
+    # an invisible element and would filter it out of an unqualified selector match,
+    # which is exactly the attribute this test suite is asserting on.
+    Ui::Base::BOOLEAN_ATTRIBUTES.each do |attribute|
+      Ui::Base::FALSE_STRINGS.each do |false_string|
+        test "#{attribute}: #{false_string.inspect} renders the attribute absent" do
+          render_inline(BareComponent.new(attribute => false_string)) { 'x' }
+
+          assert_no_selector "span[#{attribute}]", visible: :all
+        end
+      end
+
+      test "#{attribute}: true renders the attribute" do
+        render_inline(BareComponent.new(attribute => true)) { 'x' }
+
+        assert_selector "span[#{attribute}]", visible: :all
+      end
+
+      test "#{attribute}: 'true' renders the attribute" do
+        render_inline(BareComponent.new(attribute => 'true')) { 'x' }
+
+        assert_selector "span[#{attribute}]", visible: :all
+      end
+
+      test "bare presence of #{attribute} renders the attribute" do
+        render_inline(BareComponent.new(attribute => attribute.to_s)) { 'x' }
+
+        assert_selector "span[#{attribute}]", visible: :all
+      end
+
+      test "#{attribute}: nil renders the attribute absent" do
+        render_inline(BareComponent.new(attribute => nil)) { 'x' }
+
+        assert_no_selector "span[#{attribute}]", visible: :all
+      end
+    end
+
+    test 'aria-invalid="false" survives verbatim, unaffected by boolean normalisation' do
+      render_inline(BareComponent.new(aria: { invalid: 'false' })) { 'x' }
+
+      assert_selector "span[aria-invalid='false']"
+    end
+
+    test 'aria-disabled="false" survives verbatim' do
+      render_inline(BareComponent.new(aria: { disabled: 'false' })) { 'x' }
+
+      assert_selector "span[aria-disabled='false']"
+    end
+
+    test 'aria-expanded="false" survives verbatim' do
+      render_inline(BareComponent.new(aria: { expanded: 'false' })) { 'x' }
+
+      assert_selector "span[aria-expanded='false']"
+    end
+
+    test 'aria-checked and aria-pressed false strings survive verbatim' do
+      render_inline(BareComponent.new(aria: { checked: 'false', pressed: 'false' })) { 'x' }
+
+      assert_selector "span[aria-checked='false'][aria-pressed='false']"
+    end
+
+    test 'data attribute string values, including "false", survive verbatim' do
+      render_inline(BareComponent.new(data: { enabled: 'false', count: '0', label: '' })) { 'x' }
+
+      assert_selector "span[data-enabled='false'][data-count='0'][data-label='']"
+    end
   end
 end

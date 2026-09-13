@@ -27,5 +27,8 @@ Metrics/BlockLength:
     - test/**/*
 
 Metrics/ClassLength:
+  # Ui::Base carries the whole kit's variant, class-merge and attribute-forwarding
+  # layers so components don't each repeat them; concentrating that is the point.
+  Max: 150
   Exclude:
     - test/**/*

@@ -1,0 +1,84 @@
+<% content_for :title, "Breadcrumb" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Breadcrumb</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">nav</code> of links to the current page's ancestors.
+    The separator between every pair of items is drawn by the component, never the caller, and the current page is marked with
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-current="page"</code> instead of a visual treatment alone.
+  </p>
+</div>
+
+<div id="breadcrumb-preview">
+  <%# Plain %>
+  <h2 class="text-base font-semibold mb-3">Plain</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+    <%= render Ui::BreadcrumbComponent.new do |breadcrumb| %>
+      <% breadcrumb.with_link(href: "#") { "Home" } %>
+      <% breadcrumb.with_link(href: "#") { "Settings" } %>
+      <% breadcrumb.with_page { "Profile" } %>
+    <% end %>
+  </div>
+
+  <%# Collapsed %>
+  <h2 class="text-base font-semibold mb-3">With a collapsed run of ancestors</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-4">
+    <%= render Ui::BreadcrumbComponent.new(aria: { label: "breadcrumb with a collapsed run" }) do |breadcrumb| %>
+      <% breadcrumb.with_link(href: "#") { "Home" } %>
+      <% breadcrumb.with_ellipsis(aria: { label: "2 hidden pages" }) %>
+      <% breadcrumb.with_link(href: "#") { "Settings" } %>
+      <% breadcrumb.with_page { "Profile" } %>
+    <% end %>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    The ellipsis is visible as a truncation mark, but its accessible name is what a screen reader announces --
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">"More"</code> by default, overridden here to say how many pages are hidden.
+  </p>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#breadcrumb-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="breadcrumb-usage" class="text-neutral-200"><%= h(example_breadcrumb_usage) %></code></pre>
+</div>
+
+<%# Parts %>
+<h2 class="text-base font-semibold mb-3">Parts</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_link",     "breadcrumb-link",      "An ancestor page. Takes href: and any HTML attribute; the caller's class: styles the <a>."],
+        ["with_page",     "breadcrumb-page",      "The current page. Not a link -- carries aria-current=\"page\" instead."],
+        ["with_ellipsis", "breadcrumb-ellipsis",  "A collapsed run of ancestors. Carries an accessible name (\"More\" by default), unlike the separator."],
+        ["(automatic)",   "breadcrumb-separator", "Drawn between every pair of items by the component. Never a slot you set yourself."],
+      ].each do |slot, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Items render in call order. Whatever mix of <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_link</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_page</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_ellipsis</code> you call, and in that order.</li>
+  <li>A separator is inserted between every pair of items automatically -- one nav with two items gets exactly one separator, never more or fewer.</li>
+  <li>The separator is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-hidden</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="presentation"</code>: assistive tech reads the list of links, not a chevron between each.</li>
+  <li>Typically only the last item is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_page</code>; every ancestor before it is a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">with_link</code>.</li>
+</ul>

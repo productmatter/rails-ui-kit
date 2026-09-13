@@ -38,9 +38,6 @@ module Ui
       defaults: { variant: :default, size: :default }
     )
 
-    # `disabled:` values that leave the button enabled, as form params spell false.
-    NOT_DISABLED = ['', 'false', '0'].freeze
-
     attr_reader :variant, :size, :href, :type
 
     # `variant:`/`size:` accept a symbol or string; nil means the default.
@@ -51,8 +48,9 @@ module Ui
       @type = type
       super(**html_attributes)
       # Taken out of the forwarded attributes and rendered from here: an <a> ignores
-      # `disabled` entirely, and on a <button> the string "false" would still disable.
-      @disabled = !NOT_DISABLED.include?(self.html_attributes.delete(:disabled).to_s)
+      # `disabled` entirely, so this component's own link-vs-button branching needs
+      # a real boolean rather than whatever string form the caller forwarded it in.
+      @disabled = boolean_attribute?(self.html_attributes.delete(:disabled))
     end
 
     def variant_values

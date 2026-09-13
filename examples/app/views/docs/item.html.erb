@@ -1,0 +1,175 @@
+<% content_for :title, "Item" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Item</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    A flexible row -- media, a title/description pair, and actions, plus optional header and footer
+    rows that span the full width. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::Item::GroupComponent</code>
+    stacks several, with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::Item::SeparatorComponent</code> drawn between them.
+  </p>
+</div>
+
+<div id="item-preview">
+  <%# Preview %>
+  <h2 class="text-base font-semibold mb-3">Preview</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+    <%= render Ui::Item::GroupComponent.new(class: "gap-2 w-full max-w-md mx-auto") do %>
+      <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+        <% item.with_media(variant: :icon) do %>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M2 12h20"/></svg>
+        <% end %>
+        <% item.with_title { "Push notifications" } %>
+        <% item.with_description { "Get notified when someone mentions you." } %>
+        <% item.with_actions do %>
+          <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm)) { "Configure" } %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::Item::SeparatorComponent.new) %>
+      <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+        <% item.with_media(variant: :image) do %>
+          <img src="https://i.pravatar.cc/40?img=33" alt="">
+        <% end %>
+        <% item.with_title { "Priya Nair" } %>
+        <% item.with_description { "priya@example.com" } %>
+        <% item.with_actions do %>
+          <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Remove Priya Nair" }) do %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Variants %>
+  <h2 class="text-base font-semibold mb-3">Variants</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-8">
+    <% [
+      [:default, "No border, no fill."],
+      [:outline, "A bordered row -- the border is the row's boundary, so it holds the same 3:1 contrast a control's edge does."],
+      [:muted,   "A quiet filled row, for a row that's present but not actionable."],
+    ].each do |variant, description| %>
+      <div class="flex items-center gap-6 px-5 py-4">
+        <div class="w-full max-w-xs shrink-0">
+          <%= render Ui::ItemComponent.new(variant: variant) do |item| %>
+            <% item.with_title { variant.to_s.capitalize } %>
+            <% item.with_description { "Item description" } %>
+          <% end %>
+        </div>
+        <div>
+          <p class="font-mono text-xs text-violet-600 dark:text-violet-400 mb-0.5">variant: :<%= variant %></p>
+          <p class="text-sm text-neutral-600 dark:text-neutral-400"><%= description %></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Sizes %>
+  <h2 class="text-base font-semibold mb-3">Sizes</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col gap-3 p-8 mb-8">
+    <%= render Ui::ItemComponent.new(variant: :outline, size: :sm) do |item| %>
+      <% item.with_title { "Small size" } %>
+      <% item.with_description { "size: :sm -- tighter padding and gap." } %>
+    <% end %>
+    <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+      <% item.with_title { "Default size" } %>
+      <% item.with_description { "The default padding and gap." } %>
+    <% end %>
+  </div>
+
+  <%# Media variants %>
+  <h2 class="text-base font-semibold mb-3">Media variants</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col gap-3 p-8 mb-4">
+    <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+      <% item.with_media do %>
+        <%= render(Ui::AvatarComponent.new) { |avatar| avatar.with_fallback { "JD" } } %>
+      <% end %>
+      <% item.with_title { "media variant: :default" } %>
+      <% item.with_description { "Transparent -- holds whatever you put in it, an Avatar here." } %>
+    <% end %>
+    <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+      <% item.with_media(variant: :icon) do %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v16H4z"/></svg>
+      <% end %>
+      <% item.with_title { "media variant: :icon" } %>
+      <% item.with_description { "An 8x8 chip with a muted fill and border." } %>
+    <% end %>
+    <%= render Ui::ItemComponent.new(variant: :outline) do |item| %>
+      <% item.with_media(variant: :image) do %>
+        <img src="https://i.pravatar.cc/40?img=5" alt="">
+      <% end %>
+      <% item.with_title { "media variant: :image" } %>
+      <% item.with_description { "A 10x10 photo, cropped to cover." } %>
+    <% end %>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    When a description is present, media nudges down and aligns to the top instead of centering on the whole row, so it lines up with the title's baseline.
+  </p>
+
+  <%# Header and footer %>
+  <h2 class="text-base font-semibold mb-3">Header and footer</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-8 mb-8">
+    <%= render Ui::ItemComponent.new(variant: :outline, class: "w-full max-w-sm") do |item| %>
+      <% item.with_header do %>
+        <span class="text-sm font-medium">Weekly digest</span>
+        <%= render(Ui::BadgeComponent.new(variant: :secondary)) { "New" } %>
+      <% end %>
+      <% item.with_description { "A summary of activity, every Monday morning." } %>
+      <% item.with_footer(class: "justify-end") do %>
+        <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm)) { "Preview" } %>
+        <%= render(Ui::ButtonComponent.new(size: :sm)) { "Enable" } %>
+      <% end %>
+    <% end %>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    Header and footer span the full width -- <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">flex-wrap</code> on the item puts them on their own line above and below the media/content/actions row.
+  </p>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#item-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="item-usage" class="text-neutral-200"><%= h(example_item_usage) %></code></pre>
+</div>
+
+<%# Parts %>
+<h2 class="text-base font-semibold mb-3">Parts</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_header",      "item-header",      "A full-width row above media/content/actions."],
+        ["with_media",       "item-media",       "default, icon or image. Aligns to the title's top when a description is present."],
+        ["with_title",       "item-title",       "Nests with the description inside an item-content wrapper that grows to fill the row."],
+        ["with_description", "item-description", "Two-line clamped, muted foreground colour."],
+        ["with_actions",     "item-actions",     "A flex row for buttons or icon buttons."],
+        ["with_footer",      "item-footer",      "A full-width row below media/content/actions."],
+      ].each do |slot, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Parts always render in the same order -- header, media, title/description, actions, footer -- whatever order you call them in. Parts you don't set render nothing.</li>
+  <li>The outline variant's border comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--input</code>, not <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">--border</code>: it's the only thing marking the row's edge, so it's a boundary and reaches 3:1, the same as a control's edge or Badge's outline variant.</li>
+  <li>Item is structural -- a plain <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;div&gt;</code>, no invented role. Put a real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;a&gt;</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;button&gt;</code> in the title or actions if the row needs to be interactive; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">[a]:hover:bg-accent/50</code> tints it on hover.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::Item::GroupComponent</code> is a plain flex-column wrapper, no invented role -- block content in call order, so Items and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::Item::SeparatorComponent</code> interleave however you place them.</li>
+</ul>
