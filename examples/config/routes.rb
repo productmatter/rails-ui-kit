@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get 'installation', to: 'docs#installation'
 
   get 'components/button',         to: 'docs#button',         as: :button
+  get 'components/card',           to: 'docs#card',           as: :card
   get 'components/modal',          to: 'docs#modal',          as: :modal
   get 'components/dropdown',       to: 'docs#dropdown',       as: :dropdown
   get 'components/tooltip',        to: 'docs#tooltip',        as: :tooltip

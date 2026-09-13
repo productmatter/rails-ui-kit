@@ -30,6 +30,31 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_card_usage
+    <<~'RUBY'
+      <%= render Ui::CardComponent.new do |card| %>
+        <% card.with_header do |header| %>
+          <% header.with_title { "Billing" } %>
+          <% header.with_description { "Manage your plan and payment details." } %>
+          <% header.with_action do %>
+            <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm)) { "Edit" } %>
+          <% end %>
+        <% end %>
+        <% card.with_body do %>
+          <p>Pro plan, billed yearly.</p>
+        <% end %>
+        <% card.with_footer(class: "justify-end gap-2") do %>
+          <%= render(Ui::ButtonComponent.new) { "Upgrade" } %>
+        <% end %>
+      <% end %>
+
+      <%# No parts: the block renders straight into the card %>
+      <%= render Ui::CardComponent.new(class: "px-6") do %>
+        Anything at all.
+      <% end %>
+    RUBY
+  end
+
   def example_tooltip_usage
     <<~'RUBY'
       <%= render Ui::TooltipComponent.new(text: "Save your changes", placement: "top") do |t| %>

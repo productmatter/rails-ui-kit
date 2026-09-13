@@ -7,6 +7,7 @@ A Rails Engine packaging reusable UI components as paired ViewComponents and Sti
 | Component | Stimulus identifier(s) | Description |
 |---|---|---|
 | `Ui::ButtonComponent` | — | 6 variants × 4 sizes on the design tokens; renders `<a>` when given `href` |
+| `Ui::CardComponent` | — | Token-backed surface with header (title, description, action), body and footer parts; each part takes `class:` and HTML attributes |
 | `Ui::ModalComponent` | `ui--modal` | 8-position modal dialog with backdrop, form-change tracking, Turbo Frame support |
 | `Ui::DropdownComponent` | `ui--dropdown` | Floating-UI-positioned dropdown with keyboard nav, 3 modes (menu/listbox/dialog) |
 | `Ui::PopoverComponent` | `ui--popover` | Click-triggered floating panel for rich HTML, click-outside and Escape to close |
