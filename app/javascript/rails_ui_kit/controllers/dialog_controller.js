@@ -13,7 +13,7 @@ export default class extends Controller {
     window.customConfirmDialog = this.boundShowCustomDialog
     window.defaultConfirmDialog = this.boundShowDefaultDialog
 
-    this.openDialogs = new Set()
+    this.pendingConfirms = new Map()
     this.boundBeforeCache = this.closeBeforeCache.bind(this)
     document.addEventListener("turbo:before-cache", this.boundBeforeCache)
   }
@@ -31,7 +31,10 @@ export default class extends Controller {
 
   // Cancel any open confirm so Turbo never caches, and later restores, a dialog in its open state.
   closeBeforeCache() {
-    this.openDialogs.forEach((dialog) => dialog.close("cancel"))
+    for (const dialog of [...this.pendingConfirms.keys()]) {
+      if (dialog.open) dialog.close("cancel")
+      this.settle(dialog)
+    }
   }
 
   async showCustomDialog(dialogSelector) {
@@ -102,22 +105,33 @@ export default class extends Controller {
   }
 
   showDialog(dialog) {
+    // The previous confirm on this dialog may have closed with its "close" event still queued; settle it with
+    // its own answer now, before this confirm resets returnValue. One still open is superseded and resolves false.
+    this.settle(dialog)
+
     // A page restored from Turbo's cache can carry a non-modal `open` attribute; showModal() throws on it.
     if (dialog.open && !dialog.matches(":modal")) dialog.removeAttribute("open")
 
     dialog.returnValue = ""
     dialog.showModal()
-    this.openDialogs.add(dialog)
 
     return new Promise((resolve) => {
+      // A "close" that arrives while the dialog is open again belongs to an earlier confirm; ignore it.
       const handleClose = () => {
-        const confirmed = dialog.returnValue === "confirm"
-        dialog.removeEventListener("close", handleClose)
-        this.openDialogs.delete(dialog)
-        resolve(confirmed)
+        if (!dialog.open) this.settle(dialog)
       }
 
-      dialog.addEventListener("close", handleClose, { once: true })
+      dialog.addEventListener("close", handleClose)
+      this.pendingConfirms.set(dialog, { resolve, handleClose })
     })
+  }
+
+  settle(dialog) {
+    const pending = this.pendingConfirms.get(dialog)
+    if (!pending) return
+
+    this.pendingConfirms.delete(dialog)
+    dialog.removeEventListener("close", pending.handleClose)
+    pending.resolve(dialog.returnValue === "confirm")
   }
 }
