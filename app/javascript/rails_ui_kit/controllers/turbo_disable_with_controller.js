@@ -6,15 +6,18 @@ export default class extends Controller {
       submitStart: this.handleSubmitStart.bind(this),
       submitEnd: this.handleSubmitEnd.bind(this),
       reset: this.handleReset.bind(this),
-      submit: this.handleStandardSubmit.bind(this)
+      submit: this.handleStandardSubmit.bind(this),
+      beforeCache: this.handleBeforeCache.bind(this)
     }
 
     this.elementStates = new WeakMap()
+    this.disabledElements = new Set()
 
     document.addEventListener('turbo:submit-start', this.boundHandlers.submitStart)
     document.addEventListener('turbo:submit-end', this.boundHandlers.submitEnd)
     document.addEventListener('submit', this.boundHandlers.submit)
     document.addEventListener('reset', this.boundHandlers.reset)
+    document.addEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
   }
 
   disconnect() {
@@ -22,14 +25,25 @@ export default class extends Controller {
     document.removeEventListener('turbo:submit-end', this.boundHandlers.submitEnd)
     document.removeEventListener('submit', this.boundHandlers.submit)
     document.removeEventListener('reset', this.boundHandlers.reset)
+    document.removeEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
+  }
+
+  // Turbo snapshots the page into its cache before navigating away. If we
+  // leave disabled/"Saving..." elements in that snapshot, pressing Back
+  // restores the stuck state until the user does a full reload. Restore
+  // every element we've disabled so the cached snapshot matches the
+  // pre-submit page.
+  handleBeforeCache() {
+    this.disabledElements.forEach(element => this.enableElement(element))
   }
 
   handleSubmitStart(event) {
     const form = event.target.closest('form') || event.target
     if (!form) return
 
+    const submitter = event.detail?.formSubmission?.submitter
     const elements = form.querySelectorAll('[data-turbo-disable-with]')
-    elements.forEach(element => this.disableElement(element))
+    elements.forEach(element => this.disableElement(element, element === submitter))
   }
 
   handleSubmitEnd(event) {
@@ -57,10 +71,16 @@ export default class extends Controller {
     elements.forEach(element => this.disableElement(element))
   }
 
-  disableElement(element) {
+  disableElement(element, isSubmitter = false) {
     const isInput = element.tagName.toLowerCase() === 'input'
     const originalText = isInput ? element.value : element.innerHTML
-    const originalDisabled = element.disabled
+    // Turbo disables the submitter itself before dispatching
+    // turbo:submit-start, so element.disabled already reads true there --
+    // but a disabled button can't have submitted the form in the first
+    // place, so we know the submitter's real original state was false.
+    // Every other element wasn't touched, so its live `disabled` is
+    // trustworthy (including one app JS disabled for its own reasons).
+    const originalDisabled = isSubmitter ? false : element.disabled
     const originalAriaLabel = element.getAttribute('aria-label')
     const disableText = element.dataset.turboDisableWith || this.getDefaultText()
     const style = element.dataset.turboDisableStyle || 'text'
@@ -75,6 +95,7 @@ export default class extends Controller {
       isInput,
       style
     })
+    this.disabledElements.add(element)
 
     element.disabled = true
     element.setAttribute('aria-busy', 'true')
@@ -117,6 +138,7 @@ export default class extends Controller {
     const state = this.elementStates.get(element)
     if (!state) return
 
+    this.disabledElements.delete(element)
     element.disabled = state.originalDisabled
     element.removeAttribute('aria-busy')
     element.classList.remove('submitting', 'pointer-events-none', 'opacity-75')
