@@ -46,25 +46,13 @@ module Ui
       assert_selector "div[data-ui--tooltip-offset-value='12']"
     end
 
-    test 'wires hover and focus actions' do
-      render_inline(Ui::TooltipComponent.new(text: 'Tip')) do |tooltip|
-        tooltip.with_trigger { 'x' }
-      end
-
-      action = page.find("[data-controller='ui--tooltip']")['data-action']
-      assert_includes action, 'mouseenter->ui--tooltip#show'
-      assert_includes action, 'mouseleave->ui--tooltip#hide'
-      assert_includes action, 'focusin->ui--tooltip#show'
-      assert_includes action, 'focusout->ui--tooltip#hide'
-    end
-
-    test 'tooltip content has pointer-events-none' do
+    test 'tooltip content accepts pointer events so the pointer can move onto it' do
       render_inline(Ui::TooltipComponent.new(text: 'Tip')) do |tooltip|
         tooltip.with_trigger { 'x' }
       end
 
       classes = page.find("[data-ui--tooltip-target='content']")['class']
-      assert_includes classes, 'pointer-events-none'
+      refute_includes classes, 'pointer-events-none'
     end
   end
 end

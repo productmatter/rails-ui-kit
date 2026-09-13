@@ -77,13 +77,26 @@
   </table>
 </div>
 
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 mb-8 text-sm text-neutral-600 dark:text-neutral-400">
+  <p>
+    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code>
+    control never receives focus, so keyboard and screen reader users can't trigger a tooltip on it even
+    though hover still shows it for a mouse. If a disabled control needs a tooltip, use
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-disabled="true"</code>
+    instead of the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code>
+    attribute so the control stays focusable.
+  </p>
+</div>
+
 <h2 class="text-base font-semibold mb-3">Stimulus Controller</h2>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
   <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--tooltip</code>
   — registered automatically by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">registerControllers(application)</code>.
 </p>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>Assigns a unique <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">id</code> and wires <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code> on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>.</li>
+  <li>Resolves the focusable control inside the trigger slot and puts <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code>, positioning and hover/focus listeners on that control, not the wrapper — so a block-level trigger doesn't show the tooltip when hovering empty space beside it.</li>
   <li>Uses Floating UI <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">computePosition</code> with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">flip</code> + <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">shift</code> — auto-flips near viewport edges.</li>
-  <li>Listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusin</code>, and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusout</code> on the wrapper.</li>
+  <li>Listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusin</code>, and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusout</code> on the control, plus <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code> on the tooltip content itself, so the pointer can travel onto it.</li>
+  <li>Dismissable with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Escape</code> without moving focus; stays visible while the control has focus or hover, and clears on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:before-cache</code> so Back never restores it visible.</li>
 </ul>

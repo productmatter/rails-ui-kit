@@ -25,8 +25,7 @@ module Ui
         data: {
           controller: 'ui--tooltip',
           'ui--tooltip-placement-value': placement,
-          'ui--tooltip-offset-value': offset,
-          action: 'mouseenter->ui--tooltip#show mouseleave->ui--tooltip#hide focusin->ui--tooltip#show focusout->ui--tooltip#hide'
+          'ui--tooltip-offset-value': offset
         }
       }
     end
@@ -37,7 +36,7 @@ module Ui
         transition-opacity duration-100 ease-out
         px-2 py-1 text-xs font-medium rounded shadow-sm
         bg-neutral-900 text-white dark:bg-white dark:text-neutral-900
-        pointer-events-none whitespace-nowrap
+        whitespace-nowrap
       ].join(' ')
     end
   end
