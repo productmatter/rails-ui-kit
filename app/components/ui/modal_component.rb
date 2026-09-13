@@ -4,7 +4,7 @@ module Ui
   class ModalComponent < ViewComponent::Base
     BASE_CLASSES = %w[
       fixed z-[61] p-0 m-0 max-h-none max-w-none
-      backdrop:bg-transparent bg-white dark:bg-gray-900 shadow-2xl
+      backdrop:bg-transparent bg-background text-foreground shadow-2xl
       opacity-0 transition-all duration-300 ease-in-out focus-visible:outline-none
     ].freeze
 
