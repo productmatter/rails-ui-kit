@@ -213,6 +213,10 @@ old `ConfirmDialogComponent` keyword API is updated.
    v0.2.0 tag/SHA (§ Assumptions of ui-component-library).
 10. Breaking changes land in this one scope's release, not dribbled across several
     (§ Business rules of ui-component-library, rule 10).
+11. The system regression tests that guard the component audit's fixes stay green
+    through the migration, unchanged in what they assert. A retrofitted component that
+    reintroduces an audit bug is a defect in this scope. Rewriting a test's selectors
+    for renamed markup is allowed; weakening what it asserts is not (§ Assumptions).
 
 ## Assumptions
 
@@ -242,6 +246,19 @@ old `ConfirmDialogComponent` keyword API is updated.
 - Both consumer repos are pinned to v0.2.0 before this scope's changes reach `main`.
   That action happens in those repos; this scope treats it as a precondition it
   checks for, not one it can perform.
+- **The component audit's live bugs are already fixed in the old components.**
+  `docs/audits/2026-09-13-component-audit.md` found them on `main`, and they were
+  fixed in place rather than left for this scope:
+  - `6a07152`: Modal, ConfirmDialog and `turbo_confirm`.
+  - `ed7fbcb`: Dropdown and Popover.
+  - `78d4c64`: Tooltip.
+  - Toast and the utility controllers are landing next.
+
+  System regression tests in the `test:system` lane guard those fixes. This scope
+  keeps those tests green (rule 11) rather than rediscovering the bugs. Where a fix's
+  mechanism moves into a primitive, such as Turbo-cache teardown, focus restore on
+  removal, or Escape handling, the primitive must reproduce the tested behaviour.
+  `ui-presence-and-overlay-stack` § Behavior records the Turbo-cache contract.
 
 ## Critical files
 
@@ -278,6 +295,7 @@ old `ConfirmDialogComponent` keyword API is updated.
 - The toast global-function/custom-event/template-clone contract is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/toast_regression_test.rb`
 - The turbo-confirm/ConfirmDialog global-function contract is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/turbo_confirm_regression_test.rb`
 - The form-change/Modal `trackChanges` contract is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/modal_form_change_regression_test.rb`
+- The whole browser lane, including every component-audit regression test, is green after the migration — run: `bundle exec rake test:system`
 
 ### judgeable
 

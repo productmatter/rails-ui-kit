@@ -168,13 +168,17 @@ deliberately deferred to stay readable in one sitting.
   `@floating-ui/dom` import**, including the `arrow` middleware's manual
   `staticSide` placement math. Presence primitive replaces the manual
   `hidden`/`opacity-0` toggling and `setTimeout(..., 100)`. The overlay primitive is
-  consumed in `hint` mode only, for top-layer placement — a tooltip isn't
-  focus-trapped, dismissed by Escape, or part of nested dismiss order — and `z-50` is
-  deleted rather than replaced by a scale value.
+  consumed in `hint` mode only, for top-layer placement. A tooltip isn't
+  focus-trapped or part of nested dismiss order. It **is** dismissable by Escape
+  without moving focus (WCAG 1.4.13). Consuming that Escape calls `preventDefault()`,
+  so a surrounding native `<dialog>` doesn't close with it. This shipped in `78d4c64`
+  and the retrofit keeps it. `z-50` is deleted rather than replaced by a scale value.
 - **Public API break.** None expected to the Ruby constructor (`text`, `placement`,
   `offset`).
-- **Test impact.** `tooltip_component_test.rb` asserts `pointer-events-none` — a
-  structural class, unaffected by tokenization.
+- **Test impact.** `tooltip_component_test.rb` asserts the tooltip does **not** carry
+  `pointer-events-none`, so the pointer can move onto it (WCAG 1.4.13). `78d4c64`
+  flipped the old assertion, which had protected the defect. The class is structural,
+  so tokenization doesn't affect it.
 
 ## JS controller cleanup summary
 

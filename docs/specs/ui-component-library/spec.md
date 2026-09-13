@@ -97,7 +97,9 @@ scope that needs to may not proceed without re-ratifying this parent.
    consumes it. A component may not reimplement one, and may not import
    `@floating-ui/dom` directly — only the positioning primitive may.
 5. **The caller wins.** A `class:` passed by a consumer reliably overrides the
-   component's own default classes.
+   component's own unmodified default classes. To override a modifier-scoped default
+   (e.g. `has-[>svg]:px-3`), the caller passes the same modifier. That is a documented
+   property of Tailwind class merging, not a defect.
 6. **Accessibility is definition-of-done, not a later pass.** Every interactive
    component is keyboard-operable and exposes correct ARIA as part of the scope that
    introduces it. A scope that ships a component without keyboard operation and ARIA
@@ -207,12 +209,19 @@ navigation (C), then field binding (E) and media-query watching (F).
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-test-harness` | The `test/system/` browser lane: a Capybara base class on headless Chrome driving `examples/`, a `test:system` rake task separate from the five-Ruby unit lane, and `axe-core-capybara`/`axe-core-api` accessibility assertions. | — | ratified |
-| `ui-design-tokens` | The CSS-variable token layer: shadcn's names, ProductMatter's `oklch()` values, `:root`/`.dark` redefinition, install-generator surface. | `ui-test-harness` | blocked |
+| `ui-test-harness` | The `test/system/` browser lane: a Capybara base class on headless Chrome driving `examples/`, a `test:system` rake task separate from the five-Ruby unit lane, and `axe-core-capybara`/`axe-core-api` accessibility assertions. | — | ready-for-review |
+| `ui-design-tokens` | The CSS-variable token layer: shadcn's names, ProductMatter's `oklch()` values, `:root`/`.dark` redefinition, install-generator surface. | `ui-test-harness` | building |
 | `ui-component-base` | `Ui::Base`: the `class_variants` variant layer and the `tailwind_merge` class-merge layer that makes rule 5 true. | `ui-design-tokens` | ready-for-review |
 | `ui-presence-and-overlay-stack` | Primitives **D** (presence / open-state: `data-state="open\|closed\|closing"`, waiting on `animationend`/`transitionend` so exit animations run) and **B** (overlay stack: portal to a fixed root, focus trap, body scroll lock, Escape and outside-click dismiss, z-index and nesting order). | `ui-component-base`, `ui-test-harness` | ratified |
 | `ui-positioning-and-navigation` | Primitives **A** (one wrapper over `@floating-ui/dom` emitting `data-side`/`data-align`, re-running on scroll and resize), **C** (roving tabindex / group nav: arrows, Home/End, optional first-letter typeahead, `aria-activedescendant` for listbox-style vs. real focus for menu-style), **E** (field binding: `Field`/`FieldLabel`/`FieldError` wiring `data-invalid` and `aria-invalid` from a Rails errors object, server-rendered), **F** (media-query watcher over `matchMedia`). | `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
 | `ui-foundation-retrofit` | Moving all seven existing components onto the token, base and primitive layers, and deleting the three duplicated `@floating-ui/dom` positioning implementations. | `ui-positioning-and-navigation` | ratified |
+
+**Alongside Phase A — Turbo patterns.** Additive and non-breaking. It builds on today's
+Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests green.
+
+| Scope | Owns | Depends on | Status |
+|---|---|---|---|
+| `ui-modal-turbo` | The blessed Modal + Turbo patterns and their full lifecycle, as real `examples/` demos driven by system tests; `ui--modal#closeOnSuccess` and the `turbo_stream.close_modal` action; the canonical guide shipped in the gem; the opt-in `rails_ui_kit:agent_skill` generator. | `ui-test-harness` | ratified |
 
 **Phase B — Presentational breadth.** Mechanical once Phase A exists.
 

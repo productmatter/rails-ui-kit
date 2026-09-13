@@ -1,12 +1,13 @@
 ---
 slug: ui-test-harness
 type: chore
-status: ratified
+status: building
 decider: Jonathan Simmons
 blast_radius: medium
 size: small
 target_model: standard
 created: 2026-09-07
+stale_after: 2026-10-13
 loop_budget: 5
 ---
 
@@ -29,9 +30,9 @@ system-test base class. `test_helper.rb` requires the `examples/` app's environm
 `minitest/autorun` and ViewComponent's test helpers, and mentions Capybara nowhere —
 though `capybara` and `selenium-webdriver` are both already in the `Gemfile`'s test group,
 unused. And the `Rakefile`'s single test task globs `test/**/*_test.rb`, so the first file
-written under `test/system/` silently joins the lane CI runs across five Ruby versions
-(3.1, 3.2, 3.3, 3.4, 4.0), giving every PR five headless-Chrome installs and five chances
-to flake.
+written under `test/system/` silently joins the lane CI runs across four Ruby versions
+(3.2, 3.3, 3.4, 4.0 — 3.1 is dropped, since `tailwind_merge` requires 3.2), giving every
+PR four headless-Chrome installs and four chances to flake.
 
 This scope exists because that is real, unbudgeted work with its own failure modes, and
 because two independent scopes reached for it and neither should own it. It is a chore in
@@ -83,7 +84,7 @@ The `Rakefile` splits into two lanes. The existing `test` task's pattern narrows
 excludes everything under `test/system/`, keeping the unit lane's file list exactly what
 it is today, and a new `test:system` task globs `test/system/**/*_test.rb`. `default`
 stays pointed at the unit lane. `.github/workflows/ci.yml` gains a second job: the
-existing matrix job keeps running `bundle exec rake test` across all five Rubies, and the
+existing matrix job keeps running `bundle exec rake test` across all four Rubies, and the
 new job runs `bundle exec rake test:system` once, on a single stable Ruby, on a runner
 with Chrome available. Fast signal stays on every Ruby; the browser cost is paid once.
 
@@ -105,7 +106,7 @@ and undo the separation above — see § Assumptions.
 2. The default `rake test` task's file list contains no path under `test/system/`, and
    `default` points at that task. A browser test reaches CI only through the separate
    `test:system` task.
-3. System tests run in CI on exactly one Ruby; unit tests run on all five in the existing
+3. System tests run in CI on exactly one Ruby; unit tests run on all four in the existing
    matrix. Neither lane is dropped — running system tests only locally is not an option,
    because it would make § Business rules, rule 6 of ui-component-library unenforceable.
 4. The accessibility assertion stack is `axe-core-capybara` + `axe-core-api`, asserted
@@ -140,7 +141,7 @@ and undo the separation above — see § Assumptions.
 - `ui-positioning-and-navigation` and `ui-presence-and-overlay-stack` originally
   proposed requiring the a11y helper from `test/test_helper.rb`. That placement is
   incompatible with rule 1 above — it would drag Capybara into the unit lane across all
-  five Rubies — so the helper lives on the system-test base class and nowhere else.
+  four Rubies — so the helper lives on the system-test base class and nowhere else.
   Those scopes now consume this lane rather than proposing their own placement; the
   substance they were reaching for (which axe gems) is unchanged and settled here as
   `axe-core-capybara` + `axe-core-api`.
@@ -162,7 +163,7 @@ and undo the separation above — see § Assumptions.
 - `test/system/` (new) — the browser-test lane and its smoke test.
 - `Rakefile` — the single `test/**/*_test.rb` glob that currently sweeps system tests into
   the default run; splits into the unit and `test:system` lanes here.
-- `.github/workflows/ci.yml` — the five-Ruby matrix; gains the single-Ruby system job.
+- `.github/workflows/ci.yml` — the four-Ruby matrix; gains the single-Ruby system job.
 - `Gemfile` — `capybara` and `selenium-webdriver` already present in the test group;
   gains `axe-core-capybara` and `axe-core-api`.
 - `bin/test` — currently `exec bundle exec rake test`; the shorthand whose meaning the
@@ -184,7 +185,7 @@ and undo the separation above — see § Assumptions.
 
 ### human-gate
 
-- Jonathan approves the CI shape before it lands — unit tests on all five Rubies, system tests once on one stable Ruby with Chrome — since it changes what every pull request runs and is the reason this scope exists separately at all.
+- Jonathan approves the CI shape before it lands — unit tests on all four Rubies, system tests once on one stable Ruby with Chrome — since it changes what every pull request runs and is the reason this scope exists separately at all.
 
 ## Out of scope / deferred
 

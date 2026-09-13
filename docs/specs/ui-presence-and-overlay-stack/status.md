@@ -38,4 +38,6 @@ Recorded pre-emptively from the shaping pass so a fresh context does not re-walk
 
 ## Corrections
 
-None yet. This build has not started, so no correction has been caught by an implementer, a reviewer or the decider.
+- Acceptance checks didn't cover an overlay element removed without closing (the component audit's M2: a Turbo Stream close leaked the scroll lock and focus); added § Behavior item 18 and `ui_overlay_removal_test.rb` — provable — reviewer
+- Acceptance checks didn't cover `turbo:before-cache` (the audit's cross-cutting pattern 1: Back restored open or broken overlays); added the Turbo-cache contract the shipped fixes use as § Behavior item 19, with `ui_overlay_turbo_cache_test.rb` — provable — reviewer
+- Rule 3 ("no `document`-level keydown/click listener for dismissal") and the `hint`-mode description didn't account for the shipped Tooltip's WCAG 1.4.13 fix (`78d4c64`), a capture-phase `document` keydown listener that dismisses visible `hint` content on Escape via `preventDefault()` + `stopPropagation()`; both are amended to name it as the one exception, since `popover="manual"` gives `hint` no native Escape handling to delegate to — provable — reviewer

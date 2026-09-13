@@ -134,7 +134,13 @@ Public API: targets — none (operates on `this.element`). Values — `open` (Bo
      is correct for a menu or listbox.
    - `hint` → `popover="manual"`. Top layer, no light-dismiss, and critically it does
      not dismiss an open `layer` — a tooltip appearing must not close the menu the
-     pointer is inside.
+     pointer is inside. `popover="manual"` opts out of the browser's own Escape
+     handling, so `hint` content has none to inherit; Escape dismisses it through the
+     one named exception to rule 3 — a capture-phase `document` `keydown` listener
+     that, only while the content is visible, hides it and calls both
+     `preventDefault()` and `stopPropagation()` so an ancestor's own Escape handling
+     (a native `<dialog>`, or another layer's top-layer dismissal) never also fires
+     (shipped for Tooltip in `78d4c64`).
 9. **Escape closes exactly one layer: the top one.** Neither primitive registers a
    `document`-level `keydown` listener. Ordering is the top layer's, which is LIFO by
    construction. A Dropdown open inside a Modal takes the first Escape; the Modal takes
@@ -178,6 +184,29 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
     reason presence is a separate controller rather than a private method of the
     overlay.
 
+### Element removal and Turbo's page cache — both primitives
+
+18. **Removal without a close is a close.** When an open overlay's element leaves the
+    document without `close()` running, the overlay's scroll lock is released and
+    focus is restored as if it had closed. A Turbo Stream that empties or replaces its
+    container, or a frame swap, are examples. The lock follows the reference count
+    (item 13), so another open overlay keeps the page locked. Nothing is left on
+    `<body>`: no `overflow`, no stale backdrop, no focus stranded on `<body>`.
+19. **The Turbo-cache contract.** This is the convention the component audit's shipped
+    fixes use (`6a07152`, `ed7fbcb`, `78d4c64`), adopted here as the primitives'
+    contract:
+    - On `connect`, `disconnect` and `turbo:before-cache`, each primitive returns
+      immediately to its closed resting state, with no exit animation. A snapshot is
+      never cached open.
+    - Pending timers and animation frames are cleared at the same points.
+    - A stored `open` value is ignored until the controller is connected. A page
+      restored from cache doesn't replay an open overlay or pull focus into it. An
+      overlay rendered to open on arrival, like a Modal delivered by a Turbo Stream
+      (`ui-modal-turbo`), still opens after connecting, from the closed resting state
+      through the normal enter path.
+    - `showModal()` is never called on a `<dialog>` restored with a stale `open`
+      attribute. The stale attribute is cleared first.
+
 ## Business rules
 
 **Must**
@@ -201,8 +230,15 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
 2. **No z-index literal in either primitive, and no stack-depth counter.** The only
    stacking value that may exist is the single `popover`-unsupported fallback in the
    stack module, applied once, not per depth.
-3. **No `document`-level `keydown` or `click` listener for dismissal.** A listener that
-   cannot tell whether it is on top is the nesting bug, restated.
+3. **No `document`-level `keydown` or `click` listener for dismissal, with one named
+   exception.** A listener that cannot tell whether it is on top is the nesting bug,
+   restated — except a capture-phase `document` `keydown` listener that dismisses
+   visible `hint`-mode content on Escape, consuming the key with `preventDefault()`
+   and `stopPropagation()` so it never reaches, and never closes, an ancestor's own
+   Escape handling. `hint` content has no top-layer Escape ordering to inherit
+   (`popover="manual"` opts out of the browser's light-dismiss and Escape handling
+   entirely), so this listener is what gives it Escape at all — not a second
+   implementation of the ordering `layer` and `modal` already get from the platform.
 4. **No hand-written focus trap.** `modal` mode uses `<dialog>`; `layer` and `hint`
    modes must not trap at all.
 5. **Presence never guesses a duration.** No `setTimeout` with a literal animation
@@ -330,6 +366,8 @@ Pointers. The code is the source of truth for what they do.
   position, and neither transition shifts layout horizontally — run: `bundle exec rake test:system TEST=test/system/ui_scroll_lock_test.rb`
 - A pointer gesture starting inside the overlay and ending outside it does not dismiss
   the overlay, while a click wholly outside does — run: `bundle exec rake test:system TEST=test/system/ui_overlay_dismiss_test.rb`
+- Removing an open overlay's element without closing it releases the scroll lock and restores focus, while another open overlay keeps the page locked — run: `bundle exec rake test:system TEST=test/system/ui_overlay_removal_test.rb`
+- On `turbo:before-cache`, an open overlay and a mid-transition presence element both return to the closed resting state with no pending timer or frame, and Back to that page restores them closed, with focus not pulled in and no `showModal()` error on a stale `open` dialog — run: `bundle exec rake test:system TEST=test/system/ui_overlay_turbo_cache_test.rb`
 - Automated accessibility scan reports no violations on the overlay and nested-overlay
   demo states — run: `bundle exec rake test:system TEST=test/system/ui_overlay_accessibility_test.rb`
 - The unit lane stays green with both primitives registered in `index.js` and no

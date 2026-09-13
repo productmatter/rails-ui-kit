@@ -41,4 +41,7 @@ none — spec authored, no implementation or test run has happened yet.
 None yet.
 
 ## Corrections
+- `implementation.md` said a tooltip isn't dismissed by Escape, writing a WCAG 1.4.13 failure into the plan; corrected to Escape-dismissable without moving focus, with `preventDefault()` so a surrounding `<dialog>` stays open, as shipped in `78d4c64` — provable — reviewer
+- `implementation.md` said `tooltip_component_test.rb` asserts `pointer-events-none`; `78d4c64` flipped that assertion — provable — reviewer
+- The audit's live bugs were fixed in place in the old components (`6a07152`, `ed7fbcb`, `78d4c64`) under system regression tests, so § Business rules gains rule 11 and § Acceptance checks runs the whole browser lane — provable — reviewer
 - Toast's status-color mapping was escalated as an open question; Jonathan's 2026-09-13 decision resolved it by extending the token contract, so the spec now states the resulting mapping directly and the resolved question was removed from `open-questions.md` — tasteable — decider

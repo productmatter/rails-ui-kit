@@ -1,9 +1,12 @@
 ## State
-built
+ready-for-review
 
-Lane is implemented, both rake tasks are green, and all three sibling-facing
-acceptance checks that can run today pass. See § Corrections for one spec
-assumption that turned out wrong once built.
+The lane is built and committed in `04237d6`, and both rake tasks are green. Three
+agent-loopable checks pass as written. The unit-lane check can't pass on any tree,
+because `ViewComponent::TestHelpers` loads Capybara itself; its substance, no Selenium
+in the unit lane, holds (re-checked 2026-09-13: `Capybara` defined, `Selenium` nil).
+What remains is the judgeable review and Jonathan's CI-shape human-gate. See § Corrections for the spec assumptions that turned out wrong
+once built.
 
 ## Done
 - Read all five sibling Phase A specs plus the parent (`ui-component-library/spec.md`)
