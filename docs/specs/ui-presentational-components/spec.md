@@ -148,10 +148,17 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    rendered example inside a single `id="<name>-preview"` element the browser test
    scopes to.
 7. **Two defaults learned from a real mismatch.** (a) Form controls (Input, Textarea,
-   Native Select, Input Group) are `bg-transparent` in light mode and `dark:bg-input/30`
-   in dark. A translucent fill takes the tint of whatever surface the control sits on,
-   whether that's `--background`, `--card` or a host's own panel. A fixed neutral fill
-   is right on exactly one surface and a visible patch on every other. (b) The kit paints
+   Native Select, Input Group) and anything that reads as one (Button's outline variant)
+   are `bg-transparent` in light mode and `dark:bg-muted/50` in dark. Two halves to this.
+   The fill is *translucent*, so it takes the tint of whatever surface the control sits
+   on, whether that's `--background`, `--card` or a host's own panel; a fixed neutral
+   fill is right on exactly one surface and a visible patch on every other. And the
+   fill comes from a *surface* token, never from `--input`: `--input` is the control's
+   boundary and is tuned light enough to reach 3:1 (§ Assumptions), so deriving the fill
+   from it makes the fill track the border and washes the control out — measured, it
+   drove `--muted-foreground` placeholder text on a dark filled control down to 3.47:1
+   (decided 2026-09-13, Jonathan Simmons). `--muted` at 50% keeps the fill's shipped
+   visual weight and leaves every text pair on it above 5.8:1. (b) The kit paints
    no page colour, so a host whose `<body>` has none shows the browser's white under
    dark-mode components. The install guide tells hosts to put
    `bg-background text-foreground` on `<body>`.
@@ -170,17 +177,25 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
 - **`dark:` means `.dark`.** Rule 7(a) uses the `dark:` variant. It agrees with the
   tokens only because the install generator writes `@custom-variant dark` for `.dark`
   into the host (ui-design-tokens, rule 8).
-- **Two token values contradict rule 4 today**, measured from `engine.css`:
-  - `--input` against `--background`/`--card` is 1.27–1.29:1 in light and
-    1.52–1.64:1 in dark, below the 3:1 a control's boundary needs.
-  - Dark `--destructive` as text is 3.49:1 on `--background` and 3.22:1 on `--card`,
-    below 4.5:1. Light passes at 6.8:1.
-
-  That blocks the control boundaries of Input, Textarea, Native Select and Input Group,
-  and destructive text in Alert and outline Badge. The values are
-  owned by `ui-design-tokens`, and the defaults in `open-questions.md` resolve them
-  there. **At the contradiction**, a batch worker builds with the token names and does
-  not substitute a literal or an alpha tweak to pass the check.
+- **The two token values that contradicted rule 4 are retuned** (decided 2026-09-13,
+  Jonathan Simmons; values in `ui-design-tokens`). `--input` was 1.27–1.29:1 against
+  `--background`/`--card` in light and 1.52–1.64:1 in dark; it is now
+  `oklch(0.62 0.012 75)` light and `oklch(0.69 0.011 75)` dark, so a control's boundary
+  reaches at least 3:1 on `--background`, `--card`, `--popover`, `--muted` and `--accent`,
+  and in dark also against the translucent fill of rule 7(a). `--border` is unchanged:
+  decoration is exempt. Dark `--destructive` was 3.49:1 as text on `--background` and
+  3.22:1 on `--card`; it is now `oklch(0.71 0.14 27)` with `--destructive-foreground`
+  `oklch(0.2 0.02 27)`, mirroring dark `--primary`, so destructive text reaches at least
+  4.5:1 on every dark surface. Light destructive was already 6.8:1 and is unchanged.
+  Control boundaries and destructive text are therefore no longer blocked for Input,
+  Textarea, Native Select, Input Group, Alert and outline Badge. A batch worker still
+  builds with the token names: never a literal or an alpha tweak to pass the check.
+- **The retune is why a control's fill no longer comes from `--input`** (rule 7(a)).
+  While the dark fill was `bg-input/30`, lightening `--input` lightened the fill with it
+  and `--muted-foreground` placeholder text on a filled control fell to 3.47–4.47:1.
+  `--muted-foreground` itself is unchanged: weakening "muted" for every component in the
+  kit to fix one control's fill treats the symptom. The fill moved to `dark:bg-muted/50`
+  instead, which restores 5.86–6.70:1 for that pair.
 - **The docs registry lands first.** Another in-flight unit on this branch replaces
   per-page controller actions and routes with a registry. Rule 6 assumes it. Until it
   exists, no docs page in this scope is added.

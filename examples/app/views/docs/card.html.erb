@@ -10,101 +10,103 @@
   </p>
 </div>
 
-<%# Plain %>
-<h2 class="text-base font-semibold mb-3">Plain</h2>
-<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
-  <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
-    <% card.with_header do |header| %>
-      <% header.with_title { "Monthly active users" } %>
-      <% header.with_description { "Unique accounts that signed in during the last 30 days." } %>
+<div id="card-preview">
+  <%# Plain %>
+  <h2 class="text-base font-semibold mb-3">Plain</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+    <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
+      <% card.with_header do |header| %>
+        <% header.with_title { "Monthly active users" } %>
+        <% header.with_description { "Unique accounts that signed in during the last 30 days." } %>
+      <% end %>
+      <% card.with_body do %>
+        <p class="text-3xl font-semibold tabular-nums">12,408</p>
+      <% end %>
     <% end %>
-    <% card.with_body do %>
-      <p class="text-3xl font-semibold tabular-nums">12,408</p>
-    <% end %>
-  <% end %>
-</div>
+  </div>
 
-<%# Header action %>
-<h2 class="text-base font-semibold mb-3">With a header action</h2>
-<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
-  <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
-    <% card.with_header do |header| %>
-      <% header.with_title { "Billing" } %>
-      <% header.with_description { "Pro plan, billed yearly. Renews on 1 March." } %>
-      <% header.with_action do %>
-        <%= render Ui::DropdownComponent.new(placement: "bottom-end", content_classes: "min-w-48 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md") do |dropdown| %>
-          <% dropdown.with_trigger do %>
-            <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Billing options" }, data: { action: "click->ui--dropdown#toggle" }) do %>
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
-              </svg>
+  <%# Header action %>
+  <h2 class="text-base font-semibold mb-3">With a header action</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+    <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
+      <% card.with_header do |header| %>
+        <% header.with_title { "Billing" } %>
+        <% header.with_description { "Pro plan, billed yearly. Renews on 1 March." } %>
+        <% header.with_action do %>
+          <%= render Ui::DropdownComponent.new(placement: "bottom-end", content_classes: "min-w-48 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md") do |dropdown| %>
+            <% dropdown.with_trigger do %>
+              <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Billing options" }, data: { action: "click->ui--dropdown#toggle" }) do %>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+                </svg>
+              <% end %>
             <% end %>
-          <% end %>
-          <% dropdown.with_menu do %>
-            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Change plan</a>
-            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Update payment method</a>
-            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-accent focus:bg-accent">Cancel subscription</a>
+            <% dropdown.with_menu do %>
+              <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Change plan</a>
+              <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Update payment method</a>
+              <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-accent focus:bg-accent">Cancel subscription</a>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
+      <% card.with_body do %>
+        <dl class="grid grid-cols-2 gap-y-2 text-sm">
+          <dt class="text-muted-foreground">Seats</dt><dd class="text-right tabular-nums">8 of 10</dd>
+          <dt class="text-muted-foreground">Next invoice</dt><dd class="text-right tabular-nums">$1,440.00</dd>
+        </dl>
+      <% end %>
     <% end %>
-    <% card.with_body do %>
-      <dl class="grid grid-cols-2 gap-y-2 text-sm">
-        <dt class="text-muted-foreground">Seats</dt><dd class="text-right tabular-nums">8 of 10</dd>
-        <dt class="text-muted-foreground">Next invoice</dt><dd class="text-right tabular-nums">$1,440.00</dd>
-      </dl>
-    <% end %>
-  <% end %>
-</div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  The action takes a second column on the right, centered on the title's line whatever its height. Here it holds a <code>Ui::DropdownComponent</code>. Without an action the header stays a single column.
-</p>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    The action takes a second column on the right, centered on the title's line whatever its height. Here it holds a <code>Ui::DropdownComponent</code>. Without an action the header stays a single column.
+  </p>
 
-<%# Footer %>
-<h2 class="text-base font-semibold mb-3">With a footer</h2>
-<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
-  <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
-    <% card.with_header do |header| %>
-      <% header.with_title { "Delete project" } %>
-      <% header.with_description { "Removes the project, its environments and every deploy. This cannot be undone." } %>
-    <% end %>
-    <% card.with_footer(class: "justify-end gap-2 border-t") do %>
-      <%= render(Ui::ButtonComponent.new(variant: :outline)) { "Cancel" } %>
-      <%= render(Ui::ButtonComponent.new(variant: :destructive)) { "Delete" } %>
-    <% end %>
-  <% end %>
-</div>
-
-<%# Form %>
-<h2 class="text-base font-semibold mb-3">Containing a form</h2>
-<div data-card-preview class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
-  <%= form_with url: demo_submit_path, method: :post, class: "w-full max-w-sm" do |f| %>
-    <%= render Ui::CardComponent.new do |card| %>
+  <%# Footer %>
+  <h2 class="text-base font-semibold mb-3">With a footer</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+    <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
       <% card.with_header do |header| %>
-        <% header.with_title { "Invite a teammate" } %>
-        <% header.with_description { "They'll get an email with a link to join the workspace." } %>
+        <% header.with_title { "Delete project" } %>
+        <% header.with_description { "Removes the project, its environments and every deploy. This cannot be undone." } %>
       <% end %>
-      <% card.with_body(class: "grid gap-4") do %>
-        <div class="grid gap-2">
-          <%= f.label :email, "Email", class: "text-sm font-medium leading-none" %>
-          <%= f.email_field :email, placeholder: "name@company.com", required: true,
-                class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" %>
-        </div>
-        <div class="grid gap-2">
-          <%= f.label :role, "Role", class: "text-sm font-medium leading-none" %>
-          <%= f.select :role, [["Member", "member"], ["Admin", "admin"]], {},
-                class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" %>
-        </div>
-      <% end %>
-      <% card.with_footer(class: "justify-end") do %>
-        <%= render(Ui::ButtonComponent.new(type: "submit", data: { turbo_disable_with: "Sending…" })) { "Send invite" } %>
+      <% card.with_footer(class: "justify-end gap-2 border-t") do %>
+        <%= render(Ui::ButtonComponent.new(variant: :outline)) { "Cancel" } %>
+        <%= render(Ui::ButtonComponent.new(variant: :destructive)) { "Delete" } %>
       <% end %>
     <% end %>
-  <% end %>
+  </div>
+
+  <%# Form %>
+  <h2 class="text-base font-semibold mb-3">Containing a form</h2>
+  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+    <%= form_with url: demo_submit_path, method: :post, class: "w-full max-w-sm" do |f| %>
+      <%= render Ui::CardComponent.new do |card| %>
+        <% card.with_header do |header| %>
+          <% header.with_title { "Invite a teammate" } %>
+          <% header.with_description { "They'll get an email with a link to join the workspace." } %>
+        <% end %>
+        <% card.with_body(class: "grid gap-4") do %>
+          <div class="grid gap-2">
+            <%= f.label :email, "Email", class: "text-sm font-medium leading-none" %>
+            <%= f.email_field :email, placeholder: "name@company.com", required: true,
+                  class: "h-9 w-full rounded-md border border-input bg-transparent dark:bg-muted/50 px-3 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" %>
+          </div>
+          <div class="grid gap-2">
+            <%= f.label :role, "Role", class: "text-sm font-medium leading-none" %>
+            <%= f.select :role, [["Member", "member"], ["Admin", "admin"]], {},
+                  class: "h-9 w-full rounded-md border border-input bg-transparent dark:bg-muted/50 px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50" %>
+          </div>
+        <% end %>
+        <% card.with_footer(class: "justify-end") do %>
+          <%= render(Ui::ButtonComponent.new(type: "submit", data: { turbo_disable_with: "Sending…" })) { "Send invite" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+    Wrap the card in the form rather than the other way round, so the footer's submit button is inside it.
+  </p>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  Wrap the card in the form rather than the other way round, so the footer's submit button is inside it.
-</p>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>

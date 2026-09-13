@@ -47,7 +47,10 @@
     --destructive: oklch(0.49 0.196 27);
 
     --border: oklch(0.915 0.005 75);
-    --input: oklch(0.915 0.005 75);
+    /* A control's boundary, so it must reach 3:1 on every surface it sits on and on
+       every fill it takes, including hover's --accent (WCAG 1.4.11). --border stays
+       subtle because it is decoration, which is exempt. */
+    --input: oklch(0.62 0.012 75);
     --ring: oklch(0.52 0.17 277);
 
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
@@ -96,14 +99,20 @@
     --accent: oklch(0.315 0.025 277);
     --accent-foreground: oklch(0.93 0.03 277);
 
-    --destructive: oklch(0.545 0.185 27);
+    /* Destructive is also text (a destructive menu item or alert), so like primary it
+       must reach 4.5:1 on every dark surface: dark mode lightens it and gives it a
+       dark label. */
+    --destructive: oklch(0.71 0.14 27);
 
     --border: oklch(0.305 0.01 75);
-    --input: oklch(0.345 0.011 75);
+    /* Light enough to reach 3:1 against the surface and against the translucent
+       fill a control paints on it. Boundaries only: a control's fill comes from a
+       surface token, never from --input. */
+    --input: oklch(0.69 0.011 75);
     --ring: oklch(0.7 0.12 277);
 
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
-    --destructive-foreground: oklch(0.985 0.006 27);
+    --destructive-foreground: oklch(0.2 0.02 27);
 
     --chart-1: oklch(0.66 0.16 277);
     --chart-2: oklch(0.72 0.12 225);

@@ -23,10 +23,15 @@ fixes each have a default, so work can start on the defaults.
 
 ## In progress
 
-None. Before the batches fan out, two shared pieces should land once rather than per
-worker: the colour-probe helper, extracted from `test/system/button_test.rb` into the
-system test base (§ Business rules, rule 5), and the docs registry, which landed in
-`aa0fd24` as `DocsPages::PAGES` with its drift test in `test/docs_pages_test.rb`.
+None. Both shared pieces the batches need have landed: the docs registry in `aa0fd24`
+as `DocsPages::PAGES` with its drift test in `test/docs_pages_test.rb`, and the
+colour-probe helper, moved out of `test/system/button_test.rb` into
+`test/application_system_test_case.rb` as `color_of`, `contrast_ratio`,
+`each_token_surface`, `disable_transitions`, `focus_visibly`, `outline_of` and
+`assert_focus_outline_in_forced_colors` (§ Business rules, rule 5). Card's docs page and
+browser test moved to the rule 6 `id="card-preview"` convention at the same time, and the
+`--input` and dark `--destructive` retune those rules depend on is in `engine.css`,
+with rule 7(a)'s dark fill moved off `--input` onto `dark:bg-muted/50`.
 
 ## Last green checkpoint
 

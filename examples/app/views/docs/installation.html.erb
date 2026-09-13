@@ -57,19 +57,25 @@
   <div>
     <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
       <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">3</span>
-      Add layout singletons
+      Set up your layout
     </h2>
     <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-      Render these once in your application layout — they provide the global confirm dialog, toast stack, and utility controllers.
+      Put <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">bg-background text-foreground</code> on
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;body&gt;</code>. The kit paints no page colour
+      of its own, so without it your page keeps the browser's white under dark-mode components, and kit surfaces won't match the page around them.
+      Then render the singletons once — they provide the global confirm dialog, toast stack, and utility controllers.
     </p>
     <div class="rounded-lg overflow-hidden border border-neutral-800">
       <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
         <span class="text-xs text-neutral-400">app/views/layouts/application.html.erb</span>
         <button data-copy-target="#install-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-layout" class="text-neutral-200">&lt;%= render Ui::ConfirmDialogComponent.new %&gt;
-&lt;%= render Ui::ToastContainerComponent.new %&gt;
-&lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;</code></pre>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-layout" class="text-neutral-200">&lt;body class="bg-background text-foreground"&gt;
+  &lt;%= render Ui::ConfirmDialogComponent.new %&gt;
+  &lt;%= render Ui::ToastContainerComponent.new %&gt;
+  &lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;
+  &lt;%= yield %&gt;
+&lt;/body&gt;</code></pre>
     </div>
   </div>
 

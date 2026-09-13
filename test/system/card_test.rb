@@ -7,11 +7,7 @@ class CardTest < ApplicationSystemTestCase
 
   setup do
     visit card_path
-    page.execute_script(<<~JS)
-      const style = document.createElement('style')
-      style.textContent = '*, *::before, *::after { transition: none !important }'
-      document.head.appendChild(style)
-    JS
+    disable_transitions
   end
 
   # CARD1
@@ -65,16 +61,16 @@ class CardTest < ApplicationSystemTestCase
   end
 
   test 'the card previews pass an accessibility audit in light and dark mode' do
-    assert_accessible(within: '[data-card-preview]')
+    assert_accessible(within: '#card-preview')
 
-    page.execute_script("document.documentElement.classList.add('dark')")
-    assert_accessible(within: '[data-card-preview]')
+    use_dark_mode(true)
+    assert_accessible(within: '#card-preview')
   end
 
   private
 
   def preview_card(heading)
-    find('h2', exact_text: heading).find(:xpath, 'following-sibling::div[@data-card-preview][1]').find('[data-slot=card]')
+    find_by_id('card-preview').find('h2', exact_text: heading).find(:xpath, 'following-sibling::div[1]').find('[data-slot=card]')
   end
 
   def rect(element)

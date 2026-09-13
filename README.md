@@ -52,13 +52,20 @@ This gem is private — it's not published to RubyGems or public npm. Consume it
 
    This wires `app/javascript/application.js` and `app/assets/tailwind/application.css` for the importmap + Tailwind 4 path. It's idempotent — safe to re-run after upgrades.
 
-4. **Render the singletons once per layout** (e.g. in `app/views/layouts/application.html.erb`):
+4. **Paint the page from the tokens and render the singletons once per layout** (e.g. in `app/views/layouts/application.html.erb`):
 
    ```erb
-   <%= render Ui::ConfirmDialogComponent.new %>
-   <%= render Ui::ToastContainerComponent.new %>
-   <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>
+   <body class="bg-background text-foreground">
+     <%= render Ui::ConfirmDialogComponent.new %>
+     <%= render Ui::ToastContainerComponent.new %>
+     <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>
+     <%= yield %>
+   </body>
    ```
+
+   The kit paints no page colour of its own. Without `bg-background text-foreground` on
+   `<body>`, the page keeps the browser's white under dark-mode components, and kit surfaces
+   won't match the page around them.
 
 That's it. The generator wires the registration wherever Stimulus's `application` constant
 is actually in scope. On a default `rails new --javascript=importmap` app, that's
