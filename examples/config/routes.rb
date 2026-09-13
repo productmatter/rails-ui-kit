@@ -1,23 +1,15 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  root to: 'docs#index'
+  DocsPages::PAGES.each do |page|
+    action = DocsPages.action_for(page)
 
-  get 'installation', to: 'docs#installation'
-
-  get 'components/button',         to: 'docs#button',         as: :button
-  get 'components/card',           to: 'docs#card',           as: :card
-  get 'components/modal',          to: 'docs#modal',          as: :modal
-  get 'components/dropdown',       to: 'docs#dropdown',       as: :dropdown
-  get 'components/tooltip',        to: 'docs#tooltip',        as: :tooltip
-  get 'components/popover',        to: 'docs#popover',        as: :popover
-  get 'components/toast',          to: 'docs#toast',          as: :toast
-  get 'components/confirm_dialog', to: 'docs#confirm_dialog', as: :confirm_dialog
-
-  get 'utilities/dark_mode',          to: 'docs#dark_mode',          as: :dark_mode
-  get 'utilities/form_change',        to: 'docs#form_change',        as: :form_change
-  get 'utilities/turbo_confirm',      to: 'docs#turbo_confirm',      as: :turbo_confirm
-  get 'utilities/turbo_disable_with', to: 'docs#turbo_disable_with', as: :turbo_disable_with
+    if page[:slug] == :root
+      root to: "docs##{action}"
+    else
+      get DocsPages.path_for(page), to: "docs##{action}", as: page[:slug]
+    end
+  end
 
   get    'demos/modal',  to: 'docs#modal_demo',   as: :modal_demo
   post   'demos/submit', to: 'docs#demo_submit',  as: :demo_submit

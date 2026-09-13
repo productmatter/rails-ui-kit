@@ -3,20 +3,12 @@
 class DocsController < ApplicationController
   layout 'docs'
 
-  def index; end
-  def installation; end
-  def button; end
-  def card; end
-  def modal; end
-  def dropdown; end
-  def tooltip; end
-  def popover; end
-  def toast; end
-  def confirm_dialog; end
-  def dark_mode; end
-  def form_change; end
-  def turbo_confirm; end
-  def turbo_disable_with; end
+  # One no-op action per registry entry -- add a page to DocsPages::PAGES and it
+  # renders here automatically. Give an action real logic by defining it normally
+  # below (as modal_demo/demo_submit/demo_delete do); a def after this loop wins.
+  DocsPages::PAGES.each do |page|
+    define_method(DocsPages.action_for(page)) {}
+  end
 
   def modal_demo
     @position = (params[:position] || "center").to_sym

@@ -49,43 +49,18 @@
         <% end %>
 
         <nav class="mt-6 space-y-5 text-sm">
-          <div>
-            <p class="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-              Getting Started
-            </p>
-            <ul class="space-y-0.5">
-              <li><%= nav_link "Introduction",  root_path %></li>
-              <li><%= nav_link "Installation",  installation_path %></li>
-            </ul>
-          </div>
-
-          <div>
-            <p class="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-              Components
-            </p>
-            <ul class="space-y-0.5">
-              <li><%= nav_link "Button",         button_path %></li>
-              <li><%= nav_link "Card",           card_path %></li>
-              <li><%= nav_link "Confirm Dialog", confirm_dialog_path %></li>
-              <li><%= nav_link "Dropdown",       dropdown_path %></li>
-              <li><%= nav_link "Modal",          modal_path %></li>
-              <li><%= nav_link "Popover",        popover_path %></li>
-              <li><%= nav_link "Toast",          toast_path %></li>
-              <li><%= nav_link "Tooltip",        tooltip_path %></li>
-            </ul>
-          </div>
-
-          <div>
-            <p class="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-              Utilities
-            </p>
-            <ul class="space-y-0.5">
-              <li><%= nav_link "Dark Mode",          dark_mode_path %></li>
-              <li><%= nav_link "Form Change",        form_change_path %></li>
-              <li><%= nav_link "Turbo Confirm",      turbo_confirm_path %></li>
-              <li><%= nav_link "Turbo Disable With", turbo_disable_with_path %></li>
-            </ul>
-          </div>
+          <% DocsPages::SECTIONS.each do |section| %>
+            <div>
+              <p class="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <%= section %>
+              </p>
+              <ul class="space-y-0.5">
+                <% DocsPages.in_section(section).each do |page| %>
+                  <li><%= nav_link page[:title], send("#{page[:slug]}_path") %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
         </nav>
       </div>
 
