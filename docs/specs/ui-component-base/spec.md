@@ -1,12 +1,13 @@
 ---
 slug: ui-component-base
 type: feature
-status: ratified
+status: building
 decider: Jonathan Simmons
 blast_radius: high
 size: small
 target_model: standard
 created: 2026-09-07
+stale_after: 2026-10-13
 loop_budget: 5
 ---
 
@@ -160,9 +161,9 @@ caller-supplied slot content to add it.
 ### agent-loopable
 
 - A test component built on `Ui::Base` with a `background` variant axis, rendered
-  with `variant: :primary, class: "bg-red-500"`, produces `bg-red-500` in its
+  with `background: :primary, class: "bg-red-500"`, produces `bg-red-500` in its
   `class` attribute and does not produce the variant default `bg-primary` —
-  run: `bundle exec rake test TEST=test/components/ui/base_test.rb TESTOPTS="-n /caller_class_wins/"`
+  run: `bundle exec rake test TEST=test/components/ui/base_test.rb TESTOPTS="-n=/caller_class_wins/"`
 - `rails_ui_kit.gemspec` declares both `class_variants` and `tailwind_merge` as
   runtime dependencies — run: `ruby -e "d = Gem::Specification.load('rails_ui_kit.gemspec').dependencies.map(&:name); raise('missing') unless (%w[class_variants tailwind_merge] - d).empty?"`
 

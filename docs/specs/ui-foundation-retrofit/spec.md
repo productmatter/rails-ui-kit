@@ -66,13 +66,13 @@ dark:bg-neutral-900` / `border-neutral-200 dark:border-neutral-700`, Tooltip's
 `bg-neutral-900 text-white dark:bg-white dark:text-neutral-900`, ConfirmDialog's
 `gray-800`/`gray-900`/`red-600` family inside `DEFAULTS`, and Toast's `bg-white
 dark:bg-gray-800` shell plus its per-type green/red/orange/blue icon and progress-bar
-colors. Toast's five status types are the hard case: the closed 33-token set this
-phase ships (§ Business rules of ui-component-library, rule 2) has no
-success/notice/info tokens, only `destructive`. Mapping `error`/`alert` onto
-`destructive` is a clean fit; `success`, `notice` and `info` have no natural token
-home without either extending the set or reusing an unrelated token by resemblance —
-the latter is exactly the "arbitrary pick" this scope must not do silently. See Open
-questions.
+colors. Toast's five status types were the hard case: shadcn's own names, verbatim,
+have no success/notice/info tokens, only `destructive`. Jonathan's 2026-09-13
+decision (`ui-design-tokens` spec.md § Business rules, rule 5) resolves this by
+extending the contract with documented kit extensions: `error`/`alert` map onto
+`destructive`/`destructive-foreground` (already shipped); `success`, `notice` and
+`info` map onto the `success`/`warning`/`info` kit-extension tokens (each with a
+`-foreground` pair), added here since Toast is their first consumer, not before.
 
 **`Ui::Base`.** All seven inherit from it and use its variant/class-merge API instead
 of string interpolation. `ConfirmDialogComponent`'s `**overrides`/`DEFAULTS` pattern —
@@ -178,9 +178,12 @@ old `ConfirmDialogComponent` keyword API is updated.
    only from token utility classes (§ Business rules of ui-component-library,
    rule 1).
 2. Toast's five status types map onto token names by a documented, defensible rule —
-   not by picking whichever existing token looks closest. Where the closed 33-token
-   set (`ui-design-tokens` spec.md § Business rules, rule 1) has no natural home for
-   a given type, that gap is escalated (see Open questions), not silently resolved.
+   not by picking whichever existing token looks closest. `error`/`alert` map onto
+   the shadcn-contract's `destructive`/`destructive-foreground`; `success`, `notice`
+   and `info` map onto the kit-extension tokens `success`, `warning` and `info`
+   (each with a `-foreground` pair) that this scope adds as their first consumer,
+   per Jonathan's 2026-09-13 decision (`ui-design-tokens` spec.md § Business rules,
+   rule 5).
 3. All seven components inherit `Ui::Base` and use its variant/class-merge API; none
    builds its own class-string interpolation once this scope ships (§ Business rules
    of ui-component-library, rule 8).
@@ -288,7 +291,6 @@ old `ConfirmDialogComponent` keyword API is updated.
 - Jonathan confirms both `productmatter/rails_foundation` and `bonnie-rails` are pinned to the v0.2.0 tag/SHA before this scope's changes reach `main` (blocking precondition, § Assumptions of ui-component-library).
 - Jonathan reviews the `CHANGELOG.md` migration note and confirms it's sufficient for a consumer to self-serve the upgrade without reading a diff.
 - Jonathan reviews the rendered visual diff of all seven components, light and dark, against v0.2.0 and signs off that the token migration reads as intentional restyling, not breakage.
-- Jonathan decides the Toast semantic-color open question below before the Toast portion of this scope ships.
 
 ## Out of scope / deferred
 

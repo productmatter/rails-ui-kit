@@ -1,23 +1,5 @@
 # Open questions — ui-foundation-retrofit
 
-## Toast's semantic type colors: extend the token set or map onto the existing five?
-
-Toast has five status types — success, error, notice, alert, info — each needing a
-visually distinct color today (`bg-green-100`/`bg-red-100`/`bg-orange-100`/
-`bg-blue-100` and their `-400`/`-500` icon variants). The closed 33-token set this
-phase ships (`ui-component-library` spec.md § Business rules, rule 2; `ui-design-
-tokens` spec.md § Business rules, rule 1, "no more, no fewer") has exactly one
-status-shaped token: `destructive`. That covers `error`/`alert` cleanly. `success`,
-`notice` and `info` have no natural home in the shipped set without either extending
-it — which reopens an already-ratified sibling scope — or reusing an unrelated token
-(`primary`, `accent`, one of `chart-1`…`chart-5`) by resemblance, which is the
-"arbitrary pick" this directive explicitly warned against.
-
-decider: Jonathan Simmons
-options: (a) extend the token contract with status tokens — `success`, `warning` (serving `notice`/`alert`), `info`, each with a `-foreground` pair — reopening `ui-design-tokens`; shadcn/ui itself has no canonical status-color tokens either, so this is new vocabulary under that contract regardless of which component asks first, and Alert/Badge in Phase B will hit the identical gap; (b) collapse the five types onto the existing set — `error`/`alert` → `destructive`, `success`/`notice`/`info` → `primary` or `accent` — accepting that Toast's five types are no longer visually distinct by color and documenting that as a deliberate, named regression rather than an accident; (c) three fixed, non-token `oklch()` literals scoped to Toast only, as a narrow, explicitly documented exception to Business rule 1 rather than a silent violation of it
-default: (a) — a notification/status component needing colors beyond "destructive" is a predictable, recurring need this kit will hit again before Phase B is done (Alert, Badge), so solving it once at the token layer is cheaper than three components independently improvising exceptions to rule 1
-deadline: 2026-09-21
-
 ## Must a toast appear over an open Modal, given a z-index cannot put it there?
 
 ToastContainer's `z-[70]` is replaced by one static stacking value this scope owns

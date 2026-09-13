@@ -41,4 +41,4 @@ none — spec authored, no implementation or test run has happened yet.
 None yet.
 
 ## Corrections
-None yet — no corrections recorded.
+- Toast's status-color mapping was escalated as an open question; Jonathan's 2026-09-13 decision resolved it by extending the token contract, so the spec now states the resulting mapping directly and the resolved question was removed from `open-questions.md` — tasteable — decider

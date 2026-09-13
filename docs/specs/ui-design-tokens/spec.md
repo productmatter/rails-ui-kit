@@ -1,12 +1,13 @@
 ---
 slug: ui-design-tokens
 type: feature
-status: ratified
+status: blocked
 decider: Jonathan Simmons
 blast_radius: high
 size: small
 target_model: standard
 created: 2026-09-07
+stale_after: 2026-09-27
 loop_budget: 5
 ---
 
@@ -43,15 +44,20 @@ paths README.md documents.
   themselves to a human-gate check at implementation.
 - Rewriting, wrapping, or extending `dark_mode_controller.js` — its `.dark`-on-`<html>`
   toggle is the fixed mechanism this scope's tokens are built to match.
+- Shipping shadcn's own `@layer base { * { border-color: var(--border) } }` reset.
+  That rule recolors every bare `border` utility in every host app, shadcn theme or
+  not — it is a global default, not an additive token — so it isn't part of this
+  scope's delivery. A deliberate non-goal, not an oversight.
 
 ## Behavior
 
 The token stylesheet lands in `app/assets/tailwind/rails_ui_kit/engine.css` as a
-`:root { ... }` block and a `.dark { ... }` block, each defining every name listed
-under Business rules with an `oklch()` value, followed by an `@theme { --color-background:
-var(--background); ... }` mapping block so Tailwind v4 generates `bg-background`,
-`text-muted-foreground`, `border-border`, `ring-ring`, and their siblings for every
-token.
+`:root { ... }` block and a `.dark { ... }` block, each defining every color token
+name listed under Business rules with an `oklch()` value; `radius` is defined once,
+under `:root` only, as a plain length. An `@theme inline { --color-background:
+var(--background); ... }` mapping block follows so Tailwind v4 generates
+`bg-background`, `text-muted-foreground`, `border-border`, `ring-ring`, and their
+siblings for every token — `inline`, not plain `@theme` (§ Business rules, rule 6).
 
 A consuming app receives this stylesheet through whichever of the three paths
 README.md documents it's already on — the importmap + Tailwind v4 +
@@ -75,15 +81,17 @@ on the JavaScript side changes.
    `card`/`card-foreground`, `popover`/`popover-foreground`, `primary`/
    `primary-foreground`, `secondary`/`secondary-foreground`, `muted`/
    `muted-foreground`, `accent`/`accent-foreground`, `destructive`, `border`,
-   `input`, `ring`, `chart-1`…`chart-5`, `sidebar` plus its five variants
+   `input`, `ring`, `chart-1`…`chart-5`, `sidebar` plus its seven variants
    (`sidebar-foreground`, `sidebar-primary`, `sidebar-primary-foreground`,
    `sidebar-accent`, `sidebar-accent-foreground`, `sidebar-border`,
-   `sidebar-ring`), and `radius` — no more, no fewer (§ Business rules of
-   ui-component-library, rule 2). **This closure is contested, not settled:**
-   `ui-foundation-retrofit` needs five semantic status colors this set does not
-   contain — see `open-questions.md` before treating the set as final.
-2. Values are ProductMatter's own, expressed in `oklch()` — never shadcn's default
-   palette copied verbatim (§ Business rules of ui-component-library, rule 2).
+   `sidebar-ring`), and `radius` — 32 names total (§ Business rules of
+   ui-component-library, rule 2). This half of the contract is closed: an
+   external shadcn theme redefining any of these 32 names is always honored.
+   It is not the whole contract — rule 5 states the second half.
+2. Color values are ProductMatter's own, expressed in `oklch()` — never shadcn's
+   default palette copied verbatim (§ Business rules of ui-component-library,
+   rule 2). `radius` is a plain length (`0.5rem`), not a color, and carries no
+   `oklch()` value.
 3. Light and dark are the same token names redefined under `:root` and `.dark`; a
    class toggle on `<html>` is the only mode-switching mechanism — no second
    stylesheet, no `prefers-color-scheme` media query as the primary mechanism (§
@@ -91,6 +99,28 @@ on the JavaScript side changes.
 4. The existing `.dark`-on-`document.documentElement` toggle in
    `dark_mode_controller.js` is the class-toggle mechanism rule 3 requires; this
    scope is built to be compatible with it, not to replace it.
+5. The contract's second half is documented **kit extensions**: token names
+   outside shadcn's own vocabulary, each shipped with a default that degrades
+   gracefully — an external theme that doesn't define the extension simply
+   leaves the kit's default in place rather than breaking (decided 2026-09-13,
+   Jonathan Simmons). The first extension is `--destructive-foreground` (and its
+   `.dark` counterpart), consumed by `Ui::ButtonComponent`'s destructive variant:
+   current shadcn dropped this token and its own button hardcodes `text-white`,
+   which rule 1 of ui-component-library forbids; borrowing `primary-foreground`
+   would couple destructive text to the primary color; the kit default equals
+   shadcn's hardcoded white, so interop loses nothing; and an older shadcn theme
+   that still defines `--destructive-foreground` is honored rather than
+   overridden. `--success`, `--warning` and `--info`, each with a `-foreground`
+   pair, are planned extensions — added when their first consuming component
+   lands (Alert/Badge in Phase B, Toast in `ui-foundation-retrofit`), not before;
+   an unused token is scope creep. `chart-1`…`chart-5` are not a home for status
+   semantics — chart colors are categorical, not semantic.
+6. The `@theme` mapping block uses the `inline` variant — `@theme inline { ... }`,
+   never plain `@theme { ... }`. Plain `@theme` resolves a `--color-*` utility to
+   its `:root` value at build time, which silently breaks any token redefinition
+   under `.dark` (or a host app's own cascade) below `<html>`; `inline` keeps the
+   utility pointing at the custom property itself, so a redefinition is honored
+   wherever it lands in the cascade.
 
 ## Assumptions
 
@@ -113,6 +143,13 @@ on the JavaScript side changes.
   `ui-test-harness` owns, and that lane does not exist until that scope ships — so
   the acceptance check cannot pass without it. The dependency is on the system-test
   lane existing, not on any particular test within it.
+- **Corrected:** the docs app was never on the delivery path this scope assumed.
+  `examples/app/assets/tailwind/application.css` imported `rails_ui_kit/components`
+  (the non-Tailwind component CSS) directly and never imported `engine.css`, so the
+  "existing `@import` chain already carries it" claim below held for a
+  generator-scaffolded host app but not for the docs app itself. Repointed in
+  `cdd9820` to `@import` `engine.css` directly, alongside `tailwindcss`; see §
+  Critical files.
 
 ## Critical files
 
@@ -128,12 +165,17 @@ on the JavaScript side changes.
   scope.
 - `README.md` — documents the three consumption paths (importmap + Tailwind v4, JS
   bundler, Tailwind 3/Sprockets).
+- `examples/app/assets/tailwind/application.css` — the docs app's own Tailwind
+  entrypoint; repointed in `cdd9820` to `@import` `engine.css` directly, since it
+  previously imported `rails_ui_kit/components` only and never reached the token
+  layer (§ Assumptions).
 
 ## Acceptance checks
 
 ### agent-loopable
 
 - Every token name maps through `@theme` for Tailwind v4 utilities to resolve — run: `grep -c -- "--color-background: var(--background)" app/assets/tailwind/rails_ui_kit/engine.css`
+- The mapping block is pinned to `@theme inline`, not plain `@theme`, so a `.dark`-scope override below `<html>` is honored (§ Business rules, rule 6) — run: `grep -q "^@theme inline {" app/assets/tailwind/rails_ui_kit/engine.css`
 - The `.dark`-on-`<html>` contract `dark_mode_controller.js` depends on is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/dark_mode_toggle_test.rb`
 
 ### judgeable
@@ -143,7 +185,7 @@ on the JavaScript side changes.
 
 ### human-gate
 
-- Jonathan reviews and approves the exact `oklch()` values chosen for light and dark mode across all 33 tokens before this scope ships.
+- Jonathan reviews and approves the exact `oklch()` values chosen for light and dark mode across all 32 shadcn-contract color tokens (§ Business rules, rule 1) plus each ratified kit extension (rule 5) before this scope ships.
 - Jonathan spot-checks that a real tweakcn-exported theme's `:root`/`.dark` block, pasted after the kit's import, reskins a rendered page without editing `engine.css`.
 
 ## Out of scope / deferred

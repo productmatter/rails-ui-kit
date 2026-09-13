@@ -83,8 +83,11 @@ scope that needs to may not proceed without re-ratifying this parent.
    `background`/`foreground`, `card`/`card-foreground`, `popover`/`popover-foreground`,
    `primary`/`primary-foreground`, `secondary`/`secondary-foreground`,
    `muted`/`muted-foreground`, `accent`/`accent-foreground`, `destructive`, `border`,
-   `input`, `ring`, `chart-1`…`chart-5`, `sidebar` plus its five variants, and
-   `radius`.
+   `input`, `ring`, `chart-1`…`chart-5`, `sidebar` plus its seven variants, and
+   `radius` (32 names). The set may also carry documented **kit extensions** —
+   names outside shadcn's own vocabulary, each shipped with a default that degrades
+   gracefully when an external theme doesn't define it — per `ui-design-tokens` §
+   Business rules.
 3. **One theme, two modes, one stylesheet.** Light and dark are the same token names
    redefined under `:root` and `.dark`. A class toggle switches modes. There is never
    a second stylesheet, a second component variant, or a second token vocabulary.
@@ -205,8 +208,8 @@ navigation (C), then field binding (E) and media-query watching (F).
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
 | `ui-test-harness` | The `test/system/` browser lane: a Capybara base class on headless Chrome driving `examples/`, a `test:system` rake task separate from the five-Ruby unit lane, and `axe-core-capybara`/`axe-core-api` accessibility assertions. | — | ratified |
-| `ui-design-tokens` | The CSS-variable token layer: shadcn's names, ProductMatter's `oklch()` values, `:root`/`.dark` redefinition, install-generator surface. | `ui-test-harness` | ratified |
-| `ui-component-base` | `Ui::Base`: the `class_variants` variant layer and the `tailwind_merge` class-merge layer that makes rule 5 true. | `ui-design-tokens` | ratified |
+| `ui-design-tokens` | The CSS-variable token layer: shadcn's names, ProductMatter's `oklch()` values, `:root`/`.dark` redefinition, install-generator surface. | `ui-test-harness` | blocked |
+| `ui-component-base` | `Ui::Base`: the `class_variants` variant layer and the `tailwind_merge` class-merge layer that makes rule 5 true. | `ui-design-tokens` | ready-for-review |
 | `ui-presence-and-overlay-stack` | Primitives **D** (presence / open-state: `data-state="open\|closed\|closing"`, waiting on `animationend`/`transitionend` so exit animations run) and **B** (overlay stack: portal to a fixed root, focus trap, body scroll lock, Escape and outside-click dismiss, z-index and nesting order). | `ui-component-base`, `ui-test-harness` | ratified |
 | `ui-positioning-and-navigation` | Primitives **A** (one wrapper over `@floating-ui/dom` emitting `data-side`/`data-align`, re-running on scroll and resize), **C** (roving tabindex / group nav: arrows, Home/End, optional first-letter typeahead, `aria-activedescendant` for listbox-style vs. real focus for menu-style), **E** (field binding: `Field`/`FieldLabel`/`FieldError` wiring `data-invalid` and `aria-invalid` from a Rails errors object, server-rendered), **F** (media-query watcher over `matchMedia`). | `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
 | `ui-foundation-retrofit` | Moving all seven existing components onto the token, base and primitive layers, and deleting the three duplicated `@floating-ui/dom` positioning implementations. | `ui-positioning-and-navigation` | ratified |
