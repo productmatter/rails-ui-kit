@@ -3,7 +3,7 @@
 module Ui
   module Card
     # Title and description stack in the first column; an action, when present,
-    # takes a second column pinned top-right across both rows.
+    # takes a second column pinned right and centered on the title's row.
     class HeaderComponent < Ui::Base
       data_slot 'card-header'
 

@@ -91,7 +91,15 @@ module Ui
 
       assert_includes classes_for('card-header'), 'grid-cols-[1fr_auto]'
       assert_includes classes_for('card-action'), 'col-start-2'
-      assert_includes classes_for('card-action'), 'row-span-2'
+    end
+
+    test 'action centers on the title row instead of spanning the description' do
+      render_full_card
+
+      assert_includes classes_for('card-action'), 'row-start-1'
+      assert_includes classes_for('card-action'), 'self-center'
+      assert_includes classes_for('card-action'), 'h-0'
+      assert_not_includes classes_for('card-action'), 'row-span-2'
     end
 
     test 'header without an action keeps a single column' do

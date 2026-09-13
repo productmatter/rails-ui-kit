@@ -32,10 +32,19 @@
       <% header.with_title { "Billing" } %>
       <% header.with_description { "Pro plan, billed yearly. Renews on 1 March." } %>
       <% header.with_action do %>
-        <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Billing options" }) do %>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
-          </svg>
+        <%= render Ui::DropdownComponent.new(placement: "bottom-end", content_classes: "min-w-48 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md") do |dropdown| %>
+          <% dropdown.with_trigger do %>
+            <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Billing options" }, data: { action: "click->ui--dropdown#toggle" }) do %>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+              </svg>
+            <% end %>
+          <% end %>
+          <% dropdown.with_menu do %>
+            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Change plan</a>
+            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Update payment method</a>
+            <a href="#" role="menuitem" class="flex rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-accent focus:bg-accent">Cancel subscription</a>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
@@ -48,7 +57,7 @@
   <% end %>
 </div>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  The action takes a second column pinned top-right and spans the title and description. Without an action the header stays a single column.
+  The action takes a second column on the right, centered on the title's line whatever its height. Here it holds a <code>Ui::DropdownComponent</code>. Without an action the header stays a single column.
 </p>
 
 <%# Footer %>
@@ -126,7 +135,7 @@
         ["with_footer",      "card",   "card-footer",      "A flex row, vertically centred. Add justify-end or gap-* for button rows."],
         ["with_title",       "header", "card-title",       "The card's heading text."],
         ["with_description", "header", "card-description", "Supporting text in the muted foreground colour."],
-        ["with_action",      "header", "card-action",      "Pinned to the header's top-right corner."],
+        ["with_action",      "header", "card-action",      "Pinned right, centered on the title's line."],
       ].each do |slot, parent, data_slot, desc| %>
         <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
           <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
