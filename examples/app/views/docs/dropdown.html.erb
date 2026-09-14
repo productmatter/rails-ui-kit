@@ -30,6 +30,8 @@
   <% end %>
 
   <%# Listbox %>
+  <%# Deprecated: kept rendering for one release so a consumer that shipped against it keeps
+      working. A value picker is Ui::SelectComponent's job. %>
   <%= render Ui::DropdownComponent.new(kind: :listbox, placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
     <% d.with_trigger do %>
       <button data-action="click->ui--dropdown#toggle"

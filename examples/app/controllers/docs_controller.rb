@@ -17,6 +17,42 @@ class DocsController < ApplicationController
     end
   end
 
+  # The Select docs page's server round trip. A blank city comes back as a 422 with the error on
+  # the Field, which is what a real Rails validation failure renders; anything else comes back
+  # with the submitted value selected.
+  def select_submit
+    city = params.dig(:trip, :city).to_s
+    errors = { city: select_city_error(city) }.compact
+    render partial: 'docs/select_round_trip',
+           locals: { errors: errors, values: { city: city }, cities: DocsController.cities,
+                     submission: next_select_submission },
+           status: errors.any? ? :unprocessable_entity : :ok
+  end
+
+  # The result element survives every response, so it carries which response drew it. A reader
+  # that lands before the new one has arrived then sees the old number rather than silently
+  # matching the old text.
+  def next_select_submission
+    self.class.select_submissions = self.class.select_submissions.to_i + 1
+  end
+
+  # Two server-side failures a client can't catch for itself: nothing chosen, which only a
+  # browser with JavaScript off can post at all since the select is required, and a city the
+  # server won't take.
+  def select_city_error(city)
+    return ["can't be blank"] if city.blank?
+
+    ['is not available this week'] if city == 'tokyo'
+  end
+
+  class << self
+    attr_accessor :select_submissions
+  end
+
+  def self.cities
+    [['Berlin', 'berlin'], ['Lisbon', 'lisbon'], ['London', 'london'], ['Tokyo', 'tokyo']]
+  end
+
   def demo_submit
     sleep 1.5
     head :no_content

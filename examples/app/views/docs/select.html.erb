@@ -116,7 +116,7 @@
   <form id="select-form" action="<%= demo_submit_path %>" method="post" class="flex flex-wrap items-end gap-4">
     <div class="w-64">
       <%= render Ui::FieldComponent.new(name: "booking[timezone]") do |field| %>
-        <% field.with_label { "Timezone" } %>
+        <% field.with_label { "Meeting timezone" } %>
         <% field.with_control(Ui::SelectComponent, options: timezones, selected: "berlin",
                               native_on_touch: false) %>
       <% end %>
@@ -134,10 +134,61 @@
         <% field.with_control(Ui::SelectComponent, options: timezones, search: true, include_blank: true) %>
       <% end %>
     </div>
+    <div class="w-64">
+      <%= render Ui::FieldComponent.new(name: "booking[tier]") do |field| %>
+        <% field.with_label { "Tier (locked)" } %>
+        <% field.with_control(Ui::SelectComponent, options: plans, selected: "growth", disabled: true,
+                              native_on_touch: false) %>
+      <% end %>
+    </div>
     <%= render(Ui::ButtonComponent.new(type: "submit")) { "Submit" } %>
     <%= render(Ui::ButtonComponent.new(type: "reset", variant: :outline)) { "Reset" } %>
   </form>
 </div>
+
+<%# Server round trip %>
+<h2 class="text-base font-semibold mb-3">A server round trip</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  A real form in a Turbo Frame. Submit it empty and the server answers 422 with the error on the Field; choose a city and
+  the value comes back selected. Nothing here is Select's doing — the value is in a native
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, so the
+  round trip is the one Rails always had.
+</p>
+<div id="select-round-trip-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+  <%= render 'docs/select_round_trip', errors: {}, values: {}, cities: DocsController.cities, submission: 0 %>
+</div>
+
+<%# In a Modal %>
+<h2 class="text-base font-semibold mb-3">Inside a Modal</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The popup is in the top layer, so it draws above the dialog and is not clipped by its scroll box. The first Escape
+  closes the listbox and the second closes the Modal — that ordering is the browser's, not ours.
+</p>
+<div id="select-modal-preview" class="rounded-lg border border-border bg-muted flex items-center justify-center p-12 mb-8">
+  <button type="button" id="select-modal-trigger"
+          onclick="document.body.append(document.getElementById('select-modal-open').content.cloneNode(true))"
+          class="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+    Open a Modal with a Select
+  </button>
+</div>
+<div id="select-modal"></div>
+<template id="select-modal-open">
+  <turbo-stream action="append" target="select-modal"><template>
+    <%= render Ui::ModalComponent.new(aria: { labelledby: "select-modal-title" }) do %>
+      <div class="p-6">
+        <h2 id="select-modal-title" class="text-base font-semibold">Pick a city</h2>
+        <p class="mt-1.5 mb-6 text-sm text-muted-foreground">A Select inside a dialog behaves exactly as it does outside one.</p>
+        <div class="w-64">
+          <%= render Ui::FieldComponent.new(name: "modal[city]") do |field| %>
+            <% field.with_label { "City" } %>
+            <% field.with_control(Ui::SelectComponent, options: timezones, selected: "london",
+                                  native_on_touch: false) %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </template></turbo-stream>
+</template>
 
 <%# Standalone %>
 <h2 class="text-base font-semibold mb-3">Without a Field</h2>
@@ -150,7 +201,7 @@
     <%# native_on_touch is left at its default here, so this is the instance that shows the
         phone behaviour: on a coarse pointer it stays the native select and its platform picker %>
     <%= render Ui::SelectComponent.new(name: "standalone[plan]", options: plans, selected: "starter",
-                                       aria: { label: "Plan" }) %>
+                                       aria: { label: "Billing plan" }) %>
   </div>
 </div>
 
@@ -162,6 +213,24 @@
     <button data-copy-target="#select-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-usage" class="text-neutral-200"><%= h(example_select_usage) %></code></pre>
+</div>
+
+<%# Testing %>
+<h2 class="text-base font-semibold mb-3">Testing host applications</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Enhanced, the native select is laid under the combobox at
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">opacity: 0</code>, so Capybara's
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">select "Pending", from: "Status"</code>
+  no longer picks what a person would. The kit ships a helper that drives the widget instead —
+  include it once and your existing tests read the same. It fails with the Select's name and the options it does offer,
+  and raises on an ambiguous name rather than writing to the wrong control.
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">Ruby</span>
+    <button data-copy-target="#select-helper-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-helper-usage" class="text-neutral-200"><%= h(example_ui_select_helper) %></code></pre>
 </div>
 
 <%# Options %>
@@ -287,6 +356,7 @@
   <li>Choosing an option dispatches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
   <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
   <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
+  <li>In search mode a click on the text field places the caret; the chevron button beside it opens the list, which is also what a touch screen-reader user reaches for. Typing opens it too.</li>
   <li>Escape is the cancel key in both modes: with the list open it closes it, and on a closed search field it puts the text back to the selected option's label. It never changes the value, so a dependent select or an auto-save never sees a change the user meant as "never mind". This is a deliberate deviation from the APG key table, where the text field <em>is</em> the value.</li>
   <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
   <li>Positioning is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>'s, the top layer and dismissal are <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--overlay</code>'s, and the keyboard model is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>'s. Select adds the submission mirror and the key tables, and nothing else.</li>

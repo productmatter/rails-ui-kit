@@ -1,0 +1,22 @@
+<%# The server round trip the docs page and POST /demos/select both render: a real form in a
+    Turbo Frame, re-rendered with a 422 and an error when the required Select comes back blank. %>
+<%= turbo_frame_tag "select-round-trip" do %>
+  <%= form_with url: demo_select_path, method: :post, data: { turbo_frame: "select-round-trip" },
+                class: "flex flex-wrap items-end gap-4" do %>
+    <div class="w-64">
+      <%= render Ui::FieldComponent.new(name: "trip[city]", errors: errors[:city]) do |field| %>
+        <% field.with_label { "Destination" } %>
+        <% field.with_control(Ui::SelectComponent, options: cities, selected: values[:city],
+                              prompt: "Choose a city", required: true, native_on_touch: false) %>
+        <% field.with_description { "Posted to the server, and re-rendered from what it sends back." } %>
+      <% end %>
+    </div>
+    <%= render(Ui::ButtonComponent.new(type: "submit", id: "select-round-trip-submit")) { "Book" } %>
+    <% if submission.to_i.positive? %>
+      <p id="select-round-trip-result" data-submission="<%= submission %>" class="text-sm text-muted-foreground">
+        Server received: <span class="font-mono"><%= values[:city].presence || "nothing" %></span>
+        <span class="text-xs">(response <%= submission %>)</span>
+      </p>
+    <% end %>
+  <% end %>
+<% end %>

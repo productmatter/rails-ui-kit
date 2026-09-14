@@ -72,8 +72,8 @@ class SelectEnhancementTest < ApplicationSystemTestCase
   end
 
   test 'SE6: without a Field, the caller name reaches both the select and the combobox' do
-    assert_selector "select#standalone_plan[aria-label='Plan']", visible: :all
-    assert_selector "#standalone_plan-combobox[aria-label='Plan']"
+    assert_selector "select#standalone_plan[aria-label='Billing plan']", visible: :all
+    assert_selector "#standalone_plan-combobox[aria-label='Billing plan']"
     assert_no_selector '#standalone_plan-combobox[aria-labelledby]'
   end
 
@@ -114,7 +114,67 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     assert_operator laid_out_rect("##{ID}-combobox")['height'], :>, 0
   end
 
+  # Checked again after each way a Select can be re-rendered, because that -- not page load -- is
+  # where a stale copy left behind would show up as two elements sharing an id.
+  test 'SE10: every id on the page is unique, on load and after a re-render' do
+    assert_operator page.evaluate_script("document.querySelectorAll('[data-slot=select]').length"), :>, 5
+    assert_empty duplicate_ids, 'two elements share an id on load'
+
+    page.execute_script("document.getElementById('trip_city-combobox').scrollIntoView({ block: 'center' })")
+    find('#trip_city-combobox').click
+    assert_popup 'trip_city', 'open'
+    find('#trip_city-option-4').click
+    find('#select-round-trip-submit').click
+    assert_selector '[data-slot=field-error]'
+    assert_empty duplicate_ids, 'the 422 re-render left a stale copy behind'
+
+    page.execute_script(<<~JS)
+      const root = document.getElementById('demo_status').closest('[data-slot=select]')
+      root.id = 'stream-target'
+      Turbo.renderStreamMessage(
+        `<turbo-stream action="replace" target="stream-target"><template>${root.outerHTML}</template></turbo-stream>`
+      )
+    JS
+    assert_selector '#demo_status-combobox'
+    assert_empty duplicate_ids, 'a Turbo Stream replace left a stale copy behind'
+  end
+
+  test 'SE11: two Selects on one page keep their own active option and their own value' do
+    first = ID
+    second = 'demo_status'
+
+    focus_combobox(first)
+    press :enter
+    press :end
+    assert_popup first, 'open'
+    assert_active first, 19
+    assert_no_active second
+
+    press :escape
+    assert_popup first, 'closed'
+    focus_combobox(second)
+    press :enter
+    press :home
+    assert_active second, 0
+    assert_no_active first, "the second Select moved the first one's active option"
+
+    press :enter
+    assert_equal 'pending', select_value(second)
+    assert_equal 'london', select_value(first), 'choosing in one Select changed the other'
+    assert_equal 'London', combobox_label(first)
+  end
+
   private
+
+  def duplicate_ids
+    page.evaluate_script(<<~JS)
+      (() => {
+        const counts = {}
+        for (const element of document.querySelectorAll('[id]')) counts[element.id] = (counts[element.id] || 0) + 1
+        return Object.entries(counts).filter(([, count]) => count > 1).map(([id]) => id)
+      })()
+    JS
+  end
 
   def style_of(selector, property)
     page.evaluate_script('getComputedStyle(document.querySelector(arguments[0]))[arguments[1]]',

@@ -286,6 +286,28 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_ui_select_helper
+    <<~'RUBY'
+      # test/application_system_test_case.rb
+      require "rails_ui_kit/test_helpers"
+
+      class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+        driven_by :selenium, using: :headless_chrome
+        include RailsUiKit::TestHelpers
+      end
+
+      # In a test. Works in both modes, and falls back to the native select where the
+      # component wasn't enhanced (JavaScript off, or the platform picker on a phone).
+      ui_select "Pending", from: "Status"      # the Field label
+      ui_select "Pending", from: "order[status]"  # or the name the form posts
+      ui_select "Pending", from: "order_status"   # or the control's id
+
+      # Unchanged: the value still lives in a native <select>, so assert it the way you
+      # always did.
+      assert_equal "pending", find("#order_status", visible: :all).value
+    RUBY
+  end
+
   def example_i18n_override
     <<~YAML
       en:
