@@ -4,6 +4,7 @@ import {
   FALLBACK_Z_INDEX,
   lockScroll,
   recoverFromLightDismiss,
+  relockScroll,
   supportsTopLayer,
   unlockScroll
 } from "rails_ui_kit/overlay/overlay_stack"
@@ -58,6 +59,9 @@ export default class extends Controller {
 
   initialize() {
     this.onBeforeCache = () => this.reset()
+    // A Turbo 8 morphing refresh morphs <body>, which takes the scroll lock's inline styles with
+    // it while this overlay is still open.
+    this.onMorph = () => { if (this.shown && this.scrollLockValue) relockScroll() }
     this.onPointerDown = this.rememberPress.bind(this)
     this.onClick = this.dismissOnBackdrop.bind(this)
     this.onCancel = this.dismissOnCancel.bind(this)
@@ -146,6 +150,10 @@ export default class extends Controller {
     this.shown = true
     this.escapePressed = false
     this.returnTarget = this.focusReturnTarget()
+    // The trigger's id, remembered beside the element itself: the response that closes an overlay
+    // is often the one that re-renders the region the trigger sits in, and the id is the app's own
+    // name for that control (see restoreFocusIfLost).
+    this.returnTargetId = this.returnTarget?.id || null
     if (this.scrollLockValue) lockScroll(this)
 
     // Rendered before it is placed: showModal() and showPopover() can only move focus into an
@@ -512,6 +520,7 @@ export default class extends Controller {
 
   addListeners() {
     document.addEventListener("turbo:before-cache", this.onBeforeCache)
+    document.addEventListener("turbo:morph", this.onMorph)
     this.element.addEventListener("pointerdown", this.onPointerDown, true)
     this.element.addEventListener("click", this.onClick)
 
@@ -530,6 +539,7 @@ export default class extends Controller {
 
   removeListeners() {
     document.removeEventListener("turbo:before-cache", this.onBeforeCache)
+    document.removeEventListener("turbo:morph", this.onMorph)
     this.element.removeEventListener("pointerdown", this.onPointerDown, true)
     this.element.removeEventListener("click", this.onClick)
     this.element.removeEventListener("keydown", this.onFallbackKeydown)
@@ -586,15 +596,27 @@ export default class extends Controller {
   // the browser left focus nowhere: on <body>, or on an element inside the overlay that is
   // about to stop being rendered. A dismiss that moved focus somewhere else on purpose keeps it.
   restoreFocusIfLost() {
-    const target = this.returnTarget
+    const target = this.focusRestoreTarget()
     this.returnTarget = null
-    if (!this.restoreFocusValue || !target?.isConnected) return
+    this.returnTargetId = null
+    if (!this.restoreFocusValue || !target) return
 
     const active = document.activeElement
     const inside = this.hasContentTarget && this.contentTarget.contains(active)
     if (active && active !== document.body && !inside) return
 
     target.focus({ preventScroll: true })
+  }
+
+  // The element focus goes back to. Normally the one that was focused when the overlay opened --
+  // but a server response that closes an overlay commonly re-renders the region its trigger sat
+  // in, which leaves that element detached and focus with nowhere to go. An id is the app's own
+  // name for a control, so whatever now carries it is the trigger. With no id there is nothing to
+  // look up and focus is left where it is, rather than thrown to the top of the page.
+  focusRestoreTarget() {
+    if (this.returnTarget?.isConnected) return this.returnTarget
+
+    return this.returnTargetId ? document.getElementById(this.returnTargetId) : null
   }
 
   setExpanded(open) {

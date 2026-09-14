@@ -51,6 +51,29 @@ export default class extends Controller {
     this.overlay?.dismiss()
   }
 
+  // A form inside the modal, wired as
+  //
+  //   data-action="turbo:submit-end->ui--modal#closeOnSuccess"
+  //
+  // The convenience path for a success response that carries no stream: the server accepted the
+  // submission and has nothing to render, so nothing else will close the modal. It closes only
+  // on Turbo's own detail.success, which is true for any 2xx -- safe only because an invalid
+  // submission answers 422 in every format, never a 2xx. Where the response is a Turbo Stream,
+  // turbo_stream.ui_close_modal is the close, and this is a harmless no-op beside it.
+  closeOnSuccess(event) {
+    if (!event.detail?.success) return
+
+    this.closeFromServer()
+  }
+
+  // The server closing the modal it opened -- turbo_stream.ui_close_modal, or closeOnSuccess.
+  // The same animated close as every other path, minus the unsaved-changes guard: the change
+  // the guard exists to protect has already been accepted.
+  closeFromServer() {
+    this.formDirty = false
+    this.overlay?.close()
+  }
+
   // ui--overlay:dismiss, cancelable, before any Escape, backdrop or close-button dismissal, and
   // named: close_on_backdrop refuses one gesture without refusing the rest.
   guardDismiss(event) {

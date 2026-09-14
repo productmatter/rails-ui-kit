@@ -57,10 +57,13 @@ class OverlayPrimitivesTest < ActiveSupport::TestCase
     assert_equal 1, read('overlay/overlay_stack.js').scan('FALLBACK_Z_INDEX = ').size
   end
 
-  test 'the only document-level listeners are the Turbo cache hook and the one named Escape exception' do
+  # Turbo's own events are dispatched on the document and can only be heard there: the cache hook,
+  # and turbo:morph, which is when a morphing refresh has just morphed the scroll lock off <body>.
+  # Neither is a dismissal listener, which is what this guard is about.
+  test 'the only document-level listeners are the Turbo hooks and the one named Escape exception' do
     events = primitive_sources.flat_map { |source| source.scan(/document\.addEventListener\("([^"]+)"/).flatten }
 
-    assert_equal ['keydown', 'turbo:before-cache', 'turbo:before-cache'].sort, events.sort,
+    assert_equal ['keydown', 'turbo:before-cache', 'turbo:before-cache', 'turbo:morph'].sort, events.sort,
                  "document-level listeners are #{events.inspect}; dismissal ordering is the top layer's"
     assert_includes read('controllers/overlay_controller.js'), 'document.addEventListener("keydown", this.onHintKeydown, true)'
   end

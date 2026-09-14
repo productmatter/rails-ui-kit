@@ -34,13 +34,18 @@ export function unlockScroll(holder) {
   if (holders.size === 0) releaseLock()
 }
 
+// The lock lives in <body>'s inline style, and a Turbo 8 morphing page refresh morphs <body>'s
+// attributes from the response -- which has no lock in it, so the page silently starts scrolling
+// under an overlay that is still open. Nothing announces that, so the lock is re-applied from
+// what it already captured: the same styles, the same held scroll position, no second capture.
+export function relockScroll() {
+  if (lock) applyLockStyles()
+}
+
 const LOCKED_PROPERTIES = ["position", "top", "left", "right", "overflow", "paddingRight"]
 
 function applyLock() {
-  const root = document.documentElement
   const body = document.body
-  // 0 with overlay scrollbars, which need no gutter and produce no shift either way.
-  const scrollbar = window.innerWidth - root.clientWidth
 
   lock = {
     body,
@@ -48,6 +53,14 @@ function applyLock() {
     y: window.scrollY,
     style: Object.fromEntries(LOCKED_PROPERTIES.map((property) => [property, body.style[property]]))
   }
+
+  applyLockStyles()
+}
+
+function applyLockStyles() {
+  const { body } = lock
+  // 0 with overlay scrollbars, which need no gutter and produce no shift either way.
+  const scrollbar = window.innerWidth - document.documentElement.clientWidth
 
   // Hold the scrollbar's gutter as padding before the scrollbar disappears, so locking shifts
   // nothing sideways. Not `scrollbar-gutter: stable` on the root: the body is taken out of flow
