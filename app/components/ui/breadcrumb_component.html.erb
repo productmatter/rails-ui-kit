@@ -1,8 +1,0 @@
-<%= tag.nav(**root_attributes(aria: { label: 'breadcrumb' })) do %>
-  <%= tag.ol(class: 'flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5') do %>
-    <% items.each_with_index do |item, index| %>
-      <%= item %>
-      <%= render(Ui::Breadcrumb::SeparatorComponent.new) unless index == items.size - 1 %>
-    <% end %>
-  <% end %>
-<% end %>

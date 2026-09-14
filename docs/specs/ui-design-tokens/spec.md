@@ -116,8 +116,11 @@ on the JavaScript side changes.
    that still defines `--destructive-foreground` is honored rather than
    overridden. `--success`, `--warning` and `--info`, each with a `-foreground`
    pair, are planned extensions — added when their first consuming component
-   lands (Alert/Badge in Phase B, Toast in `ui-foundation-retrofit`), not before;
-   an unused token is scope creep. `chart-1`…`chart-5` are not a home for status
+   lands, not before; an unused token is scope creep. Alert and Badge, the
+   Phase B components that would have consumed `--success`/`--warning`/`--info`,
+   were cut against ui-component-library's rule 0 on 2026-09-13, so Toast
+   (`ui-foundation-retrofit`) is the only shipped consumer candidate and the
+   tokens remain unbuilt (`ui-presentational-components` `open-questions.md`). `chart-1`…`chart-5` are not a home for status
    semantics — chart colors are categorical, not semantic.
 6. The `@theme` mapping block uses the `inline` variant — `@theme inline { ... }`,
    never plain `@theme { ... }`. Plain `@theme` resolves a `--color-*` utility to

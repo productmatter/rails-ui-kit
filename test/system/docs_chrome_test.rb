@@ -17,7 +17,7 @@ class DocsChromeTest < ApplicationSystemTestCase
   end
 
   test 'a component page has no accessibility violations, chrome included, in light and dark mode' do
-    visit badge_path
+    visit button_path
     disable_transitions
     assert_accessible
 

@@ -194,10 +194,10 @@
 
 /*
  * Tailwind v4 draws a border that has no color utility in currentColor, so a bare
- * border-t on a card footer renders as a near-black rule. shadcn hides this with a
+ * border-t on a kit part renders as a near-black rule. shadcn hides this with a
  * reset on every element, which would recolor bare borders across a host app. This
  * default is scoped to kit parts (anything carrying data-slot), which covers the
- * separators the kit's own API invites and leaves host markup alone. It sits in the
+ * borders the kit's own API invites and leaves host markup alone. It sits in the
  * base layer, so any border color utility still wins.
  */
 @layer base {

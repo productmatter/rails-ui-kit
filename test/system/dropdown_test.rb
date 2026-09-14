@@ -409,10 +409,29 @@ class DropdownTest < ApplicationSystemTestCase
     end
   end
 
-  test "DD17: the Card header's dropdown is fully operable from the keyboard" do
-    visit card_path
+  test 'DD17: a menu dropdown with a non-default item set is fully operable from the keyboard' do
+    visit dropdown_path
+    # A real ui--dropdown menu instance, cloned rather than reached via a hosting docs
+    # page, so this test's keyboard assertions don't depend on any particular page's markup.
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var container = document.createElement('div')
+      container.id = 'dd17'
+      var clone = original.cloneNode(true)
+      var trigger = clone.querySelector("[data-ui--dropdown-target='trigger'] button")
+      trigger.textContent = 'Billing options'
+      trigger.setAttribute('aria-label', 'Billing options')
+      clone.querySelector("[data-ui--dropdown-target='content']").innerHTML = `
+        <div class="py-1 min-w-[12rem]">
+          <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Change plan</a>
+          <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Update payment method</a>
+          <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Cancel subscription</a>
+        </div>`
+      container.appendChild(clone)
+      document.body.appendChild(container)
+    JS
     prevent_menu_item_navigation
-    trigger = find("button[aria-label='Billing options']")
+    trigger = find("#dd17 button[aria-label='Billing options']")
 
     tab_to(trigger)
     press :enter
@@ -617,8 +636,8 @@ class DropdownTest < ApplicationSystemTestCase
     assert_selector "[role='menuitem']:focus", text: text, exact_text: true
   end
 
-  # The demo items are href="#" links, which would scroll the page to the top and, on the
-  # Card page, take the trigger out of view. Record the activation and cancel it instead.
+  # The demo items are href="#" links, which would scroll the page to the top and could
+  # take the trigger out of view. Record the activation and cancel it instead.
   def prevent_menu_item_navigation
     page.execute_script(<<~JS)
       window.__ddActivated = null
