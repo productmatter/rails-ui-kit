@@ -11,7 +11,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-border bg-muted flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+<div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
   <% [["success", "Success"], ["error", "Error"], ["info", "Info"], ["notice", "Notice"], ["alert", "Alert"]].each do |type, label| %>
     <button onclick="window.triggerToast('<%= type %>', '<%= label %> toast message')"
             class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">

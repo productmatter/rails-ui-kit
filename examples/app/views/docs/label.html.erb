@@ -10,7 +10,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div id="label-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+<div id="label-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="grid gap-2 w-56">
     <p class="text-xs font-mono text-neutral-600 dark:text-neutral-400">default</p>
     <%= render(Ui::LabelComponent.new(for: "label-email")) { "Email" } %>

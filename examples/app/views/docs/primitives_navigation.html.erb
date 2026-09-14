@@ -57,7 +57,7 @@
                  'hover:bg-neutral-100 dark:hover:bg-neutral-800 ' \
                  'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-violet-500 ' \
                  'aria-disabled:text-neutral-400 dark:aria-disabled:text-neutral-600'
-  panel_classes = 'rounded-lg border border-border bg-muted p-6 mb-8'
+  panel_classes = 'rounded-lg border border-border bg-background p-6 mb-8'
 %>
 
 <% content_for :title, "Positioning & Navigation" %>
@@ -132,7 +132,7 @@
 <h3 class="text-base font-semibold mb-3">Every placement</h3>
 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8" id="anchor-placements">
   <% placements.each do |placement| %>
-    <div class="relative flex h-24 items-center justify-center rounded-lg border border-border bg-muted"
+    <div class="relative flex h-24 items-center justify-center rounded-lg border border-border bg-background"
          data-placement-cell="<%= placement %>">
       <div data-controller="ui--anchor"
            data-ui--anchor-placement-value="<%= placement %>"
@@ -158,7 +158,7 @@
      tabindex="0"
      role="group"
      aria-label="Scrollable region containing an anchored element"
-     class="relative h-48 overflow-y-auto rounded-lg border border-border bg-muted px-6 mb-8">
+     class="relative h-48 overflow-y-auto rounded-lg border border-border bg-background px-6 mb-8">
   <div class="h-96 pt-4 text-xs text-neutral-600 dark:text-neutral-400">
     Keep scrolling inside this box: the label below sits under its control until the room runs
     out, then flips above it.

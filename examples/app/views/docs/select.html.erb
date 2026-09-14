@@ -27,7 +27,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div id="select-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+<div id="select-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="w-64">
     <%= render Ui::FieldComponent.new(name: "demo[timezone]") do |field| %>
       <% field.with_label { "Timezone" } %>
@@ -93,7 +93,7 @@
   combobox to its editable mode: the WAI-ARIA combobox with list autocomplete. Typing filters the list, ignoring case and
   accents; nothing else in the API changes, and the value still lives in the same native select.
 </p>
-<div id="select-search-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+<div id="select-search-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="w-64">
     <%= render Ui::FieldComponent.new(name: "demo[city]") do |field| %>
       <% field.with_label { "City" } %>
@@ -126,7 +126,7 @@
   The select submits, blocks submission while <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
   and blank, and resets with its form — none of which this component implements, because none of it is its to implement.
 </p>
-<div id="select-form-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+<div id="select-form-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <form id="select-form" action="<%= demo_submit_path %>" method="post" class="flex flex-wrap items-end gap-4">
     <div class="w-64">
       <%= render Ui::FieldComponent.new(name: "booking[timezone]") do |field| %>
@@ -168,7 +168,7 @@
   <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, so the
   round trip is the one Rails always had.
 </p>
-<div id="select-round-trip-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+<div id="select-round-trip-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <%= render 'docs/select_round_trip', trip: DemoTrip.new, cities: DocsController.cities, submission: 0 %>
 </div>
 
@@ -178,7 +178,7 @@
   The popup is in the top layer, so it draws above the dialog and is not clipped by its scroll box. The first Escape
   closes the listbox and the second closes the Modal — that ordering is the browser's, not ours.
 </p>
-<div id="select-modal-preview" class="rounded-lg border border-border bg-muted flex items-center justify-center p-12 mb-8">
+<div id="select-modal-preview" class="rounded-lg border border-border bg-background flex items-center justify-center p-12 mb-8">
   <button type="button" id="select-modal-trigger"
           onclick="document.body.append(document.getElementById('select-modal-open').content.cloneNode(true))"
           class="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
@@ -210,7 +210,7 @@
   Outside a Field, name it yourself with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>
   — it reaches both the select and the combobox.
 </p>
-<div id="select-standalone-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+<div id="select-standalone-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <div class="w-64">
     <%# native_on_touch is left at its default here, so this is the instance that shows the
         phone behaviour: on a coarse pointer it stays the native select and its platform picker %>
