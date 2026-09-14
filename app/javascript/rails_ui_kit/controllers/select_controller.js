@@ -145,6 +145,7 @@ export default class extends Controller {
     this.renderDisabled()
     this.mirrorAria("aria-invalid")
     this.mirrorAria("aria-describedby")
+    this.mirrorRequired()
   }
 
   // What the control shows: the text field's value when searching, the label element otherwise.
@@ -179,6 +180,17 @@ export default class extends Controller {
     if (value === null) return this.comboboxTarget.removeAttribute(name)
 
     this.comboboxTarget.setAttribute(name, value)
+  }
+
+  // `required` is a plain attribute on the select, not an aria one, so it is translated rather
+  // than copied byte for byte the way mirrorAria copies aria-invalid and aria-describedby.
+  // Removed rather than set to "false" when absent, matching how the server never renders it.
+  mirrorRequired() {
+    if (this.selectTarget.required) {
+      this.comboboxTarget.setAttribute("aria-required", "true")
+    } else {
+      this.comboboxTarget.removeAttribute("aria-required")
+    }
   }
 
   // Writing the select is what choosing means; the events are what make it observable, and

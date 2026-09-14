@@ -408,16 +408,6 @@ scope-local.
 Inherits `ui-component-library` § Assumptions and Primitive E's in
 `ui-positioning-and-navigation`.
 
-- **Prerequisite 1: Select's combobox carries `aria-required`.** Checked against
-  `select_component.rb` at `1bce623`. `required` goes only to the native select
-  (`select_attributes`), and `combobox_attributes` has no `aria-required`, so a required
-  enhanced Select doesn't announce "required" on the element that has focus today. The
-  fix is small and backwards-compatible. The orchestrator has taken it as an
-  accessibility defect, to be fixed under ui-select before the release is tagged
-  (2026-09-14). It is not a Field-side workaround (`ui-component-library` § Business rules, rule 4). **At a
-  contradiction**, where adding it changes Select's public API or breaks a
-  `select_accessibility` check, escalate to the decider rather than shipping item 15
-  unmet.
 - **Rails behaviour verified in the bundle, 2026-09-14, `rails` 8.1.3.1.** Each item was
   observed by rendering real helpers in this repository's bundle, not recalled:
   - `form_with(model:)` names and ids for the four records in item 4;

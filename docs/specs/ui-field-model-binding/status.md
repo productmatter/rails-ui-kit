@@ -1,6 +1,6 @@
 ## State
 
-blocked: awaiting ratification. The spec is a draft with no open questions left. It still needs the approving merge, and prerequisite 1 (Select's `aria-required`, which the orchestrator is fixing under ui-select) has to land before this build's Select checks can pass.
+blocked: awaiting ratification. The spec is a draft with no open questions left. It still needs the approving merge. Prerequisite 1 (Select's `aria-required`) has landed under ui-select.
 
 ## Done
 

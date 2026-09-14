@@ -190,6 +190,9 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       select;
     - `aria-describedby` and `aria-invalid` go to both the select (for the no-JS state)
       and the combobox;
+    - `required` also reaches the combobox as `aria-required="true"`, server-rendered
+      and kept in sync by `ui--select` after a programmatic change to the select's
+      `required`; omitted, not `"false"`, when the select is not required;
     - `class:` merges onto the visible control, as it does for Input
       (`ui-component-library` § Business rules, rule 5);
     - other `data:` and `aria:` attributes go on the root, where `change` events bubble
@@ -219,7 +222,8 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
 16. **`search: false` is the APG select-only combobox**, taken from the w3.org example,
     verified 2026-09-13. The combobox is a `<div role="combobox" tabindex="0">` whose
     text is the selected option's label. It carries `aria-labelledby` (the Field label),
-    `aria-controls` (the listbox), `aria-expanded` and `aria-activedescendant`.
+    `aria-controls` (the listbox), `aria-expanded`, `aria-activedescendant` and, where
+    the select is required, `aria-required="true"` (item 12).
     `ui--roving-focus` runs in `activedescendant` mode with `loop: false`,
     `typeahead: true` and its `input` target on the combobox. Because that input is not
     editable, the primitive claims `Home`, `End` and typed characters for navigation
@@ -243,8 +247,8 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     against the w3.org example on 2026-09-13, restricted to the list's values.
     - **Markup.** The combobox is an `<input type="text" role="combobox"
       aria-autocomplete="list" autocomplete="off">`. It has no `name`, so it never
-      submits. It has the same `aria-labelledby`, `aria-controls`, `aria-expanded` and
-      `aria-activedescendant` as select-only mode.
+      submits. It has the same `aria-labelledby`, `aria-controls`, `aria-expanded`,
+      `aria-activedescendant` and `aria-required` as select-only mode.
     - **Show-options button.** A chevron `<button type="button" tabindex="-1">`, named
       through i18n, opens the listbox for touch screen-reader users. APG keeps it for
       exactly that reason.

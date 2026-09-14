@@ -194,6 +194,21 @@ module Ui
       assert_nil root['aria-label']
     end
 
+    test 'required renders aria-required on the combobox in both modes, and omits it when not required' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, required: true))
+      assert_selector 'select[required]', visible: :all
+      assert_selector "[role=combobox][aria-required='true']", visible: :all
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true, required: true))
+      assert_selector "input[role=combobox][aria-required='true']", visible: :all
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
+      assert_no_selector '[role=combobox][aria-required]', visible: :all
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+      assert_no_selector '[role=combobox][aria-required]', visible: :all
+    end
+
     test 'other data and aria attributes stay on the root, where change events bubble to' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES,
                                             data: { testid: 'state' }, aria: { roledescription: 'state picker' }))

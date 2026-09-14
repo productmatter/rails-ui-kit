@@ -96,6 +96,28 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     end
   end
 
+  test 'SA8: aria-required mirrors the select, server-rendered and after a programmatic change, in both modes' do
+    assert_selector "#trip_city-combobox[aria-required='true']"
+
+    id = 'demo_city'
+    assert_no_selector "##{id}-combobox[aria-required]"
+
+    page.execute_script(<<~JS, id)
+      const select = document.getElementById(arguments[0])
+      select.required = true
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    JS
+    assert_selector "##{id}-combobox[aria-required='true']"
+    assert_accessible(within: '#select-search-preview')
+
+    page.execute_script(<<~JS, id)
+      const select = document.getElementById(arguments[0])
+      select.required = false
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    JS
+    assert_no_selector "##{id}-combobox[aria-required]"
+  end
+
   test 'SA7: the focus ring on the control reaches 3:1 against every surface' do
     preview = find_by_id('select-preview')
 

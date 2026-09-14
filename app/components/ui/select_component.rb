@@ -132,7 +132,7 @@ module Ui
     def combobox_attributes
       shared = {
         id: combobox_id, hidden: true, role: 'combobox', class: control_class,
-        aria: { controls: listbox_id, expanded: 'false' }.merge(@control_aria),
+        aria: { controls: listbox_id, expanded: 'false', required: @required.presence }.merge(@control_aria),
         data: { 'ui--select-target': 'combobox', 'ui--overlay-target': 'trigger',
                 'ui--anchor-target': 'anchor', 'ui--roving-focus-target': 'input',
                 action: primitives.combobox_actions }
