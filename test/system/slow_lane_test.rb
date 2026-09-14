@@ -18,7 +18,10 @@ class SlowLaneTest < ApplicationSystemTestCase
       assert_operator measured, :>=, slow_latency_ms * 0.8,
                       "SLOW=1 asked for #{slow_latency_ms}ms of latency; the request took #{measured.round}ms"
     else
-      assert_operator measured, :<, 250,
+      # Measured against the latency the switch would add, not a guess at how fast an unslowed
+      # request should be: that guess failed at 268ms on a machine busy with other test runs,
+      # while an applied latency can never come in under the latency itself.
+      assert_operator measured, :<, SLOW_LATENCY_MS,
                       "the lane is slow (#{measured.round}ms) without SLOW being set"
     end
   end
