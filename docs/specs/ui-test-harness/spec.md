@@ -98,6 +98,25 @@ neither needs RSpec. The helper lives on the system-test base class, not in
 `test/test_helper.rb`, because requiring it there would pull Capybara into the unit lane
 and undo the separation above — see § Assumptions.
 
+A browser test that reads a value before the response that changes it has arrived passes on
+a fast machine and fails on a slow one, and nothing in a green run says which kind of test it
+is. `SLOW=1` is the switch that tells the difference: set on an invocation of the browser
+lane, it emulates network latency through the driver's CDP session, so a read that races a
+response loses that race every time instead of winning it locally and failing in CI or on
+someone else's laptop. It exists because that shipped: `select_form_submission_test.rb`'s
+SF4 read an element the demo re-renders on every response, and because the element already
+existed holding the previous response's text, the assertion passed here and failed three
+times out of three on the reviewer's machine. CPU throttling at six times did not reproduce
+it; four hundred milliseconds of latency reproduced it on the first attempt, which is why
+latency is what the switch emulates and CPU throttling is not (§ Assumptions).
+
+The switch is off unless the environment variable is set, so every existing invocation
+behaves exactly as it does today; `SLOW_LATENCY` overrides the default delay in
+milliseconds for an author who wants to push harder. A driver with no CDP session — the
+`rack_test` driver a no-JavaScript check runs under — is left alone rather than raising,
+because a switch that breaks a lane it cannot slow is worse than one that quietly does
+nothing there.
+
 ## Business rules
 
 1. `test/test_helper.rb` never requires Capybara, Selenium, `axe-core-*`, or anything
@@ -120,9 +139,21 @@ and undo the separation above — see § Assumptions.
 6. The harness ships with at least one accessibility assertion actually exercised, not
    merely available. A helper nobody has run is not a delivered capability (§ Business
    rules of ui-component-library, rule 6).
+7. **The slow lane is opt-in and never implicit.** `SLOW=1` changes behaviour only for the
+   invocation that sets it. It is not a default, CI does not set it on the job that gates a
+   pull request, and no test reads the variable to decide what to assert — a suite whose
+   assertions differ between a fast and a slow run proves nothing on either. It is a tool
+   for finding races on demand, and the finding is a test to fix, not a switch to leave on.
 
 ## Assumptions
 
+- **CDP's `Network.emulateNetworkConditions` is what makes a race reproducible; CPU
+  throttling is not.** Both were tried against a known-racy assertion (`select_form_submission_test.rb`,
+  SF4, 2026-09-14). `Emulation.setCPUThrottlingRate` at six times left it green, because it
+  slows the assertion's own polling as much as the response it is waiting for; four hundred
+  milliseconds of emulated latency failed it immediately and repeatably. CPU throttling was
+  therefore considered and dropped rather than shipped unused. If a later race turns out to
+  need it, it is two lines in the same place — but it is not added on the chance.
 - `capybara` and `selenium-webdriver` are already in the `Gemfile`'s test group and are
   currently unused. This scope activates them rather than adding them; no new browser
   dependency is introduced, only wired.
@@ -159,7 +190,7 @@ and undo the separation above — see § Assumptions.
 - `test/test_helper.rb` — the unit-lane entry point; gains nothing, and must keep
   mentioning no browser.
 - `test/application_system_test_case.rb` (new) — the Capybara base class, the headless
-  Chrome driver registration, and the `assert_accessible` helper.
+  Chrome driver registration, the `assert_accessible` helper, and the `SLOW=1` switch.
 - `test/system/` (new) — the browser-test lane and its smoke test.
 - `Rakefile` — the single `test/**/*_test.rb` glob that currently sweeps system tests into
   the default run; splits into the unit and `test:system` lanes here.
@@ -178,6 +209,7 @@ and undo the separation above — see § Assumptions.
 - The unit lane stays browserless: loading `test/test_helper.rb` defines no Capybara — run: `bundle exec ruby -Itest -e 'require "test_helper"; abort("browser dependency leaked into the unit lane") if defined?(Capybara)'`
 - The two lanes are separate tasks and the default lane no longer globs `test/system/` — run: `bundle exec rake -T | grep -q "rake test:system" && ! grep -q "test/\*\*/\*_test.rb" Rakefile`
 - `assert_accessible` runs a real axe audit and fails with axe's violation report on a page seeded with a known violation — run: `bundle exec rake test:system TEST=test/system/accessibility_assertion_test.rb`
+- `SLOW=1` slows the browser lane, and the same file asserts full-speed navigation when the switch is unset, which the ordinary lane run covers — run: `SLOW=1 bundle exec rake test:system TEST=test/system/slow_lane_test.rb`
 
 ### judgeable
 
@@ -200,3 +232,6 @@ and undo the separation above — see § Assumptions.
   `ui-presence-and-overlay-stack`'s `popover`-unsupported fallback is exercised at its own
   human-gate, in a real non-supporting browser, not here.
 - Parallel or sharded system-test execution — premature at one smoke test.
+- Making `SLOW=1` part of CI, on a schedule or otherwise. What it finds is a test to fix;
+  once fixed, the fix is what CI runs. A nightly slow job is worth revisiting only if the
+  suite starts finding races faster than it fixes them.

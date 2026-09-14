@@ -65,7 +65,12 @@ once built.
   `TEST=` invocations and the full `test:system` run alike).
 
 ## In progress
-None -- lane is built and green.
+The `SLOW=1` switch is specified (§ Behavior, § Business rules rule 7, § Assumptions) and not
+yet built. It came out of `ui-select`: a racy assertion in `select_form_submission_test.rb`
+passed on the author's machine and failed three times out of three on the reviewer's, and
+emulated network latency was the only thing that reproduced it. The implementation is the
+base class plus `test/system/slow_lane_test.rb`, and the first use of it is one pass over the
+whole browser lane to see what else it finds.
 
 ## Last green checkpoint
 - `bundle exec rake test`: 116 runs, 335 assertions, 0 failures (count moves as sibling
