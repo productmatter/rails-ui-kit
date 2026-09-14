@@ -271,6 +271,17 @@ retrofit moved them onto the primitives.
 A future scope enters this table only after passing rule 0, pulled by a client build.
 Nothing is queued behind Select.
 
+**Across every phase — localization.** Two scopes, not one, because they are two
+promises: what the kit *says* (translatable, host-overridable, already half-built) and how
+it *lays out* (mirrored, which two ratified scopes deferred until a client needs it). The
+first is ratifiable on its own; the second reverses a recorded deferral and is the
+decider's call. Splitting them lets the strings work land without deciding RTL.
+
+| Scope | Owns | Depends on | Status |
+|---|---|---|---|
+| `ui-localization` | The chrome/content boundary — the kit translates only what it says in its own voice, never what a call site writes — the per-instance override chain (call site → host locale → kit default) for all 16 chrome strings, CLDR plural categories through `Intl.PluralRules`, what the kit guarantees when translated text outgrows a fixed-height control, and the locale-switch, plural, pseudo-locale and hardcoded-string checks that keep it true. | `ui-select`, `ui-control-sizing`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-test-harness` | draft |
+| `ui-localization-rtl` | Direction: the sixteen physical classes that become logical, what stays physical and why, the two behaviours direction genuinely changes (horizontal arrow keys, the scroll-lock gutter), the `dir` switch in `examples/`, and the RTL browser pass. Anchored positioning needs no work — the pinned Floating UI resolves `-start`/`-end` from the writing direction. | `ui-localization`, `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-select`, `ui-test-harness` | draft |
+
 **Across Phases B and C — control metrics.** Additive, and invisible at every
 component's defaults, so it doesn't reopen anything already verified.
 
