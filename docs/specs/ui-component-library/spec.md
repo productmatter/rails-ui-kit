@@ -260,16 +260,20 @@ Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests gre
 | `ui-presentational-components` | The shared convention for server-rendered components with no Stimulus controller, and the four that pass rule 0: Button, plus Input, Label and Textarea, the controls Field composes and binds to `ActiveModel::Errors`. It originally owned 20. The other 16 were built and then cut against rule 0 on 2026-09-13 (§ Out of scope). Typography stays a docs style-guide page, not a component. | `ui-component-base`, `ui-design-tokens` | ratified |
 | `ui-field-model-binding` | `Ui::FieldComponent.new(model:, attribute:)`, additive to the v0.3.0 `name:`/`errors:` form. It derives the name and id `form_with` emits, the model's errors, `form.label`'s text, and `required` from unconditional presence validators only, with an `aria-hidden` label marker. An invalid field's help text gives way to its error, animated through Primitive D when a morph delivers the change. The rule 0 Gate 1 example. The form builder is deferred by decision. | `ui-positioning-and-navigation`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-select`, `ui-test-harness` | building |
 
-**Phase C — Rails-aware interactive components.** Each needs several primitives at
-once. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship; the
-retrofit moved them onto the primitives.
+**Phase C — Rails-aware interactive components.** Each owns a Rails form concept and
+the browser behaviour that goes with it. Select composes several primitives at once;
+Choices composes none, because native radios and checkboxes already carry the
+behaviour, and ships one small controller only where the browser has no native
+constraint. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship;
+the retrofit moved them onto the primitives.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
 | `ui-select` | `Ui::SelectComponent`: a Rails-aware select built from a collection, array, hash or model enum, with a select-only and a searchable combobox mode (APG), the real `<select>` kept as the single source of truth so it still submits, validates, resets and works without JavaScript; Field and Turbo integration; remote search designed for a later phase; supersedes Dropdown's `kind: :listbox`. | `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
+| `ui-choices` | `Ui::ChoicesComponent`: a radio (`multiple: false`) or checkbox (`multiple: true`) group built from a collection, array, hash or enum through the shared `Ui::OptionSet` (moved out from under Select), in a list or wrapped-card appearance, with `collection_radio_buttons`/`collection_check_boxes` names, ids and `include_hidden` so unchecking everything clears the attribute. A `<fieldset>` named, described and marked invalid through Field. No JavaScript except one small controller that makes a required checkbox group mean "at least one". Passes Gate 1 (the Rails submission contract) and Gate 2 (group accessibility). | `ui-select`, `ui-field-model-binding`, `ui-presentational-components`, `ui-control-sizing`, `ui-localization`, `ui-localization-rtl`, `ui-test-harness` | draft |
 
 A future scope enters this table only after passing rule 0, pulled by a client build.
-Nothing is queued behind Select.
+Select and Choices are the scopes in it; nothing is queued behind them.
 
 **Across every phase — localization.** Two scopes, not one, because they are two
 promises: what the kit *says* (translatable, host-overridable, already half-built) and how
@@ -279,8 +283,8 @@ decider's call. Splitting them lets the strings work land without deciding RTL.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-localization` | The chrome/content boundary — the kit translates only what it says in its own voice, never what a call site writes — the per-instance override chain (call site → host locale → kit default) for all 16 chrome strings, CLDR plural categories through `Intl.PluralRules`, what the kit guarantees when translated text outgrows a fixed-height control, and the locale-switch, plural, pseudo-locale and hardcoded-string checks that keep it true. | `ui-select`, `ui-control-sizing`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-test-harness` | draft |
-| `ui-localization-rtl` | Direction: the sixteen physical classes that become logical, what stays physical and why, the two behaviours direction genuinely changes (horizontal arrow keys, the scroll-lock gutter), the `dir` switch in `examples/`, and the RTL browser pass. Anchored positioning needs no work — the pinned Floating UI resolves `-start`/`-end` from the writing direction. | `ui-localization`, `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-select`, `ui-test-harness` | draft |
+| `ui-localization` | The chrome/content boundary — the kit translates only what it says in its own voice, never what a call site writes — the per-instance override chain (call site → host locale → kit default) for all 15 chrome strings, CLDR plural categories through `Intl.PluralRules`, what the kit guarantees when translated text outgrows a fixed-height control, and the locale-switch, plural, pseudo-locale and hardcoded-string checks that keep it true. | `ui-select`, `ui-control-sizing`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-test-harness` | ready-for-review |
+| `ui-localization-rtl` | Direction hygiene, decided "convert now, promise later": the sixteen component classes and the docs app's physical classes become logical, what stays physical is named with its reason, and a guard fails on a new one. The RTL support claim — the two JavaScript behaviours direction changes, a `dir` switch, a browser pass, a native-reader gate — is costed there and deferred until a client build ships an RTL language. | `ui-localization`, `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-select`, `ui-test-harness` | ready-for-review |
 
 **Across Phases B and C — control metrics.** Additive, and invisible at every
 component's defaults, so it doesn't reopen anything already verified.
