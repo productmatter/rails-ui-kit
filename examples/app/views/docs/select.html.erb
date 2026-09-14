@@ -1,0 +1,213 @@
+<% content_for :title, "Select" %>
+<%
+  timezones = [
+    ["Auckland", "auckland"], ["Berlin", "berlin"], ["Bogotá", "bogota"], ["Cairo", "cairo"],
+    ["Chicago", "chicago"], ["Delhi", "delhi"], ["Dublin", "dublin"], ["Helsinki", "helsinki"],
+    ["Lagos", "lagos"], ["Lisbon", "lisbon"], ["London", "london"], ["Madrid", "madrid"],
+    ["Nairobi", "nairobi"], ["New York", "new_york"], ["Oslo", "oslo"], ["Paris", "paris"],
+    ["São Paulo", "sao_paulo"], ["Singapore", "singapore"], ["Sydney", "sydney"], ["Tokyo", "tokyo"]
+  ]
+  regions = {
+    "Europe" => [["France", "fr"], ["Germany", "de"], ["Spain", "es"]],
+    "Americas" => [["Brazil", "br"], ["Canada", "ca"], ["Mexico", "mx"]],
+    "Asia" => [["India", "in"], ["Japan", "jp"], ["Singapore", "sg"]]
+  }
+  plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
+%>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Select</h1>
+  <p class="text-muted-foreground">
+    A real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>
+    built from a Rails collection, enum or options hash, mirrored into a WAI-ARIA combobox. The select is the only
+    place the value lives, so it submits, validates <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>,
+    resets with its form and still works with JavaScript off.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="select-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[timezone]") do |field| %>
+      <% field.with_label { "Timezone" } %>
+      <% field.with_control(Ui::SelectComponent, options: timezones, selected: "london",
+                            native_on_touch: false) %>
+      <% field.with_description { "Used for every date we show you." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[status]") do |field| %>
+      <% field.with_label { "Order status" } %>
+      <% field.with_control(Ui::SelectComponent, model: DemoOrder, enum: :status, selected: "packed",
+                            native_on_touch: false) %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[country]") do |field| %>
+      <% field.with_label { "Country" } %>
+      <% field.with_control(Ui::SelectComponent, options: regions, prompt: true, native_on_touch: false) %>
+      <% field.with_description { "Grouped, the way grouped_collection_select renders." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[plan]") do |field| %>
+      <% field.with_label { "Plan" } %>
+      <% field.with_control(Ui::SelectComponent, options: plans, selected: "growth",
+                            disabled_values: ["enterprise"], native_on_touch: false) %>
+      <% field.with_description { "Enterprise is disabled: reachable, never selectable." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[locked]") do |field| %>
+      <% field.with_label { "Region (locked)" } %>
+      <% field.with_control(Ui::SelectComponent, options: plans, selected: "starter", disabled: true,
+                            native_on_touch: false) %>
+      <% field.with_description { "Disabled: out of the tab order, and it never submits." } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Inside a form %>
+<h2 class="text-base font-semibold mb-3">In a form</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The select submits, blocks submission while <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
+  and blank, and resets with its form — none of which this component implements, because none of it is its to implement.
+</p>
+<div id="select-form-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+  <form id="select-form" action="<%= demo_submit_path %>" method="post" class="flex flex-wrap items-end gap-4">
+    <div class="w-64">
+      <%= render Ui::FieldComponent.new(name: "booking[timezone]") do |field| %>
+        <% field.with_label { "Timezone" } %>
+        <% field.with_control(Ui::SelectComponent, options: timezones, selected: "berlin",
+                              native_on_touch: false) %>
+      <% end %>
+    </div>
+    <div class="w-64">
+      <%= render Ui::FieldComponent.new(name: "booking[plan]") do |field| %>
+        <% field.with_label { "Plan (required)" } %>
+        <% field.with_control(Ui::SelectComponent, options: plans, required: true, prompt: "Choose a plan",
+                              native_on_touch: false) %>
+      <% end %>
+    </div>
+    <%= render(Ui::ButtonComponent.new(type: "submit")) { "Submit" } %>
+    <%= render(Ui::ButtonComponent.new(type: "reset", variant: :outline)) { "Reset" } %>
+  </form>
+</div>
+
+<%# Standalone %>
+<h2 class="text-base font-semibold mb-3">Without a Field</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Outside a Field, name it yourself with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>
+  — it reaches both the select and the combobox.
+</p>
+<div id="select-standalone-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+  <div class="w-64">
+    <%# native_on_touch is left at its default here, so this is the instance that shows the
+        phone behaviour: on a coarse pointer it stays the native select and its platform picker %>
+    <%= render Ui::SelectComponent.new(name: "standalone[plan]", options: plans, selected: "starter",
+                                       aria: { label: "Plan" }) %>
+  </div>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#select-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-usage" class="text-neutral-200"><%= h(example_select_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["name",               "String",        "required", "The control's HTML name, e.g. \"post[author_id]\". The id is derived from it the way form_with derives one."],
+        ["collection",         "Enumerable",    "nil",      "With value_method: and text_method:, exactly as collection_select takes them. Each accepts a symbol or a proc."],
+        ["options",            "Array or Hash", "nil",      "What options_for_select takes: [\"S\", \"M\"], [[\"Draft\", \"draft\"]], { \"Draft\" => \"draft\" }, or { \"Europe\" => [[\"France\", \"fr\"]] } for groups."],
+        ["model / enum",       "Class, Symbol", "nil",      "A model and one of its enums. Labels come from human_attribute_name; the submitted value is the enum key."],
+        ["group_method",       "Symbol/Proc",   "nil",      "With group_label_method:, the grouped_collection_select shape."],
+        ["selected",           "Object",        "nil",      "Compared by string value, as Rails' helpers compare it."],
+        ["include_blank",      "Boolean/String","false",    "Rails' include_blank: true renders an empty option, a string labels it."],
+        ["prompt",             "Boolean/String","nil",      "Renders only while nothing is selected. true uses Rails' own helpers.select.prompt."],
+        ["disabled_values",    "Array",         "nil",      "Options that are reachable by keyboard but never selectable."],
+        ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
+        ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
+        ["search",             "Boolean",       "false",    "Switches the combobox to its editable, filtering mode."],
+        ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances."],
+        ["class",              "String",        "nil",      "Merged over the control's default classes -- the caller always wins."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Keyboard %>
+<h2 class="text-base font-semibold mb-3">Keyboard</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The WAI-ARIA select-only combobox pattern, key for key. DOM focus never leaves the combobox: the active option is
+  announced through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-activedescendant</code>.
+</p>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">State</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Result</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["closed", "↓, Alt+↓, Enter, Space", "Opens without moving visual focus or changing the selection; the active option is the selected one."],
+        ["closed", "↑", "Opens, then moves visual focus to the first option."],
+        ["closed", "Home / End", "Opens and moves visual focus to the first / last option."],
+        ["closed or open", "printable characters", "Opens if closed, then typeahead: first match, full-string match in quick succession, cycling on a repeated character."],
+        ["open", "↓ / ↑", "Next / previous option. At either end, visual focus stays put."],
+        ["open", "Home / End", "First / last option."],
+        ["open", "PageUp / PageDown", "Up / down ten options, or to the first / last."],
+        ["open", "Enter, Space, Alt+↑", "Selects the active option, closes, visual focus back on the combobox."],
+        ["open", "Tab", "Selects the active option, closes, and focus moves on."],
+        ["open", "Escape", "Closes with no change."],
+      ].each do |state, key, result| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 text-muted-foreground"><%= state %></td>
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= key %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= result %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>The native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;select&gt;</code> is the only value store. To change the value from your own code, set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">select.value</code> and dispatch <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> — there is no second API.</li>
+  <li>Choosing an option dispatches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
+  <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
+  <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
+  <li>Positioning is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>'s, the top layer and dismissal are <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--overlay</code>'s, and the keyboard model is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>'s. Select adds the submission mirror and the key tables, and nothing else.</li>
+</ul>

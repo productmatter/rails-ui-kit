@@ -14,6 +14,7 @@ import AnchorController from "rails_ui_kit/controllers/anchor_controller"
 import RovingFocusController from "rails_ui_kit/controllers/roving_focus_controller"
 import PresenceController from "rails_ui_kit/controllers/presence_controller"
 import OverlayController from "rails_ui_kit/controllers/overlay_controller"
+import SelectController from "rails_ui_kit/controllers/select_controller"
 
 export {
   ModalController,
@@ -31,7 +32,8 @@ export {
   AnchorController,
   RovingFocusController,
   PresenceController,
-  OverlayController
+  OverlayController,
+  SelectController
 }
 
 export function registerControllers(application) {
@@ -51,4 +53,5 @@ export function registerControllers(application) {
   application.register("ui--roving-focus", RovingFocusController)
   application.register("ui--presence", PresenceController)
   application.register("ui--overlay", OverlayController)
+  application.register("ui--select", SelectController)
 }

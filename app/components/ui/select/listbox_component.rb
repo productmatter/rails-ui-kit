@@ -66,11 +66,15 @@ module Ui
       # aria-selected marks where visual focus is, never what the value is, so it is false on
       # every option until the combobox makes one active (§ Behavior, item 19). The current
       # value is marked separately, with data-selected, which is what draws the check.
+      #
+      # Hover moves the active option through the primitive rather than through a second
+      # implementation here; the click writes the select and closes.
       def option_attributes(item, index)
         {
           id: option_id(index), role: 'option', class: OPTION_CLASSES,
           data: { value: item.value, selected: ('true' if item.selected),
-                  'ui--roving-focus-target': 'item' }.compact,
+                  'ui--roving-focus-target': 'item',
+                  action: 'click->ui--select#choose mouseenter->ui--roving-focus#activate' }.compact,
           aria: { selected: 'false', disabled: ('true' if item.disabled) }.compact
         }
       end

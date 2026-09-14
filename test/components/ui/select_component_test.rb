@@ -180,21 +180,25 @@ module Ui
       assert_equal 'state-picker', page.find('select', visible: :all)['id']
     end
 
-    test 'aria-describedby and aria-invalid land on the control, not on the root' do
+    test 'the aria that describes or names the control reaches both renderings of it' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES,
-                                            aria: { describedby: 'state-error', invalid: true }))
+                                            aria: { describedby: 'state-error', invalid: true, label: 'State' }))
 
-      assert_selector "select[aria-describedby='state-error'][aria-invalid='true']", visible: :all
+      %w[select [role=combobox]].each do |control|
+        assert_selector "#{control}[aria-describedby='state-error'][aria-invalid='true'][aria-label='State']",
+                        visible: :all
+      end
       root = page.find("[data-slot='select']", visible: :all)
       assert_nil root['aria-describedby']
       assert_nil root['aria-invalid']
+      assert_nil root['aria-label']
     end
 
     test 'other data and aria attributes stay on the root, where change events bubble to' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES,
-                                            data: { testid: 'state' }, aria: { label: 'State' }))
+                                            data: { testid: 'state' }, aria: { roledescription: 'state picker' }))
 
-      assert_selector "[data-slot='select'][data-testid='state'][aria-label='State']", visible: :all
+      assert_selector "[data-slot='select'][data-testid='state'][aria-roledescription='state picker']", visible: :all
       assert_no_selector 'select[data-testid]', visible: :all
     end
 

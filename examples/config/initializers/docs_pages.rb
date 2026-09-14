@@ -32,6 +32,9 @@ module DocsPages
       summary: 'A modal that opens when rendered, driven by Turbo Frames and Streams, with an optional guard for unsaved changes.' },
     { slug: :popover, title: 'Popover', section: 'Components',
       summary: 'A click-triggered anchored panel for rich content, closed by clicking outside or pressing Escape.' },
+    { slug: :select, title: 'Select', section: 'Components',
+      summary: 'A select built from a Rails collection, enum or options hash: a real <select> that submits, ' \
+               'mirrored into a WAI-ARIA combobox with full keyboard support.' },
     { slug: :textarea, title: 'Textarea', section: 'Components',
       summary: 'A native <textarea> with the same token styling and states as Input.' },
     { slug: :toast, title: 'Toast', section: 'Components',

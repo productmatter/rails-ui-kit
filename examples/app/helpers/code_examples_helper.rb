@@ -257,6 +257,35 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_select_usage
+    <<~'RUBY'
+      <%# Reads like collection_select: a collection, a value method and a text method %>
+      <%= render Ui::SelectComponent.new(name: "post[author_id]", collection: Author.order(:name),
+                                        value_method: :id, text_method: :name,
+                                        selected: @post.author_id, include_blank: "No author") %>
+
+      <%# Or like select: an array of pairs, an array of strings, or a text => value hash %>
+      <%= render Ui::SelectComponent.new(name: "post[state]",
+                                        options: [["Draft", "draft"], ["Published", "published"]]) %>
+
+      <%# A model enum, labelled through human_attribute_name, submitting the enum key %>
+      <%= render Ui::SelectComponent.new(name: "order[status]", model: Order, enum: :status,
+                                        selected: @order.status) %>
+
+      <%# Inside a Field, which supplies id, name, aria-describedby and aria-invalid %>
+      <%= render Ui::FieldComponent.new(name: "order[status]", errors: @order.errors[:status]) do |field| %>
+        <% field.with_label { "Status" } %>
+        <% field.with_control(Ui::SelectComponent, model: Order, enum: :status, selected: @order.status) %>
+      <% end %>
+
+      <%# Change it from your own code the way you would any form control %>
+      <script>
+        select.value = "shipped"
+        select.dispatchEvent(new Event("change", { bubbles: true }))
+      </script>
+    RUBY
+  end
+
   def example_i18n_override
     <<~YAML
       en:
