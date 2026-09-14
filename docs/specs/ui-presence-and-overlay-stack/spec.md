@@ -262,10 +262,13 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
 
 **Should**
 
-8. **Prefer CSS over measurement for the scroll-lock gutter.** `scrollbar-gutter:
-   stable` on the root, shipped in the kit's CSS, removes the layout shift without
-   measuring anything. The measured-`padding-right` fallback exists only behind
-   `CSS.supports`.
+8. **Hold the scroll-lock gutter as body padding.** The lock takes `<body>` out of
+   flow, and a fixed element's containing block is the viewport *including* a gutter
+   reserved by `scrollbar-gutter: stable`, so that rule lays the body out one scrollbar
+   wider than it is unlocked and every centred or right-aligned element jumps on open.
+   The scrollbar's width is measured once and added to the body's own `padding-right`
+   instead. This corrects an earlier "prefer CSS over measurement" rule
+   (`359aa75`; status.md § Corrections).
 9. **Two controllers and two plain modules, not five controllers.** Cross-instance
    state (the scroll-lock refcount, the fallback stacking value) lives in an ES module
    singleton, not in a Stimulus controller — there is no element it belongs to.
@@ -355,7 +358,8 @@ Pointers. The code is the source of truth for what they do.
 - `test/application_system_test_case.rb`, `examples/` — the base class every system
   test here inherits from (shipped by `ui-test-harness`) and the dummy host it drives.
 - `lib/generators/rails_ui_kit/install/install_generator.rb` — any CSS this scope ships
-  (the scroll-lock gutter rule) has to be reflected here or host apps half-install.
+  has to be reflected here or host apps half-install. It ships none: the scroll lock's
+  gutter is body padding written by `overlay_stack.js` (rule 8), not a stylesheet rule.
 
 ## Acceptance checks
 
