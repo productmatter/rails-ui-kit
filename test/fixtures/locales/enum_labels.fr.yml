@@ -1,0 +1,13 @@
+# Enum label fixtures for the Select tests: "delivered" is deliberately untranslated, so the
+# humanised fallback is covered too.
+fr:
+  activemodel:
+    attributes:
+      test_order/status:
+        pending: "En attente"
+        shipped: "Expédiée"
+  # Rails' own prompt key, which the kit reads rather than inventing one of its own. Rails
+  # ships the English default in code; a locale file is the only way to prove the lookup.
+  helpers:
+    select:
+      prompt: "Veuillez sélectionner"
