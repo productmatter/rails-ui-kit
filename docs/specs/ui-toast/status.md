@@ -2,10 +2,8 @@
 
 ratified
 
-Ratified 2026-09-14 by the orchestrator, who also decided both open questions. Nothing is
-built. **The first build step is the top-layer reachability probe** (§ Acceptance checks,
-first agent-loopable check). Nothing that depends on promoting the container starts
-before its result is recorded here.
+Ratified 2026-09-14 by the orchestrator, who also decided both open questions. The top-layer
+reachability probe has run and **failed** (below). Nothing else is built.
 
 ## Done
 
@@ -41,15 +39,25 @@ before its result is recorded here.
   `ui-foundation-retrofit`'s spec, `implementation.md` and `open-questions.md` of the Toast
   work this scope took over.
 
+- **Top-layer reachability probe, 2026-09-14, headless Chrome 152: failed.**
+  `test/system/toast_top_layer_probe_test.rb`. With a kit Modal open, a
+  `popover="manual"` element shown afterwards is painted above the dialog but blocked by
+  the modal. `elementFromPoint` at its button's centre returns the dialog's content, a
+  Capybara click raises `ElementClickInterceptedError` naming the dialog's body, and
+  `focus()` leaves focus in the dialog. No `inert` attribute is involved, and a bare
+  `<dialog>` behaves the same, so it's the platform's modal blocking and not the kit
+  Modal's code. The later checks (focus held 500 ms, Escape, focus back) can't run. The
+  test now pins the finding (TP1 kit Modal, TP2 bare dialog, TP3 no-modal control that
+  passes the same measurement). spec.md § Behavior item 12, business rule 9,
+  § Assumptions and the human gate now describe the occlusion fallback.
+
 ## In progress
 
-None. Next: write and run `test/system/toast_top_layer_probe_test.rb`, record the result
-here, and edit spec.md § Behavior item 12 to the branch that holds.
+Waiting for `spec-localization` to land before touching the toast components.
 
 ## Last green checkpoint
 
-none — spec only. `specline_check` on the repo: 0 errors, and the same three pre-existing
-warnings as before this scope was added.
+`test/system/toast_top_layer_probe_test.rb` green: 3 runs, 22 assertions.
 
 ## Dead ends
 

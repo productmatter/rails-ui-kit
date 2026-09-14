@@ -299,22 +299,17 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
       by Escape, its close button or a dismissing action, returns focus to where F8
       recorded it came from, if that element is still connected. Otherwise focus goes to
       the next-newest toast, and failing that to `document.body`.
-    - **Over an open Modal: verify first** (decided 2026-09-14, the orchestrator's
-      ratifying ruling, `open-questions.md`).
-      - **If the top-layer reachability probe passes** (the first agent-loopable check),
-        the container renders `popover="manual"`, with the UA popover styles reset to
-        the container's own. It is shown with `showPopover()` on connect. When a toast
-        arrives while a modal `<dialog>` is open, the container is re-promoted to the top
-        of the top layer by hiding it and showing it again. It isn't re-promoted while
-        focus is inside it. So the newest toast paints above the Modal, and its action
-        can be focused and clicked there. Escape handled inside a toast calls
-        `preventDefault()`, so the Modal stays open. A toast closed with focus inside it
-        returns focus into the dialog.
-      - **If the probe fails, promotion isn't built.** The container stays in normal
-        flow with one static stacking value from the kit's CSS. Toasts are occluded
-        while a Modal is open. An action toast, which persists by default, becomes
-        reachable when the Modal closes. The reason is simple: a toast action a user can
-        see but can't reach is worse than one hidden behind the modal.
+    - **Over an open Modal: occluded, not promoted.** The top-layer reachability probe
+      (the first agent-loopable check) **failed** on 2026-09-14 in headless Chrome 152. A
+      `popover="manual"` element shown after a modal `<dialog>` opens is painted above it
+      but is still blocked by the modal: not hit-tested, a click lands on the dialog, and
+      `focus()` is refused. A bare `<dialog>` does the same, so this is the platform, not the
+      kit Modal's code. Following the orchestrator's verify-first ruling
+      (`open-questions.md`), promotion isn't built. The container stays in normal flow
+      with one static stacking value from the kit's CSS. Toasts are occluded while a
+      Modal is open. An action toast, which persists by default, becomes reachable when
+      the Modal closes. A toast action a user can see but can't reach is worse than one
+      hidden behind the modal.
     - **The docs say plainly that a toast action must never be the only way to do
       something.** A toast can be missed, closed or occluded (§ Assumptions), so every
       action it offers exists somewhere on the page too.
@@ -429,7 +424,7 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
    the remaining time.
 9. **No toast is shown where its action can't be reached.** The container is promoted
    above a Modal only once the top-layer reachability probe has passed in the browser lane.
-   Without that proof, occlusion is the behaviour (§ Behavior, item 12).
+   It failed on 2026-09-14, so occlusion is the behaviour (§ Behavior, item 12).
 10. **The same payload renders the same markup from all three entry points,** generated ids
    aside.
 11. **Toast has no class-string theming keyword that replaces classes.** A class a caller
@@ -468,14 +463,13 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
   A `_method` field or a named submitter overrides the method. Link clicks are handled by a
   bubbling `click` listener on the document. **At a contradiction** after a Turbo upgrade,
   escalate rather than reintroducing an authenticity-token field in one path only.
-- **An open modal `<dialog>` makes the rest of the document inert.** Whether a
-  `popover="manual"` element promoted above it escapes that inertness, and the kit Modal's
-  focus trap, is **unverified**. Settling it is the first thing this scope does
-  (§ Acceptance checks, the top-layer reachability probe). The probe runs only in headless
-  Chrome, the browser lane's one engine, so Safari and Firefox are a human gate. **At a
-  contradiction** (the probe fails, or a human gate finds an engine where a promoted
-  action can't be reached), take the fallback in § Behavior item 12 for every browser. Don't
-  add a focus exception or per-engine branching.
+- **An open modal `<dialog>` makes the rest of the document inert, and top-layer promotion
+  doesn't escape it.** Verified 2026-09-14 in headless Chrome 152 by the top-layer
+  reachability probe: a `popover="manual"` element shown above an open modal is painted but
+  not hit-testable or focusable, with the kit Modal and with a bare `<dialog>`. Safari and
+  Firefox weren't probed. Because promotion isn't built, no engine can do better than the
+  fallback in § Behavior item 12, which applies to every browser. Don't add a focus
+  exception or per-engine branching.
 - **`message:` I18n lookup is 0.2.0 behaviour and kept.** A String that happens to be a key
   (Rails' default `en.hello`) is translated. It is recorded, not changed.
 
@@ -503,7 +497,7 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
 
 ### agent-loopable
 
-- **Top-layer reachability probe: written and run first, before any toast code depends on promotion.** It uses no toast code, only the platform and the kit's real Modal. On the Modal docs page, open a `Ui::ModalComponent`. Insert a `<div popover="manual">` holding a `<button>` and an `<a href>`, and call `showPopover()` on it. Then assert all of the following. `document.elementFromPoint` at the button's centre returns the button. A Capybara click fires its handler. After `focus()`, the button is `document.activeElement` and is still, 500 ms later, not reclaimed by the Modal's focus trap. An Escape keydown on the focused button that calls `preventDefault()` leaves the dialog open. Focusing back into the dialog afterwards works. The result, pass or fail, is recorded in status.md, and § Behavior item 12 follows the matching branch. Run: `bundle exec rake test:system TEST=test/system/toast_top_layer_probe_test.rb`
+- **Top-layer reachability probe: written and run first, before any toast code depends on promotion.** It uses no toast code, only the platform and the kit's real Modal. On the Modal docs page, open a `Ui::ModalComponent`. Insert a `<div popover="manual">` holding a `<button>` and an `<a href>`, and call `showPopover()` on it. Then check the following. `document.elementFromPoint` at the button's centre returns the button. A Capybara click fires its handler. After `focus()`, the button is `document.activeElement` and is still, 500 ms later, not reclaimed by the Modal's focus trap. An Escape keydown on the focused button that calls `preventDefault()` leaves the dialog open. Focusing back into the dialog afterwards works. The result, pass or fail, is recorded in status.md, and § Behavior item 12 follows the matching branch. **Result, 2026-09-14: failed at the first check.** The button isn't hit-tested, the click is intercepted by the dialog, and `focus()` is refused, so the later checks can't run. The test file now pins that finding: TP1 uses the kit Modal, TP2 a bare `<dialog>`, and TP3 is a no-modal control that proves the measurement can pass. Run: `bundle exec rake test:system TEST=test/system/toast_top_layer_probe_test.rb`
 - Payload and layout in Ruby. A String `message:` and a block each render as the description, and neither renders a title. A title renders before the description in DOM order. With neither, `default_title` is the title. String keys and string values are accepted. Each action renders the same classes and attributes as `Ui::ButtonComponent.new(variant:, size: :sm)`. A `get` href is an `<a>`. A `patch` href is a `post` form with `_method=patch`, `data-turbo="true"` and no authenticity field. An action with no href is `<button type="button">`. An action's `class:` beats Button's own conflicting class. No action renders no footer. The type glyph renders by default. An `icon` slot replaces it inside the same `aria-hidden` cell. `icon: false` renders no `toast-icon` slot and no `<svg>` outside the close button. The root carries `role="group"` and never `role="status"`, `role="alert"` or `aria-live`. Run: `bundle exec rake test TEST=test/components/ui/toast_component_test.rb`
 - Timing defaults in Ruby. No actions gives 3 000 ms, or 20 000 ms for `error`. Actions and no `duration` gives no self-destruct value and no countdown bar. An explicit `duration` wins with actions. `duration: 0` persists. Run: `bundle exec rake test TEST=test/components/ui/toast_timing_test.rb`
 - The URL rule. Every vector in the shared list is accepted or rejected as listed by the Ruby implementation. Rejection raises in test, and under a stubbed production predicate it drops the action and logs. Run: `bundle exec rake test TEST=test/components/ui/toast_href_test.rb`
@@ -534,9 +528,7 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
   LTR and RTL. He accepts the layout and the colour mapping.
 - Jonathan, using VoiceOver, hears one announcement per toast and the actions hint, reaches
   an Undo with F8, and returns to his place with Escape.
-- If promotion was built: in Safari and Firefox, Jonathan fires an action toast while a
-  Modal is open and confirms it paints above the Modal and its action can be clicked and
-  reached with F8. If either engine fails, the fallback applies everywhere (§ Assumptions).
+- Promotion wasn't built (the probe failed), so there is no Safari or Firefox promotion gate.
 
 ## Out of scope / deferred
 
