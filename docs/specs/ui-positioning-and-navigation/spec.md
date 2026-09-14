@@ -140,6 +140,7 @@ Navigation Menu, Select and Combobox listboxes, and Accordion headers.
 | `typeaheadTimeout` | Number | `500` | ms of idle before the typed buffer resets. |
 | `activeId` | String | `""` | DOM id of the active item; the controller's single source of truth. |
 | `skipDisabled` | Boolean | `false` | `false` leaves disabled items focusable but inert (see below); `true` skips them entirely. |
+| `pageStep` | Number | `0` | Items `PageDown` / `PageUp` move. `0` leaves both keys alone. |
 
 | Class | Applied to | Why |
 |---|---|---|
@@ -169,6 +170,12 @@ combobox with a real text field) keeps `Home`, `End` and typed characters for it
 they move the caret and type into the field, which is what an editable text input must
 do — and the controller claims those keys for navigation only when the `input` target
 is non-editable, i.e. a select-only combobox whose input is a read-only display field.
+`PageDown` and `PageUp` move `pageStep` items at a time, and are unhandled while it is
+`0`, which is every group that does not ask for them. A page counts only the items
+navigation can reach, so hidden items, and disabled ones under `skipDisabled`, are not
+counted. A jump stops at the first or last item rather than wrapping part-way through
+it; only a jump that starts on that end item follows `loop`, exactly as an arrow key
+pressed there does. The APG select-only combobox, which jumps ten, is what they are for.
 `preventDefault()` is called only on keys actually handled, so an unhandled `ArrowLeft`
 in a vertical menu still moves the caret in a nested input.
 
@@ -206,8 +213,11 @@ Given an `ActiveModel::Errors`-shaped object and an attribute name (or a plain a
 messages, so the components do not require ActiveRecord), the wrapper renders
 `data-invalid` when errors are present, and the control receives `aria-invalid="true"`
 and an `aria-describedby` that space-joins the description id and the error id.
-`Ui::FieldLabelComponent` renders `for=` against the control id. `Ui::FieldErrorComponent`
-renders at that error id, with no live-region role by default — the errors are present
+`Ui::FieldLabelComponent` renders `for=` against the control id, and carries
+`id="<control id>-label"` — derived the same way every other id here is, so a control
+that `<label for>` cannot name, such as a `div role="combobox"`, points
+`aria-labelledby` at it. `Ui::FieldErrorComponent` renders at that error id, with no
+live-region role by default — the errors are present
 at page load in the server-rendered case, and a `role="alert"` on every one of them
 would announce the whole form on arrival. A `live:` option opts in for the Turbo Stream
 single-field replacement case, where an alert is the correct behavior.
@@ -363,9 +373,10 @@ live repository and the registry, and one did not survive.
 - Removing an active `ui--anchor` element stops all positioning work — no further `ui--anchor:positioned` events fire on scroll or resize — run: `bundle exec rake test:system TEST=test/system/anchor_cleanup_test.rb`
 - In `roving` mode arrows, Home and End move real DOM focus, disabled items are focusable-but-inert by default and skippable under `skipDisabled: true`, wrapping follows `loop`, and exactly one item is tabbable — run: `bundle exec rake test:system TEST=test/system/roving_focus_menu_test.rb`
 - In `activedescendant` mode DOM focus stays on the input, `aria-activedescendant` tracks the active option, and no option is ever focused — run: `bundle exec rake test:system TEST=test/system/roving_focus_listbox_test.rb`
+- `PageDown` and `PageUp` move `pageStep` navigable items, clamp at the ends and are left alone while `pageStep` is `0` — run: `bundle exec rake test:system TEST=test/system/roving_focus_page_keys_test.rb`
 - A roving group still has exactly one tabbable enabled item after items are added and removed by a Turbo Stream update, including removal of the active item — run: `bundle exec rake test:system TEST=test/system/roving_focus_dynamic_test.rb`
 - Typeahead selects by first letter and resets its buffer after `typeaheadTimeout` — run: `bundle exec rake test:system TEST=test/system/roving_focus_typeahead_test.rb`
-- `Ui::Field` renders `data-invalid`, `aria-invalid` and a space-joined `aria-describedby` from an errors object, and emits no `.field_with_errors` wrapper — run: `bundle exec rake test TEST=test/components/ui/field_component_test.rb`
+- `Ui::Field` renders `data-invalid`, `aria-invalid`, a space-joined `aria-describedby` from an errors object and a label id derived from the control id, and emits no `.field_with_errors` wrapper — run: `bundle exec rake test TEST=test/components/ui/field_component_test.rb`
 - `ui--media-query` reflects breakpoint state and releases its `change` listener on disconnect — run: `bundle exec rake test:system TEST=test/system/media_query_test.rb`
 - The primitives demo page has no accessibility violations — run: `bundle exec rake test:system TEST=test/system/primitives_a11y_test.rb`
 - `registerControllers` registers `ui--anchor`, `ui--roving-focus` and `ui--media-query` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`

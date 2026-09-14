@@ -152,7 +152,11 @@ Public API: targets — none (operates on `this.element`). Values — `open` (Bo
 12. Focus moves into the overlay on open — to `initialFocus` if given, else the content
     element itself — and **returns to the trigger on close**, including when the close
     came from Escape or an outside click. An overlay with no focusable children still
-    receives focus and still returns it.
+    receives focus and still returns it. `moveFocus: false` opts a `layer` out of that
+    move, the way `hint` mode always is out of it: focus stays where the gesture left
+    it, and it is not moved in later either, so focus that falls to `<body>` while the
+    content changes is left there. A combobox needs exactly that, since its DOM focus
+    has to stay on its own input while its listbox is open. Focus return is unaffected.
 13. Body scroll lock is **reference-counted across every open overlay**. Opening a
     second lock-requesting overlay and closing it again leaves the page locked while
     the first is still open; releasing the last lock restores the exact prior scroll
@@ -173,7 +177,8 @@ Public API: targets — none (operates on `this.element`). Values — `open` (Bo
 Public API: targets — `content` (required), `trigger`, `backdrop`. Values — `open`
 (Boolean), `mode` (String: `modal` | `layer` | `hint`, default `layer`), `dismissible`
 (Boolean, default `true`), `scrollLock` (Boolean, default `false`), `restoreFocus`
-(Boolean, default `true`), `initialFocus` (String selector, default `""`). Classes —
+(Boolean, default `true`), `initialFocus` (String selector, default `""`), `moveFocus`
+(Boolean, default `true`). Classes —
 none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismiss`
 (cancelable). Both controllers are exported and registered from
 `app/javascript/rails_ui_kit/index.js` under those identifiers, matching the existing
@@ -248,7 +253,10 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
    `ui-component-library` § Business rules rule 6. Focus entry, focus return, Escape
    ordering and `aria-expanded` / `aria-controls` on the trigger ship with the
    primitive, and are asserted in a real browser — not in a unit test that reads
-   attributes.
+   attributes. `aria-controls` names the content element only where the trigger has
+   none of its own: markup that already says what it controls is the author's, and a
+   combobox trigger names the listbox inside the popup rather than the wrapper around
+   it, which also holds its empty state and status region.
 7. **Nested behaves as standalone**, per `ui-component-library` § Business rules
    rule 7. The nesting case is a required system test, not a caveat in a README.
 
@@ -268,8 +276,10 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
 **May**
 
 11. A component may opt out of scroll lock (`scrollLock: false`) — a right-side Sheet
-    that is meant to scroll with the page is legitimate. It may not opt out of focus
-    return or Escape ordering.
+    that is meant to scroll with the page is legitimate. A `layer` may also opt out of
+    the focus move on open (`moveFocus: false`), which is what a combobox that must
+    keep DOM focus on its input needs. Neither may opt out of focus return or Escape
+    ordering.
 
 ## Assumptions
 
@@ -360,7 +370,9 @@ Pointers. The code is the source of truth for what they do.
   second closes the Modal — run: `bundle exec rake test:system TEST=test/system/ui_overlay_nesting_test.rb`
 - Focus enters the overlay on open and returns to the trigger on close for `modal` and
   `layer` modes, via Escape, outside click and programmatic close, including an overlay
-  with no focusable children — run: `bundle exec rake test:system TEST=test/system/ui_overlay_focus_test.rb`
+  with no focusable children; a `moveFocus: false` layer takes no focus on open and
+  pulls none in when its content changes; and a trigger that already names what it
+  controls keeps its `aria-controls` — run: `bundle exec rake test:system TEST=test/system/ui_overlay_focus_test.rb`
 - Scroll lock is reference-counted: a second overlay opening and closing leaves the
   body locked while the first is open, the last release restores the exact scroll
   position, and neither transition shifts layout horizontally — run: `bundle exec rake test:system TEST=test/system/ui_scroll_lock_test.rb`
