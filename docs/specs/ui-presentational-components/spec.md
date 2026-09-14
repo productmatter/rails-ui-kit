@@ -58,7 +58,7 @@ size and shape come from the caller's `class:`.
 | Separator | A rule between content. Decorative by default (`role="none"`); non-decorative gets `role="separator"` and `aria-orientation`. | `orientation`: horizontal, vertical |
 | Skeleton | A decorative loading placeholder that stops pulsing under `motion-reduce`. | — |
 | Spinner | An inline SVG loading indicator with `role="status"` and an accessible name. | — |
-| Progress | A determinate progress bar, native `<progress>` first, with a required accessible name. | — |
+| Progress | A determinate progress bar; ships `role="progressbar"` on a `div`, not native `<progress>` (§ Business rules, rule 4 exception), with a required accessible name. | — |
 | Table | A semantic `<table>` in a scroll container, with caption, header, body, footer, row, head and cell parts. | — |
 | Breadcrumb | `nav` › `ol` of links; the current page is `aria-current="page"`, separators are `aria-hidden`, a collapsed ellipsis has a name. | — |
 | Pagination | `nav` › `ul` of page links rendered through `Ui::ButtonComponent`; the current page is `aria-current="page"`, previous and next have names. No `pagy` adapter. | link `active`: true, false |
@@ -97,7 +97,14 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    anywhere under `app/components`, comments included. Colour comes from `background`,
    `foreground`, `card`, `popover`, `muted`, `accent`, `secondary`, `primary`,
    `destructive` and their `-foreground` pairs, plus `border`, `input` and `ring`.
-   `border` is for decoration and `input` is for control boundaries. Every class is a
+   A border that *identifies* a component — reads as the edge of a distinct shape the
+   way a form control's outline does, not just a rule between content — uses `input`
+   and meets the same 3:1 rule 4 sets for a control's boundary; that includes Badge's
+   `outline` variant, Alert, and Item's `outline` variant, none of which is a form
+   control. A border that is purely decorative — a card's edge, a table row divider,
+   Separator — uses `border` and is exempt from 3:1. "Border is for decoration" is too
+   loose on its own: the test is whether the border *identifies*, not whether the
+   element happens to be a form control. Every class is a
    complete literal string in the component's source, because Tailwind only compiles
    what it finds there. Never interpolate into a class name (`"aspect-[#{ratio}]"`). A
    runtime value goes through an element attribute (`<progress value>`) or a fixed
@@ -115,13 +122,20 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    with no slots of its own renders from `call`, not a template. This applies to Table,
    Breadcrumb, Pagination, Item, Empty, Input Group and Button Group.
 4. **Accessibility is part of done** (ui-component-library, rule 6). Use the semantic
-   element: a native control, `<table>`, `<nav>` with a list, `<kbd>`, `<progress>`,
-   and never `role="button"` on a `<div>`. Anything the kit itself renders icon-only
-   (pagination previous/next, breadcrumb ellipsis, Spinner) carries an accessible
-   name. Every docs snippet with caller-supplied icon-only content shows the
-   `aria-label`. Text reaches 4.5:1 and a non-text indicator that carries meaning
-   (a control's boundary, a progress fill, a focus indicator) reaches 3:1, on every
-   token surface, in light and in dark. Decoration (Separator, Skeleton, a card
+   element: a native control, `<table>`, `<nav>` with a list, `<kbd>`, and never
+   `role="button"` on a `<div>`. **Exception: native `<progress>`.** Its fill and track
+   are shadow-DOM pseudo-elements (`::-webkit-progress-value`/`::-webkit-progress-bar`,
+   `::-moz-progress-bar`) that `getComputedStyle` reports as transparent, so the
+   mandatory fill-versus-track 3:1 check below can never be verified against a real
+   native `<progress>` the way every other component's contrast is — Progress ships
+   `role="progressbar"` on a `div` instead (§ Behavior), which is also what shadcn/ui
+   ships. Any future component styled only through an unstandardised shadow
+   pseudo-element hits the same wall and takes the same exception. Anything the kit
+   itself renders icon-only (pagination previous/next, breadcrumb ellipsis, Spinner)
+   carries an accessible name. Every docs snippet with caller-supplied icon-only
+   content shows the `aria-label`. Text reaches 4.5:1 and a non-text indicator that
+   carries meaning (a control's boundary, a progress fill, a focus indicator) reaches
+   3:1, on every token surface, in light and in dark. Decoration (Separator, Skeleton, a card
    border) is exempt. Focus is drawn as Button draws it,
    `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`,
    never a box-shadow ring, because forced-colors mode drops box-shadows. A group
@@ -146,7 +160,12 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    under `examples/app/views/docs/`. The page shows every variant value, a usage
    snippet, and a props table (or a slots table for a compound component), with every
    rendered example inside a single `id="<name>-preview"` element the browser test
-   scopes to.
+   scopes to. Every usage snippet renders through
+   `examples/app/helpers/code_examples_helper.rb`, never an inline ERB block written
+   directly in the docs view: a snippet that itself contains `%>` breaks ERB's
+   scanner, which matches the *first* `%>` it finds and cuts the snippet away from the
+   surrounding template. Three workers hit this independently before it was pinned
+   down here.
 7. **Two defaults learned from a real mismatch.** (a) Form controls (Input, Textarea,
    Native Select, Input Group) and anything that reads as one (Button's outline variant)
    are `bg-transparent` in light mode and `dark:bg-muted/50` in dark. Two halves to this.

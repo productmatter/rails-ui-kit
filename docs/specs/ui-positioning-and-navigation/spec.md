@@ -105,6 +105,11 @@ throws whenever the middleware does not run.
 `autoUpdate` returns. A `ui--anchor` element removed from the DOM leaves behind no
 scroll listener, no resize listener and no observer.
 
+`ui--anchor` registers no `turbo:before-cache` handler, deliberately. It holds no open
+state of its own — `disconnect()` already releases every listener and the `autoUpdate`
+handle — so a page Turbo restores from cache re-positions from its own markup the next
+time `active` goes true. A later reader should not add one.
+
 **Composition.** Sibling controllers drive `ui--anchor` through a Stimulus outlet, not
 by importing it. This is how `ui-presence-and-overlay-stack` and the Phase C overlays
 consume positioning without reaching for `@floating-ui/dom` themselves.
@@ -134,6 +139,7 @@ Navigation Menu, Select and Combobox listboxes, and Accordion headers.
 | `typeahead` | Boolean | `false` | First-letter matching. |
 | `typeaheadTimeout` | Number | `500` | ms of idle before the typed buffer resets. |
 | `activeId` | String | `""` | DOM id of the active item; the controller's single source of truth. |
+| `skipDisabled` | Boolean | `false` | `false` leaves disabled items focusable but inert (see below); `true` skips them entirely. |
 
 | Class | Applied to | Why |
 |---|---|---|
@@ -147,19 +153,39 @@ Navigation Menu, Select and Combobox listboxes, and Accordion headers.
 - `activedescendant` — listbox/combobox style. *Every* item carries `tabindex="-1"`.
   DOM focus never leaves the `input` target. Navigation sets `aria-activedescendant` on
   the input to the active item's id and moves the `active` class. Items must have ids;
-  the controller assigns one where missing.
+  the controller assigns one where missing. A `mousedown` on an item is canceled
+  (`preventDefault()`) before the browser can move DOM focus onto it, so a pointer click
+  still activates the option without ever pulling focus out of the `input`.
 
 A group declares its model. The controller never mixes them, and never calls `.focus()`
 on an item in `activedescendant` mode.
 
 **Keys.** `ArrowDown`/`ArrowUp` are handled when orientation is `vertical` or `both`;
-`ArrowRight`/`ArrowLeft` when `horizontal` or `both`. `Home` and `End` jump to the
-first and last enabled item. Printable single characters feed typeahead when enabled.
+`ArrowRight`/`ArrowLeft` when `horizontal` or `both`. `Home` and `End` jump to the first
+and last item — the first and last *enabled* item when `skipDisabled` is `true`.
+Printable single characters feed typeahead when enabled, under the same
+`skipDisabled` rule. In `activedescendant` mode, an **editable** `input` target (a
+combobox with a real text field) keeps `Home`, `End` and typed characters for itself —
+they move the caret and type into the field, which is what an editable text input must
+do — and the controller claims those keys for navigation only when the `input` target
+is non-editable, i.e. a select-only combobox whose input is a read-only display field.
 `preventDefault()` is called only on keys actually handled, so an unhandled `ArrowLeft`
 in a vertical menu still moves the caret in a nested input.
 
 **Disabled items** — `[disabled]`, `[aria-disabled="true"]` or `[data-disabled]` — are
-skipped by navigation, by `Home`/`End` and by typeahead. They are never made tabbable.
+focusable but inert by default: arrows, `Home`, `End` and typeahead all reach them, and
+a disabled item can hold the tab stop, but `Enter`, `Space` and clicks never activate
+one, and a disabled link never navigates. This is the W3C ARIA Authoring Practices menu
+pattern, not the "skipped by navigation" behavior an earlier draft of this spec
+specified. The correction runs the other way from usual: the shipped
+`dropdown_controller` (`032b33c`) already follows APG, because a screen reader user
+discovers what a menu contains by moving through it, and skipping disabled items hides
+options from exactly those users. **A primitive whose default contradicts the
+component built on it guarantees divergence at retrofit** — `ui-foundation-retrofit`
+would otherwise have to choose between matching Dropdown's shipped behavior and
+matching this primitive's default. `skipDisabled` therefore defaults to `false`. A
+group that genuinely wants disabled items unreachable — skipped by navigation,
+`Home`/`End` and typeahead, and never tabbable — sets `skipDisabled: true`.
 
 **Dynamic items.** Turbo Stream updates are the normal case, not an edge case. Stimulus
 `itemTargetConnected` / `itemTargetDisconnected` re-normalise the group: after any
@@ -241,8 +267,11 @@ these four primitives.
 4. **Both focus models, never blended.** A roving group declares `roving` or
    `activedescendant`. In `activedescendant` mode the controller never calls `.focus()`
    on an item; in `roving` mode it never sets `aria-activedescendant`.
-5. **Always exactly one tab stop.** A roving group has exactly one tabbable enabled item
-   at all times, including immediately after items are added or removed by Turbo.
+5. **Always exactly one tab stop.** A roving group has exactly one tabbable item at all
+   times, including immediately after items are added or removed by Turbo. That item is
+   enabled except in the default `skipDisabled: false` mode, where a focused disabled
+   item legitimately holds the tab stop — it is reachable and inert, not absent from the
+   sequence (§ Behavior, Primitive C, "Disabled items").
 6. **Resolved, not requested.** `data-side` and `data-align` describe where the element
    actually landed after collision handling, never the requested placement.
 7. **Behavior only.** Primitives render no markup and write no class except through a
@@ -284,9 +313,12 @@ live repository and the registry, and one did not survive.
   `/npm/…/+esm` specifiers that resolve against the CDN without any importmap entry
   (all three transitive URLs verified reachable), so `@floating-ui/core` and
   `@floating-ui/utils` are removed from `config/importmap.rb` entirely and the version
-  set moves and is overridden as one unit. This is a maintainability fix, not a repair —
-  see Open Questions, because switching CDNs under two live consumers is the decider's
-  call.
+  set moves and is overridden as one unit. This is a maintainability fix, not a repair.
+  **Decided 2026-09-13, Jonathan Simmons: option (a).** `config/importmap.rb` now pins
+  a single `@floating-ui/dom` entry at
+  `https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.1/+esm`; the `core` and `utils`
+  pins are deleted. The former open question is resolved and removed from
+  `open-questions.md`.
 - **The accessibility assertion stack is settled: `axe-core-capybara` plus
   `axe-core-api`.** `axe-core-rspec`, which the parent originally named, ships RSpec
   matchers only and is unusable in a Minitest repository with no RSpec. The two usable
@@ -324,12 +356,12 @@ live repository and the registry, and one did not survive.
 
 ### agent-loopable
 
-- `@floating-ui/*` is imported in exactly one module in the repository — run: `test "$(grep -rl '@floating-ui' app/javascript --include='*.js' | grep -v 'anchor_controller.js' | wc -l | tr -d ' ')" = "0"`
+- `@floating-ui/*` is imported in exactly one module in the repository — **pending on `ui-foundation-retrofit`**: `dropdown_controller.js`, `popover_controller.js` and `tooltip_controller.js` still import it directly until that retrofit removes them, so this check is expected red, not failing, while the retrofit is in progress — run: `test "$(grep -rl '@floating-ui' app/javascript --include='*.js' | grep -v 'anchor_controller.js' | wc -l | tr -d ' ')" = "0"`
 - Floating UI resolves from a single importmap pin, and no unpinned bare specifier remains in its module graph — run: `bundle exec rake test TEST=test/importmap/floating_ui_pins_test.rb`
 - `ui--anchor` publishes `data-side` and `data-align` from the resolved placement, including after a collision forces a flip — run: `bundle exec rake test:system TEST=test/system/anchor_position_test.rb`
 - `ui--anchor` supports an optional arrow and does not raise when no arrow target is present — run: `bundle exec rake test:system TEST=test/system/anchor_arrow_test.rb`
 - Removing an active `ui--anchor` element stops all positioning work — no further `ui--anchor:positioned` events fire on scroll or resize — run: `bundle exec rake test:system TEST=test/system/anchor_cleanup_test.rb`
-- In `roving` mode arrows, Home and End move real DOM focus, disabled items are skipped, wrapping follows `loop`, and exactly one item is tabbable — run: `bundle exec rake test:system TEST=test/system/roving_focus_menu_test.rb`
+- In `roving` mode arrows, Home and End move real DOM focus, disabled items are focusable-but-inert by default and skippable under `skipDisabled: true`, wrapping follows `loop`, and exactly one item is tabbable — run: `bundle exec rake test:system TEST=test/system/roving_focus_menu_test.rb`
 - In `activedescendant` mode DOM focus stays on the input, `aria-activedescendant` tracks the active option, and no option is ever focused — run: `bundle exec rake test:system TEST=test/system/roving_focus_listbox_test.rb`
 - A roving group still has exactly one tabbable enabled item after items are added and removed by a Turbo Stream update, including removal of the active item — run: `bundle exec rake test:system TEST=test/system/roving_focus_dynamic_test.rb`
 - Typeahead selects by first letter and resets its buffer after `typeaheadTimeout` — run: `bundle exec rake test:system TEST=test/system/roving_focus_typeahead_test.rb`
@@ -358,9 +390,6 @@ live repository and the registry, and one did not survive.
 
 ### human-gate
 
-- Jonathan decides the Floating UI pin strategy, having seen the evidence that the
-  current pins work and that the exposure is version skew rather than breakage — the
-  decision moves a runtime dependency under two live client consumers.
 - Jonathan uses the primitives demo with a keyboard and judges the feel: the typeahead
   timeout, whether flip produces visible jitter during scroll, and whether the active
   item in `activedescendant` mode reads as clearly as a real focus ring.
