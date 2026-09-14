@@ -59,11 +59,21 @@ module Ui
 
     POSITIONS = POSITION_CLASSES.keys.freeze
 
+    include Ui::Chrome
+
+    # The prompt a dirty modal shows before it discards: chrome, so it falls through to
+    # rails_ui_kit.modal.* when the call site doesn't name it (ui-localization § Behavior, item 2).
+    chrome_string :unsaved_changes_title, key: 'modal.unsaved_changes_title'
+    chrome_string :unsaved_changes_message, key: 'modal.unsaved_changes_message'
+
     attr_reader :position, :track_changes, :close_on_backdrop, :max_width, :aria
 
     # aria: attributes for the <dialog>, e.g. { labelledby: 'heading-id' } or { label: 'Command palette' } to name it.
-    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil, aria: {})
+    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil, aria: {},
+                   unsaved_changes_title: nil, unsaved_changes_message: nil)
       super()
+      @unsaved_changes_title = unsaved_changes_title
+      @unsaved_changes_message = unsaved_changes_message
       @position = POSITIONS.include?(position.to_sym) ? position.to_sym : :center
       @track_changes = track_changes
       @close_on_backdrop = close_on_backdrop
@@ -77,8 +87,8 @@ module Ui
           controller: 'ui--modal ui--overlay',
           'ui--modal-track-changes-value': track_changes,
           'ui--modal-close-on-backdrop-value': close_on_backdrop,
-          'ui--modal-confirm-title-value': I18n.t('rails_ui_kit.modal.unsaved_changes_title'),
-          'ui--modal-confirm-message-value': I18n.t('rails_ui_kit.modal.unsaved_changes_message'),
+          'ui--modal-confirm-title-value': unsaved_changes_title,
+          'ui--modal-confirm-message-value': unsaved_changes_message,
           'ui--overlay-mode-value': 'modal',
           'ui--overlay-open-value': true,
           'ui--overlay-scroll-lock-value': true,

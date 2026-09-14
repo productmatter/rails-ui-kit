@@ -155,7 +155,7 @@
             <h2 class="text-base font-semibold text-foreground">Invite team member</h2>
             <p class="text-sm text-muted-foreground mt-0.5">They'll receive an email with a link to join your workspace.</p>
           </div>
-          <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, class: "ml-4 shrink-0", data: { action: "click->ui--modal#close" }) do %>
+          <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, class: "ms-4 shrink-0", data: { action: "click->ui--modal#close" }) do %>
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
           <% end %>
         </div>
@@ -197,12 +197,12 @@
             ["Invoice #1042", "Finance", "💳"],
             ["Brand guidelines v2", "Document", "📄"],
           ].each_with_index do |(name, type, icon), i| %>
-            <button class="flex w-full items-center gap-3 rounded-md mx-1 px-3 py-2 text-left hover:bg-accent transition-colors <%= i == 0 ? 'bg-muted' : '' %>">
+            <button class="flex w-full items-center gap-3 rounded-md mx-1 px-3 py-2 text-start hover:bg-accent transition-colors <%= i == 0 ? 'bg-muted' : '' %>">
               <span class="text-base w-5 text-center shrink-0"><%= icon %></span>
               <span class="flex-1 text-sm font-medium text-foreground truncate"><%= name %></span>
               <span class="text-xs text-muted-foreground shrink-0"><%= type %></span>
               <% if i == 0 %>
-                <span class="ml-1 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">↵</span>
+                <span class="ms-1 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">↵</span>
               <% end %>
             </button>
           <% end %>
@@ -234,7 +234,7 @@
             </button>
           <% end %>
         </div>
-        <div class="flex items-center gap-2 rounded-xl border border-border bg-muted pl-4 pr-2 py-2 mb-3">
+        <div class="flex items-center gap-2 rounded-xl border border-border bg-muted ps-4 pe-2 py-2 mb-3">
           <svg class="h-3.5 w-3.5 text-muted-foreground shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 1 1.242 7.244"/></svg>
           <span class="flex-1 text-xs text-muted-foreground truncate">https://app.example.com/projects/acme-rebrand</span>
           <%= render(Ui::ButtonComponent.new(size: :sm, class: "shrink-0")) { "Copy" } %>
@@ -258,7 +258,7 @@
         </div>
         <div class="max-h-56 overflow-y-auto px-3">
           <% [["Acme rebrand", "12 tasks", "bg-primary"], ["Q3 campaign", "8 tasks", "bg-blue-500"], ["Website refresh", "24 tasks", "bg-emerald-500"], ["Brand guidelines", "5 tasks", "bg-amber-500"], ["Mobile app", "17 tasks", "bg-pink-500"]].each do |name, count, color| %>
-            <button class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-accent active:bg-muted transition-colors group">
+            <button class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-start hover:bg-accent active:bg-muted transition-colors group">
               <div class="h-8 w-8 rounded-lg <%= color %> flex items-center justify-center shrink-0">
                 <svg class="h-4 w-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/></svg>
               </div>
@@ -288,9 +288,9 @@
           <%= render(Ui::ButtonComponent.new(data: { action: "click->ui--modal#close" })) { "Save changes" } %>
         </div>
         <div class="flex flex-1 overflow-hidden">
-          <nav class="w-48 shrink-0 border-r border-border px-3 py-4 overflow-y-auto">
+          <nav class="w-48 shrink-0 border-e border-border px-3 py-4 overflow-y-auto">
             <% [["General", true], ["Members", false], ["Billing", false], ["Integrations", false], ["Notifications", false], ["Security", false], ["API", false]].each do |label, active| %>
-              <button class="w-full text-left px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors <%= active ? 'bg-accent font-semibold text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' %>"><%= label %></button>
+              <button class="w-full text-start px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors <%= active ? 'bg-accent font-semibold text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' %>"><%= label %></button>
             <% end %>
           </nav>
           <div class="flex-1 overflow-y-auto px-8 py-6">
@@ -306,8 +306,8 @@
                   <div>
                     <label for="workspace-slug" class="block text-xs font-medium text-foreground mb-1.5">Slug</label>
                     <div class="flex">
-                      <span class="flex items-center rounded-l-lg border border-r-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">app.example.com/</span>
-                      <input id="workspace-slug" type="text" value="acme-corp" class="block flex-1 rounded-r-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] min-w-0 transition-shadow"/>
+                      <span class="flex items-center rounded-s-lg border border-e-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">app.example.com/</span>
+                      <input id="workspace-slug" type="text" value="acme-corp" class="block flex-1 rounded-e-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] min-w-0 transition-shadow"/>
                     </div>
                     <p class="mt-1.5 text-xs text-muted-foreground">Changing the slug will break existing links.</p>
                   </div>

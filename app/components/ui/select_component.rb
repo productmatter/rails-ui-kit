@@ -11,12 +11,16 @@ module Ui
   # arrives (§ Behavior, item 2). Once `ui--select` connects, the combobox takes over the
   # same box and the select is laid over it, transparent and out of the accessibility tree.
   class SelectComponent < Ui::Base
+    include Ui::Chrome
+
     data_slot 'select'
 
     # The visible control's box, shared by the select and the combobox that takes over from
-    # it, so the swap between them shifts nothing.
+    # it, so the swap between them shifts nothing. Filled in both modes, as Input is, so it
+    # reads as a control on any surface; the popup is bg-popover, a different token, so the
+    # open list never blends into the box it hangs from.
     CONTROL_CLASSES = 'flex w-full min-w-0 appearance-none items-center rounded-md border border-input ' \
-                      'bg-transparent dark:bg-muted/50 pl-3 pr-8 text-sm shadow-xs transition-colors ' \
+                      'bg-background dark:bg-muted/50 ps-3 pe-8 text-sm shadow-xs transition-colors ' \
                       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
                       'disabled:pointer-events-none disabled:opacity-50 ' \
                       'aria-disabled:pointer-events-none aria-disabled:opacity-50 ' \
@@ -58,17 +62,22 @@ module Ui
 
     class_variants(base: 'group/select relative w-full')
 
+    # The two strings Select says in its own voice; the options themselves are the caller's
+    # content, translated by the host (ui-localization § Behavior, items 1 and 2).
+    chrome_string :show_options_label, key: 'select.show_options_label'
+    chrome_string :no_results, key: 'select.no_results'
+    chrome_plural :results, key: 'select.results'
+
     attr_reader :name, :control_id, :option_set, :size, :primitives
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
-                   search: false, native_on_touch: true, size: :default, **attributes)
+                   search: false, native_on_touch: true, size: :default,
+                   show_options_label: nil, no_results: nil, results: nil, **attributes)
+      assign_chrome(show_options_label, no_results, results)
       @name = name.to_s
       @control_id = (id || derive_control_id).to_s
-      @required = boolean_attribute?(required)
-      @disabled = boolean_attribute?(disabled)
-      @autofocus = boolean_attribute?(autofocus)
-      @search = boolean_attribute?(search)
-      @primitives = Ui::Select::Primitives.new(search: @search, native_on_touch: boolean_attribute?(native_on_touch))
+      assign_flags(required: required, disabled: disabled, autofocus: autofocus, search: search,
+                   native_on_touch: native_on_touch)
       @size = resolve_size(size)
       @form = form
       @option_set = Ui::Select::OptionSet.new(**option_keywords(attributes))
@@ -98,14 +107,6 @@ module Ui
 
     def status_id
       "#{control_id}-status"
-    end
-
-    def show_options_label
-      I18n.t('rails_ui_kit.select.show_options')
-    end
-
-    def no_results_text
-      I18n.t('rails_ui_kit.select.no_results')
     end
 
     # The same chevron in both modes: decorative in select-only, inside the show-options button
@@ -143,6 +144,15 @@ module Ui
       shared.deep_merge(type: 'text', autocomplete: 'off', aria: { autocomplete: 'list' })
     end
 
+    # The count is only known once the filter runs, so the forms and the locale that produced
+    # them go over and ui--select picks one (ui-localization § Behavior, items 6 and 7). Only
+    # search mode announces a count.
+    def results_data
+      return {} unless search?
+
+      { 'ui--select-results-value': results.to_json, 'ui--select-locale-value': chrome_locale }
+    end
+
     def popup_attributes
       {
         id: "#{control_id}-popup", hidden: true, class: POPUP_CLASSES,
@@ -164,7 +174,7 @@ module Ui
 
     # Spans the control's height at every step, so the chevron stays centred in the field.
     def show_options_class
-      "absolute right-0 top-0 flex #{SIZE_CLASSES[size]} w-8 items-center justify-center text-muted-foreground"
+      "absolute inset-e-0 top-0 flex #{SIZE_CLASSES[size]} w-8 items-center justify-center text-muted-foreground"
     end
 
     # Variant classes only: the caller's class went to the control.
@@ -173,6 +183,25 @@ module Ui
     end
 
     private
+
+    # The strings Select says in its own voice, each falling through to the locale file when the
+    # call site leaves it out (ui-localization § Behavior, item 2).
+    def assign_chrome(show_options_label, no_results, results)
+      @show_options_label = show_options_label
+      @no_results = no_results
+      @results = results
+    end
+
+    # Every boolean a caller may spell as a string, and the primitive configuration two of them
+    # decide (ui-select § Behavior, items 2 and 17).
+    def assign_flags(required:, disabled:, autofocus:, search:, native_on_touch:)
+      @required = boolean_attribute?(required)
+      @disabled = boolean_attribute?(disabled)
+      @autofocus = boolean_attribute?(autofocus)
+      @search = boolean_attribute?(search)
+      @primitives = Ui::Select::Primitives.new(search: @search,
+                                               native_on_touch: boolean_attribute?(native_on_touch))
+    end
 
     # An unknown size fails exactly as an unknown variant does on every other component, through
     # Ui::Base's own handling: raised in development and test, the default elsewhere.

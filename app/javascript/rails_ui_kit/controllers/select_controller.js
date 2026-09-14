@@ -33,8 +33,10 @@ export default class extends Controller {
 
   static values = {
     search: { type: Boolean, default: false },
-    resultsOne: { type: String, default: "" },
-    resultsOther: { type: String, default: "" },
+    // Every plural form the locale defines, and the locale that rendered them. The count is only
+    // known here, so CLDR's own rules pick the form -- `one` is a category, not the number one.
+    results: Object,
+    locale: { type: String, default: "" },
     // The platform picker beats anything we can draw on a phone, and the unenhanced select is
     // already the no-JavaScript path, so select-only mode leaves it alone on a coarse pointer
     // (ui-select open-questions.md). Search mode always enhances: no native picker searches.
@@ -268,10 +270,37 @@ export default class extends Controller {
 
     clearTimeout(this.announceTimer)
     this.announceTimer = setTimeout(() => {
-      this.statusTarget.textContent = count === 1
-        ? this.resultsOneValue
-        : this.resultsOtherValue.replace("%{count}", count)
+      this.statusTarget.textContent = this.resultsText(count)
     }, ANNOUNCE_DELAY)
+  }
+
+  // Rails' `zero` is an explicit zero form rather than a CLDR category, so it wins at 0 where a
+  // locale file defines one; everything else is CLDR's. An unmatched category falls back to
+  // `other`, which every locale has, so a translation missing a form degrades instead of blanking.
+  resultsText(count) {
+    const forms = this.resultsValue || {}
+    const category = count === 0 && forms.zero ? "zero" : this.pluralCategory(count)
+    const form = forms[category] ?? forms.other ?? ""
+
+    return form.replace("%{count}", this.formatCount(count))
+  }
+
+  // An unknown or malformed locale tag makes Intl throw rather than guess; the count still has to
+  // be announced, so both fall back rather than failing.
+  pluralCategory(count) {
+    try {
+      return new Intl.PluralRules(this.localeValue || undefined).select(count)
+    } catch {
+      return "other"
+    }
+  }
+
+  formatCount(count) {
+    try {
+      return new Intl.NumberFormat(this.localeValue || undefined).format(count)
+    } catch {
+      return String(count)
+    }
   }
 
   clearFilter() {

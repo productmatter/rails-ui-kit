@@ -330,7 +330,11 @@ The full set is `background`/`foreground`, `card`, `popover`, `primary`, `second
 <%= render(Ui::ButtonComponent.new(class: "bg-red-500")) { "Delete" } %>
 ```
 
-**Translations:** every user-visible string the kit renders — including the accessible names screen readers announce — lives in `config/locales/rails_ui_kit.en.yml` under `rails_ui_kit.*`, which the engine loads automatically. Override any of them by defining the same key in your app's own `config/locales`:
+**Translations:** two kinds of words, translated in two places.
+
+*Content* — a field's label, a button's text, a select's options, a modal's title, a toast's message — is what your call site writes. You translate it the way you translate everything else, and **the kit ships no translation for it**. Field's model binding and Select's enum labels go through Rails' own `helpers.label` and `human_attribute_name` lookups, so your locale files are already what translate them.
+
+*Chrome* is what the kit says on its own, that no call site writes: a toast's close-button accessible name, Select's "No results" and its result count, the unsaved-changes prompt. Those fifteen strings — several of them accessible names, the only thing a screen reader announces — live in `config/locales/rails_ui_kit.en.yml` under `rails_ui_kit.*`, which the engine loads automatically. The kit ships English; translating it is fifteen lines in your own `config/locales`, which is loaded after every engine's, so your key wins:
 
 ```yaml
 fr:
@@ -339,7 +343,9 @@ fr:
       title: "Confirmation requise"
 ```
 
-Stimulus controllers can't call `I18n.t`, so the components that own a controller render their translated strings into data attributes for it to read, falling back to English only for hand-written markup that omits them. The docs app's Internationalization page lists every key.
+Each chrome string also takes a per-instance keyword named after the key's last segment, so one component can differ without changing the app: `Ui::ToastComponent.new(type: :info, message: "Saved", close_label: t(".dismiss"))`. The order is always *call site → your locale file → the kit's default*.
+
+Stimulus controllers can't call `I18n.t`, so the component resolves the string in Ruby and renders it into the data attribute its controller reads — a per-instance override travels that same path. The English literal in a controller is only the fallback for hand-written markup that carries no attribute. Select's result count sends the whole plural map and the locale that rendered it, and the browser picks the form with `Intl.PluralRules`, so a language with six plural categories gets all six. The docs app's Internationalization page lists every key, its keyword and what renders it.
 
 ## Dependencies
 

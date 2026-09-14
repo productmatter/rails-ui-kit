@@ -1,0 +1,15 @@
+# A test fixture, never shipped in the gem: the kit ships English chrome only (ui-localization
+# § Non-goals, decided 2026-09-14). Arabic is here because it uses all six CLDR plural
+# categories, which is what proves Select sends the whole map and lets Intl.PluralRules pick.
+# Each form is worded distinctly so the category chosen is observable from the text alone.
+ar:
+  rails_ui_kit:
+    select:
+      no_results: "لا توجد نتائج"
+      results:
+        zero: "لا نتائج"
+        one: "نتيجة واحدة"
+        two: "نتيجتان"
+        few: "%{count} نتائج"
+        many: "%{count} نتيجة"
+        other: "%{count} من النتائج"

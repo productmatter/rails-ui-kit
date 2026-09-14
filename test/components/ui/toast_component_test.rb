@@ -63,21 +63,22 @@ module Ui
       assert_selector "[data-ui--toast-target='title']", text: I18n.t('rails_ui_kit.toast.default_title')
     end
 
-    test 'the close button label and text resolve from the locale file' do
+    test 'the close button has one name, from the locale file' do
       render_inline(Ui::ToastComponent.new(type: :info, message: 'Saved!'))
 
       close_button = page.find('button')
       assert_equal I18n.t('rails_ui_kit.toast.close_label'), close_button['aria-label']
-      assert_equal I18n.t('rails_ui_kit.toast.close'), close_button.find('span.sr-only').text
+      # The sr-only twin is gone: aria-label wins the accessible-name computation, so a second
+      # string there was never announced and never seen (ui-localization § Behavior, item 4).
+      assert_no_selector 'button span.sr-only'
     end
 
-    test 'switching I18n.locale changes the default title and the close button text' do
+    test 'switching I18n.locale changes the default title and the close button name' do
       I18n.with_locale(:fr) do
         render_inline(Ui::ToastComponent.new(type: :info, message: nil))
 
         assert_selector "[data-ui--toast-target='title']", text: 'Avis'
         assert_equal 'Fermer la notification', page.find('button')['aria-label']
-        assert_equal 'Fermer', page.find('button span.sr-only').text
       end
     end
   end

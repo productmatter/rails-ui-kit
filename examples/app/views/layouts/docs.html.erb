@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="<%= I18n.locale %>" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,7 +42,7 @@
   <div class="flex h-full">
 
     <%# ── Sidebar ── %>
-    <aside class="fixed inset-y-0 left-0 z-40 flex w-56 flex-col overflow-y-auto border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside class="fixed inset-y-0 inset-s-0 z-40 flex w-56 flex-col overflow-y-auto border-e border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div class="flex-1 px-3 py-8">
 
         <%# Logo %>
@@ -81,7 +81,7 @@
         </a>
         <button data-ui--dark-mode-target="toggle"
                 data-action="click->ui--dark-mode#toggle"
-                class="ml-auto text-muted-foreground hover:text-sidebar-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring rounded"
+                class="ms-auto text-muted-foreground hover:text-sidebar-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring rounded"
                 aria-label="Toggle dark mode">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
@@ -91,7 +91,7 @@
     </aside>
 
     <%# ── Main ── %>
-    <main class="ml-56 flex-1">
+    <main class="ms-56 flex-1">
       <div class="mx-auto max-w-3xl px-10 py-12">
         <%= yield %>
       </div>

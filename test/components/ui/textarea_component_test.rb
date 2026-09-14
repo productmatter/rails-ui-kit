@@ -30,7 +30,7 @@ module Ui
       render_inline(Ui::TextareaComponent.new)
 
       assert_includes textarea_classes, 'border-input'
-      assert_includes textarea_classes, 'bg-transparent'
+      assert_includes textarea_classes, 'bg-background'
       assert_includes textarea_classes, 'rounded-md'
     end
 
@@ -73,7 +73,7 @@ module Ui
       render_inline(Ui::TextareaComponent.new(class: 'bg-red-500'))
 
       assert_includes textarea_classes, 'bg-red-500'
-      assert_not_includes textarea_classes, 'bg-transparent'
+      assert_not_includes textarea_classes, 'bg-background'
     end
 
     test 'forwards arbitrary html attributes to the root element' do

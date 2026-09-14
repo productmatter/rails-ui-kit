@@ -119,12 +119,15 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    scanner, which matches the *first* `%>` it finds and cuts the snippet away from the
    surrounding template. Three workers hit this independently before it was pinned
    down here.
-6. **Two defaults learned from a real mismatch.** (a) Form controls (Input, Textarea)
-   and anything that reads as one (Button's outline variant)
-   are `bg-transparent` in light mode and `dark:bg-muted/50` in dark. Two halves to this.
-   The fill is *translucent*, so it takes the tint of whatever surface the control sits
-   on, whether that's `--background`, `--card` or a host's own panel; a fixed neutral
-   fill is right on exactly one surface and a visible patch on every other. And the
+6. **Two defaults learned from a real mismatch.** (a) Form controls (Input, Textarea,
+   and Select's box) and anything that reads as one (Button's outline variant)
+   are `bg-background` in light mode and `dark:bg-muted/50` in dark. **Amended
+   2026-09-14, Jonathan Simmons:** the light fill was `bg-transparent`, on the argument
+   that a translucent fill takes the tint of whatever surface it sits on. In practice a
+   transparent control inside a muted card read as a sunken grey panel rather than as an
+   input, so controls now carry an explicit fill in both modes and read as controls on any
+   surface; the cost, accepted, is that on a host surface other than `--background` the
+   light fill is a visible patch. And the
    fill comes from a *surface* token, never from `--input`: `--input` is the control's
    boundary and is tuned light enough to reach 3:1 (§ Assumptions), so deriving the fill
    from it makes the fill track the border and washes the control out — measured, it

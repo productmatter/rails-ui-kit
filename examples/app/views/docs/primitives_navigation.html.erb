@@ -53,7 +53,7 @@
   control_classes = 'rounded-md bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm font-medium ' \
                     'border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 ' \
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500'
-  item_classes = 'block w-full text-left rounded px-3 py-1.5 text-sm ' \
+  item_classes = 'block w-full text-start rounded px-3 py-1.5 text-sm ' \
                  'hover:bg-neutral-100 dark:hover:bg-neutral-800 ' \
                  'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-violet-500 ' \
                  'aria-disabled:text-neutral-400 dark:aria-disabled:text-neutral-600'
@@ -119,7 +119,7 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Flex layout</h3>
-<div class="<%= panel_classes %> flex items-center justify-between gap-6 pr-40" id="anchor-flex">
+<div class="<%= panel_classes %> flex items-center justify-between gap-6 pe-40" id="anchor-flex">
   <span class="text-sm text-muted-foreground">A flex row</span>
   <div data-controller="ui--anchor"
        data-ui--anchor-placement-value="right-start"
@@ -204,10 +204,10 @@
   <table class="w-full text-sm">
     <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-border">
@@ -348,10 +348,10 @@
   <table class="w-full text-sm">
     <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-border">
@@ -377,7 +377,7 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Targets, classes and events</h3>
-<ul class="text-sm text-neutral-600 dark:text-neutral-400 space-y-2 mb-8 list-disc pl-5">
+<ul class="text-sm text-neutral-600 dark:text-neutral-400 space-y-2 mb-8 list-disc ps-5">
   <li><strong>Targets.</strong> <code>anchor</code>, <code>floating</code> and an optional <code>arrow</code> for <code>ui--anchor</code>; <code>item</code>, and <code>input</code> in activedescendant mode, for <code>ui--roving-focus</code>.</li>
   <li><strong>Classes.</strong> <code>ui--roving-focus</code> declares one, <code>active</code>, applied to the active item in activedescendant mode — where no item has DOM focus, so <code>:focus-visible</code> cannot style it.</li>
   <li><strong>Events.</strong> <code>ui--anchor:positioned</code> with <code>{ x, y, placement, side, align }</code>, and <code>ui--roving-focus:activated</code> with <code>{ item, id, index }</code>.</li>

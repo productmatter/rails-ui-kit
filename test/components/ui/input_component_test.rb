@@ -24,7 +24,7 @@ module Ui
       render_inline(Ui::InputComponent.new)
 
       assert_includes input_classes, 'border-input'
-      assert_includes input_classes, 'bg-transparent'
+      assert_includes input_classes, 'bg-background'
       assert_includes input_classes, 'rounded-md'
     end
 
@@ -79,7 +79,7 @@ module Ui
       render_inline(Ui::InputComponent.new(class: 'bg-red-500'))
 
       assert_includes input_classes, 'bg-red-500'
-      assert_not_includes input_classes, 'bg-transparent'
+      assert_not_includes input_classes, 'bg-background'
     end
 
     test 'forwards arbitrary html attributes to the root element' do

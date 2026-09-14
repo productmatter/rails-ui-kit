@@ -1,7 +1,7 @@
 ---
 slug: ui-localization-rtl
 type: feature
-status: draft
+status: ratified
 decider: Jonathan Simmons
 blast_radius: medium
 size: large
@@ -52,22 +52,33 @@ not from memory):
 arrow keys, the scroll-lock gutter), the toast's entry animation, and a way to see it —
 the docs app taking a `dir`, and a browser pass that measures a mirrored layout.
 
-**Appetite.** A mechanical conversion whose LTR rendering is provably unchanged, plus the
-narrow set of behaviours that direction genuinely changes, plus the checks that stop the
-next component from accruing a physical class. Not a review of how the kit *reads* in
-Arabic or Hebrew — that needs a person who reads it, and that gate waits for the client
-build that pulls it (§ Acceptance checks, human-gate).
+**The ruling that shapes this scope** (2026-09-14, Jonathan Simmons): *convert now,
+promise later.* The sixteen classes become logical and a guard test keeps them that way,
+because "logical properties are just better CSS and carry no promise" — and because
+"converting 11 components costs hours; converting 40 later is a project". The kit claims
+no RTL support in its README or its docs, the native-RTL-reader gate stays deferred, and
+the RTL-support half of this document moves to § Out of scope / deferred as a costed
+plan. **This does not reverse the deferral `ui-positioning-and-navigation` and
+`ui-select` recorded.** What those scopes deferred was the support *claim*; what changes
+here is the CSS.
+
+**Appetite.** A mechanical conversion whose LTR rendering is provably unchanged, and the
+check that stops the next component from accruing a physical class. Nothing that a host
+could read as a promise.
 
 ## Goal
 
-Every component renders mirrored in a document with `dir="rtl"` — padding, insets,
-margins, anchored alignment, animation direction and horizontal arrow keys all follow the
-writing direction — with no change to anything it renders in LTR, and a check fails the
-build when a new physical direction class appears. Established when every agent-loopable
-check in § Acceptance checks passes.
+No component writes a physical direction class where a logical one exists — sixteen
+classes across five files — every physical class that remains is one this spec names with
+its reason, a check fails the build when a new one appears, and nothing the kit renders
+in a left-to-right document changes. Established when every agent-loopable check in
+§ Acceptance checks passes.
 
 ## Non-goals
 
+- **Claiming RTL support.** No README line, no docs page, no CHANGELOG bullet says the
+  kit supports right-to-left. The conversion is hygiene a host never has to know about;
+  the claim is a separate decision with a separate gate (§ Out of scope / deferred).
 - **A second stylesheet, an RTL build, or an `[dir="rtl"]` override sheet.** One
   stylesheet, logical properties, exactly as `ui-component-library` rule 3 holds for
   light and dark.
@@ -83,14 +94,16 @@ check in § Acceptance checks passes.
   position would be new public API for no observed need.
 - **Vertical writing modes** (`writing-mode: vertical-rl`). Japanese and Mongolian vertical
   text is a different problem, unasked for, and logical properties do not solve it alone.
-- **The docs app's own chrome in RTL.** `examples/` gains a `dir` switch so components can
-  be seen mirrored; its sidebar and layout are not part of the kit and are not converted.
+- **A `dir` switch in the docs app.** That belongs to the deferred support claim. The docs
+  app's own classes *are* converted and guarded, though (§ Behavior, item 7): it is not the
+  kit, but a running docs app serving a mix of logical and physical classes is the
+  half-converted state this scope exists to prevent.
 - **Translating chrome** — `ui-localization`.
 
 ## Behavior
 
-**Part 1 — direction-ready.** No promise to a host; the kit simply stops writing physical
-classes where a logical one exists.
+The kit stops writing physical classes where a logical one exists. No host-visible
+behaviour changes, in either direction.
 
 1. **The inventory: sixteen direction-dependent classes, in five files.**
 
@@ -139,33 +152,17 @@ classes where a logical one exists.
    carry no physical direction utility outside the allow-list item 2 names, and the
    allow-list is a list of decisions, not a ratchet of accidents.
 
-**Part 2 — RTL support.** What the kit promises a host that sets `dir="rtl"`.
+6. **Nothing else moves.** No JavaScript reads direction, no docs page gains a `dir`
+   switch, no README line appears. A host running LTR — every host today — cannot tell
+   this scope happened, which is the point: it buys the option on RTL without paying for
+   the promise (§ Out of scope / deferred).
 
-6. **Anchored positioning mirrors, by Floating UI, not by us.** In an RTL document a
-   `bottom-start` popup aligns to its anchor's right edge and a `bottom-end` popup to its
-   left; `data-side` and `data-align` are unchanged, and `data-align` keeps meaning
-   start/end rather than left/right.
-
-7. **Horizontal arrow keys follow the direction.** `ui--roving-focus` with
-   `orientation: horizontal` (or `both`) treats ArrowLeft as "next" and ArrowRight as
-   "previous" when the group's computed direction is RTL, per WAI-ARIA. Vertical groups —
-   every group the kit's own components create — are unaffected.
-
-8. **The scroll lock holds the scrollbar's gutter on the side the scrollbar is on.**
-   `applyLockStyles` compensates with `padding-right`; where a browser puts the viewport
-   scrollbar on the left in an RTL document, that padding belongs on the left, or locking
-   shifts the page sideways — the exact jump the gutter exists to prevent.
-
-9. **A toast enters from the edge it sits on.** The container is inline-end anchored, so
-   in RTL it sits at the left and its entry translate mirrors with it.
-
-10. **The docs app can be seen mirrored.** `examples/` takes `dir` alongside the `locale`
-    parameter `ui-localization` adds, and renders it on `<html>`. It is how the checks
-    below run and how a person looks at it.
-
-11. **The README says exactly what is verified.** Which behaviours mirror, that it is
-    machine-verified in Chrome, and — until the human gate below happens — that no reader
-    of an RTL language has reviewed it. A qualified promise, not a badge.
+7. **The docs app converts in the same pass** (added 2026-09-14, at the decider's
+   direction, after a long-running dev server served the new logical classes against a
+   stylesheet built before they existed and a mixed tree was seen mid-flight). All 110
+   physical classes in `examples/app/views` — 96 of them `text-left` on table headers, plus
+   the layout's sidebar inset, border and main offset, and one input group's radii and
+   border — become logical, and the guard in item 5 scans the docs views too.
 
 ## Business rules
 
@@ -246,16 +243,14 @@ These refine `ui-component-library` § Business rules, rules 1, 3 and 5.
 - `app/components/ui/modal_component.rb` and
   `app/assets/stylesheets/rails_ui_kit/components.css` — the physical positions and slide
   transforms that stay as they are.
-- `app/javascript/rails_ui_kit/controllers/roving_focus_controller.js` — `NEXT_KEYS` /
-  `PREVIOUS_KEYS` and the key table they drive.
-- `app/javascript/rails_ui_kit/overlay/overlay_stack.js` — `applyLockStyles`'s gutter.
-- `app/javascript/rails_ui_kit/controllers/anchor_controller.js` — reads for
-  understanding; not modified (§ Business rules, rule 5).
+- `app/javascript/rails_ui_kit/controllers/roving_focus_controller.js` (`NEXT_KEYS` /
+  `PREVIOUS_KEYS`), `app/javascript/rails_ui_kit/overlay/overlay_stack.js`
+  (`applyLockStyles`'s gutter), `app/javascript/rails_ui_kit/controllers/anchor_controller.js` —
+  read for understanding, modified by none of this scope; they are where the deferred
+  half would land.
 - `test/system/select_enhancement_test.rb` (SE2, SE3), `test/system/control_sizing_test.rb`
   (CS3, CS4), `test/system/anchor_position_test.rb` — the LTR geometry that must stay
   green unedited.
-- `examples/app/controllers/application_controller.rb`,
-  `examples/app/views/layouts/docs.html.erb` — the `dir` switch.
 
 ## Acceptance checks
 
@@ -263,10 +258,7 @@ These refine `ui-component-library` § Business rules, rules 1, 3 and 5.
 
 - No physical direction utility appears in the kit's components, templates or controller class strings outside the allow-list in § Behavior, item 2, and the check is proved able to fail by planting `ml-2` on a component — run: `bundle exec rake test TEST=test/components/ui/logical_direction_test.rb`
 - LTR rendering is unchanged: the existing geometry checks pass with no expectation edited — the Select box, its chevron and the popup's width match, the control-size alignment row, and anchored placement — run: `bundle exec rake test:system TEST=test/system/select_enhancement_test.rb && bundle exec rake test:system TEST=test/system/control_sizing_test.rb && bundle exec rake test:system TEST=test/system/anchor_position_test.rb`
-- Under `dir="rtl"`: a Select's chevron, its show-options button and an option's checkmark sit at the left edge and its text starts at the right; a toast container sits at the top-left and a toast enters from the left; a confirm dialog's text starts at the right; every one of these mirrors its LTR measurement within a pixel — run: `bundle exec rake test:system TEST=test/system/direction_rtl_test.rb TESTOPTS="--name=/layout/"`
-- Under `dir="rtl"`, a `bottom-start` dropdown aligns its right edge to its trigger's right edge and a `bottom-end` popover its left to the trigger's left, with `data-align` unchanged; the same holds when only a subtree carries `dir` — run: `bundle exec rake test:system TEST=test/system/direction_rtl_test.rb TESTOPTS="--name=/anchor/"`
-- Under `dir="rtl"`, a horizontal `ui--roving-focus` group moves to the next item on ArrowLeft and the previous on ArrowRight, and a vertical group is unaffected; opening an overlay locks scroll with no horizontal shift — run: `bundle exec rake test:system TEST=test/system/direction_rtl_test.rb TESTOPTS="--name=/behaviour/"`
-- The docs pages that carry a component demo pass `assert_accessible` with the document in RTL — run: `bundle exec rake test:system TEST=test/system/direction_rtl_test.rb TESTOPTS="--name=/accessible/"`
+- Each converted class computes to the same CSS as the class it replaced under `dir=ltr`, and to its mirror under `dir=rtl`, read from the compiled stylesheet rather than assumed — run: `bundle exec rake test TEST=test/tailwind_logical_utilities_test.rb`
 - The whole suite stays green — run: `bundle exec rubocop && bundle exec rake test && bundle exec rake test:system`
 
 ### judgeable
@@ -274,24 +266,43 @@ These refine `ui-component-library` § Business rules, rules 1, 3 and 5.
 - Every physical class still in the kit is one § Behavior, item 2 names, with a reason
   that survives reading — not one the sweep missed. Judged against § Business rules,
   rule 1.
-- The README's RTL statement claims only what the checks establish, including that no
-  reader of an RTL language has reviewed the result. Judged against § Behavior, item 11.
+- No README line, docs page or comment claims RTL support (§ Non-goals). Judged against
+  § Behavior, item 6.
 
 ### human-gate
 
-- Jonathan compares each component's docs page LTR against RTL, side by side, and accepts
-  the mirroring — in particular the toast's entry animation and the Select popup, which
-  the measurements describe but do not show.
-- **Deferred until a client build ships an RTL language:** a person who reads Arabic or
-  Hebrew uses Select, Dropdown, Modal and Toast with a screen reader and says whether the
-  kit reads correctly, not merely whether it is mirrored.
+- None. The conversion is invisible to a host in LTR and claims nothing in RTL, so there
+  is nothing for a person to accept that a measurement does not already settle. The two
+  human gates RTL would need are deferred with the claim, below.
 
 ## Out of scope / deferred
 
+- **The RTL support claim, and everything that would back it — deferred until a client
+  build ships an RTL language** (decided 2026-09-14, Jonathan Simmons). This does not
+  reverse `ui-positioning-and-navigation`'s and `ui-select`'s deferrals; it is the same
+  deferral, now costed. What it would take, in full, so the day it is pulled nobody
+  re-derives it:
+  - **Nothing for anchored positioning.** The pinned Floating UI resolves `-start` /
+    `-end` from the floating element's computed direction (§ Assumptions), and the kit
+    does not portal, so alignment mirrors already. `data-align` stays logical.
+  - **Two JavaScript behaviours.** `ui--roving-focus` must treat ArrowLeft as "next" in a
+    horizontal group whose computed direction is RTL (WAI-ARIA); vertical groups — every
+    group the kit's own components create — are unaffected. And the scroll lock must hold
+    the scrollbar's gutter on the side the scrollbar occupies, measured rather than
+    inferred from direction, or locking shifts the page sideways.
+  - **One animation.** The toast container is inline-end anchored, so in RTL it sits at
+    the left and its entry translate needs an `rtl:` companion.
+  - **A way to see it:** `examples/` taking a `dir` parameter beside `ui-localization`'s
+    `locale`, and a browser pass measuring the mirrored layout, the mirrored anchored
+    alignment, the reversed arrow keys and `assert_accessible` in RTL.
+  - **Two human gates:** Jonathan comparing each component LTR against RTL, and a person
+    who reads Arabic or Hebrew saying whether the kit *reads* right rather than merely
+    mirrors.
+  Rough size: a day, most of it the browser pass — against hours for the conversion this
+  scope does now.
 - **Vertical writing modes** — not planned.
 - **Logical Modal positions (`position: :start` / `:end`)** — not planned; a host picks a
   physical side (§ Non-goals).
-- **Mirroring the `examples/` docs app's own layout** — the docs chrome is not the kit.
 - **Bidirectional text isolation** (`<bdi>`, `unicode-bidi: isolate`) around content the
   host passes — a host mixing an English product name into Arabic text owns that, and the
   kit wrapping every slot would change the markup every component renders.

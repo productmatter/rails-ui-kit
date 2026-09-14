@@ -14,7 +14,7 @@ module Ui
       data_slot 'select-listbox'
 
       OPTION_CLASSES = 'group relative flex w-full cursor-default select-none items-center gap-2 ' \
-                       'rounded-sm py-1.5 pl-2 pr-8 text-sm text-popover-foreground outline-none ' \
+                       'rounded-sm py-1.5 ps-2 pe-8 text-sm text-popover-foreground outline-none ' \
                        'aria-disabled:pointer-events-none aria-disabled:opacity-50'
 
       GROUP_CLASSES = 'px-2 py-1.5 text-xs font-medium text-muted-foreground'

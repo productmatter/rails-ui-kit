@@ -63,6 +63,22 @@ class DocsController < ApplicationController
     attr_accessor :select_submissions, :field_submissions
   end
 
+  # Option sets whose sizes are chosen so a typed prefix narrows the list to exactly 1, 2, 3, 11
+  # or 100 matches -- one per plural category worth exercising (Internationalization page).
+  def self.plural_demo_options
+    [1, 2, 3, 11, 100].flat_map do |count|
+      Array.new(count) { |index| "q#{count}-#{index + 1}" }
+    end
+  end
+
+  # One option far longer than the control it renders in, so the docs page shows -- and the
+  # browser lane measures -- what the open list does with text that cannot fit (i18n page).
+  def self.expansion_demo_options
+    ['Short one',
+     'Zahlungsbedingungen und Lieferbedingungen für Großkunden mit Rahmenvertrag',
+     'Another short one']
+  end
+
   def self.cities
     [['Berlin', 'berlin'], ['Lisbon', 'lisbon'], ['London', 'london'], ['Tokyo', 'tokyo']]
   end

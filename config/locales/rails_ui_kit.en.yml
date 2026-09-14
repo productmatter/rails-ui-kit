@@ -6,19 +6,21 @@ en:
     confirm_dialog:
       title: "Confirmation required"
       message: "Are you sure?"
-      confirm: "Confirm"
-      cancel: "Cancel"
+      confirm_label: "Confirm"
+      cancel_label: "Cancel"
     toast:
       close_label: "Close notification"
-      close: "Close"
       default_title: "Notification"
     select:
-      show_options: "Show options"
+      show_options_label: "Show options"
       no_results: "No results"
       # Interpolated in the browser as the filter narrows, so the count itself is not known when
-      # this is rendered: the plural forms are handed to ui--select and it picks one.
+      # this is rendered: the whole plural map is handed to ui--select, which picks with
+      # Intl.PluralRules. Every form carries %{count}: `one` is a CLDR category, not the number
+      # one -- French `one` covers 0, Russian `one` covers 21 -- so a literal numeral here would
+      # be wrong the moment this file is translated.
       results:
-        one: "1 result"
+        one: "%{count} result"
         other: "%{count} results"
     turbo_disable_with:
       processing: "Processing..."

@@ -1,7 +1,7 @@
 ---
 slug: ui-localization
 type: feature
-status: draft
+status: ratified
 decider: Jonathan Simmons
 blast_radius: medium
 size: large
@@ -86,11 +86,14 @@ in § Acceptance checks passes.
 - **Translating content.** The kit ships no translation for a label, an option, a button's
   text, a toast's message or an error message. Those come from the host's locale files
   through Rails' own lookups.
-- **Shipping locales beyond `en`.** The kit ships English chrome. A studio that cannot
-  review a translation should not ship it as the default a client inherits. The 16
-  strings are listed on one docs page for a host to translate in ten minutes. The `fr`
-  and `ar` files this scope adds live in `test/fixtures/locales/` and are test fixtures,
-  never shipped in the gem.
+- **Shipping locales beyond `en`.** Decided 2026-09-14 by Jonathan Simmons: the kit
+  ships English chrome only, because the studio cannot maintain quality in languages
+  nobody here reads, and a wrong translation is worse than an obvious gap — a host meets
+  a missing translation immediately and fixes it, where a plausible-looking wrong one
+  reaches its users. The 15 strings are listed on one docs page for a host to translate in
+  ten minutes, and the host's own locale files already win by load order. The `fr` and
+  `ar` files this scope adds live in `test/fixtures/locales/`: they prove the mechanism
+  and are never packaged in the gem.
 - **Date, time, currency and number formatting.** The kit renders none, except the one
   result count, which this scope formats. Adding a date component is not this scope's
   business (`ui-component-library` § Out of scope).
@@ -99,7 +102,7 @@ in § Acceptance checks passes.
   it already owes under WCAG 3.1.1, and picks fonts for its scripts.
 - **Marking language of parts on a fallback.** When a host runs in a locale the kit has
   no translation for, English chrome appears inside a page in another language. The kit
-  does not annotate it with `lang`; the host translates the 16 strings instead.
+  does not annotate it with `lang`; the host translates the 15 strings instead.
 - **A helper that renders the two host-wired controllers' chrome.** `ui--dark-mode` and
   `ui--turbo-disable-with` are wired onto the host's own markup; the docs page shows the
   one-line `I18n.t` each needs. A generator or helper for that is not worth its API.
@@ -114,7 +117,8 @@ in § Acceptance checks passes.
 
 ## Behavior
 
-1. **The chrome inventory is 16 strings under 15 keys.** Verified against the code:
+1. **The chrome inventory was 16 strings under 15 keys when this was shaped; deleting
+   `toast.close` (item 4) leaves 15.** Verified against the code at shaping time:
 
    | Key (under `rails_ui_kit.`) | Rendered by | Per-instance override today |
    |---|---|---|
@@ -142,7 +146,7 @@ in § Acceptance checks passes.
    keyword left out (or `nil`) resolves through `I18n.t` at render time, which a host
    key in its own `config/locales` overrides app-wide. The new keywords:
    `Ui::ModalComponent(unsaved_changes_title:, unsaved_changes_message:)`,
-   `Ui::ToastComponent(close_label:)`,
+   `Ui::ToastComponent(close_label:, default_title:)`,
    `Ui::ToastContainerComponent(default_title:, close_label:)` — the container needs both
    because the toasts JavaScript creates are clones of the templates it renders —
    `Ui::SelectComponent(show_options_label:, no_results:, results:)`. ConfirmDialog's
@@ -289,6 +293,12 @@ These refine `ui-component-library` § Business rules, rules 5 and 6. They weake
   as CLDR intends, not as Rails' Simple backend would have read it in Ruby. This is
   accepted: the browser is where the count is known. **At a contradiction** — a host
   reporting a wrong Latvian form — the fix is the translation, not a second rule table.
+- **Arabic counts render in Latin digits by default.** Measured 2026-09-14 in Chrome 152:
+  `Intl.NumberFormat("ar")` formats 11 as `11`, not `١١` — current CLDR gives `ar` the
+  `latn` numbering system. A host that wants Arabic-Indic digits needs the locale tag to
+  carry `-u-nu-arab`; whether a Rails locale named that way is practical is unverified.
+  **At a contradiction** — a client needing Arabic-Indic digits — escalate rather than
+  hardcoding a numbering system in the kit.
 - **Machine translation in the browser** (Chrome's translate, Safari's) may or may not
   translate `aria-label`. The kit does not rely on it either way, and does not choose
   between an accessible name and visible text on that basis.

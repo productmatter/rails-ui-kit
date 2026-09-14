@@ -352,6 +352,20 @@ module CodeExamplesHelper
     RUBY
   end
 
+  # Russian: four categories, and every form carries the count.
+  def example_i18n_plurals
+    <<~'YAML'
+      ru:
+        rails_ui_kit:
+          select:
+            results:
+              one:   "%{count} результат"
+              few:   "%{count} результата"
+              many:  "%{count} результатов"
+              other: "%{count} результата"
+    YAML
+  end
+
   def example_i18n_standalone_controllers
     <<~'RUBY'
       <button data-controller="ui--dark-mode"

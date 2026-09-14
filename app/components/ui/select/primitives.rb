@@ -24,12 +24,7 @@ module Ui
                   'ui--overlay:opened->ui--select#opened ui--overlay:closed->ui--select#closed',
           'ui--media-query-query-value': '(pointer: coarse)',
           'ui--select-search-value': search?,
-          'ui--select-native-on-touch-value': @native_on_touch,
-          # The count is only known once the filter runs, so the plural forms go over as strings
-          # and ui--select picks one. Locales with more plural categories than these two need the
-          # host to override the strings themselves.
-          'ui--select-results-one-value': I18n.t('rails_ui_kit.select.results.one'),
-          'ui--select-results-other-value': I18n.t('rails_ui_kit.select.results.other')
+          'ui--select-native-on-touch-value': @native_on_touch
         }.merge(popup_data, navigation_data)
       end
 

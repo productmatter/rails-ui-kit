@@ -11,8 +11,11 @@ module Ui
     # minimum rather than its height: one control height plus seven spacing units, a
     # constant one-line allowance. At the default step that is sixteen spacing units,
     # exactly the minimum it had before the scale existed (ui-control-sizing).
+    #
+    # Filled in both modes, as Input is, so it reads as a control on any surface: see
+    # InputComponent for why the fill is explicit and why it never comes from --input.
     class_variants(
-      base: 'flex w-full rounded-md border border-input bg-transparent dark:bg-muted/50 ' \
+      base: 'flex w-full rounded-md border border-input bg-background dark:bg-muted/50 ' \
             'px-3 py-2 text-sm shadow-xs transition-colors ' \
             'placeholder:text-muted-foreground ' \
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \

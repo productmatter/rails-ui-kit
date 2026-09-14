@@ -263,10 +263,13 @@ module Ui
 
         assert_selector '#post_state-empty[hidden]', text: I18n.t('rails_ui_kit.select.no_results'), visible: :all
         assert_selector "#post_state-status[role=status][aria-live='polite']", visible: :all
-        assert_selector "button[aria-label='#{I18n.t('rails_ui_kit.select.show_options')}']", visible: :all
+        assert_selector "button[aria-label='#{I18n.t('rails_ui_kit.select.show_options_label')}']", visible: :all
+        # The whole plural map, and the locale that produced it: the count is only known in the
+        # browser, and so is the category it falls in (ui-localization § Behavior, items 6 and 7).
         root = page.find("[data-slot='select']", visible: :all)
-        assert_equal I18n.t('rails_ui_kit.select.results.one'), root['data-ui--select-results-one-value']
-        assert_equal I18n.t('rails_ui_kit.select.results.other'), root['data-ui--select-results-other-value']
+        assert_equal I18n.t('rails_ui_kit.select.results').symbolize_keys.to_json,
+                     root['data-ui--select-results-value']
+        assert_equal 'fr', root['data-ui--select-locale-value']
       end
     end
 

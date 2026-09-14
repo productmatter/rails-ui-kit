@@ -42,7 +42,7 @@ module Ui
         data-[state=closed]:opacity-0 data-[state=closing]:opacity-0
         px-2 py-1 text-xs font-medium rounded shadow-sm
         bg-neutral-900 text-white dark:bg-white dark:text-neutral-900
-        whitespace-nowrap
+        max-w-xs text-pretty
       ].join(' ')
     end
   end

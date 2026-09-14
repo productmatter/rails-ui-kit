@@ -73,8 +73,8 @@ module Ui
 
       assert_equal I18n.t('rails_ui_kit.confirm_dialog.title'), page.find('[data-ui--dialog-title]').text
       assert_equal I18n.t('rails_ui_kit.confirm_dialog.message'), page.find('[data-ui--dialog-message]').text
-      assert_equal I18n.t('rails_ui_kit.confirm_dialog.confirm'), page.find("button[value='confirm']").text.strip
-      assert_equal I18n.t('rails_ui_kit.confirm_dialog.cancel'), page.find("button[value='cancel']").text.strip
+      assert_equal I18n.t('rails_ui_kit.confirm_dialog.confirm_label'), page.find("button[value='confirm']").text.strip
+      assert_equal I18n.t('rails_ui_kit.confirm_dialog.cancel_label'), page.find("button[value='cancel']").text.strip
     end
 
     test 'switching I18n.locale changes the rendered title, message and button labels' do

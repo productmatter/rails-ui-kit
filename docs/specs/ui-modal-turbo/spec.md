@@ -349,7 +349,7 @@ a system test that drives that demo.
 - An open modal in a `data-turbo-permanent` container survives a morphing page refresh — run: `bundle exec rake test:system TEST=test/system/modal_turbo_morph_refresh_test.rb`
 - The demo modal passes an axe audit when open and in its validation-error state — run: `bundle exec rake test:system TEST=test/system/modal_turbo_accessibility_test.rb`
 - `turbo_stream.ui_close_modal` renders a `ui_close_modal` stream targeting `modal`, or the id it is given — run: `bundle exec rake test TEST=test/turbo_stream_ui_close_modal_test.rb`
-- The guide exists, is in the built gem's file list, and every sample in it is still a verbatim slice of the demo file it names — run: `bundle exec rake test TEST=test/modal_and_turbo_guide_test.rb` (the packaging check the ratified text gave as a `ruby -e` one-liner is the first test in that file; drift between the guide and the demos is the check that matters and needed a test of its own — corrected 2026-09-14)
+- The guide exists, is in the built gem's file list, and every sample in it is still a verbatim slice of the demo file it names; the packaging check the ratified text gave as a `ruby -e` one-liner is the first test in that file, because drift between the guide and the demos is the check that matters and needed a test of its own (corrected 2026-09-14) — run: `bundle exec rake test TEST=test/modal_and_turbo_guide_test.rb`
 - The agent-skill generator writes `SKILL.md` and one `AGENTS.md` pointer line idempotently, and install writes neither — run: `bundle exec rake test TEST=test/generators/agent_skill_generator_test.rb`
 
 ### judgeable

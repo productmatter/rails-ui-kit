@@ -3,9 +3,27 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Utilities</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Internationalization</h1>
   <p class="text-muted-foreground">
-    Every user-visible string the kit renders itself — several of them accessible names, the only
-    thing a screen reader announces — comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n</code>, namespaced under
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.*</code>. A caller-supplied string always wins over the translation.
+    Two kinds of words, translated in two places. This page is about the second kind.
+  </p>
+</div>
+
+<div class="rounded-lg border border-border p-5 mb-8">
+  <p class="text-sm mb-3">
+    <strong>Content</strong> is what your call site writes: a field's label, a button's text, a select's
+    options, a modal's title, a toast's message. It's yours, and you translate it the way you translate
+    everything else — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">t(".x")</code>,
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">human_attribute_name</code>, your own locale files.
+    <strong>The kit never ships a translation for content.</strong> Model-aware Field and Select's enum labels
+    already work this way: they resolve through Rails' own label and attribute lookups, so your locale files
+    translate them and the kit adds nothing.
+  </p>
+  <p class="text-sm mb-0">
+    <strong>Chrome</strong> is what the kit says on its own, that no call site ever writes: a toast's close-button
+    accessible name, Select's "No results" and its result count, the unsaved-changes prompt. You don't pass these
+    because you don't know they exist. <strong>Only chrome lives in
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — fifteen strings,
+    several of them accessible names, which is the only thing a screen reader announces. It is not a translation
+    of the components.
   </p>
 </div>
 
@@ -26,36 +44,41 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Keys</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Fifteen strings. Each one resolves <strong>call site → your locale file → the kit's default</strong>: the
+  keyword is the key's last segment, so if you know one you know the other.
+</p>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
     <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default (English)</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Used by</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default (English)</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Per-instance keyword</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rendered by</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["rails_ui_kit.modal.unsaved_changes_title",    "Unsaved Changes",         "Ui::ModalComponent(track_changes: true) — the confirm dialog it opens on a dirty close"],
-        ["rails_ui_kit.modal.unsaved_changes_message",  "You have unsaved changes. Are you sure you want to close?", "same"],
-        ["rails_ui_kit.confirm_dialog.title",           "Confirmation required",   "Ui::ConfirmDialogComponent — pass title: to override per instance"],
-        ["rails_ui_kit.confirm_dialog.message",         "Are you sure?",           "Ui::ConfirmDialogComponent — pass message:"],
-        ["rails_ui_kit.confirm_dialog.confirm",          "Confirm",                 "Ui::ConfirmDialogComponent — pass confirm_label:"],
-        ["rails_ui_kit.confirm_dialog.cancel",            "Cancel",                  "Ui::ConfirmDialogComponent — pass cancel_label:"],
-        ["rails_ui_kit.toast.close_label",               "Close notification",      "Ui::ToastComponent — the dismiss button's aria-label"],
-        ["rails_ui_kit.toast.close",                      "Close",                   "Ui::ToastComponent — the dismiss button's visually-hidden text"],
-        ["rails_ui_kit.toast.default_title",             "Notification",            "Ui::ToastComponent(message: nil) and window.triggerToast(type) with no message"],
-        ["rails_ui_kit.select.show_options",            "Show options",            "Ui::SelectComponent(search: true) — the chevron button's aria-label"],
-        ["rails_ui_kit.select.no_results",              "No results",              "Ui::SelectComponent(search: true) — shown when the filter matches nothing"],
-        ["rails_ui_kit.select.results.one/.other",      "1 result / %{count} results", "Ui::SelectComponent(search: true) — announced in its status region once typing settles. Interpolated in the browser, so only these two plural forms are read"],
-        ["rails_ui_kit.turbo_disable_with.processing",   "Processing...",           "no owning component — render it into the meta tag yourself, see below"],
-        ["rails_ui_kit.dark_mode.switch_to_light",       "Switch to light mode",    "no owning component — render it into the toggle button yourself, see below"],
-        ["rails_ui_kit.dark_mode.switch_to_dark",        "Switch to dark mode",     "same"],
-      ].each do |key, default, used_by| %>
+        ["rails_ui_kit.modal.unsaved_changes_title",    "Unsaved Changes",         "unsaved_changes_title:",   "Ui::ModalComponent(track_changes: true) — the confirm dialog it opens on a dirty close"],
+        ["rails_ui_kit.modal.unsaved_changes_message",  "You have unsaved changes. Are you sure you want to close?", "unsaved_changes_message:", "same"],
+        ["rails_ui_kit.confirm_dialog.title",           "Confirmation required",   "title:",                   "Ui::ConfirmDialogComponent"],
+        ["rails_ui_kit.confirm_dialog.message",         "Are you sure?",           "message:",                 "Ui::ConfirmDialogComponent"],
+        ["rails_ui_kit.confirm_dialog.confirm_label",   "Confirm",                 "confirm_label:",           "Ui::ConfirmDialogComponent"],
+        ["rails_ui_kit.confirm_dialog.cancel_label",    "Cancel",                  "cancel_label:",            "Ui::ConfirmDialogComponent"],
+        ["rails_ui_kit.toast.close_label",              "Close notification",      "close_label:",             "Ui::ToastComponent — the dismiss button's accessible name. Pass it to Ui::ToastContainerComponent as well, so toasts JavaScript creates get it too"],
+        ["rails_ui_kit.toast.default_title",            "Notification",            "default_title:",           "Ui::ToastComponent(message: nil) and window.triggerToast(type) with no message"],
+        ["rails_ui_kit.select.show_options_label",      "Show options",            "show_options_label:",      "Ui::SelectComponent(search: true) — the chevron button's accessible name"],
+        ["rails_ui_kit.select.no_results",              "No results",              "no_results:",              "Ui::SelectComponent(search: true) — shown when the filter matches nothing"],
+        ["rails_ui_kit.select.results",                 "%{count} result / %{count} results", "results:",       "Ui::SelectComponent(search: true) — announced once typing settles. Give every plural category your locale uses; the browser picks with Intl.PluralRules"],
+        ["rails_ui_kit.turbo_disable_with.processing",  "Processing...",           "data-turbo-disable-with",  "no owning component — render it into the meta tag yourself, see below"],
+        ["rails_ui_kit.dark_mode.switch_to_light",      "Switch to light mode",    "data-ui--dark-mode-light-label-value", "no owning component — render it into the toggle button yourself, see below"],
+        ["rails_ui_kit.dark_mode.switch_to_dark",       "Switch to dark mode",     "data-ui--dark-mode-dark-label-value",  "same"],
+      ].each do |key, default, keyword, used_by| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary whitespace-nowrap"><%= key %></td>
           <td class="px-4 py-3 text-muted-foreground whitespace-nowrap"><%= default %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap"><%= keyword %></td>
           <td class="px-4 py-3 text-muted-foreground"><%= used_by %></td>
         </tr>
       <% end %>
@@ -100,6 +123,69 @@
     <button data-copy-target="#i18n-standalone" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-standalone" class="text-neutral-200"><%= h(example_i18n_standalone_controllers) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Plural categories</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  A count's wording is the language's business, not the kit's. English has two plural categories,
+  French two with different boundaries (0 takes <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">one</code>), Russian four and
+  Arabic six. So Ruby hands the browser <em>every</em> form the locale defines, plus the locale that
+  rendered them, and the browser picks with
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Intl.PluralRules</code> once the count is known. Write every form with
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">%{count}</code> in it — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">one</code>
+  is a category, not the number one:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">config/locales/rails_ui_kit.ru.yml — in your app</span>
+    <button data-copy-target="#i18n-plurals" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-plurals" class="text-neutral-200"><%= h(example_i18n_plurals) %></code></pre>
+</div>
+
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Type one of <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q1-</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q2-</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q3-</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q11-</code> or
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q100-</code> below to narrow the list to that many
+  options. The count is announced in the field's status region, which is what a screen reader reads:
+</p>
+<div id="plural-preview" class="rounded-lg border border-border bg-background p-8 mb-8">
+  <%= render(Ui::FieldComponent.new(name: "plural_demo")) do |field| %>
+    <% field.with_label { "Plural demo" } %>
+    <% field.with_control(Ui::SelectComponent, options: DocsController.plural_demo_options, search: true, include_blank: true) %>
+  <% end %>
+  <p id="plural-preview-status" class="mt-3 text-sm text-muted-foreground" aria-hidden="true"></p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">When words get longer</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  German runs about 30% longer than English, and a pseudo-locale pass runs 40% longer. Controls
+  hold their height — a row of controls lining up is what the height scale is for — so length has to
+  go somewhere else. What the kit guarantees: a button grows sideways and never wraps; a closed
+  select truncates the way a native select does, and the full text is still in its accessible name and
+  in the open list; <strong>the open list wraps</strong>, because a truncated option in a popup that
+  matches the control's width is text you have no way to read; and a tooltip wraps at a maximum width
+  rather than running off the screen.
+</p>
+<div id="expansion-preview" class="rounded-lg border border-border bg-background p-8 mb-8 space-y-4">
+  <%# A field's real width, not the page's: an option only has to wrap when the control is the %>
+  <%# size a form actually gives it. %>
+  <div class="max-w-sm">
+    <%= render(Ui::FieldComponent.new(name: "expansion_demo")) do |field| %>
+      <% field.with_label { "A select whose options outgrow it" } %>
+      <% field.with_control(Ui::SelectComponent, options: DocsController.expansion_demo_options, include_blank: true) %>
+    <% end %>
+  </div>
+  <div class="flex flex-wrap items-center gap-4">
+    <%= render(Ui::ButtonComponent.new) { "Änderungen übernehmen und fortfahren" } %>
+    <%= render(Ui::TooltipComponent.new(text: "Die Zahlungsbedingungen gelten ab dem Tag, an dem die Bestellung bestätigt wurde.")) do |tooltip| %>
+      <% tooltip.with_trigger do %>
+        <%= render(Ui::ButtonComponent.new(variant: :outline)) { "Hover for a long tooltip" } %>
+      <% end %>
+    <% end %>
+  </div>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Switching locale</h2>

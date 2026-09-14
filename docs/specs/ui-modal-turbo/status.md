@@ -70,24 +70,10 @@ both green, plus `SLOW=1` on every file that submits a form or swaps content, an
 
 All 2026-09-14, against the shipped code, and folded into `spec.md` where they contradicted it:
 
-- **§ Non-goals, "Not the overlay primitives".** Scroll lock, focus restore and the exit
-  animation are already `ui--overlay`/`ui--presence`'s (`6116cbd`), not `ui--modal`'s. Two
-  changes in this scope are therefore in the primitive, by design rather than by trespass.
-- **§ Critical files, `modal_controller.js`.** There is no `close`/`performClose` pair; the
-  animated close is `ui--overlay#close` awaiting `ui--presence`. `closeOnSuccess` and
-  `closeFromServer` both call it.
-- **§ Assumptions, "no `db/` and no models".** `examples/` has had ActiveModel form objects since
-  `ui-select` and `ui-field-model-binding`. Only the database is missing.
-- **§ Assumptions, page cache vs morphing refresh.** Now observed rather than assumed: a morphing
-  refresh does not fire `turbo:before-cache` (it passes `shouldCacheSnapshot: false`), so the
-  teardown never runs; the container needs `data-turbo-permanent` or the modal is morphed away;
-  and the refresh morphs the scroll lock off `<body>`, which is why `relockScroll` exists.
-- **§ Behavior, item 13, `data-turbo-action="advance"`.** Not a pattern to document positively:
-  the advance visit caches a snapshot as soon as the response lands, and the teardown removes the
-  modal ~15ms after it opened. The guide documents it as a thing not to do.
-- **§ Critical files, the docs layout.** The frame-target demo cannot keep "its own separate
-  `<turbo-frame id="modal">`" — two elements with the same id on one page. It has
-  `id="project_activity_modal"`.
-- **§ Acceptance checks, the packaging one-liner.** Replaced by
-  `test/modal_and_turbo_guide_test.rb`, which packages *and* pins every sample to its source
-  file. Drift between guide and demo was the risk worth a test, not the glob.
+- § Non-goals, "Not the overlay primitives": scroll lock, focus restore and the exit animation are already `ui--overlay`/`ui--presence`'s (`6116cbd`), so two changes in this scope are in the primitive by design rather than by trespass — provable — implementer
+- § Critical files, `modal_controller.js`: there is no `close`/`performClose` pair; the animated close is `ui--overlay#close` awaiting `ui--presence`, which `closeOnSuccess` and `closeFromServer` both call — provable — implementer
+- § Assumptions, "no `db/` and no models": `examples/` has had ActiveModel form objects since `ui-select` and `ui-field-model-binding`, and only the database is missing — provable — implementer
+- § Assumptions, page cache vs morphing refresh: now observed, a morphing refresh does not fire `turbo:before-cache` (`shouldCacheSnapshot: false`), the container needs `data-turbo-permanent` or the modal is morphed away, and the refresh morphs the scroll lock off `<body>`, which is why `relockScroll` exists — provable — implementer
+- § Behavior, item 13, `data-turbo-action="advance"`: not a pattern to document positively, since the advance visit caches a snapshot as soon as the response lands and the teardown removes the modal ~15ms after it opened; the guide documents it as a thing not to do — provable — implementer
+- § Critical files, the docs layout: the frame-target demo cannot keep its own separate `<turbo-frame id="modal">`, which would be two elements with one id on a page, so it has `id="project_activity_modal"` — provable — implementer
+- § Acceptance checks, the packaging one-liner: replaced by `test/modal_and_turbo_guide_test.rb`, which packages and pins every sample to its source file, because drift between guide and demo was the risk worth a test — provable — implementer

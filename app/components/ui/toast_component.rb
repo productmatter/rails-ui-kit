@@ -12,12 +12,28 @@ module Ui
       info: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
     }.freeze
 
-    attr_reader :type, :data
+    include Ui::Chrome
 
-    def initialize(type:, message:)
+    chrome_string :close_label, key: 'toast.close_label'
+    chrome_string :default_title, key: 'toast.default_title'
+
+    attr_reader :type
+
+    # message: is content — the call site's words, which the host translates. close_label: and
+    # default_title: are chrome, and fall through to the locale file (ui-localization § Behavior,
+    # items 1 and 2).
+    def initialize(type:, message:, close_label: nil, default_title: nil)
       super()
       @type = normalize_type(type)
-      @data = normalize_message(message)
+      @message = message
+      @close_label = close_label
+      @default_title = default_title
+    end
+
+    # Resolved at render, not in the constructor, so the locale in force when this renders is
+    # the one the generic title comes from.
+    def data
+      @data ||= normalize_message(@message)
     end
 
     def bg_light_class
@@ -65,14 +81,6 @@ module Ui
       data[:body]
     end
 
-    def close_label
-      I18n.t('rails_ui_kit.toast.close_label')
-    end
-
-    def close_text
-      I18n.t('rails_ui_kit.toast.close')
-    end
-
     private
 
     def normalize_type(type)
@@ -92,7 +100,7 @@ module Ui
           { title: message }
         end
       else
-        { title: I18n.t('rails_ui_kit.toast.default_title') }
+        { title: default_title }
       end
     end
   end

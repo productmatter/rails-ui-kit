@@ -43,7 +43,7 @@ None. Every agent-loopable check in § Acceptance checks passes as written (2026
 
 ## Corrections
 
-- 2026-09-14, at build: § Assumptions said `DemoTrip` could require `active_model` itself. Autoloaded during a request, that loads ActiveModel's translations too late, and SN4 rendered "Translation missing". The docs app now requires `active_model/railtie` (still no ActiveRecord). The assumption is corrected in place.
-- 2026-09-14, at build: § Assumptions said the gemspec allows Rails ≥ 7.0. `81e2cf9` raised the floor to 7.2 on this branch; corrected.
-- 2026-09-14, at build: the acceptance check `! grep -rn "ActiveRecord\|active_record"` over the Field files could never have passed: a v0.3.0 comment in `field_component.rb` said "nothing here depends on ActiveRecord". The comment now says "an ORM", with the same meaning.
-- 2026-09-14, at build: `ErrorComponent`'s comment and the Field docs page recommended passing `role: "alert"` to a field's error "through attribute forwarding" and "through the control's forwarded attributes". Neither path exists, and the second would make the input an alert. Both now point at the morph path (§ Behavior, item 23).
+- 2026-09-14: § Assumptions said `DemoTrip` could require `active_model` itself; autoloaded during a request that loads ActiveModel's translations too late and SN4 rendered "Translation missing", so the docs app requires `active_model/railtie` (still no ActiveRecord) — provable — implementer
+- 2026-09-14: § Assumptions said the gemspec allows Rails ≥ 7.0, but `81e2cf9` raised the floor to 7.2 on this branch — provable — implementer
+- 2026-09-14: the acceptance check `! grep -rn "ActiveRecord\|active_record"` over the Field files could never have passed, because a v0.3.0 comment in `field_component.rb` said "nothing here depends on ActiveRecord"; the comment now says "an ORM" — provable — implementer
+- 2026-09-14: `ErrorComponent`'s comment and the Field docs page recommended passing `role: "alert"` through attribute forwarding, a path that does not exist and would make the input an alert; both now point at the morph path (§ Behavior, item 23) — provable — implementer

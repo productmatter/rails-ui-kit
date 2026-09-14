@@ -18,5 +18,11 @@ module Examples
     config.eager_load = false
     config.secret_key_base = 'rails-ui-kit-examples'
     config.hosts.clear
+
+    # What a host app does: a locale with no translation for a key falls back to English rather
+    # than rendering "translation missing". The docs app ships English and reads the kit's own
+    # English chrome; the fixture locales the test suite loads translate part of it, which is
+    # exactly the partial state a real app is in mid-translation.
+    config.i18n.fallbacks = [:en]
   end
 end
