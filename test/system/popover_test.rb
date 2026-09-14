@@ -167,7 +167,75 @@ class PopoverTest < ApplicationSystemTestCase
     assert_expanded 'false', trigger
   end
 
+  test 'PO8: a popover missing its ui--overlay or ui--anchor companion never throws, and warns once naming each' do
+    visit popover_path
+    install_console_warning_capture
+    install_error_capture
+
+    # Two clones, each missing one companion -- old copy-paste predating 144d104, say. Missing
+    # ui--overlay means opening does nothing at all; missing ui--anchor means it opens centred
+    # instead of anchored to the trigger. Neither should error, and each should say so once.
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--popover']")
+
+      var noOverlay = original.cloneNode(true)
+      noOverlay.id = 'po8-no-overlay'
+      noOverlay.setAttribute('data-controller', 'ui--popover ui--anchor')
+      noOverlay.querySelector("[data-ui--popover-target='content']").removeAttribute('id')
+      noOverlay.style.cssText = 'margin-left:320px'
+      document.body.appendChild(noOverlay)
+
+      var noAnchor = original.cloneNode(true)
+      noAnchor.id = 'po8-no-anchor'
+      noAnchor.setAttribute('data-controller', 'ui--popover ui--overlay')
+      noAnchor.querySelector("[data-ui--popover-target='content']").removeAttribute('id')
+      noAnchor.style.cssText = 'margin-left:640px'
+      document.body.appendChild(noAnchor)
+    JS
+
+    find('#po8-no-overlay [data-ui--popover-target="trigger"] button').click
+    find('#po8-no-anchor [data-ui--popover-target="trigger"] button').click
+    assert_selector "#po8-no-anchor [data-ui--popover-target='content']", visible: true
+
+    assert_empty captured_errors
+    warnings = console_warnings
+    assert warnings.any? { |warning| warning.include?('ui--overlay') && warning.include?('opening') },
+           "expected a warning naming the missing ui--overlay companion, got: #{warnings}"
+    assert warnings.any? { |warning| warning.include?('ui--anchor') && warning.include?('positioning') },
+           "expected a warning naming the missing ui--anchor companion, got: #{warnings}"
+  end
+
   private
+
+  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
+  # checked rather than assumed.
+  def install_error_capture
+    page.execute_script(<<~JS)
+      window.__errors = []
+      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
+    JS
+  end
+
+  def captured_errors
+    page.evaluate_script('window.__errors')
+  end
+
+  # Captures console.warn calls made from here on, without silencing them -- the real warning
+  # still reaches the browser's own console too.
+  def install_console_warning_capture
+    page.execute_script(<<~JS)
+      window.__consoleWarnings = []
+      var originalWarn = console.warn.bind(console)
+      console.warn = function () {
+        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
+        originalWarn.apply(console, arguments)
+      }
+    JS
+  end
+
+  def console_warnings
+    page.evaluate_script('window.__consoleWarnings')
+  end
 
   def focused?(element)
     page.evaluate_script('document.activeElement === arguments[0]', element)

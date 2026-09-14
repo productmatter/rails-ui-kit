@@ -133,12 +133,34 @@ export default class extends Controller {
   }
 
   get overlay() {
-    return this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    if (!controller) this.warnMissingCompanion("ui--overlay", "showing and hiding do nothing")
+    return controller
   }
 
   // Active from opened until the exit animation has finished, however the tooltip was hidden.
   setAnchored(active) {
     const anchor = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
-    if (anchor) anchor.activeValue = active
+    if (!anchor) return this.warnMissingCompanion("ui--anchor", "positioning silently does nothing")
+    anchor.activeValue = active
+  }
+
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so
+  // markup missing "ui--overlay" or "ui--anchor" -- old copy-pasted markup predating the move
+  // onto the shared primitives in 144d104, say -- still hovers and focuses: it just never shows
+  // anything, or shows it wherever it last happened to sit, with nothing in the console saying
+  // why. Warned once per identifier per instance -- this getter runs on every hover and focus
+  // event, so without that it would flood the console rather than name the problem once; never
+  // thrown, since a missing companion has to fail soft, not break Tooltip outright.
+  warnMissingCompanion(identifier, consequence) {
+    this.warnedMissingCompanions ||= new Set()
+    if (this.warnedMissingCompanions.has(identifier)) return
+    this.warnedMissingCompanions.add(identifier)
+
+    console.warn(
+      `ui--tooltip: no "${identifier}" controller found, so ${consequence}. ` +
+      `Add "${identifier}" to this element's data-controller.`,
+      this.element
+    )
   }
 }

@@ -520,7 +520,54 @@ class DropdownTest < ApplicationSystemTestCase
     end
   end
 
+  test 'DD21: a menu missing its ui--anchor or ui--roving-focus companion still opens, never throws, and warns once naming each' do
+    visit dropdown_path
+    install_console_warning_capture
+    install_error_capture
+
+    # Markup that dropped ui--anchor from the wrapper and ui--roving-focus from the content --
+    # old copy-paste predating 144d104, say. Positioning and roving keyboard nav are gone, but
+    # opening the menu must not error, and each missing companion must say so once.
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var container = document.createElement('div')
+      container.id = 'dd21-container'
+      container.style.cssText = 'width:600px;display:block;margin-left:320px'
+      var clone = original.cloneNode(true)
+      clone.setAttribute('data-controller', 'ui--dropdown')
+      clone.querySelector("[data-ui--dropdown-target='content']").removeAttribute('data-controller')
+      container.appendChild(clone)
+      document.body.appendChild(container)
+    JS
+
+    container = find('#dd21-container', visible: :all)
+    trigger = container.find("[data-ui--dropdown-target='trigger'] button")
+    trigger.click
+
+    assert_selector "#dd21-container [data-ui--dropdown-target='content'].opacity-100.scale-100"
+    assert_empty captured_errors
+
+    warnings = console_warnings
+    assert warnings.any? { |warning| warning.include?('ui--anchor') && warning.include?('positioning') },
+           "expected a warning naming the missing ui--anchor companion, got: #{warnings}"
+    assert warnings.any? { |warning| warning.include?('ui--roving-focus') && warning.include?('arrow keys') },
+           "expected a warning naming the missing ui--roving-focus companion, got: #{warnings}"
+  end
+
   private
+
+  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
+  # checked rather than assumed.
+  def install_error_capture
+    page.execute_script(<<~JS)
+      window.__errors = []
+      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
+    JS
+  end
+
+  def captured_errors
+    page.evaluate_script('window.__errors')
+  end
 
   # Captures console.warn calls made from here on, without silencing them -- the real warning
   # still reaches the browser's own console too.

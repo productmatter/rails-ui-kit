@@ -124,6 +124,19 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
     assert_equal 'swapped-field', focused_id
   end
 
+  test 'moveFocus false leaves focus where it already was, for a layer that must not steal it' do
+    visit primitives_overlay_path
+    inject_overlay('quiet', %(<button id="quiet-button">Inside</button>), values: { 'move-focus' => 'false' })
+
+    find('#quiet-trigger').click
+    assert_state '#quiet-content', 'open'
+    assert_equal 'quiet-trigger', focused_id, 'a layer with moveFocus false stole focus on open'
+
+    press :escape
+    assert_state '#quiet-content', 'closed'
+    assert_equal 'quiet-trigger', focused_id
+  end
+
   test 'the trigger is operable from the keyboard alone, and reports its state' do
     visit primitives_overlay_path
     trigger = find('#menu-trigger')

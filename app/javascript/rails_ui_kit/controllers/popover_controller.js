@@ -63,12 +63,33 @@ export default class extends Controller {
   }
 
   get overlay() {
-    return this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    if (!controller) this.warnMissingCompanion("ui--overlay", "opening, closing and dismissal do nothing")
+    return controller
   }
 
   // Active from opened until the exit animation has finished, however the panel was closed.
   setAnchored(active) {
     const anchor = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
-    if (anchor) anchor.activeValue = active
+    if (!anchor) return this.warnMissingCompanion("ui--anchor", "positioning silently does nothing")
+    anchor.activeValue = active
+  }
+
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so
+  // markup missing "ui--overlay" or "ui--anchor" -- old copy-pasted markup predating the move
+  // onto the shared primitives in 144d104, say -- still opens: it just silently keeps whatever
+  // position it already had, or the trigger click does nothing at all, with nothing in the
+  // console saying why. Warned once per identifier per instance; never thrown, since a missing
+  // companion has to fail soft, not break Popover outright.
+  warnMissingCompanion(identifier, consequence) {
+    this.warnedMissingCompanions ||= new Set()
+    if (this.warnedMissingCompanions.has(identifier)) return
+    this.warnedMissingCompanions.add(identifier)
+
+    console.warn(
+      `ui--popover: no "${identifier}" controller found, so ${consequence}. ` +
+      `Add "${identifier}" to this element's data-controller.`,
+      this.element
+    )
   }
 }

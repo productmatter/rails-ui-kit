@@ -137,11 +137,35 @@ export default class extends Controller {
   }
 
   get anchor() {
-    return this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+    if (!controller) this.warnMissingCompanion("ui--anchor", this.element, "positioning silently does nothing")
+    return controller
   }
 
   get rovingFocus() {
-    return this.application.getControllerForElementAndIdentifier(this.contentTarget, "ui--roving-focus")
+    const controller = this.application.getControllerForElementAndIdentifier(this.contentTarget, "ui--roving-focus")
+    if (!controller) {
+      this.warnMissingCompanion("ui--roving-focus", this.contentTarget, "arrow keys, Home, End and typeahead do nothing")
+    }
+    return controller
+  }
+
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so
+  // markup missing "ui--anchor" or "ui--roving-focus" -- old copy-pasted markup predating the
+  // move onto the shared primitives in 144d104, say -- still opens: it just silently keeps
+  // whatever position or focus it already had, with nothing in the console saying why. Warned
+  // once per identifier per instance, in the style of forwardLegacyAnchorAttributes above;
+  // never thrown, since a missing companion has to fail soft, not break Dropdown outright.
+  warnMissingCompanion(identifier, element, consequence) {
+    this.warnedMissingCompanions ||= new Set()
+    if (this.warnedMissingCompanions.has(identifier)) return
+    this.warnedMissingCompanions.add(identifier)
+
+    console.warn(
+      `ui--dropdown: no "${identifier}" controller found, so ${consequence}. ` +
+      `Add "${identifier}" to this element's data-controller.`,
+      element
+    )
   }
 
   // Positioned only while shown. Written as the value so an anchor that connects later still

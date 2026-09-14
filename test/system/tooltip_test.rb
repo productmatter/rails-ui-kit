@@ -193,7 +193,76 @@ class TooltipTest < ApplicationSystemTestCase
     assert_selector "[data-ui--tooltip-target='content']", text: 'Tooltip top', visible: true
   end
 
+  test 'TT8: a tooltip missing its ui--overlay or ui--anchor companion never throws, and warns once naming each' do
+    visit tooltip_path
+    install_console_warning_capture
+    install_error_capture
+
+    # Two clones, each missing one companion -- old copy-paste predating 144d104, say. Missing
+    # ui--overlay means hovering shows nothing at all; missing ui--anchor means it shows centred
+    # instead of anchored to the trigger. Neither should error, and each should say so once.
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--tooltip']")
+
+      // Clear of the fixed sidebar, which would otherwise receive the hover instead.
+      var noOverlay = original.cloneNode(true)
+      noOverlay.id = 'tt8-no-overlay'
+      noOverlay.setAttribute('data-controller', 'ui--tooltip ui--anchor')
+      noOverlay.querySelector('button').id = 'tt8-no-overlay-button'
+      noOverlay.style.cssText = 'margin-left:320px'
+      document.body.appendChild(noOverlay)
+
+      var noAnchor = original.cloneNode(true)
+      noAnchor.id = 'tt8-no-anchor'
+      noAnchor.setAttribute('data-controller', 'ui--tooltip ui--overlay')
+      noAnchor.querySelector('button').id = 'tt8-no-anchor-button'
+      noAnchor.style.cssText = 'margin-left:320px'
+      document.body.appendChild(noAnchor)
+    JS
+
+    find('#tt8-no-overlay-button').hover
+    find('#tt8-no-anchor-button').hover
+    assert_selector "#tt8-no-anchor [data-ui--tooltip-target='content']", visible: true
+
+    assert_empty captured_errors
+    warnings = console_warnings
+    assert warnings.any? { |warning| warning.include?('ui--overlay') && warning.include?('showing') },
+           "expected a warning naming the missing ui--overlay companion, got: #{warnings}"
+    assert warnings.any? { |warning| warning.include?('ui--anchor') && warning.include?('positioning') },
+           "expected a warning naming the missing ui--anchor companion, got: #{warnings}"
+  end
+
   private
+
+  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
+  # checked rather than assumed.
+  def install_error_capture
+    page.execute_script(<<~JS)
+      window.__errors = []
+      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
+    JS
+  end
+
+  def captured_errors
+    page.evaluate_script('window.__errors')
+  end
+
+  # Captures console.warn calls made from here on, without silencing them -- the real warning
+  # still reaches the browser's own console too.
+  def install_console_warning_capture
+    page.execute_script(<<~JS)
+      window.__consoleWarnings = []
+      var originalWarn = console.warn.bind(console)
+      console.warn = function () {
+        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
+        originalWarn.apply(console, arguments)
+      }
+    JS
+  end
+
+  def console_warnings
+    page.evaluate_script('window.__consoleWarnings')
+  end
 
   def focused?(element)
     page.evaluate_script('document.activeElement === arguments[0]', element)

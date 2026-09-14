@@ -297,7 +297,8 @@
         ["ui--overlay",  "dismissible",   "true",     "Whether Escape and outside clicks may dismiss it at all."],
         ["ui--overlay",  "scrollLock",    "false",    "Locks body scroll while open, reference-counted across every open overlay."],
         ["ui--overlay",  "restoreFocus",  "true",     "Returns focus to the trigger on close, including after Escape or removal."],
-        ["ui--overlay",  "initialFocus",  '""',       "Selector, resolved within the content target, for what takes focus on open."]
+        ["ui--overlay",  "initialFocus",  '""',       "Selector, resolved within the content target, for what takes focus on open."],
+        ["ui--overlay",  "moveFocus",     "true",     "Whether opening moves focus into the content at all. false is for a layer that must not steal it, the way a hint never does."]
       ].each do |controller, name, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= controller %></td>

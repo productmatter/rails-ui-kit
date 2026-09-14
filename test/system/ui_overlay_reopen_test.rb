@@ -59,4 +59,23 @@ class UiOverlayReopenTest < ApplicationSystemTestCase
     assert_state '#modal-content', 'closed'
     assert_equal 'modal-trigger', focused_id
   end
+
+  test 'reopening during the exit animation leaves the overlay open, not stuck mid-exit' do
+    visit primitives_overlay_path
+    find('#hint-trigger').click
+    assert_state '#hint-content', 'open'
+
+    # Escape dismisses a hint through dismissFor(), which calls hide() directly and never
+    # touches openValue itself. If openValue is only cleared once the exit settles, open() during
+    # the ~150ms exit is comparing true to true: Stimulus sees no attribute change at all, so
+    # openValueChanged() never runs and the hint never reopens. The two steps have to be separate
+    # round trips -- doing both in one execute_script call flips the attribute true->false->true
+    # within a single synchronous task, which a MutationObserver coalesces into no change at all,
+    # so neither hide() nor show() would run regardless of the fix.
+    press :escape
+    page.execute_script("document.querySelector('#hint-overlay').setAttribute('data-ui--overlay-open-value', 'true')")
+
+    assert_state '#hint-content', 'open'
+    assert_not hidden?('#hint-content')
+  end
 end

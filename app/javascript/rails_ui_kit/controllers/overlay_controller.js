@@ -52,7 +52,8 @@ export default class extends Controller {
     dismissible: { type: Boolean, default: true },
     scrollLock: { type: Boolean, default: false },
     restoreFocus: { type: Boolean, default: true },
-    initialFocus: { type: String, default: "" }
+    initialFocus: { type: String, default: "" },
+    moveFocus: { type: Boolean, default: true }
   }
 
   initialize() {
@@ -190,8 +191,10 @@ export default class extends Controller {
 
   moveFocusIn() {
     // A hint describes the control the pointer or focus is already on; taking focus off it
-    // would be the bug, not the feature.
-    if (this.modeValue === "hint") return
+    // would be the bug, not the feature. moveFocusValue false is the same opt-out for a layer
+    // that must not steal focus either -- a panel that only ever supplements what's already
+    // focused, the way a hint does, but wants everything else layer mode gives it.
+    if (this.modeValue === "hint" || !this.moveFocusValue) return
 
     const content = this.contentTarget
     const initial = this.initialFocusValue && content.querySelector(this.initialFocusValue)
@@ -216,6 +219,14 @@ export default class extends Controller {
     this.shown = false
     this.setExpanded(false)
     this.stopHintEscape()
+    // Cleared now, when hiding starts, not once the exit animation finishes: a dismissal that
+    // calls hide() directly -- Escape, a backdrop click, a light dismiss recovering into a real
+    // close -- never touches openValue itself, so leaving this until finish() means open() during
+    // the exit is comparing true to true. Stimulus sees no change and never calls show(): the
+    // overlay just stays hidden until the animation runs out on its own. finish() still clears it
+    // too, for the path that never calls hide() at all (a native close already out of the top
+    // layer, or a nested popover displaced to make room for another).
+    if (this.openValue) this.openValue = false
 
     // Awaited before close() / hidePopover(), which is the only reason a <dialog> can animate
     // out at all: closing it first takes it out of the top layer and nothing renders.
@@ -238,6 +249,8 @@ export default class extends Controller {
     this.stopWatchingForLostFocus()
     unlockScroll(this)
     this.restoreFocusIfLost()
+    // Already cleared by hide() for the normal path; still needed here for finishClosed(), whose
+    // callers never go through hide() at all.
     if (this.openValue) this.openValue = false
 
     this.dispatch("closed")
@@ -547,7 +560,8 @@ export default class extends Controller {
   // and a screen reader is no longer in the dialog. Nothing announces that removal, so it is
   // watched for rather than listened for.
   watchForLostFocus() {
-    if (this.modeValue === "hint" || !this.hasContentTarget) return
+    // Nothing to recover for content that was never given focus in the first place.
+    if (this.modeValue === "hint" || !this.moveFocusValue || !this.hasContentTarget) return
 
     this.focusWatcher ||= new MutationObserver(this.onContentMutated)
     this.focusWatcher.observe(this.contentTarget, { childList: true, subtree: true })
