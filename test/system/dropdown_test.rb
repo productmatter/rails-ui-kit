@@ -440,6 +440,9 @@ class DropdownTest < ApplicationSystemTestCase
   test 'DD19: legacy ui--dropdown positioning attributes still position the menu, and each warns once' do
     visit dropdown_path
     install_console_warning_capture
+    # The open classes land when the 100ms scale transition starts, not when it ends, so waiting
+    # on them alone sometimes measured a menu still scaling in from its origin.
+    disable_transitions
 
     # A pre-144d104 integration: placement, offset and match-width written the old way, with
     # no ui--anchor-* attributes of their own. Flip and shift are turned off so the assertions
@@ -469,8 +472,6 @@ class DropdownTest < ApplicationSystemTestCase
 
     content = container.find("[data-ui--dropdown-target='content']", visible: true)
     assert_selector "#dd19-container [data-ui--dropdown-target='content'][data-side='top'][data-align='end']"
-    # Let the 100ms open transition settle -- mid-transition the content is still scaled down
-    # from origin-top, which throws the edges off by more than the tolerance below.
     assert_selector "#dd19-container [data-ui--dropdown-target='content'].opacity-100.scale-100"
 
     trigger_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', trigger)
