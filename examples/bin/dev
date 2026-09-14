@@ -6,5 +6,29 @@ PORT=${PORT:-3000}
 echo "=> Building Tailwind CSS..."
 RAILS_ENV=development bundle exec rake tailwindcss:build
 
+# Rebuild on every file change (including in the gem's own app/components/, which the content
+# glob covers) so a class added to a component has a rule without a restart. Run in the
+# background, alongside the server rather than blocking it.
+#
+# tailwindcss:watch normally exits once stdin hits EOF -- meant for interactive use, where
+# closing the terminal should stop the watcher too. But this script backgrounds it, and once
+# it's not being run non-interactively (e.g. our own verification harness) stdin often isn't a
+# TTY, so the "closed" read looks immediate and the watcher would exit right after starting.
+# [always] tells it to keep watching regardless of stdin; we rely on the trap below, not stdin,
+# to stop it.
+echo "=> Watching Tailwind CSS..."
+RAILS_ENV=development bundle exec rake "tailwindcss:watch[always]" &
+TAILWIND_PID=$!
+
+# Without job control (this script isn't run interactively), a background job shares the
+# script's process group, so Ctrl-C's SIGINT already reaches the watcher directly. The trap is
+# the backstop: it guarantees the watcher is gone (and waited on, so it's not left as a zombie)
+# however the script's own exit happens -- normal exit, Ctrl-C, or the server dying first.
+cleanup() {
+  kill "$TAILWIND_PID" 2>/dev/null || true
+  wait "$TAILWIND_PID" 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
 echo "=> Starting examples at http://localhost:$PORT"
 RAILS_ENV=development bundle exec ruby bin/rails server -p "$PORT" -b 127.0.0.1
