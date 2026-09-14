@@ -1,8 +1,8 @@
 <% content_for :title, "Card" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Card</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A surface with a fixed anatomy — header, body, footer — drawn from the
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--card</code> tokens.
     Every part is its own component, so each one takes <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>
@@ -13,7 +13,7 @@
 <div id="card-preview">
   <%# Plain %>
   <h2 class="text-base font-semibold mb-3">Plain</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-10 mb-8">
     <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
       <% card.with_header do |header| %>
         <% header.with_title { "Monthly active users" } %>
@@ -27,7 +27,7 @@
 
   <%# Header action %>
   <h2 class="text-base font-semibold mb-3">With a header action</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-10 mb-4">
     <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
       <% card.with_header do |header| %>
         <% header.with_title { "Billing" } %>
@@ -63,7 +63,7 @@
 
   <%# Footer %>
   <h2 class="text-base font-semibold mb-3">With a footer</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-8">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-10 mb-8">
     <%= render Ui::CardComponent.new(class: "w-full max-w-sm") do |card| %>
       <% card.with_header do |header| %>
         <% header.with_title { "Delete project" } %>
@@ -78,7 +78,7 @@
 
   <%# Form %>
   <h2 class="text-base font-semibold mb-3">Containing a form</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-10 mb-4">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-10 mb-4">
     <%= form_with url: demo_submit_path, method: :post, class: "w-full max-w-sm" do |f| %>
       <%= render Ui::CardComponent.new do |card| %>
         <% card.with_header do |header| %>
@@ -115,22 +115,22 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#card-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="card-usage" class="text-neutral-200"><%= h(example_card_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="card-usage" class="text-neutral-200"><%= h(example_card_usage) %></code></pre>
 </div>
 
 <%# Parts %>
 <h2 class="text-base font-semibold mb-3">Parts</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">On</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["with_header",      "card",   "card-header",      "Holds the title, description and action. Two columns when an action is present."],
         ["with_body",        "card",   "card-content",     "The main content, padded to line up with the header and footer."],
@@ -139,11 +139,11 @@
         ["with_description", "header", "card-description", "Supporting text in the muted foreground colour."],
         ["with_action",      "header", "card-action",      "Pinned right, centered on the title's line."],
       ].each do |slot, parent, data_slot, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= parent %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= parent %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= data_slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
@@ -159,7 +159,7 @@
   <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">pt-2</code>. To override it, pass the same modifier:
 </p>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code class="text-neutral-200">&lt;% card.with_footer(class: "border-t pt-2 [.border-t]:pt-2") { … } %&gt;</code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200">&lt;% card.with_footer(class: "border-t pt-2 [.border-t]:pt-2") { … } %&gt;</code></pre>
 </div>
 
 <%# Notes %>

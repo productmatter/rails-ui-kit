@@ -1,8 +1,8 @@
 <% content_for :title, "Table" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Table</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A semantic <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;table&gt;</code> in a horizontally
     scrolling container, with caption, header, body, footer, row, head and cell parts.
   </p>
@@ -11,7 +11,7 @@
 <div id="table-preview">
   <%# Preview %>
   <h2 class="text-base font-semibold mb-3">Preview</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+  <div class="rounded-lg border border-border bg-muted p-8 mb-8">
     <%= render Ui::TableComponent.new do |table| %>
       <% table.with_caption { "A list of recent invoices." } %>
       <% table.with_header do |header| %>
@@ -57,22 +57,22 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#table-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="table-usage" class="text-neutral-200"><%= h(example_table_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="table-usage" class="text-neutral-200"><%= h(example_table_usage) %></code></pre>
 </div>
 
 <%# Parts %>
 <h2 class="text-base font-semibold mb-3">Parts</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">On</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["with_caption", "table",  "table-caption", "The table's <caption>. Always its first child, whatever order you call it in."],
         ["with_header",  "table",  "table-header",  "The <thead>. Holds rows in call order."],
@@ -82,11 +82,11 @@
         ["with_head",    "row",    "table-head",    "A <th>. Interleaves with with_cell in call order -- a row-header column mixes both in the same row."],
         ["with_cell",    "row",    "table-cell",    "A <td>."],
       ].each do |slot, parent, data_slot, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= parent %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= parent %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= data_slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>

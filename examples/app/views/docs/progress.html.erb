@@ -1,8 +1,8 @@
 <% content_for :title, "Progress" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Progress</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A determinate progress bar. Renders <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="progressbar"</code>
     with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-valuenow</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-valuemax</code>
     and a required accessible name.
@@ -11,7 +11,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div id="progress-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 grid gap-6 p-12 mb-8">
+<div id="progress-preview" class="rounded-lg border border-border bg-muted grid gap-6 p-12 mb-8">
   <div class="grid gap-2">
     <p class="text-sm text-neutral-600 dark:text-neutral-400">Uploading photo.png — 60%</p>
     <%= render Ui::ProgressComponent.new(value: 60, label: "Uploading photo.png") %>
@@ -45,22 +45,22 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#progress-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="progress-usage" class="text-neutral-200"><%= h(example_progress_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="progress-usage" class="text-neutral-200"><%= h(example_progress_usage) %></code></pre>
 </div>
 
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["value", "Numeric", "nil",  "The current value, clamped to 0..max. nil renders as 0 -- always a real number, never indeterminate."],
         ["max",   "Numeric", "100",  "The value the bar is complete at. Drives aria-valuemax and the fill's percentage."],
@@ -68,11 +68,11 @@
         ["class", "String",  "nil",  "Merged over the default classes with tailwind_merge -- recolours the track. The fill stays on bg-primary, the token that carries the meaning."],
         ["…",     "Any",     "—",    "Every other keyword (id:, data:, …) is forwarded to the root element."],
       ].each do |name, type, default, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>

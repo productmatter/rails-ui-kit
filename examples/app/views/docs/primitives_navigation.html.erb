@@ -57,14 +57,14 @@
                  'hover:bg-neutral-100 dark:hover:bg-neutral-800 ' \
                  'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-violet-500 ' \
                  'aria-disabled:text-neutral-400 dark:aria-disabled:text-neutral-600'
-  panel_classes = 'rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-6 mb-8'
+  panel_classes = 'rounded-lg border border-border bg-muted p-6 mb-8'
 %>
 
 <% content_for :title, "Positioning & Navigation" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Primitives</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Primitives</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Positioning &amp; Navigation</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     Two behavior primitives components consume rather than reimplement:
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>,
     the kit's only importer of Floating UI, and
@@ -120,7 +120,7 @@
 
 <h3 class="text-base font-semibold mb-3">Flex layout</h3>
 <div class="<%= panel_classes %> flex items-center justify-between gap-6 pr-40" id="anchor-flex">
-  <span class="text-sm text-neutral-500 dark:text-neutral-400">A flex row</span>
+  <span class="text-sm text-muted-foreground">A flex row</span>
   <div data-controller="ui--anchor"
        data-ui--anchor-placement-value="right-start"
        data-ui--anchor-active-value="true">
@@ -132,7 +132,7 @@
 <h3 class="text-base font-semibold mb-3">Every placement</h3>
 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8" id="anchor-placements">
   <% placements.each do |placement| %>
-    <div class="relative flex h-24 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900"
+    <div class="relative flex h-24 items-center justify-center rounded-lg border border-border bg-muted"
          data-placement-cell="<%= placement %>">
       <div data-controller="ui--anchor"
            data-ui--anchor-placement-value="<%= placement %>"
@@ -158,7 +158,7 @@
      tabindex="0"
      role="group"
      aria-label="Scrollable region containing an anchored element"
-     class="relative h-48 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-6 mb-8">
+     class="relative h-48 overflow-y-auto rounded-lg border border-border bg-muted px-6 mb-8">
   <div class="h-96 pt-4 text-xs text-neutral-600 dark:text-neutral-400">
     Keep scrolling inside this box: the label below sits under its control until the room runs
     out, then flips above it.
@@ -200,17 +200,17 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Values</h3>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-12">
+<div class="overflow-x-auto rounded-lg border border-border mb-12">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ['placement',    'String',  '"bottom"',   'Any Floating UI placement, e.g. bottom-start.'],
         ['offset',       'Number',  '8',          'Main-axis distance from the anchor, in px.'],
@@ -222,11 +222,11 @@
         ['arrowPadding', 'Number',  '4',          "Keeps the arrow off the floating element's corners."],
         ['active',       'Boolean', 'false',      'Positioning and autoUpdate run only while true.']
       ].each do |name, type, default, description| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-600 dark:text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= description %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= description %></td>
         </tr>
       <% end %>
     </tbody>
@@ -246,8 +246,7 @@
 <h3 class="text-base font-semibold mb-3">roving — menu style</h3>
 <div class="<%= panel_classes %>" id="roving-menu">
   <div data-controller="ui--roving-focus"
-       data-ui--roving-focus-typeahead-value="true"
-       data-ui--roving-focus-skip-disabled-value="false">
+       data-ui--roving-focus-typeahead-value="true">
     <button type="button"
             id="roving-menu-trigger"
             class="<%= control_classes %> mb-4"
@@ -255,7 +254,7 @@
       Tab here, then press ↓ or ↑
     </button>
 
-    <div role="menu" aria-label="Document actions" id="roving-menu-items" class="w-56 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-1">
+    <div role="menu" aria-label="Document actions" id="roving-menu-items" class="w-56 rounded-md border border-border bg-white dark:bg-neutral-950 p-1">
       <% menu_items.each do |item| %>
         <button type="button"
                 role="menuitem"
@@ -269,9 +268,8 @@
   </div>
   <p class="mt-4 text-xs text-neutral-600 dark:text-neutral-400">
     Wrapping arrows, Home and End, typeahead over a 500&thinsp;ms buffer, and one Tab stop: only
-    the active item is <code>tabindex="0"</code>. This group sets
-    <code>skipDisabled: false</code>, the APG's menu behaviour — Archive takes focus so it can be
-    discovered, and is never activated.
+    the active item is <code>tabindex="0"</code>. Disabled items follow the APG's menu behaviour,
+    which is the default — Archive takes focus so it can be discovered, and is never activated.
   </p>
 </div>
 
@@ -279,10 +277,11 @@
 <div class="<%= panel_classes %>" id="roving-toolbar">
   <div role="toolbar"
        aria-label="Text formatting"
-       class="inline-flex gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-1"
+       class="inline-flex gap-1 rounded-md border border-border bg-white dark:bg-neutral-950 p-1"
        data-controller="ui--roving-focus"
        data-ui--roving-focus-orientation-value="horizontal"
-       data-ui--roving-focus-loop-value="false">
+       data-ui--roving-focus-loop-value="false"
+       data-ui--roving-focus-skip-disabled-value="true">
     <% [%w[Bold bold], %w[Italic italic], %w[Underline underline], %w[Strike strike]].each_with_index do |(label, id), index| %>
       <button type="button"
               id="roving-toolbar-<%= id %>"
@@ -292,8 +291,8 @@
     <% end %>
   </div>
   <p class="mt-4 text-xs text-neutral-600 dark:text-neutral-400">
-    ← and → only; ↑ and ↓ are left alone. Underline is disabled and skipped entirely, and the
-    ends clamp rather than wrap.
+    ← and → only; ↑ and ↓ are left alone. This group sets <code>skipDisabled: true</code>, so
+    Underline is disabled and skipped entirely, and the ends clamp rather than wrap.
   </p>
 </div>
 
@@ -317,7 +316,7 @@
     <ul id="roving-listbox-options"
         role="listbox"
         aria-label="Fruit"
-        class="mt-2 w-56 max-h-40 overflow-y-auto rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-1">
+        class="mt-2 w-56 max-h-40 overflow-y-auto rounded-md border border-border bg-white dark:bg-neutral-950 p-1">
       <% fruits.each do |fruit| %>
         <li role="option"
             aria-selected="false"
@@ -345,17 +344,17 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Values</h3>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ['focusModel',       'String',  '"roving"',     'roving or activedescendant.'],
         ['orientation',      'String',  '"vertical"',   'vertical, horizontal or both.'],
@@ -363,13 +362,13 @@
         ['typeahead',        'Boolean', 'false',        'First-letter matching, aria-label ahead of text.'],
         ['typeaheadTimeout', 'Number',  '500',          'ms of idle before the typed buffer resets.'],
         ['activeId',         'String',  '""',           "DOM id of the active item; the group's single source of truth."],
-        ['skipDisabled',     'Boolean', 'true',         'false keeps disabled items navigable but never activatable (APG menus).']
+        ['skipDisabled',     'Boolean', 'false',        'Disabled items stay navigable but are never activated (APG menus); true leaves them out of navigation, Home, End and typeahead.']
       ].each do |name, type, default, description| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-600 dark:text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= description %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= description %></td>
         </tr>
       <% end %>
     </tbody>

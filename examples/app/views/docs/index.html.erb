@@ -1,17 +1,17 @@
 <% content_for :title, "Introduction" %>
 
 <div class="mb-10">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Getting Started</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">rails-ui-kit</h1>
-  <p class="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+  <p class="text-lg text-muted-foreground leading-relaxed">
     A private ViewComponent + Stimulus kit for Rails apps. Production-quality interactive components
     wired with Tailwind 4, Floating UI, and Hotwire — with zero JavaScript framework overhead.
   </p>
 </div>
 
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-12">
-  <div class="px-5 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-t-lg">
-    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Components</p>
+<div class="rounded-lg border border-border divide-y divide-border mb-12">
+  <div class="px-5 py-3 bg-muted rounded-t-lg">
+    <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Components</p>
   </div>
   <% [
     ["Confirm Dialog", confirm_dialog_path, "Native <dialog>-based confirmation prompt with a Promise API."],
@@ -31,9 +31,9 @@
   <% end %>
 </div>
 
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-12">
-  <div class="px-5 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-t-lg">
-    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Utility Controllers</p>
+<div class="rounded-lg border border-border divide-y divide-border mb-12">
+  <div class="px-5 py-3 bg-muted rounded-t-lg">
+    <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Utility Controllers</p>
   </div>
   <% [
     ["Dark Mode",          dark_mode_path,          "Persisted light/dark toggle synced across tabs."],

@@ -1,8 +1,8 @@
 <% content_for :title, "Pagination" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Pagination</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">nav</code> of page links, each rendered through
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::ButtonComponent</code>. It's markup only --
     wiring page numbers and hrefs to a paginator (Pagy or otherwise) is host code.
@@ -12,7 +12,7 @@
 <div id="pagination-preview">
   <%# Preview %>
   <h2 class="text-base font-semibold mb-3">Preview</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-8 mb-8">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-8 mb-8">
     <%= render Ui::PaginationComponent.new do |pagination| %>
       <% pagination.with_link(href: "#", aria: { label: "Go to previous page" }) do %>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -41,29 +41,29 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#pagination-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="pagination-usage" class="text-neutral-200"><%= h(example_pagination_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="pagination-usage" class="text-neutral-200"><%= h(example_pagination_usage) %></code></pre>
 </div>
 
 <%# Parts %>
 <h2 class="text-base font-semibold mb-3">Parts</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["with_link",     "pagination-link",      "A page link, rendered through Ui::ButtonComponent. active: true marks it as the current page."],
         ["with_ellipsis", "pagination-ellipsis",  "A truncation marker between skipped page numbers. Decorative."],
       ].each do |slot, data_slot, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= data_slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>

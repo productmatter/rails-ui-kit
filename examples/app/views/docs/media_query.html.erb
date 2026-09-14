@@ -1,8 +1,8 @@
 <% content_for :title, "Media Query" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Utilities</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Utilities</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Media Query</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">matchMedia</code> watcher.
     Writes <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-media-matches</code>
     on its element, toggles an optional class, and dispatches
@@ -12,17 +12,17 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div id="media-query-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+<div id="media-query-preview" class="rounded-lg border border-border bg-muted p-8 mb-8">
   <div data-controller="ui--media-query"
        data-ui--media-query-query-value="(min-width: 768px)"
        data-ui--media-query-matches-class="border-primary bg-primary/5"
-       class="rounded-lg border-2 border-neutral-200 dark:border-neutral-800 p-8 text-center transition-colors">
+       class="rounded-lg border-2 border-border p-8 text-center transition-colors">
     <p class="text-sm text-neutral-600 dark:text-neutral-400">
       Resize the window across <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">768px</code>.
       The border and fill switch when the query matches -- open devtools to watch
       <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-media-matches</code> flip on this element.
     </p>
-    <p class="mt-2 font-mono text-xs text-neutral-500">Query: <code>(min-width: 768px)</code></p>
+    <p class="mt-2 font-mono text-xs text-muted-foreground">Query: <code>(min-width: 768px)</code></p>
   </div>
 </div>
 
@@ -32,30 +32,30 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#media-query-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="media-query-usage" class="text-neutral-200"><%= h(example_media_query_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="media-query-usage" class="text-neutral-200"><%= h(example_media_query_usage) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["query (value)",   "String", "The media query to watch, e.g. \"(min-width: 768px)\"."],
         ["matches (class)", "String", "Optional. Toggled on the element while the query matches."],
         ["data-media-matches", "attribute", "Always written, \"true\" or \"false\", from connect() onward."],
         ["ui--media-query:change", "event", "Dispatched on every change, with { matches, query } in event.detail."],
       ].each do |name, type, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>

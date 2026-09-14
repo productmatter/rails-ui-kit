@@ -1,12 +1,12 @@
 <% content_for :title, "Installation" %>
 
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Getting Started</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Installation</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">Add rails-ui-kit to your Rails app in four steps.</p>
+  <p class="text-muted-foreground">Add rails-ui-kit to your Rails app in four steps.</p>
 </div>
 
-<div class="mb-10 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-5 py-4">
+<div class="mb-10 rounded-lg border border-border bg-muted px-5 py-4">
   <p class="text-sm text-neutral-600 dark:text-neutral-400">
     <span class="font-semibold text-neutral-900 dark:text-neutral-100">Requires Tailwind CSS 4</span>, through
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tailwindcss-rails</code> 4.x.
@@ -27,9 +27,9 @@
         <span class="text-xs text-neutral-400">Gemfile</span>
         <button data-copy-target="#install-gem" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-gem" class="text-neutral-200">gem "rails-ui-kit", git: "git@github.com:productmatter/rails-ui-kit.git", branch: "main"</code></pre>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gem" class="text-neutral-200">gem "rails-ui-kit", git: "git@github.com:productmatter/rails-ui-kit.git", branch: "main"</code></pre>
     </div>
-    <p class="mt-2 text-sm text-neutral-500">Then run <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">bundle install</code>.</p>
+    <p class="mt-2 text-sm text-muted-foreground">Then run <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">bundle install</code>.</p>
   </div>
 
   <div>
@@ -42,9 +42,9 @@
         <span class="text-xs text-neutral-400">Terminal</span>
         <button data-copy-target="#install-gen" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-gen" class="text-neutral-200">bin/rails generate rails_ui_kit:install</code></pre>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gen" class="text-neutral-200">bin/rails generate rails_ui_kit:install</code></pre>
     </div>
-    <p class="mt-2 text-sm text-neutral-500">
+    <p class="mt-2 text-sm text-muted-foreground">
       This wires the JavaScript controllers into <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">application.js</code>,
       imports the built CSS into your Tailwind entry point, and adds
       <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">@custom-variant dark (&amp;:where(.dark, .dark *));</code>
@@ -70,7 +70,7 @@
         <span class="text-xs text-neutral-400">app/views/layouts/application.html.erb</span>
         <button data-copy-target="#install-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-layout" class="text-neutral-200">&lt;body class="bg-background text-foreground"&gt;
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-layout" class="text-neutral-200">&lt;body class="bg-background text-foreground"&gt;
   &lt;%= render Ui::ConfirmDialogComponent.new %&gt;
   &lt;%= render Ui::ToastContainerComponent.new %&gt;
   &lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;
@@ -93,7 +93,7 @@
         <span class="text-xs text-neutral-400">Terminal</span>
         <button data-copy-target="#install-npm" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="install-npm" class="text-neutral-200">npm install @floating-ui/dom @hotwired/stimulus</code></pre>
+      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-npm" class="text-neutral-200">npm install @floating-ui/dom @hotwired/stimulus</code></pre>
     </div>
   </div>
 

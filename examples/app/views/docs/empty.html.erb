@@ -1,8 +1,8 @@
 <% content_for :title, "Empty" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Empty</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     An empty state: a header (media, title, description), then a body for actions -- in that fixed
     order. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">content</code> is
     ViewComponent's block, so the shadcn Content part is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_body</code> here;
@@ -13,7 +13,7 @@
 <div id="empty-preview">
   <%# Preview %>
   <h2 class="text-base font-semibold mb-3">Preview</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+  <div class="rounded-lg border border-border bg-muted p-8 mb-8">
     <%= render Ui::EmptyComponent.new do |empty| %>
       <% empty.with_header do |header| %>
         <% header.with_media(variant: :icon) do %>
@@ -34,7 +34,7 @@
   <%# Media variants %>
   <h2 class="text-base font-semibold mb-3">Media variants</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8">
+    <div class="rounded-lg border border-border bg-muted p-8">
       <%= render Ui::EmptyComponent.new(class: "p-0") do |empty| %>
         <% empty.with_header do |header| %>
           <% header.with_media do %>
@@ -45,7 +45,7 @@
         <% end %>
       <% end %>
     </div>
-    <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8">
+    <div class="rounded-lg border border-border bg-muted p-8">
       <%= render Ui::EmptyComponent.new(class: "p-0") do |empty| %>
         <% empty.with_header do |header| %>
           <% header.with_media(variant: :icon) do %>
@@ -60,7 +60,7 @@
 
   <%# Inside a border %>
   <h2 class="text-base font-semibold mb-3">Inside a border</h2>
-  <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-center p-8 mb-8">
+  <div class="rounded-lg border border-border bg-muted flex justify-center p-8 mb-8">
     <%= render Ui::EmptyComponent.new(class: "border border-border max-w-md") do |empty| %>
       <% empty.with_header do |header| %>
         <% header.with_title { "No integrations yet" } %>
@@ -95,22 +95,22 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#empty-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="empty-usage" class="text-neutral-200"><%= h(example_empty_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="empty-usage" class="text-neutral-200"><%= h(example_empty_usage) %></code></pre>
 </div>
 
 <%# Parts %>
 <h2 class="text-base font-semibold mb-3">Parts</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">On</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["with_header",      "empty",  "empty-header",      "Centres media, title and description."],
         ["with_body",        "empty",  "empty-content",     "Free-form -- actions, links, whatever the empty state needs."],
@@ -118,11 +118,11 @@
         ["with_title",       "header", "empty-title",       "The empty state's heading text."],
         ["with_description", "header", "empty-description", "Supporting text in the muted foreground colour."],
       ].each do |slot, parent, data_slot, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= parent %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= parent %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= data_slot %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>

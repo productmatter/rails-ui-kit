@@ -1,8 +1,8 @@
 <% content_for :title, "Native Select" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Native Select</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
+  <p class="text-muted-foreground">
     A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>
     styled as a form control, with a decorative chevron. Options and optgroups take
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">bg-popover text-popover-foreground</code>
@@ -12,7 +12,7 @@
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div id="native_select-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start gap-6 p-12 mb-8">
+<div id="native_select-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "default-select", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "default" } %>
     <%= render Ui::NativeSelectComponent.new(id: "default-select", name: "default") do %>
@@ -74,22 +74,22 @@
     <span class="text-xs text-neutral-400">ERB</span>
     <button data-copy-target="#native_select-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="native_select-usage" class="text-neutral-200"><%= h(example_native_select_usage) %></code></pre>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="native_select-usage" class="text-neutral-200"><%= h(example_native_select_usage) %></code></pre>
 </div>
 
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["size",         "default, sm", '"default"', "Height and horizontal padding. The chevron stays a fixed size either way."],
         ["class",        "String",      "nil",       "Merged over the default classes with tailwind_merge — the caller always wins."],
@@ -97,11 +97,11 @@
         ["disabled",     "Boolean",     "nil",        "Forwarded straight to the native disabled attribute."],
         ["…",            "Any",         "—",          "Every other keyword (id:, name:, multiple:, data:, aria:, …) is forwarded to the select element. The block is its options/optgroups."],
       ].each do |name, type, default, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
