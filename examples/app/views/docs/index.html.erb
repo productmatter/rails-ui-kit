@@ -11,12 +11,12 @@
   </p>
 </div>
 
-<%# Both lists come from DocsPages::PAGES, the same registry the sidebar and routes use, so a
-    new page appears here automatically and can't be forgotten. %>
-<% [["Components", "Components"], ["Utilities", "Utility Controllers"]].each do |section, heading| %>
+<%# Every list comes from DocsPages::PAGES, the same registry the sidebar and routes use, so a
+    new page (or section) appears here automatically and can't be forgotten. %>
+<% (DocsPages::SECTIONS - ["Getting Started"]).each do |section| %>
   <div class="rounded-lg border border-border divide-y divide-border mb-12">
     <div class="px-5 py-3 bg-muted rounded-t-lg">
-      <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= heading %></p>
+      <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= section %></p>
     </div>
     <% DocsPages.in_section(section).each do |page| %>
       <% path = send("#{page[:slug]}_path") %>

@@ -22,10 +22,10 @@ class DocsPagesTest < ActiveSupport::TestCase
     end
   end
 
-  # The Introduction page lists every component and utility straight from the registry, so a
+  # The Introduction page lists every navigable page straight from the registry, so a
   # missing summary is a blank line there rather than a missing page anywhere.
-  test 'every component and utility entry has a summary' do
-    %w[Components Utilities].each do |section|
+  test 'every non-Getting-Started entry has a summary' do
+    (DocsPages::SECTIONS - ['Getting Started']).each do |section|
       DocsPages.in_section(section).each do |page|
         assert page[:summary].present?,
                "DocsPages entry #{page[:slug].inspect} has no :summary (the Introduction page lists it)"
