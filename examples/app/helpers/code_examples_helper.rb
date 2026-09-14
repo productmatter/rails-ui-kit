@@ -494,29 +494,6 @@ module CodeExamplesHelper
     RUBY
   end
 
-  def example_kbd_usage
-    <<~'RUBY'
-      <%= render(Ui::KbdComponent.new) { "Enter" } %>
-
-      <%# A chord: several key caps in call order %>
-      <%= render Ui::Kbd::GroupComponent.new do |group| %>
-        <% group.with_key { "⌘" } %>
-        <% group.with_key { "K" } %>
-      <% end %>
-    RUBY
-  end
-
-  def example_aspect_ratio_usage
-    <<~'RUBY'
-      <%= render Ui::AspectRatioComponent.new(ratio: :video, class: "overflow-hidden rounded-lg") do %>
-        <img src="/photo.jpg" alt="" class="object-cover">
-      <% end %>
-
-      <%# A ratio outside the fixed set comes from class: %>
-      <%= render Ui::AspectRatioComponent.new(class: "aspect-[21/9]") do %>…<% end %>
-    RUBY
-  end
-
   def example_avatar_usage
     <<~'RUBY'
       <%# Decorative: a name is already visible next to it, so the image gets no alt %>

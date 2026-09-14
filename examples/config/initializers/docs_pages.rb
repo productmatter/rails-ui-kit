@@ -16,7 +16,6 @@ module DocsPages
     { slug: :installation, title: 'Installation', section: 'Getting Started' },
 
     { slug: :alert, title: 'Alert', section: 'Components' },
-    { slug: :aspect_ratio, title: 'Aspect Ratio', section: 'Components' },
     { slug: :avatar, title: 'Avatar', section: 'Components' },
     { slug: :badge, title: 'Badge', section: 'Components' },
     { slug: :breadcrumb, title: 'Breadcrumb', section: 'Components' },
@@ -30,7 +29,6 @@ module DocsPages
     { slug: :input, title: 'Input', section: 'Components' },
     { slug: :input_group, title: 'Input Group', section: 'Components' },
     { slug: :item, title: 'Item', section: 'Components' },
-    { slug: :kbd, title: 'Kbd', section: 'Components' },
     { slug: :label, title: 'Label', section: 'Components' },
     { slug: :modal, title: 'Modal', section: 'Components' },
     { slug: :native_select, title: 'Native Select', section: 'Components' },

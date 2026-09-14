@@ -12,10 +12,10 @@ loop_budget: 8
 
 ## Intent
 
-Phase B of ui-component-library: twenty presentational components — markup, variants
+Phase B of ui-component-library: eighteen presentational components — markup, variants
 and tokens, no controller of their own — built in parallel batches on the foundation
 Phase A shipped. Button and Card already shipped under this scope's name without a
-written convention. Twenty more built that way come out as twenty dialects. This spec
+written convention. Eighteen more built that way come out as eighteen dialects. This spec
 exists to fix one convention, derived from what Button and Card actually do, so every
 batch worker builds the same kind of component. It sets conventions and a variant
 axis per component. It does not write each component's full API; the batch worker
@@ -63,13 +63,11 @@ size and shape come from the caller's `class:`.
 | Breadcrumb | `nav` › `ol` of links; the current page is `aria-current="page"`, separators are `aria-hidden`, a collapsed ellipsis has a name. | — |
 | Pagination | `nav` › `ul` of page links rendered through `Ui::ButtonComponent`; the current page is `aria-current="page"`, previous and next have names. No `pagy` adapter. | link `active`: true, false |
 | Button Group | `role="group"` around Buttons, with separator and text parts. | `orientation`: horizontal, vertical |
-| Kbd | A `<kbd>` key cap, plus a group part for chords. | — |
 | Empty | An empty state with header, media, title, description and body parts. | media `variant`: default, icon |
 | Item | A flexible row (media, title, description, actions, header, footer), plus group and separator parts. | `variant`: default, outline, muted; `size`: default, sm; media `variant`: default, icon, image |
-| Aspect Ratio | A box that holds its child at a fixed ratio. | `ratio`: square, video, and a small fixed set; any other ratio by caller `class:` |
 
 **Build order.** Input, Label and Textarea ship in the first batch, since Field and
-`Ui::FormBuilder` build on them (`open-questions.md`). The remaining seventeen have
+`Ui::FormBuilder` build on them (`open-questions.md`). The remaining fifteen have
 no dependencies on each other beyond the parts they reuse (Pagination and Button Group
 render Button; Button Group renders Separator; Input Group renders Input, Textarea and
 Button).
@@ -238,11 +236,11 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
 - The browser lane, including every component's accessibility audit in light and dark, is green — run: `bundle exec rake test:system`
 - No palette literal appears in any kit component outside the seven legacy components `ui-foundation-retrofit` owns (§ Business rules, rule 2) — run: `! grep -rnE -- '-(white|black)\b|-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]{2,3}\b' app/components | grep -vE '^app/components/ui/(confirm_dialog|dropdown|modal|popover|toast|toast_container|tooltip)_component\.'`
 - Every docs registry entry has its view and every docs view has its entry (§ Business rules, rule 6) — run: `bundle exec rake test TEST=test/docs_pages_test.rb`
-- Every component in § Behavior has both test files (§ Business rules, rule 5) — run: `bash -c 'for c in input label textarea native_select input_group badge alert avatar separator skeleton spinner progress table breadcrumb pagination button_group kbd empty item aspect_ratio; do test -f test/components/ui/${c}_component_test.rb && test -f test/system/${c}_test.rb || { echo "missing tests: $c"; exit 1; }; done'`
+- Every component in § Behavior has both test files (§ Business rules, rule 5) — run: `bash -c 'for c in input label textarea native_select input_group badge alert avatar separator skeleton spinner progress table breadcrumb pagination button_group empty item; do test -f test/components/ui/${c}_component_test.rb && test -f test/system/${c}_test.rb || { echo "missing tests: $c"; exit 1; }; done'`
 
 ### judgeable
 
-- The twenty components read as one family with Button and Card: the same constructor shape and forwarding (§ Business rules, rule 1), the same slot anatomy, part naming and `data-slot` scheme (rule 3), and the same test layout (rule 5). No component has a local dialect a reader has to learn separately.
+- The eighteen components read as one family with Button and Card: the same constructor shape and forwarding (§ Business rules, rule 1), the same slot anatomy, part naming and `data-slot` scheme (rule 3), and the same test layout (rule 5). No component has a local dialect a reader has to learn separately.
 - The accessibility guarantees axe cannot see hold: semantic elements, names on kit-rendered icon-only affordances, 3:1 non-text indicators and forced-colors focus, per § Business rules, rule 4.
 - No component carries behaviour, per § Business rules, rule 8; anything that needed it is recorded as moved out of scope in `status.md`.
 

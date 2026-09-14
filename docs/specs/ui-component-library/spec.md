@@ -227,7 +227,7 @@ Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests gre
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-presentational-components` | The shared convention for, and the build of, 22 components with no Stimulus controller of their own: Button and Card (shipped, the precedents), then Input, Label, Textarea, Native Select, Input Group, Badge, Alert, Avatar, Separator, Skeleton, Spinner, Progress, Table, Breadcrumb, Pagination, Button Group, Kbd, Empty, Item, Aspect Ratio. Typography stays a docs style-guide page, not a component. | `ui-component-base`, `ui-design-tokens` | ratified |
+| `ui-presentational-components` | The shared convention for, and the build of, 20 components with no Stimulus controller of their own: Button and Card (shipped, the precedents), then Input, Label, Textarea, Native Select, Input Group, Badge, Alert, Avatar, Separator, Skeleton, Spinner, Progress, Table, Breadcrumb, Pagination, Button Group, Empty, Item. Typography stays a docs style-guide page, not a component. | `ui-component-base`, `ui-design-tokens` | ratified |
 
 **Phase C — Overlay family.** The hardest work, deliberately last: the tail of this
 list needs positioning, overlay stack, roving tabindex and typeahead simultaneously.
