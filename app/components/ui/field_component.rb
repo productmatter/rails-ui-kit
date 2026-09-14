@@ -3,8 +3,8 @@
 module Ui
   # Wires a label, a control, optional description text and optional error text into
   # one accessible unit. The caller supplies a name and, when the record is invalid,
-  # its messages; every id — the control's, the description's, the error's — is
-  # derived from the name here, so no id is ever written twice.
+  # its messages; every id — the control's, the label's, the description's, the
+  # error's — is derived from the name here, so no id is ever written twice.
   #
   # Ids are handed down two ways. The label and description are lambda slots, so the
   # field stamps `for=` and `id=` on them as they are set and the caller's `class:`
@@ -18,7 +18,7 @@ module Ui
 
     class_variants(base: 'grid gap-2')
 
-    renders_one :label, ->(**attributes) { Ui::LabelComponent.new(for: control_id, **attributes) }
+    renders_one :label, ->(**attributes) { Ui::LabelComponent.new(for: control_id, id: label_id, **attributes) }
 
     renders_one :description, lambda { |**attributes|
       Ui::Field::DescriptionComponent.new(id: description_id, **attributes)
@@ -41,6 +41,12 @@ module Ui
       @errors = Array(errors).map(&:to_s).reject(&:empty?)
       @control_id = (control_id || derive_control_id).to_s
       super(**html_attributes)
+    end
+
+    # A control that isn't a labelable element, such as a `div role="combobox"`, can't be
+    # named by `for=`, so it points `aria-labelledby` here instead.
+    def label_id
+      "#{control_id}-label"
     end
 
     def description_id

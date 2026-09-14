@@ -137,6 +137,27 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
     assert_equal 'quiet-trigger', focused_id
   end
 
+  # A combobox keeps DOM focus on its input for as long as its listbox is open. Focus that falls to
+  # <body> while the content changes -- a filter, a Turbo Stream -- is not the overlay's to recover.
+  test 'moveFocus false never pulls focus in, even when focus falls to <body> and the content changes' do
+    visit primitives_overlay_path
+    inject_overlay('quiet', %(<button id="quiet-button">Inside</button>), values: { 'move-focus' => 'false' })
+
+    find('#quiet-trigger').click
+    assert_state '#quiet-content', 'open'
+    assert_equal 'quiet-trigger', focused_id
+
+    page.execute_script(<<~JS)
+      document.activeElement.blur()
+      document.querySelector('#quiet-content').innerHTML = '<input id="quiet-swapped">'
+    JS
+    assert_selector '#quiet-swapped'
+
+    assert page.evaluate_script('document.activeElement === document.body'),
+           "focus was pulled into a layer with moveFocus false, onto ##{focused_id}"
+    assert_state '#quiet-content', 'open'
+  end
+
   test 'the trigger is operable from the keyboard alone, and reports its state' do
     visit primitives_overlay_path
     trigger = find('#menu-trigger')
@@ -155,6 +176,19 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
     assert focused?(trigger)
   end
 
+  test 'a trigger that already names what it controls keeps its aria-controls' do
+    visit primitives_overlay_path
+    inject_overlay('picker', %(<ul id="picker-listbox" role="listbox"><li role="option">One</li></ul>),
+                   trigger_attributes: %(aria-controls="picker-listbox"))
+    trigger = find('#picker-trigger')
+    assert_equal 'picker-listbox', trigger['aria-controls']
+
+    trigger.click
+    assert_state '#picker-content', 'open'
+    assert_equal 'true', trigger['aria-expanded']
+    assert_equal 'picker-listbox', trigger['aria-controls'], 'opening overwrote the aria-controls the markup set'
+  end
+
   private
 
   def click_at(point_x, point_y)
@@ -162,7 +196,7 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
   end
 
   # Builds the markup a component would render, so these cases don't need a demo of their own.
-  def inject_overlay(name, inner_html, values: {})
+  def inject_overlay(name, inner_html, values: {}, trigger_attributes: '')
     attributes = values.map { |key, value| %(wrapper.setAttribute('data-ui--overlay-#{key}-value', '#{value}')) }.join("\n")
     page.execute_script(<<~JS)
       const wrapper = document.createElement('div')
@@ -170,7 +204,7 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
       wrapper.setAttribute('data-controller', 'ui--overlay')
       #{attributes}
       wrapper.innerHTML = `
-        <button id="#{name}-trigger" data-ui--overlay-target="trigger" data-action="click->ui--overlay#toggle">#{name}</button>
+        <button id="#{name}-trigger" #{trigger_attributes} data-ui--overlay-target="trigger" data-action="click->ui--overlay#toggle">#{name}</button>
         <div id="#{name}-content" data-ui--overlay-target="content" class="m-auto bg-white p-4">#{inner_html}</div>`
       document.querySelector('#menu-overlay').after(wrapper)
     JS

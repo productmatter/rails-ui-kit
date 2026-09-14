@@ -504,7 +504,9 @@ export default class extends Controller {
     const trigger = this.triggerControl
     if (!trigger || this.modeValue === "hint") return
 
-    trigger.setAttribute("aria-controls", content.id)
+    // An aria-controls the markup already carries is the author's: a combobox names the listbox
+    // inside the content, not the wrapper around it.
+    if (!trigger.hasAttribute("aria-controls")) trigger.setAttribute("aria-controls", content.id)
     trigger.setAttribute("aria-expanded", "false")
   }
 

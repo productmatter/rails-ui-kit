@@ -362,7 +362,8 @@
         ['typeahead',        'Boolean', 'false',        'First-letter matching, aria-label ahead of text.'],
         ['typeaheadTimeout', 'Number',  '500',          'ms of idle before the typed buffer resets.'],
         ['activeId',         'String',  '""',           "DOM id of the active item; the group's single source of truth."],
-        ['skipDisabled',     'Boolean', 'false',        'Disabled items stay navigable but are never activated (APG menus); true leaves them out of navigation, Home, End and typeahead.']
+        ['skipDisabled',     'Boolean', 'false',        'Disabled items stay navigable but are never activated (APG menus); true leaves them out of navigation, Home, End and typeahead.'],
+        ['pageStep',         'Number',  '0',            'PageDown and PageUp move this many items, stopping at the first or last. 0 leaves both keys alone. A select-only combobox uses 10.']
       ].each do |name, type, default, description| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>

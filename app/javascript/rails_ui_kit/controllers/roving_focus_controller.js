@@ -103,7 +103,8 @@ export default class extends Controller {
     typeahead: { type: Boolean, default: false },
     typeaheadTimeout: { type: Number, default: 500 },
     activeId: { type: String, default: "" },
-    skipDisabled: { type: Boolean, default: false }
+    skipDisabled: { type: Boolean, default: false },
+    pageStep: { type: Number, default: 0 }
   }
 
   initialize() {
@@ -282,6 +283,8 @@ export default class extends Controller {
 
     if (!shiftKey && NEXT_KEYS[orientation].includes(key)) return this.step(current, 1)
     if (!shiftKey && PREVIOUS_KEYS[orientation].includes(key)) return this.step(current, -1)
+    if (!shiftKey && this.pageStepValue > 0 && key === "PageDown") return this.page(current, 1)
+    if (!shiftKey && this.pageStepValue > 0 && key === "PageUp") return this.page(current, -1)
 
     if (this.model.editing(this)) return undefined
 
@@ -314,6 +317,25 @@ export default class extends Controller {
     }
 
     return start === -1 ? null : from
+  }
+
+  // pageStep navigable items in a direction, stopping at the end rather than wrapping part-way
+  // through a jump -- so PageDown near the bottom lands on the last item. Only a jump that starts
+  // on the end item follows loop, the way an arrow key at that end does.
+  page(from, delta) {
+    const items = this.itemTargets
+    let target = from
+
+    for (let moved = 0; moved < this.pageStepValue; moved++) {
+      const next = this.step(target, delta)
+      if (!next || next === target) break
+
+      const wrapped = target && (items.indexOf(next) - items.indexOf(target)) * delta < 0
+      if (wrapped) return moved === 0 ? next : target
+      target = next
+    }
+
+    return target
   }
 
   // Typed characters build a buffer that holds for typeaheadTimeout ms, so "du" reaches Duplicate

@@ -42,11 +42,18 @@ module Ui
       assert_equal page.find('label')['for'], control['id']
     end
 
+    test 'the label has an id derived from the control id, for aria-labelledby' do
+      render_field
+
+      assert_equal 'user_email-label', page.find('label')['id']
+    end
+
     test 'a caller-supplied control_id drives every derived id' do
       render_field(control_id: 'signup-email', errors: ['is invalid'])
 
       assert_equal 'signup-email', control['id']
       assert_equal 'signup-email', page.find('label')['for']
+      assert_equal 'signup-email-label', page.find('label')['id']
       assert_equal 'signup-email-description signup-email-error', control['aria-describedby']
     end
 
@@ -156,7 +163,7 @@ module Ui
         field.with_description(data: { testid: 'hint' }) { 'Hint' }
       end
 
-      assert_selector "label[for='email'][data-testid='label']"
+      assert_selector "label#email-label[for='email'][data-testid='label']"
       assert_selector "input#email[name='email'][placeholder='name@company.com'][required]"
       assert_selector "p#email-description[data-testid='hint']"
     end

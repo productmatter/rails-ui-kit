@@ -318,7 +318,9 @@
     and <code class="font-mono text-xs">ui--presence:closed</code>. Actions: <code class="font-mono text-xs">open</code>,
     <code class="font-mono text-xs">close</code>, <code class="font-mono text-xs">toggle</code>.</li>
   <li><code class="font-mono text-xs">ui--overlay</code> — targets <code class="font-mono text-xs">content</code> (required),
-    <code class="font-mono text-xs">trigger</code> and <code class="font-mono text-xs">backdrop</code>. Emits
+    <code class="font-mono text-xs">trigger</code> and <code class="font-mono text-xs">backdrop</code>. It writes
+    <code class="font-mono text-xs">aria-expanded</code> on the trigger, and <code class="font-mono text-xs">aria-controls</code>
+    naming the content unless the trigger already has one (a combobox names its listbox). Emits
     <code class="font-mono text-xs">ui--overlay:opened</code>, <code class="font-mono text-xs">ui--overlay:closed</code> and
     <code class="font-mono text-xs">ui--overlay:dismiss</code>, the last one cancelable: calling
     <code class="font-mono text-xs">preventDefault()</code> on it keeps the overlay open. It names the gesture in

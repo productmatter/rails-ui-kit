@@ -76,7 +76,7 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["with_label",       "label",             "Ui::LabelComponent, for= set to the control's id automatically."],
+        ["with_label",       "label",             "Ui::LabelComponent, for= set to the control's id and id= to \"<control id>-label\" automatically, so a control that can't be named by for= can use aria-labelledby."],
         ["with_control",     "(the control's own)", "Ui::InputComponent by default; pass a component class, or a block for Textarea, a <select> or anything else."],
         ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in."],
         ["(errors:)",        "field-error",       "Rendered automatically when errors: is non-empty -- there is no with_error slot to call."],
