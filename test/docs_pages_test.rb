@@ -22,6 +22,17 @@ class DocsPagesTest < ActiveSupport::TestCase
     end
   end
 
+  # The Introduction page lists every component and utility straight from the registry, so a
+  # missing summary is a blank line there rather than a missing page anywhere.
+  test 'every component and utility entry has a summary' do
+    %w[Components Utilities].each do |section|
+      DocsPages.in_section(section).each do |page|
+        assert page[:summary].present?,
+               "DocsPages entry #{page[:slug].inspect} has no :summary (the Introduction page lists it)"
+      end
+    end
+  end
+
   test 'every view file is a registry entry or explicitly excluded' do
     registered = DocsPages::PAGES.map { |page| page[:slug] == :root ? 'index.html.erb' : "#{page[:slug]}.html.erb" }
 
