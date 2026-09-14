@@ -1,4 +1,6 @@
-<div data-controller="ui--toast-container" class="<%= container_class %>">
+<div data-controller="ui--toast-container"
+     data-ui--toast-container-default-title-value="<%= default_title %>"
+     class="<%= container_class %>">
   <div data-ui--toast-container-target="stack" class="pointer-events-auto"></div>
 
   <%# Persistent live regions: present on the page before any toast arrives, so

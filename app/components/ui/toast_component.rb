@@ -65,6 +65,14 @@ module Ui
       data[:body]
     end
 
+    def close_label
+      I18n.t('rails_ui_kit.toast.close_label')
+    end
+
+    def close_text
+      I18n.t('rails_ui_kit.toast.close')
+    end
+
     private
 
     def normalize_type(type)
@@ -84,7 +92,7 @@ module Ui
           { title: message }
         end
       else
-        { title: 'Notification' }
+        { title: I18n.t('rails_ui_kit.toast.default_title') }
       end
     end
   end

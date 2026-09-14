@@ -149,6 +149,63 @@ class ConfirmDialogTest < ApplicationSystemTestCase
     assert_equal false, wait_for_js_result('window.__cdResult')
   end
 
+  test "defaultConfirmDialog() with no arguments leaves the dialog's own rendered title and message untouched" do
+    visit confirm_dialog_path
+
+    # Simulates Ui::ConfirmDialogComponent having rendered a translated (non-English) title and
+    # message: both as visible text and as the data-default-* attributes it stamps alongside it.
+    page.execute_script(<<~JS)
+      var dialog = document.getElementById('default-confirm')
+      dialog.dataset.defaultTitle = 'Confirmation requise'
+      dialog.dataset.defaultMessage = 'Êtes-vous sûr ?'
+      dialog.querySelector('[data-ui--dialog-title]').textContent = 'Confirmation requise'
+      dialog.querySelector('[data-ui--dialog-message]').textContent = 'Êtes-vous sûr ?'
+    JS
+
+    page.execute_script(<<~JS)
+      window.__cdResult = null
+      window.defaultConfirmDialog().then(function(v) { window.__cdResult = v })
+    JS
+    assert_selector 'dialog[open]#default-confirm'
+
+    # Before dialog_controller.js read its defaults back off the dialog instead of keeping its
+    # own hardcoded English copy, this call unconditionally overwrote both with that copy.
+    assert_equal 'Confirmation requise', find('[data-ui--dialog-title]').text
+    assert_equal 'Êtes-vous sûr ?', find('[data-ui--dialog-message]').text
+
+    find("button[value='cancel']").click
+    assert_equal false, wait_for_js_result('window.__cdResult')
+  end
+
+  test 'a hand-written #default-confirm without data-default-title/message falls back to English' do
+    visit confirm_dialog_path
+
+    page.execute_script(<<~JS)
+      document.getElementById('default-confirm').remove()
+      var dialog = document.createElement('dialog')
+      dialog.id = 'default-confirm'
+      dialog.innerHTML =
+        '<h3 data-ui--dialog-title></h3><p data-ui--dialog-message></p>' +
+        '<form method="dialog">' +
+        '<button type="submit" value="cancel">Cancel</button>' +
+        '<button type="submit" value="confirm">Confirm</button>' +
+        '</form>'
+      document.body.appendChild(dialog)
+    JS
+
+    page.execute_script(<<~JS)
+      window.__cdResult = null
+      window.defaultConfirmDialog().then(function(v) { window.__cdResult = v })
+    JS
+    assert_selector 'dialog[open]#default-confirm'
+
+    assert_equal 'Confirmation required', find('[data-ui--dialog-title]').text
+    assert_equal 'Are you sure?', find('[data-ui--dialog-message]').text
+
+    find("button[value='cancel']").click
+    assert_equal false, wait_for_js_result('window.__cdResult')
+  end
+
   private
 
   # A dialog's native "close" event lands on a browser task queue rather than

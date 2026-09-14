@@ -56,7 +56,7 @@ export default class extends Controller {
       throw new Error("Default confirm dialog not found")
     }
 
-    const options = this.normalizeOptions(messageOrOptions)
+    const options = this.normalizeOptions(dialog, messageOrOptions)
     this.updateDialogContent(dialog, options)
 
     return this.showDialog(dialog)
@@ -74,10 +74,14 @@ export default class extends Controller {
     return document.querySelector(selector) || document.getElementById(selector)
   }
 
-  normalizeOptions(messageOrOptions) {
+  // Ui::ConfirmDialogComponent renders its own (I18n-translated) title and message and stamps
+  // them again as data-default-title/data-default-message, so this reads them back off the
+  // dialog rather than keeping a second, English-only copy of the same strings. A hand-written
+  // <dialog> with neither attribute still works, falling back to English.
+  normalizeOptions(dialog, messageOrOptions) {
     const defaults = {
-      title: "Confirmation required",
-      message: "Are you sure?"
+      title: dialog.dataset.defaultTitle || "Confirmation required",
+      message: dialog.dataset.defaultMessage || "Are you sure?"
     }
 
     if (typeof messageOrOptions === "string") {

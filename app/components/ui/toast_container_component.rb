@@ -18,5 +18,11 @@ module Ui
     def template_toast(type)
       ToastComponent.new(type: type, message: { title: '__TITLE__', body: '__BODY__' })
     end
+
+    # Backs data-ui--toast-container-default-title-value: window.triggerToast(type) called with no
+    # message has no Ruby render call to source a title from, so the controller reads it here.
+    def default_title
+      I18n.t('rails_ui_kit.toast.default_title')
+    end
   end
 end

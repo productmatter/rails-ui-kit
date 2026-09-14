@@ -80,7 +80,10 @@ class ModalTest < ApplicationSystemTestCase
     page.execute_script("document.getElementById('m4-form').dispatchEvent(new CustomEvent('form:changed', { bubbles: true }))")
     page.execute_script("document.getElementById('default-confirm').remove()")
 
-    accept_confirm do
+    # The injected wrapper sets neither data-ui--modal-confirm-title-value nor
+    # -message-value, so this also proves ui--modal falls back to its English default text
+    # (rather than an owning component's translation) when those attributes are absent.
+    accept_confirm 'You have unsaved changes. Are you sure you want to close?' do
       find('#m4-input').send_keys(:escape)
     end
 

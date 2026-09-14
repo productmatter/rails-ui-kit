@@ -1,0 +1,108 @@
+<% content_for :title, "Internationalization" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Utilities</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Internationalization</h1>
+  <p class="text-muted-foreground">
+    Every user-visible string the kit renders itself — several of them accessible names, the only
+    thing a screen reader announces — comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n</code>, namespaced under
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.*</code>. A caller-supplied string always wins over the translation.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Where the strings live</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales/rails_ui_kit.en.yml</code>, shipped in the gem. Rails engines add their own
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales</code> to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.load_path</code> automatically — there's no initializer to add and nothing to
+  require. To override a string, add the same key under <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.*</code> to any YAML file in
+  your own app's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales</code>. Your application's load path is added after every engine's, so your
+  value wins — no monkey-patching, no forking the gem:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">config/locales/rails_ui_kit.en.yml — in your app, not the gem</span>
+    <button data-copy-target="#i18n-override" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-override" class="text-neutral-200"><%= h(example_i18n_override) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Keys</h2>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default (English)</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Used by</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["rails_ui_kit.modal.unsaved_changes_title",    "Unsaved Changes",         "Ui::ModalComponent(track_changes: true) — the confirm dialog it opens on a dirty close"],
+        ["rails_ui_kit.modal.unsaved_changes_message",  "You have unsaved changes. Are you sure you want to close?", "same"],
+        ["rails_ui_kit.confirm_dialog.title",           "Confirmation required",   "Ui::ConfirmDialogComponent — pass title: to override per instance"],
+        ["rails_ui_kit.confirm_dialog.message",         "Are you sure?",           "Ui::ConfirmDialogComponent — pass message:"],
+        ["rails_ui_kit.confirm_dialog.confirm",          "Confirm",                 "Ui::ConfirmDialogComponent — pass confirm_label:"],
+        ["rails_ui_kit.confirm_dialog.cancel",            "Cancel",                  "Ui::ConfirmDialogComponent — pass cancel_label:"],
+        ["rails_ui_kit.toast.close_label",               "Close notification",      "Ui::ToastComponent — the dismiss button's aria-label"],
+        ["rails_ui_kit.toast.close",                      "Close",                   "Ui::ToastComponent — the dismiss button's visually-hidden text"],
+        ["rails_ui_kit.toast.default_title",             "Notification",            "Ui::ToastComponent(message: nil) and window.triggerToast(type) with no message"],
+        ["rails_ui_kit.turbo_disable_with.processing",   "Processing...",           "no owning component — render it into the meta tag yourself, see below"],
+        ["rails_ui_kit.dark_mode.switch_to_light",       "Switch to light mode",    "no owning component — render it into the toggle button yourself, see below"],
+        ["rails_ui_kit.dark_mode.switch_to_dark",        "Switch to dark mode",     "same"],
+      ].each do |key, default, used_by| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary whitespace-nowrap"><%= key %></td>
+          <td class="px-4 py-3 text-muted-foreground whitespace-nowrap"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= used_by %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Ruby components</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  A component that owns a string resolves it through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.t</code> at render time — so a locale
+  switch between renders takes effect — and accepts a keyword that overrides it, same as every
+  other attribute in the kit:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#i18n-ruby" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-ruby" class="text-neutral-200"><%= h(example_i18n_ruby_override) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Stimulus controllers</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  A Stimulus controller can't call <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.t</code>. Where a controller's string is owned by one of the kit's
+  own components (Modal, ConfirmDialog, Toast), that component renders the translated value as a
+  Stimulus value or data attribute, and the controller reads it — falling back to the English
+  literal only when the attribute is missing, so hand-written markup that predates this still
+  works. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ConfirmDialogComponent</code> is the clearest example: it renders the same title and
+  message both as visible text and as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-default-title</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-default-message</code>, and
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--dialog</code> reads those back rather than keeping its own English-only copy — call
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> with no argument and it shows whatever title and message Ruby
+  rendered, in whatever locale rendered them.
+</p>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--turbo-disable-with</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--dark-mode</code> are different: neither is rendered by a kit component —
+  a host wires each one up on its own markup — so there's no Ruby render call to source the string
+  from automatically. Render the translation into the attribute yourself:
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#i18n-standalone" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-standalone" class="text-neutral-200"><%= h(example_i18n_standalone_controllers) %></code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Switching locale</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  This example app doesn't wire up locale switching itself — it ships one locale, English — but
+  every string above resolves through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.locale</code> the same as any other Rails string. Set it the
+  way you already do (a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">before_action</code>, a route scope, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ActiveSupport::CurrentAttributes</code>) and the kit's
+  own components follow it.
+</p>

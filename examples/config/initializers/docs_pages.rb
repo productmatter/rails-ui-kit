@@ -45,6 +45,7 @@ module DocsPages
 
     { slug: :dark_mode, title: 'Dark Mode', section: 'Utilities' },
     { slug: :form_change, title: 'Form Change', section: 'Utilities' },
+    { slug: :i18n, title: 'Internationalization', section: 'Utilities' },
     { slug: :media_query, title: 'Media Query', section: 'Utilities' },
     { slug: :primitives_navigation, title: 'Positioning & Navigation', section: 'Utilities' },
     { slug: :primitives_overlay, title: 'Overlay & Presence', section: 'Utilities' },

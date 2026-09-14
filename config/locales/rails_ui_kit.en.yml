@@ -1,0 +1,19 @@
+en:
+  rails_ui_kit:
+    modal:
+      unsaved_changes_title: "Unsaved Changes"
+      unsaved_changes_message: "You have unsaved changes. Are you sure you want to close?"
+    confirm_dialog:
+      title: "Confirmation required"
+      message: "Are you sure?"
+      confirm: "Confirm"
+      cancel: "Cancel"
+    toast:
+      close_label: "Close notification"
+      close: "Close"
+      default_title: "Notification"
+    turbo_disable_with:
+      processing: "Processing..."
+    dark_mode:
+      switch_to_light: "Switch to light mode"
+      switch_to_dark: "Switch to dark mode"

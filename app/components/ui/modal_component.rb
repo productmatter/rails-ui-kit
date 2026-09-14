@@ -77,6 +77,8 @@ module Ui
           controller: 'ui--modal ui--overlay',
           'ui--modal-track-changes-value': track_changes,
           'ui--modal-close-on-backdrop-value': close_on_backdrop,
+          'ui--modal-confirm-title-value': I18n.t('rails_ui_kit.modal.unsaved_changes_title'),
+          'ui--modal-confirm-message-value': I18n.t('rails_ui_kit.modal.unsaved_changes_message'),
           'ui--overlay-mode-value': 'modal',
           'ui--overlay-open-value': true,
           'ui--overlay-scroll-lock-value': true,

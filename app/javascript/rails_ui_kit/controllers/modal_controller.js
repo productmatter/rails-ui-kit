@@ -8,7 +8,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = {
     trackChanges: { type: Boolean, default: false },
-    closeOnBackdrop: { type: Boolean, default: true }
+    closeOnBackdrop: { type: Boolean, default: true },
+    // Ui::ModalComponent renders these from I18n (rails_ui_kit.modal.*); the literals here are
+    // only the fallback for a hand-written modal that never set the data attributes.
+    confirmTitle: { type: String, default: "Unsaved Changes" },
+    confirmMessage: { type: String, default: "You have unsaved changes. Are you sure you want to close?" }
   }
 
   connect() {
@@ -58,12 +62,13 @@ export default class extends Controller {
   }
 
   async confirmClose() {
-    const message = "You have unsaved changes. Are you sure you want to close?"
+    const title = this.confirmTitleValue
+    const message = this.confirmMessageValue
     let confirmed
 
     try {
       if (typeof window.defaultConfirmDialog !== 'function') throw new Error("Confirm dialog not available")
-      confirmed = await window.defaultConfirmDialog({ title: "Unsaved Changes", message })
+      confirmed = await window.defaultConfirmDialog({ title, message })
     } catch (error) {
       console.error("ui--modal: falling back to browser confirm()", error)
       confirmed = confirm(message)

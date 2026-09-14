@@ -2,6 +2,14 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["toggle"]
+  // No Ruby component owns this controller -- a host wires it up on its own toggle button -- so
+  // there's nothing to render these from automatically. A host that wants them translated sets
+  // the data attributes itself (see rails_ui_kit.dark_mode.* in the locale file); these literals
+  // are only the fallback when it doesn't.
+  static values = {
+    lightLabel: { type: String, default: "Switch to light mode" },
+    darkLabel: { type: String, default: "Switch to dark mode" }
+  }
 
   initialize() {
     const savedTheme = this.readStoredTheme()
@@ -46,7 +54,7 @@ export default class extends Controller {
   }
 
   updateToggleButton(theme) {
-    const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+    const label = theme === "dark" ? this.lightLabelValue : this.darkLabelValue
     this.toggleTargets.forEach(target => {
       target.setAttribute("aria-label", label)
       target.setAttribute("aria-pressed", theme === "dark" ? "true" : "false")

@@ -59,5 +59,21 @@ module Ui
       assert_selector "dialog[aria-label='Command palette']"
       assert_no_selector 'dialog[aria-labelledby]'
     end
+
+    test 'carries the translated unsaved-changes confirm title and message for ui--modal to read' do
+      render_inline(Ui::ModalComponent.new(track_changes: true)) { 'hello' }
+
+      assert_selector "div[data-ui--modal-confirm-title-value='#{I18n.t('rails_ui_kit.modal.unsaved_changes_title')}']"
+      assert_selector "div[data-ui--modal-confirm-message-value='#{I18n.t('rails_ui_kit.modal.unsaved_changes_message')}']"
+    end
+
+    test 'switching I18n.locale changes the confirm title and message values' do
+      I18n.with_locale(:fr) do
+        render_inline(Ui::ModalComponent.new(track_changes: true)) { 'hello' }
+
+        assert_selector "div[data-ui--modal-confirm-title-value='Modifications non enregistrées']"
+        assert_selector "div[data-ui--modal-confirm-message-value='Vous avez des modifications non enregistrées. Voulez-vous vraiment fermer ?']"
+      end
+    end
   end
 end

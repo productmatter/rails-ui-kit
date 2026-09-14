@@ -46,5 +46,19 @@ module Ui
 
       assert_selector "div[data-controller='ui--toast-container'].fixed.bottom-4.left-4"
     end
+
+    test 'carries the translated default title for window.triggerToast(type) called with no message' do
+      render_inline(Ui::ToastContainerComponent.new)
+
+      assert_selector "div[data-ui--toast-container-default-title-value='#{I18n.t('rails_ui_kit.toast.default_title')}']"
+    end
+
+    test 'switching I18n.locale changes the default title value' do
+      I18n.with_locale(:fr) do
+        render_inline(Ui::ToastContainerComponent.new)
+
+        assert_selector "div[data-ui--toast-container-default-title-value='Avis']"
+      end
+    end
   end
 end

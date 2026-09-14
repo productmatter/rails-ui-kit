@@ -5,6 +5,11 @@ const KNOWN_TYPES = ["success", "error", "notice", "alert", "info"]
 
 export default class extends Controller {
   static targets = ["template", "stack"]
+  // Ui::ToastContainerComponent renders this from I18n (rails_ui_kit.toast.default_title); the
+  // literal here is only the fallback for a hand-written container that never set the attribute.
+  static values = {
+    defaultTitle: { type: String, default: "Notification" }
+  }
 
   connect() {
     this.boundEventHandler = this.handleToastEvent.bind(this)
@@ -95,6 +100,6 @@ export default class extends Controller {
     if (typeof message === "string") {
       return { title: message }
     }
-    return { title: "Notification" }
+    return { title: this.defaultTitleValue }
   }
 }

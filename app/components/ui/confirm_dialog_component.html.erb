@@ -5,6 +5,8 @@
   aria-describedby="<%= id %>-message"
   class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-gray-900/50"
   data-ui--dialog-target="dialog"
+  data-default-title="<%= title %>"
+  data-default-message="<%= message %>"
   data-controller="ui--overlay"
   data-ui--overlay-target="content"
   data-ui--overlay-mode-value="modal"
@@ -20,9 +22,9 @@
             </svg>
           </div>
           <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 id="<%= id %>-title" data-ui--dialog-title class="<%= title_class %>">Confirmation required</h3>
+            <h3 id="<%= id %>-title" data-ui--dialog-title class="<%= title_class %>"><%= title %></h3>
             <div class="mt-2">
-              <p id="<%= id %>-message" data-ui--dialog-message class="<%= message_class %>">Are you sure?</p>
+              <p id="<%= id %>-message" data-ui--dialog-message class="<%= message_class %>"><%= message %></p>
             </div>
           </div>
         </div>

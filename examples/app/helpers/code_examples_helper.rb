@@ -577,6 +577,44 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_i18n_override
+    <<~YAML
+      en:
+        rails_ui_kit:
+          confirm_dialog:
+            title: "Are you sure?"
+            message: "This action cannot be undone."
+    YAML
+  end
+
+  def example_i18n_ruby_override
+    <<~'RUBY'
+      <%# Uses rails_ui_kit.confirm_dialog.* from the locale file %>
+      <%= render Ui::ConfirmDialogComponent.new %>
+
+      <%# A keyword still wins over the translation, same as any other attribute %>
+      <%= render Ui::ConfirmDialogComponent.new(
+            id: "delete-confirm",
+            title: "Delete this post?",
+            message: "This can't be undone."
+          ) %>
+    RUBY
+  end
+
+  def example_i18n_standalone_controllers
+    <<~'RUBY'
+      <button data-controller="ui--dark-mode"
+              data-action="click->ui--dark-mode#toggle"
+              data-ui--dark-mode-light-label-value="<%= I18n.t('rails_ui_kit.dark_mode.switch_to_light') %>"
+              data-ui--dark-mode-dark-label-value="<%= I18n.t('rails_ui_kit.dark_mode.switch_to_dark') %>">
+        Toggle theme
+      </button>
+
+      <%# Layout <head> — global fallback for every button without its own data-turbo-disable-with %>
+      <meta name="turbo-disable-with-default" content="<%= I18n.t('rails_ui_kit.turbo_disable_with.processing') %>">
+    RUBY
+  end
+
   def example_media_query_usage
     <<~'RUBY'
       <div data-controller="ui--media-query"

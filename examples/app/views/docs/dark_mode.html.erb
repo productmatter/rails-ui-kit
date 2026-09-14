@@ -68,6 +68,7 @@
   <li>Listens to the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">storage</code> event to sync across tabs.</li>
   <li>Getter: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">this.currentTheme</code> returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"dark"</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"light"</code>.</li>
   <li>Tag the toggle button with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-ui--dark-mode-target="toggle"</code> to get a synced <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-pressed</code> and label on connect, toggle, and cross-tab sync.</li>
+  <li>That label defaults to English ("Switch to light/dark mode"). No component renders this button — you write it — so translate it by setting <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-ui--dark-mode-light-label-value</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">-dark-label-value</code> yourself; see <%= link_to "Internationalization", i18n_path, class: "underline" %>.</li>
 </ul>
 
 <h2 class="text-base font-semibold mt-8 mb-3">Tailwind setup</h2>

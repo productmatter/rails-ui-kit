@@ -300,6 +300,17 @@ The full set is `background`/`foreground`, `card`, `popover`, `primary`, `second
 <%= render(Ui::ButtonComponent.new(class: "bg-red-500")) { "Delete" } %>
 ```
 
+**Translations:** every user-visible string the kit renders — including the accessible names screen readers announce — lives in `config/locales/rails_ui_kit.en.yml` under `rails_ui_kit.*`, which the engine loads automatically. Override any of them by defining the same key in your app's own `config/locales`:
+
+```yaml
+fr:
+  rails_ui_kit:
+    confirm_dialog:
+      title: "Confirmation requise"
+```
+
+Stimulus controllers can't call `I18n.t`, so the components that own a controller render their translated strings into data attributes for it to read, falling back to English only for hand-written markup that omits them. The docs app's Internationalization page lists every key.
+
 ## Dependencies
 
 - Rails >= 7.0
