@@ -227,13 +227,22 @@ fields in `<div class="field_with_errors">`. That div lands *between* the field 
 and the control, which breaks direct-child and sibling selectors and any Tailwind
 `peer` relationship the label/control pair depends on — the kit's error affordance is
 already carried by `data-invalid` and `aria-invalid`, so the wrapper adds nothing and
-costs layout. The kit's handling is two-sided: the install generator writes an
-identity proc (`->(html_tag, _instance) { html_tag }`) into the host initializer, with
-a comment explaining why and how to opt out; and `Ui::FieldComponent` styles from
-`data-invalid` on the wrapper rather than from any selector a stray div could break, so
-a host that keeps the default proc degrades in appearance but not in correctness. The
-engine does **not** set the proc globally — silently changing how every form in a
-client's application renders is not a change a UI kit gets to make unannounced.
+costs layout. `Ui::FieldComponent` styles from `data-invalid` on the wrapper rather
+than from any selector a stray div could break. It also renders its controls through
+ViewComponent and tag helpers, never through Rails' `Tags` classes, so the proc never
+fires for a Field control at all (`ui-field-model-binding` § Behavior, item 17).
+
+**Correction: the install-generator step was never built, and it is deferred.** This
+section used to specify that the install generator writes an identity proc
+(`->(html_tag, _instance) { html_tag }`) into the host's initializer.
+`lib/generators/rails_ui_kit/install/install_generator.rb` never did. The step isn't
+being built. Setting `ActionView::Base.field_error_proc` in a host app is a Rails
+primitive override, the same line the decider drew when deferring the form builder, so
+it stays deferred with that decision (`ui-field-model-binding` § Out of scope /
+deferred). A host that renders Rails form-builder fields beside Field keeps Rails'
+default wrapper on those fields. The engine doesn't set the proc globally either.
+Silently changing how every form in a client's application renders is not a change a
+UI kit gets to make unannounced.
 
 ### Primitive F — `ui--media-query`
 
@@ -356,8 +365,9 @@ live repository and the registry, and one did not survive.
   surface every new primitive appears in.
 - `config/importmap.rb` — the Floating UI pins and the `pin_all_from` constraint.
 - `package.json` — declares `@floating-ui/dom` a peer dependency for bundler consumers.
-- `lib/generators/rails_ui_kit/install/install_generator.rb` — where the
-  `field_error_proc` initializer and any pin change have to be reflected.
+- `lib/generators/rails_ui_kit/install/install_generator.rb` — where any pin change has
+  to be reflected. It writes no `field_error_proc`; that step is deferred (§ Behavior,
+  Primitive E).
 - `test/application_system_test_case.rb`, `test/system/` — the base class and lane
   `ui-test-harness` ships; this scope's browser checks are files added under them.
 - `app/components/ui/` — the shape the `Field` components follow.
@@ -395,20 +405,21 @@ live repository and the registry, and one did not survive.
   ARIA definition-of-done rather than a later pass.
 - The primitives introduce no hardcoded Tailwind palette class and render no markup,
   satisfying `ui-component-library` § Business rules 1 and 7 by construction.
-- The `field_error_proc` handling changes host application behavior only through the
-  install generator and never from the engine, consistent with the "no silent
-  backwards-compatibility shims" posture in `ui-component-library` § Assumptions.
+- The kit changes no host application's `field_error_proc`, neither from the engine nor
+  from the install generator, and Field's error state holds without it. Judged against
+  § Behavior, Primitive E, which records the generator step as deferred.
 
 ### human-gate
 
 - Jonathan uses the primitives demo with a keyboard and judges the feel: the typeahead
   timeout, whether flip produces visible jitter during scroll, and whether the active
   item in `activedescendant` mode reads as clearly as a real focus ring.
-- Jonathan confirms that writing an identity `field_error_proc` into a host application's
-  initializer is an acceptable thing for the install generator to do.
 
 ## Out of scope / deferred
 
+- **Writing an identity `field_error_proc` into host apps from the install generator.**
+  It was specified here and never built. It is a Rails primitive override, so it is
+  deferred with the form builder (`ui-field-model-binding` § Out of scope / deferred).
 - **Presence / `data-state` and the overlay stack** — owned by
   `ui-presence-and-overlay-stack`. `ui--anchor` deliberately does not know whether its
   floating element is visible.

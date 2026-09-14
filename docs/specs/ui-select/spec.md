@@ -64,8 +64,8 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
   turns a select into a text field with suggestions. That is a different control.
 - **Not remote search in v1.** It is designed in § Behavior, items 27–31, and built in
   a later phase, with no v1 API break.
-- **Not the form builder.** `form.ui_select` is named here as the method this component
-  becomes, so the API is shaped for it. The builder itself is a separate scope.
+- **Not the form builder.** There is no `form.ui_select`, and a form builder is deferred
+  by decision rather than planned (§ Behavior, item 14).
 - **Not a Command palette.** A menu of actions is not a value picker.
   `ui-deferred-component-decisions` owns Command.
 - **Not virtualisation.** `ui--roving-focus` walks its item targets
@@ -197,15 +197,17 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
 13. **Search is a flag.** `search: false` is the default. `search: true` switches the
     combobox to its editable mode (item 17). Nothing else in the API changes between
     modes.
-14. **The form-builder method it becomes** (a separate scope):
-
-    ```ruby
-    form.ui_select :author_id, Author.order(:name), :id, :name, include_blank: true, search: true
-    form.ui_select :status, enum: true   # model and enum taken from the form object
-    ```
-
-    That scope wraps a Field around this component, fills `name`, `selected` and
-    `errors` from the form object, and renders without triggering `field_error_proc`.
+14. **No form-builder method. That decision is deferred, not planned.** There is no
+    `form.ui_select`, and no scope is queued to add one. A form builder would be the
+    first time the kit extends a Rails API rather than supplying a component. The
+    decider has deferred that direction, along with any other Rails primitive override
+    such as setting `field_error_proc` in a host app
+    (`ui-field-model-binding` § Out of scope / deferred, which records the reasoning
+    and the cost of reversing it). A caller binds Select to a record through Field:
+    `Ui::FieldComponent.new(model:, attribute:)` fills `name`, `selected` and `errors`
+    from the record (`ui-field-model-binding` § Behavior, items 4, 13 and 16). Select's
+    Rails-shaped option API (items 8–11) still leaves a builder possible later without
+    an API change. That is a property of the API, not a commitment to build one.
 
 ### Two modes, two APG patterns, one component
 
@@ -636,8 +638,9 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - **Multiple selection** — a different ARIA pattern and submission shape; its own scope
   if a client product needs it.
 - **Creatable options** — makes the control free text; declined.
-- **`form.ui_select`** — the form-builder scope; § Behavior, item 14 fixes the shape
-  this component gives it.
+- **`form.ui_select`**: not planned. A form builder is deferred by decision, as a Rails
+  primitive override (§ Behavior, item 14; `ui-field-model-binding` § Out of scope /
+  deferred).
 - **A Capybara helper for host system tests** — see `open-questions.md`.
 - **Virtualised listboxes** — large collections use remote search.
 - **Inline autocomplete** (`aria-autocomplete="both"`) — APG's third variant; no
