@@ -12,6 +12,12 @@ fr:
       close_label: "Fermer la notification"
       close: "Fermer"
       default_title: "Avis"
+    select:
+      show_options: "Afficher les options"
+      no_results: "Aucun résultat"
+      results:
+        one: "1 résultat"
+        other: "%{count} résultats"
     turbo_disable_with:
       processing: "Traitement en cours..."
     dark_mode:

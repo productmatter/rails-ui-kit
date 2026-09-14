@@ -12,6 +12,14 @@ en:
       close_label: "Close notification"
       close: "Close"
       default_title: "Notification"
+    select:
+      show_options: "Show options"
+      no_results: "No results"
+      # Interpolated in the browser as the filter narrows, so the count itself is not known when
+      # this is rendered: the plural forms are handed to ui--select and it picks one.
+      results:
+        one: "1 result"
+        other: "%{count} results"
     turbo_disable_with:
       processing: "Processing..."
     dark_mode:

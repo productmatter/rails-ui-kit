@@ -217,7 +217,56 @@ module Ui
       classes = page.find('select', visible: :all)['class'].split
       assert_includes classes, 'border-input'
       assert_includes classes, 'dark:bg-muted/50'
-      assert_selector "[data-slot='select'] > svg[aria-hidden='true']", visible: :all
+      assert_selector "[data-slot='select'] svg[aria-hidden='true']", visible: :all
+    end
+
+    test 'select-only mode renders a div combobox, and no search-only parts' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
+
+      assert_selector "div#post_state-combobox[role=combobox][tabindex='0']", visible: :all
+      assert_no_selector 'input[role=combobox]', visible: :all
+      assert_no_selector 'button', visible: :all
+      assert_no_selector '[role=status]', visible: :all
+    end
+
+    test 'search mode renders a text field that never submits, plus the APG show-options button' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+
+      combobox = page.find('#post_state-combobox', visible: :all)
+      assert_equal 'input', combobox.tag_name
+      assert_equal 'text', combobox['type']
+      assert_equal 'list', combobox['aria-autocomplete']
+      assert_equal 'off', combobox['autocomplete']
+      assert_nil combobox['name'], 'the text field would submit a second value'
+      assert_selector "button[type=button][tabindex='-1'][aria-label]", visible: :all
+      assert_selector "select[name='post[state]']", visible: :all
+    end
+
+    test 'search mode renders the empty state and the polite status region, both from i18n' do
+      I18n.with_locale(:fr) do
+        render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+
+        assert_selector '#post_state-empty[hidden]', text: I18n.t('rails_ui_kit.select.no_results'), visible: :all
+        assert_selector "#post_state-status[role=status][aria-live='polite']", visible: :all
+        assert_selector "button[aria-label='#{I18n.t('rails_ui_kit.select.show_options')}']", visible: :all
+        root = page.find("[data-slot='select']", visible: :all)
+        assert_equal I18n.t('rails_ui_kit.select.results.one'), root['data-ui--select-results-one-value']
+        assert_equal I18n.t('rails_ui_kit.select.results.other'), root['data-ui--select-results-other-value']
+      end
+    end
+
+    test 'each mode hands ui--roving-focus the values its APG example calls for' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
+      select_only = page.find("[data-slot='select']", visible: :all)
+      assert_equal 'false', select_only['data-ui--roving-focus-loop-value']
+      assert_equal 'true', select_only['data-ui--roving-focus-typeahead-value']
+      assert_equal '10', select_only['data-ui--roving-focus-page-step-value']
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+      searching = page.find("[data-slot='select']", visible: :all)
+      assert_equal 'true', searching['data-ui--roving-focus-loop-value']
+      assert_equal 'false', searching['data-ui--roving-focus-typeahead-value']
+      assert_equal '0', searching['data-ui--roving-focus-page-step-value']
     end
 
     test 'exactly one option source is required' do

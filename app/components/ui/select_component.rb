@@ -84,6 +84,32 @@ module Ui
       "#{control_id}-combobox"
     end
 
+    def empty_id
+      "#{control_id}-empty"
+    end
+
+    def status_id
+      "#{control_id}-status"
+    end
+
+    def show_options_label
+      I18n.t('rails_ui_kit.select.show_options')
+    end
+
+    def no_results_text
+      I18n.t('rails_ui_kit.select.no_results')
+    end
+
+    # The same chevron in both modes: decorative in select-only, inside the show-options button
+    # when searching.
+    def render_chevron
+      attributes = { class: 'size-4', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+                     'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+                     aria: { hidden: true } }
+
+      tag.svg(tag.path(d: 'm6 9 6 6 6-6'), **attributes)
+    end
+
     # The primitives Select composes. ui--media-query is what tells select-only mode it is on a
     # touch screen, where the platform picker is the better control.
     def root_data
@@ -93,7 +119,12 @@ module Ui
                 'ui--overlay:opened->ui--select#opened ui--overlay:closed->ui--select#closed',
         'ui--media-query-query-value': '(pointer: coarse)',
         'ui--select-search-value': search?,
-        'ui--select-native-on-touch-value': @native_on_touch
+        'ui--select-native-on-touch-value': @native_on_touch,
+        # The count is only known once the filter runs, so the plural forms go over as strings
+        # and ui--select picks one. Locales with more plural categories than these two need the
+        # host to override the strings themselves.
+        'ui--select-results-one-value': I18n.t('rails_ui_kit.select.results.one'),
+        'ui--select-results-other-value': I18n.t('rails_ui_kit.select.results.other')
       }.merge(popup_data, navigation_data)
     end
 
@@ -133,16 +164,28 @@ module Ui
       }.compact
     end
 
-    # tabindex="0" is written here rather than by the controller so the combobox is operable
-    # the instant it is revealed; `hidden` is what keeps it out of the unenhanced page.
+    # `hidden` is what keeps the combobox out of the unenhanced page; everything else is the
+    # same in both modes except the element itself, which is a text field when searching.
     def combobox_attributes
-      {
-        id: combobox_id, role: 'combobox', tabindex: 0, hidden: true, class: control_class,
+      shared = {
+        id: combobox_id, hidden: true, role: 'combobox', class: control_class,
         aria: { controls: listbox_id, expanded: 'false' }.merge(@control_aria),
         data: { 'ui--select-target': 'combobox', 'ui--overlay-target': 'trigger',
                 'ui--anchor-target': 'anchor', 'ui--roving-focus-target': 'input',
-                action: 'click->ui--select#toggle keydown->ui--select#keydown' }
+                action: combobox_actions }
       }
+      return shared.merge(tabindex: 0) unless search?
+
+      # No name, so the text field never submits: the select next to it is what posts.
+      shared.deep_merge(type: 'text', autocomplete: 'off', aria: { autocomplete: 'list' })
+    end
+
+    def combobox_actions
+      actions = ['keydown->ui--select#keydown']
+      # A text field opens on typing rather than on a click, so a caret placed in it doesn't
+      # reopen the list the user just closed.
+      actions << (search? ? 'input->ui--select#filter' : 'click->ui--select#toggle')
+      actions.join(' ')
     end
 
     def popup_attributes

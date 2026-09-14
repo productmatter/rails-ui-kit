@@ -36,3 +36,5 @@ none — build has not started; no component, controller or test exists yet
 None yet.
 
 ## Corrections
+
+- § Behavior, item 17's key table said Escape on a closed search field clears it, transcribed from the APG editable-combobox example. Here the value lives in the select, not in the text field, so clearing the text would either strand an empty field over a real value (breaking § Business rules, rule 1) or clear the selection — making the cancel key destructive, dispatching `input` and `change` from a "never mind" keystroke, diverging from select-only mode where a closed Escape does nothing, and behaving differently depending on whether the caller offered a blank option. Escape now restores the field's text to the selected option's label and changes nothing else; clearing a choice is what `include_blank:` and `prompt:` are for. Recorded in the key table and in prose under item 17 — tasteable — decider

@@ -33,7 +33,20 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     assert_accessible(within: 'main')
   end
 
-  test 'SA3: an open listbox passes an axe audit in dark mode' do
+  test 'SA3: a filtered list, and an emptied one, pass an axe audit' do
+    field = find('#demo_city-combobox')
+    field.click
+    press 'l', 'o'
+    assert_popup 'demo_city', 'open'
+    assert_selector '#demo_city-status', text: 'results', visible: :all
+    assert_accessible(within: 'main')
+
+    press 'z', 'z'
+    assert_selector '#demo_city-empty', text: 'No results'
+    assert_accessible(within: 'main')
+  end
+
+  test 'SA4: an open listbox passes an axe audit in dark mode' do
     use_dark_mode(true)
     combobox('demo_timezone').click
     assert_popup 'demo_timezone', 'open'

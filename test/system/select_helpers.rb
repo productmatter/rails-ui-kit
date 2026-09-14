@@ -82,8 +82,9 @@ module SelectHelpers
                                                "got #{combobox(id)['aria-activedescendant'].inspect}"
   end
 
-  def assert_no_active(id)
-    assert_no_selector "##{id}-combobox[aria-activedescendant]"
+  def assert_no_active(id, message = nil)
+    assert page.has_no_css?("##{id}-combobox[aria-activedescendant]"),
+           message || "expected no active option, got #{combobox(id)['aria-activedescendant'].inspect}"
   end
 
   def assert_focus_on_combobox(id, message = 'DOM focus left the combobox')

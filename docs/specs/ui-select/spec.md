@@ -253,7 +253,7 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     |---|---|---|
     | closed | `ArrowDown` / `ArrowUp` | Opens and moves visual focus to the first / last option. |
     | closed | `Alt+ArrowDown` | Opens without moving visual focus. |
-    | closed | `Escape` | Clears the text field. |
+    | closed | `Escape` | Puts the text back to the selected option's label, and changes nothing else. A deliberate deviation from the APG table, which clears the field — see below. |
     | closed | `Enter` | Not handled: implicit form submission proceeds, as for any text field. |
     | open | `ArrowDown` / `ArrowUp` | Next / previous option, wrapping. |
     | open | `Enter` | With an active option, selects it and closes; with none, closes. Either way the key never submits the form while the listbox is open. |
@@ -271,6 +271,18 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
 
     Tab doesn't select in this mode because APG's list-autocomplete example uses manual
     selection: what the user typed is never silently turned into a choice.
+
+    **Escape on a closed field restores rather than clears.** In the APG example the text
+    field *is* the value, so clearing it is a complete operation. Here the value lives in
+    the select, and a transcribed "clear the field" would have to do one of two wrong
+    things: leave an empty field over a select still holding a value, which breaks
+    § Business rules, rule 1, or clear the selection, which turns the cancel key into a
+    destructive one that dispatches `input` and `change` from a keystroke the user meant
+    as "never mind" — and which behaves differently depending on whether the caller
+    offered a blank option. Escape therefore leaves the value alone in both modes, and
+    clearing a choice is what `include_blank:` and `prompt:` are for. The key is left
+    unclaimed when the text already matches the label, so it still reaches a surrounding
+    Modal (§ Behavior, item 25).
 18. **DOM focus never leaves the combobox** while the user is working in the widget. The
     popup opens without taking focus (§ Assumptions, prerequisite 1). Options are
     `tabindex="-1"`, and a `mousedown` on an option is cancelled by the primitive.

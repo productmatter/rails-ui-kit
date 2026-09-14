@@ -72,6 +72,40 @@
   </div>
 </div>
 
+<%# Search %>
+<h2 class="text-base font-semibold mb-3">With search</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">search: true</code> switches the
+  combobox to its editable mode: the WAI-ARIA combobox with list autocomplete. Typing filters the list, ignoring case and
+  accents; nothing else in the API changes, and the value still lives in the same native select.
+</p>
+<div id="select-search-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[city]") do |field| %>
+      <% field.with_label { "City" } %>
+      <% field.with_control(Ui::SelectComponent, options: timezones, selected: "london", search: true,
+                            include_blank: "No preference") %>
+      <% field.with_description { "Type to filter. Empty the field to clear your choice." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[favourite]") do |field| %>
+      <% field.with_label { "Favourite city" } %>
+      <% field.with_control(Ui::SelectComponent, options: timezones, selected: "paris", search: true) %>
+      <% field.with_description { "No blank option: there is always a value." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[region]") do |field| %>
+      <% field.with_label { "Region" } %>
+      <% field.with_control(Ui::SelectComponent, options: regions, search: true, prompt: "Search regions") %>
+      <% field.with_description { "Grouped: a group with nothing left in it is hidden." } %>
+    <% end %>
+  </div>
+</div>
+
 <%# Inside a form %>
 <h2 class="text-base font-semibold mb-3">In a form</h2>
 <p class="text-sm text-muted-foreground mb-3">
@@ -92,6 +126,12 @@
         <% field.with_label { "Plan (required)" } %>
         <% field.with_control(Ui::SelectComponent, options: plans, required: true, prompt: "Choose a plan",
                               native_on_touch: false) %>
+      <% end %>
+    </div>
+    <div class="w-64">
+      <%= render Ui::FieldComponent.new(name: "booking[city]") do |field| %>
+        <% field.with_label { "City (search)" } %>
+        <% field.with_control(Ui::SelectComponent, options: timezones, search: true, include_blank: true) %>
       <% end %>
     </div>
     <%= render(Ui::ButtonComponent.new(type: "submit")) { "Submit" } %>
@@ -202,6 +242,44 @@
   </table>
 </div>
 
+<h3 class="text-sm font-semibold mb-3">Search mode</h3>
+<p class="text-sm text-muted-foreground mb-3">
+  The editable combobox with list autocomplete. The text field never submits — it has no
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name</code> — and what you type is
+  never turned into a value: only a real option can be chosen.
+</p>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">State</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Result</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["closed", "↓ / ↑", "Opens and moves visual focus to the first / last option."],
+        ["closed", "Alt+↓", "Opens without moving visual focus."],
+        ["closed", "Escape", "Puts the text back to the selected option's label. It never changes the value: clearing a choice is what a blank option is for."],
+        ["closed", "Enter", "Not handled: the form submits, exactly as it would from any text field."],
+        ["closed or open", "typing", "Opens if closed, and filters the list — ignoring case and accents."],
+        ["open", "↓ / ↑", "Next / previous option, wrapping."],
+        ["open", "Enter", "Takes the active option if there is one, and closes either way. Never submits while the list is open."],
+        ["open", "Escape", "Closes; the text goes back to the selected option's label."],
+        ["open", "←, →, Home, End, typing", "Visual focus returns to the text field and the key edits the text."],
+        ["open", "Tab", "Closes without selecting: what you typed is never turned into a choice."],
+      ].each do |state, key, result| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 text-muted-foreground"><%= state %></td>
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= key %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= result %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
 <%# Notes %>
 <h2 class="text-base font-semibold mb-3">Notes</h2>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
@@ -209,5 +287,7 @@
   <li>Choosing an option dispatches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
   <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
   <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
+  <li>Escape is the cancel key in both modes: with the list open it closes it, and on a closed search field it puts the text back to the selected option's label. It never changes the value, so a dependent select or an auto-save never sees a change the user meant as "never mind". This is a deliberate deviation from the APG key table, where the text field <em>is</em> the value.</li>
+  <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
   <li>Positioning is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>'s, the top layer and dismissal are <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--overlay</code>'s, and the keyboard model is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>'s. Select adds the submission mirror and the key tables, and nothing else.</li>
 </ul>
