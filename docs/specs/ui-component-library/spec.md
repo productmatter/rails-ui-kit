@@ -27,12 +27,20 @@ already visible.
 
 This parent maps the work that changes that: a shared foundation (tokens, a variant
 and class-merge layer, six Stimulus primitives), a retrofit of the existing seven
-onto it, and then breadth — presentational components first because they become
-mechanical, the overlay family last because it needs every primitive at once.
+onto it, and then a small number of components that earn their place.
 
-shadcn/ui appears throughout as a **depth benchmark**: a reference for how deep a
-catalog should go and what a component's anatomy contains. It is not a product
-target, and parity with it is not an outcome this work is measured by.
+**True north (reshaped 2026-09-13).** The kit ships the UI behaviour a Rails app would
+otherwise rebuild in every project. A component either owns a Rails or Turbo concept,
+or solves something genuinely hard to get right in a browser (Business rules, rule 0).
+Anything that does neither is markup with classes, and the kit doesn't ship it. The
+first cut of breadth mirrored shadcn/ui's catalog. Sixteen of those components were
+built, then deleted against this rule, because a thin wrapper costs a class, tests,
+a docs page and permanent API surface while giving a host app nothing it couldn't
+write in one line.
+
+shadcn/ui remains the source of the **token contract** (rule 2) and a reference for
+component anatomy. Its catalog is not a roadmap, and parity with it is not an outcome
+this work is measured by.
 
 **Appetite.** This document is a map, readable in one sitting. It states the
 architecture, the invariants every scope inherits, and the scope boundary. Every
@@ -43,15 +51,15 @@ targets those, never this.
 
 `rails_ui_kit` reaches a state where adding a component means composing the shared
 token, variant and behavior primitives — no component defines its own positioning,
-focus management, scroll lock, presence handling, or color literals — established
-when every scope indexed below has shipped or been explicitly killed.
+focus management, scroll lock, presence handling, or color literals, and every public
+component passes rule 0. Established when every scope indexed below has shipped or
+been explicitly killed.
 
 ## Non-goals
 
-- **Not a public library, and not shadcn/ui for Rails.** shadcn is a depth benchmark
-  for catalog coverage and component anatomy. Feature parity with it is not a goal,
-  must not be written into any scope's acceptance, and is not a reason to build
-  something no client product needs.
+- **Not a public library, and not shadcn/ui for Rails.** Feature parity with shadcn
+  is not a goal, must not be written into any scope's acceptance, and is never by
+  itself a reason to build a component (rule 0).
 - **Not a design system or brand guideline.** The kit ships tokens and components;
   the visual language of any given client product is that product's business.
   Typography is a style-guide page in the docs app, not a component.
@@ -69,6 +77,25 @@ when every scope indexed below has shipped or been explicitly killed.
 
 These are the invariants every child scope inherits. A scope may not weaken one; a
 scope that needs to may not proceed without re-ratifying this parent.
+
+**Admission, which precedes every rule below**
+
+0. **A component earns its place by passing a gate.** A new public component, and any
+   existing one under review, has to pass at least one of:
+   - **Gate 1: it owns a Rails or Turbo concept.** Examples: `ActiveModel::Errors` and
+     validators (a Field whose label marks `required` because the model's validators
+     say so), `form_with` and `collection_select`, `flash`, Turbo Streams, Frames and
+     the page cache, enums, i18n, routes.
+   - **Gate 2: it is genuinely hard to get right in a browser.** Examples: focus
+     management, anchored positioning, keyboard models, timing and exit animation,
+     ARIA semantics. Tooltip and Popover pass here with no Rails content, and that's
+     enough.
+
+   A component that passes neither gate is not built. If it exists, it is deleted, and
+   it is not kept as a docs recipe either. Passing a gate makes a component
+   eligible, not scheduled: it is built when a client build needs it. Among eligible
+   work, priority goes to how often client apps need it and what a wrong implementation
+   costs (data loss, a destructive action, an accessibility failure).
 
 **Must**
 
@@ -223,25 +250,22 @@ Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests gre
 |---|---|---|---|
 | `ui-modal-turbo` | The blessed Modal + Turbo patterns and their full lifecycle, as real `examples/` demos driven by system tests; `ui--modal#closeOnSuccess` and the `turbo_stream.close_modal` action; the canonical guide shipped in the gem; the opt-in `rails_ui_kit:agent_skill` generator. | `ui-test-harness` | ratified |
 
-**Phase B — Presentational breadth.** Mechanical once Phase A exists.
+**Phase B — Controls without a controller of their own.**
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-presentational-components` | The shared convention for, and the build of, 20 components with no Stimulus controller of their own: Button and Card (shipped, the precedents), then Input, Label, Textarea, Native Select, Input Group, Badge, Alert, Avatar, Separator, Skeleton, Spinner, Progress, Table, Breadcrumb, Pagination, Button Group, Empty, Item. Typography stays a docs style-guide page, not a component. | `ui-component-base`, `ui-design-tokens` | ratified |
+| `ui-presentational-components` | The shared convention for server-rendered components with no Stimulus controller, and the four that pass rule 0: Button, plus Input, Label and Textarea, the controls Field composes and binds to `ActiveModel::Errors`. It originally owned 20. The other 16 were built and then cut against rule 0 on 2026-09-13 (§ Out of scope). Typography stays a docs style-guide page, not a component. | `ui-component-base`, `ui-design-tokens` | ratified |
 
-**Phase C — Overlay family.** The hardest work, deliberately last: the tail of this
-list needs positioning, overlay stack, roving tabindex and typeahead simultaneously.
+**Phase C — Rails-aware interactive components.** Each needs several primitives at
+once. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship; the
+retrofit moved them onto the primitives.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
 | `ui-select` | `Ui::SelectComponent`: a Rails-aware select built from a collection, array, hash or model enum, with a select-only and a searchable combobox mode (APG), the real `<select>` kept as the single source of truth so it still submits, validates, resets and works without JavaScript; Field and Turbo integration; remote search designed for a later phase; supersedes Dropdown's `kind: :listbox`. | `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
-| `ui-overlay-components` | Tooltip → Popover → Dialog → Alert Dialog → Sheet → Drawer → Dropdown Menu → Context Menu → Hover Card → Tabs → Menubar → Navigation Menu → Toast, in that order. Select and Combobox moved to `ui-select`. | `ui-foundation-retrofit` | planned |
 
-**Phase D — Deferred decisions.**
-
-| Scope | Owns | Depends on | Status |
-|---|---|---|---|
-| `ui-deferred-component-decisions` | An explicit build / vendor / omit decision, each with rationale, for: Calendar, Date Picker, Carousel, Command, Input OTP, Resizable, Slider. | `ui-overlay-components` | planned |
+A future scope enters this table only after passing rule 0, pulled by a client build.
+Nothing is queued behind Select.
 
 ## Out of scope / deferred
 
@@ -265,9 +289,21 @@ parent, not a scope-level call.
 - **Data Table — cut.** Use existing Rails table and pagination tooling; `pagy` is
   already in the repo.
 - **Typography — not a component.** A style-guide page in the docs app plus classes.
-- **Calendar, Date Picker, Carousel, Command, Input OTP, Resizable, Slider —
-  deferred**, each to an explicit build/vendor/omit decision in
-  `ui-deferred-component-decisions`.
+- **Cut against rule 0 on 2026-09-13, deleted rather than kept as recipes:** Spinner,
+  Separator, Skeleton, Item, Button Group, Progress, Native Select (superseded by
+  `ui-select`), Empty, Alert (Toast covers notification), Badge, Avatar, Breadcrumb,
+  Pagination, Table, Card and Input Group, plus Kbd and Aspect Ratio before them. None
+  of these existed on `main` (0.2.0), so cutting them breaks no consumer.
+- **The shadcn overlay and catalog roadmap: not planned.** Alert Dialog, Sheet, Drawer,
+  Context Menu, Hover Card, Tabs, Menubar and Navigation Menu, along with Calendar,
+  Date Picker, Carousel, Command, Input OTP, Resizable and Slider. The two planned
+  scopes that held them, `ui-overlay-components` and `ui-deferred-component-decisions`,
+  were never authored and are withdrawn. Any of them can come back as a new scope that
+  passes rule 0 when a client build needs it.
+- **Rails-aware reworks of cut components: not planned yet.** These are a flash banner,
+  an error summary from `@record.errors`, a collection-aware empty state, an
+  ActiveStorage avatar, and an enum-mapped badge. All would pass Gate 1, but none has
+  a pulling need today.
 - **Pinning `productmatter/rails_foundation` and `bonnie-rails` to v0.2.0 —
   out of this repo.** Recorded here as a blocking precondition of Phase A (see
   Assumptions); executed in those repositories.
