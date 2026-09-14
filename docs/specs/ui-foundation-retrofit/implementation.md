@@ -65,76 +65,24 @@ deliberately deferred to stay readable in one sitting.
 - **Test impact.** Low — `dropdown_component_test.rb` wasn't seen asserting
   hardcoded classes in the grep pass.
 
-## Ui::ConfirmDialogComponent
+## Ui::ConfirmDialogComponent — handed off
 
-- **Tokens.** `wrapper_class`'s `bg-white`/`dark:bg-gray-800`, `footer_class`'s
-  `bg-gray-100`/`dark:bg-gray-700/25`, `title_class`'s `text-gray-900`/`dark:text-
-  white`, `message_class`'s `text-gray-500`/`dark:text-gray-400`, `confirm_class`'s
-  `bg-red-600`/`hover:bg-red-500`, `cancel_class`'s `bg-white`/`dark:bg-white/10`/
-  `text-gray-900`, `icon_wrapper_class`'s `bg-red-100`/`dark:bg-red-500/10`,
-  `icon_class`'s `text-red-600`/`dark:text-red-400` — every one of the nine
-  `*_class` `DEFAULTS` entries is a hardcoded literal; all nine move to tokens
-  (`confirm`/`icon` map to `destructive`, the rest to `popover`/`card`/`muted`
-  family, decided at implementation).
-- **`Ui::Base`/API break — the largest one in this scope.** `DEFAULTS` and
-  `**overrides` are deleted. Replacement: each of the nine visual parts becomes a
-  `Ui::Base`-derived class list, overridable by passing `class:` to that part
-  (mechanism matches whatever slot API `ui-component-base` ships — this scope
-  consumes it, doesn't invent it). **Old constructor calls break**:
-  `Ui::ConfirmDialogComponent.new(confirm_class: "btn-danger", cancel_class:
-  "btn-ghost", ...)` no longer works as written. `id`, `confirm_label`,
-  `cancel_label` are unaffected (not classes). `README.md`'s "Confirm dialog
-  theming" section documents the old shape verbatim and must be rewritten to the
-  new one, not patched.
-- **Primitives.** Presence + overlay-stack, same as Modal (native `<dialog>` +
-  `showModal()`/`close()`). No positioning — it's centered, not trigger-relative.
-- **Regression.** `turbo_confirm_controller.js` depends on `Ui::ConfirmDialogComponent`
-  being rendered with `id="default-confirm"` and on `dialog_controller.js` installing
-  `window.defaultConfirmDialog()`/`window.customConfirmDialog()` — none of that
-  changes here; the id and the dialog controller's global-hook contract are the
-  regression check, independent of the class-override break above.
-- **Test impact.** `confirm_dialog_component_test.rb`'s "applies custom button
-  classes and labels" and "title and message classes are applied" tests assert the
-  exact keyword arguments this scope deletes — **full rewrite required**, not an
-  update.
+Its tokens, `Ui::Base` adoption, class keywords and buttons moved to
+`ui-confirm-dialog` on 2026-09-14, when the orchestrator ratified that scope. The notes
+that stood here were deleted rather than left to contradict it. One example: that scope
+keeps eight class keywords, merged instead of replacing (its `open-questions.md`), where
+this file said all nine were deleted.
 
-## Ui::ToastComponent / Ui::ToastContainerComponent
+What stays here is already done: the dialog opens and closes through `ui--overlay`
+(presence and overlay stack), with no positioning.
 
-- **Tokens.** Toast shell: `bg-white dark:bg-gray-800` → token. Close button:
-  `bg-white dark:bg-gray-800`/`text-gray-400`/`hover:text-gray-500`/`focus:outline-
-  blue-500` → tokens. Per-type colors (`bg_light_class`/`bg_dark_class`/
-  `text_color_class`, each a `case` over `success/error/notice-alert/info` returning
-  `green/red/orange/blue` literals) → the semantic mapping decided in the Open
-  question in `spec.md`/`open-questions.md`; **do not implement this ahead of that
-  decision**. ToastContainer's `z-[70]` → the one static stacking value this scope
-  documents (see spec.md Behavior — the container is not an overlay, joins no stack,
-  and no z-index can put it above a top-layer `<dialog>`; whether it is promoted with
-  `popover` is an open question).
-- **`Ui::Base`.** `bg_light_class`/`bg_dark_class`/`text_color_class`'s `case`
-  statements become a variant lookup keyed on `type`.
-- **Primitives.** Toast's own enter/leave choreography
-  (`enterFromValue`/`enterToValue`/`leaveFromValue`/`leaveToValue`, driven by
-  `toast_controller.js`) is a presence-primitive candidate, but toasts self-dismiss
-  on a timer independent of any trigger — confirm at implementation whether the
-  presence primitive's open/closed/closing model fits a self-timed, container-
-  appended element, or whether Toast keeps its own `self-destruct` timer logic
-  alongside a thinner presence hook for the enter/exit classes only.
-- **Regression — the tightest coupling in this scope.**
-  `toast_container_controller.js` selects cloned template content by
-  `[data-ui--toast-target="title"|"body"|"timer"]` and writes
-  `data-ui--toast-self-destruct-value` directly onto the clone before insertion.
-  **These `data-ui--toast-target` strings must not change** — they are the contract
-  between `ToastComponent`'s markup (used both server-rendered and as the
-  `<template>` source `ToastContainerComponent` clones) and
-  `toast_container_controller.js`'s DOM queries, which are not aware of Stimulus
-  target registration on cloned nodes. Same for `window.triggerToast(type, message)`
-  and the `rails-ui-kit:toast` document event — both untouched by this scope,
-  verified by the regression test in `spec.md`'s Acceptance checks.
-- **Test impact.** `toast_container_component_test.rb` asserts the literal
-  `bg-red-100` — breaks the moment the semantic-color decision lands and must be
-  rewritten to assert a token class instead. `toast_component_test.rb` (spot-read in
-  full) asserts only `data-*` attributes, `role`, `aria-live`, and text content — no
-  hardcoded-class assertions found, low impact.
+## Ui::ToastComponent / Ui::ToastContainerComponent — handed off
+
+All of Toast moved to `ui-toast` on 2026-09-14, when the orchestrator ratified that
+scope. That covers the tokens, including the `success`/`warning`/`info` kit extensions,
+`Ui::Base`, Primitive D, the container's stacking (now `popover="manual"`, verify-first),
+and the template-clone contract, which that scope deliberately changes. None of it is this
+scope's work any more.
 
 ## Ui::PopoverComponent
 
@@ -190,25 +138,21 @@ deliberately deferred to stay readable in one sitting.
 - **Delete:** the duplicated `clickOutsideHandler`/`escapeHandler`/`scrollHandler`
   triplet from `dropdown_controller.js` and `popover_controller.js` once overlay-
   stack owns outside-click/Escape/reflow.
-- **Keep, untouched:** `dialog_controller.js`, `form_change_controller.js`,
-  `turbo_confirm_controller.js`, `turbo_disable_with_controller.js`,
-  `dark_mode_controller.js`, `toast_container_controller.js` (its template-clone and
-  global-function logic is unchanged; only the markup it clones changes).
+- **Keep, untouched by this scope:** `form_change_controller.js`,
+  `turbo_disable_with_controller.js`, `dark_mode_controller.js`. `dialog_controller.js`
+  and `turbo_confirm_controller.js` change under `ui-confirm-dialog`, and
+  `toast_controller.js` and `toast_container_controller.js` under `ui-toast`.
 
 ## Documentation debt checklist
 
-- `README.md`: add Popover and Tooltip rows to the component table; rewrite
-  "Confirm dialog theming" to the new per-part `class:`-slot API; audit the
+- `README.md`: add Popover and Tooltip rows to the component table; audit the
   "Overriding" section's claim about CSS override-by-specificity against the new
-  token/class names.
+  token/class names. "Confirm dialog theming" is `ui-confirm-dialog`'s to rewrite.
 - `PLAN.md`: delete (see `spec.md` Behavior for the reasoning).
 - `CHANGELOG.md`: new `[0.3.0]` entry — every rendered-class change, the
-  `ConfirmDialogComponent` constructor break with a before/after snippet, the
   `ui--modal` `dialog` target → `ui--overlay` `content` target rename (a public
-  data-attribute break), the z-index/stacking change, and a pointer to the rewritten
-  README section.
-- `examples/app/views/docs/confirm_dialog.html.erb`: almost certainly demonstrates
-  the old `*_class` keyword API (README does) — update to the new one.
-- `examples/app/views/docs/{modal,dropdown,popover,tooltip,toast}.html.erb`: audit
+  data-attribute break), the z-index/stacking change. Toast and Confirm Dialog entries
+  belong to their own scopes.
+- `examples/app/views/docs/{modal,dropdown,popover,tooltip}.html.erb`: audit
   for any inline reference to old class names; otherwise no content change required
   since the components' `renders_one`/content-block API is unaffected.

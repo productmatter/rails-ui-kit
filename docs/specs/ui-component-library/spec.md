@@ -244,7 +244,7 @@ navigation (C), then field binding (E) and media-query watching (F).
 | `ui-component-base` | `Ui::Base`: the `class_variants` variant layer and the `tailwind_merge` class-merge layer that makes rule 5 true. | `ui-design-tokens` | ready-for-review |
 | `ui-presence-and-overlay-stack` | Primitives **D** (presence / open-state: `data-state="open\|closed\|closing"`, waiting on `animationend`/`transitionend` so exit animations run) and **B** (overlay stack: portal to a fixed root, focus trap, body scroll lock, Escape and outside-click dismiss, z-index and nesting order). | `ui-component-base`, `ui-test-harness` | ratified |
 | `ui-positioning-and-navigation` | Primitives **A** (one wrapper over `@floating-ui/dom` emitting `data-side`/`data-align`, re-running on scroll and resize), **C** (roving tabindex / group nav: arrows, Home/End, optional first-letter typeahead, `aria-activedescendant` for listbox-style vs. real focus for menu-style), **E** (field binding: `Field`/`FieldLabel`/`FieldError` wiring `data-invalid` and `aria-invalid` from a Rails errors object, server-rendered), **F** (media-query watcher over `matchMedia`). | `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
-| `ui-foundation-retrofit` | Moving all seven existing components onto the token, base and primitive layers, and deleting the three duplicated `@floating-ui/dom` positioning implementations. | `ui-positioning-and-navigation` | ratified |
+| `ui-foundation-retrofit` | Moving Modal, Dropdown, Popover and Tooltip onto the token, base and primitive layers, and Confirm Dialog onto the overlay primitives, and deleting the three duplicated `@floating-ui/dom` positioning implementations. Toast, and Confirm Dialog's tokens and API, moved to `ui-toast` and `ui-confirm-dialog` on 2026-09-14. | `ui-positioning-and-navigation` | ratified |
 
 **Alongside Phase A — Turbo patterns.** Additive and non-breaking. It builds on today's
 Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests green.
@@ -265,15 +265,19 @@ the browser behaviour that goes with it. Select composes several primitives at o
 Choices composes none, because native radios and checkboxes already carry the
 behaviour, and ships one small controller only where the browser has no native
 constraint. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship;
-the retrofit moved them onto the primitives.
+the retrofit moved the first four onto the primitives. Toast and Confirm Dialog are still
+on `ViewComponent::Base` with palette literals. Their rework, including the retrofit's half
+for them, is `ui-toast` and `ui-confirm-dialog`.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
 | `ui-select` | `Ui::SelectComponent`: a Rails-aware select built from a collection, array, hash or model enum, with a select-only and a searchable combobox mode (APG), the real `<select>` kept as the single source of truth so it still submits, validates, resets and works without JavaScript; Field and Turbo integration; remote search designed for a later phase; supersedes Dropdown's `kind: :listbox`. | `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
+| `ui-toast` | Toast's one plain-data payload (`type`, `title`, `description`, `actions`, `duration`, `icon`) rendered identically from Ruby, `turbo_stream.ui_toast` and `window.triggerToast`. Content given alone becomes the description, reversing 0.2.0. Actions render through `Ui::ButtonComponent`, with a relative-or-`http(s)` URL rule. Action toasts don't auto-dismiss by default. Every countdown pauses on hover, focus and a hidden page, with a reduced-motion bar. Keyboard reach is F8 and Escape. The type glyph is a replaceable default. Toast moves onto `Ui::Base`, tokens (`--success`/`--warning`/`--info`) and Primitive D. It sets the shared convention for JavaScript-configured components. | `ui-component-base`, `ui-design-tokens`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-localization`, `ui-test-harness` | ratified |
+| `ui-confirm-dialog` | Confirm Dialog as a template whose contents are the caller's. No icon by default (decided 2026-09-14), with Ruby `icon` and `body` slots. `confirm_variant:` defaults to `:destructive`. Title, message, labels and variant reach the shared dialog from Ruby, `defaultConfirmDialog` and Turbo attributes, and reset per confirmation. The buttons become `Ui::ButtonComponent`, on tokens and `Ui::Base`. The class keywords merge instead of replacing. A regression check pins 0.2.0's render, all of it except the icon. | `ui-component-base`, `ui-design-tokens`, `ui-presentational-components`, `ui-presence-and-overlay-stack`, `ui-localization`, `ui-toast`, `ui-test-harness` | ratified |
 | `ui-choices` | `Ui::ChoicesComponent`: a radio (`multiple: false`) or checkbox (`multiple: true`) group built from a collection, array, hash or enum through the shared `Ui::OptionSet` (moved out from under Select), in a list or wrapped-card appearance, with `collection_radio_buttons`/`collection_check_boxes` names, ids and `include_hidden` so unchecking everything clears the attribute. A `<fieldset>` named, described and marked invalid through Field. No JavaScript except one small controller that makes a required checkbox group mean "at least one". Passes Gate 1 (the Rails submission contract) and Gate 2 (group accessibility). | `ui-select`, `ui-field-model-binding`, `ui-presentational-components`, `ui-control-sizing`, `ui-localization`, `ui-localization-rtl`, `ui-test-harness` | draft |
 
 A future scope enters this table only after passing rule 0, pulled by a client build.
-Select and Choices are the scopes in it; nothing is queued behind them.
+Select, Toast, Confirm Dialog and Choices are the scopes in it; nothing is queued behind them.
 
 **Across every phase — localization.** Two scopes, not one, because they are two
 promises: what the kit *says* (translatable, host-overridable, already half-built) and how
