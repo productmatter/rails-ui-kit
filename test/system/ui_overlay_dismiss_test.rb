@@ -11,6 +11,35 @@ class UiOverlayDismissTest < ApplicationSystemTestCase
 
   setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
 
+  # Guards the geometry every OUTSIDE-coordinate test below assumes: a layer or hint composed
+  # with ui--anchor opens at its trigger, not centred in the viewport. Rects are asserted
+  # non-zero first, since a hidden element measures 0x0 and would pass silently otherwise.
+  test 'the layer demo opens at its trigger, not centred in the viewport' do
+    visit primitives_overlay_path
+    open_menu
+
+    trigger = rect_of('#menu-trigger')
+    content = rect_of('#menu-content')
+    assert trigger['width'].positive? && trigger['height'].positive?, 'trigger rect measured 0x0'
+    assert content['width'].positive? && content['height'].positive?, 'content rect measured 0x0'
+
+    assert_in_delta trigger['bottom'], content['top'], 12, 'the layer did not open just below its trigger'
+    assert_in_delta trigger['left'], content['left'], 5, 'the layer did not line up with the left edge of its trigger'
+  end
+
+  test 'the hint demo opens at its trigger, not pinned near the top of the viewport' do
+    visit primitives_overlay_path
+    page.execute_script("document.querySelector('#hint-overlay').setAttribute('data-ui--overlay-open-value', 'true')")
+    assert_state '#hint-content', 'open'
+
+    trigger = rect_of('#hint-trigger')
+    content = rect_of('#hint-content')
+    assert trigger['width'].positive? && trigger['height'].positive?, 'trigger rect measured 0x0'
+    assert content['width'].positive? && content['height'].positive?, 'content rect measured 0x0'
+
+    assert_in_delta trigger['top'], content['bottom'], 12, 'the hint did not open just above its trigger'
+  end
+
   test 'a click wholly outside a layer dismisses it, animating out before the browser hides it' do
     visit primitives_overlay_path
     open_menu

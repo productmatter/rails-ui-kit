@@ -76,8 +76,10 @@
   <code class="font-mono text-xs">&lt;dialog&gt;</code> opened with <code class="font-mono text-xs">showModal()</code>,
   <code class="font-mono text-xs">layer</code> is <code class="font-mono text-xs">popover="auto"</code>, and
   <code class="font-mono text-xs">hint</code> is <code class="font-mono text-xs">popover="manual"</code>. Paint order,
-  Escape ordering and light dismiss come with them. Placement is the top layer&rsquo;s; <em>positioning</em> arrives
-  separately with <code class="font-mono text-xs">ui--anchor</code>, so the panels below open centred.
+  Escape ordering and light dismiss come with them &mdash; that is all placement in the top layer. Where a panel
+  actually sits is <%= link_to "ui--anchor", primitives_navigation_path, class: "underline" %>&rsquo;s: the layer and
+  hint demos below compose both, anchored to their triggers, the way a real menu or tooltip is. The modals stay
+  centred, because a dialog should.
 </p>
 
 <div class="rounded-lg border border-border bg-muted p-8 mb-8">
@@ -173,19 +175,27 @@
       </dialog>
     </div>
 
-    <%# A standalone layer: light dismiss, Escape and paint order are the browser's %>
-    <div id="menu-overlay" data-controller="ui--overlay" data-ui--overlay-mode-value="layer">
+    <%# A standalone layer: light dismiss, Escape and paint order are the browser's; position is
+        ui--anchor's, wired the same way Popover and Tooltip wire it, just written out here
+        instead of behind their controllers. %>
+    <div id="menu-overlay" data-controller="ui--overlay ui--anchor"
+         data-ui--overlay-mode-value="layer"
+         data-ui--anchor-placement-value="bottom-start"
+         data-ui--anchor-offset-value="8"
+         data-ui--anchor-strategy-value="fixed">
       <button id="menu-trigger"
               data-ui--overlay-target="trigger"
+              data-ui--anchor-target="anchor"
               data-action="click->ui--overlay#toggle"
               class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
         Open layer
       </button>
       <div id="menu-content"
            data-ui--overlay-target="content"
+           data-ui--anchor-target="floating"
            role="menu"
            aria-label="Standalone layer"
-           class="m-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
+           class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
                   transition duration-200 ease-out
                   data-[state=closed]:opacity-0 data-[state=closed]:scale-95
                   data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
@@ -195,17 +205,23 @@
     </div>
 
     <%# A hint: manual, so it never light-dismisses the layer the pointer is inside %>
-    <div id="hint-overlay" data-controller="ui--overlay" data-ui--overlay-mode-value="hint">
+    <div id="hint-overlay" data-controller="ui--overlay ui--anchor"
+         data-ui--overlay-mode-value="hint"
+         data-ui--anchor-placement-value="top"
+         data-ui--anchor-offset-value="6"
+         data-ui--anchor-strategy-value="fixed">
       <button id="hint-trigger"
               data-ui--overlay-target="trigger"
+              data-ui--anchor-target="anchor"
               data-action="click->ui--overlay#toggle"
               class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
         Show hint
       </button>
       <div id="hint-content"
            data-ui--overlay-target="content"
+           data-ui--anchor-target="floating"
            role="tooltip"
-           class="mx-auto mb-auto mt-24 rounded-md bg-neutral-900 px-2 py-1 text-xs text-white shadow-lg
+           class="rounded-md bg-neutral-900 px-2 py-1 text-xs text-white shadow-lg
                   transition duration-150 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
         Escape dismisses me without closing anything underneath.
       </div>
@@ -351,6 +367,19 @@
   document.addEventListener("click", function (event) {
     if (!event.target.closest("#remove-overlay")) return;
     document.getElementById("removable-content").remove();
+  });
+
+  // ui--anchor only computes and tracks position while active, so it has to be told when the
+  // layer and hint panels it positions are actually open -- the same wiring ui--popover and
+  // ui--tooltip do for Popover and Tooltip, written out here instead of behind their controllers.
+  ["menu-overlay", "hint-overlay"].forEach(function (id) {
+    var overlay = document.getElementById(id);
+    overlay.addEventListener("ui--overlay:opened", function () {
+      overlay.setAttribute("data-ui--anchor-active-value", "true");
+    });
+    overlay.addEventListener("ui--overlay:closed", function () {
+      overlay.setAttribute("data-ui--anchor-active-value", "false");
+    });
   });
 
   // The vetoable dismissal, as an ordinary listener on the cancelable event.
