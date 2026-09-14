@@ -30,6 +30,11 @@ class AnchorCleanupTest < ApplicationSystemTestCase
       return remove.call(this, type, listener, options)
     }
 
+    // Scoped to the probe's own host: autoUpdate only ever calls observe() with the reference or
+    // floating element (or, for IntersectionObserver, re-creates a fresh instance and re-observes
+    // the reference on every layout-shift refresh -- both cases stay inside this element). Without
+    // this check the page-wide count also catches other still-connected anchors elsewhere on the
+    // page re-arming their own observers, which have nothing to do with this element's cleanup.
     const track = (Observer) => class extends Observer {
       disconnect() {
         const index = window.__probe.observers.indexOf(this)
@@ -37,9 +42,11 @@ class AnchorCleanupTest < ApplicationSystemTestCase
         return super.disconnect()
       }
 
-      observe(...args) {
-        if (!window.__probe.observers.includes(this)) window.__probe.observers.push(this)
-        return super.observe(...args)
+      observe(target, ...rest) {
+        if ((target === host || host.contains(target)) && !window.__probe.observers.includes(this)) {
+          window.__probe.observers.push(this)
+        }
+        return super.observe(target, ...rest)
       }
     }
 
