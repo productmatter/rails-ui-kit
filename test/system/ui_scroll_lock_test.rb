@@ -52,35 +52,44 @@ class UiScrollLockTest < ApplicationSystemTestCase
     assert_equal 480, scroll_position.last
   end
 
+  # The reference is the docs column, which is centred in the space beside the sidebar: it moves
+  # by half of any width the lock adds or takes away. An element that is `hidden` until a demo
+  # opens measures 0x0 in every state and would pass this whatever the lock did.
   test 'locking and unlocking shift nothing horizontally' do
     visit primitives_overlay_path
-    before = rect_of('#fade-panel')
+    before = rect_of('main > div')
+    assert_operator before['width'], :>, 0, 'the reference element is not laid out, so this proves nothing'
 
     find('#modal-trigger').click
     assert_state '#modal-content', 'open'
-    locked = rect_of('#fade-panel')
+    locked = rect_of('main > div')
     assert_in_delta before['left'], locked['left'], 0.5, 'the page shifted sideways when the scrollbar went'
     assert_in_delta before['right'], locked['right'], 0.5
 
     find('#modal-close').click
     assert_state '#modal-content', 'closed'
-    after = rect_of('#fade-panel')
+    after = rect_of('main > div')
     assert_in_delta before['left'], after['left'], 0.5
     assert_in_delta before['right'], after['right'], 0.5
   end
 
-  test 'the gutter is reserved by CSS while locked, and given back afterwards' do
+  # `scrollbar-gutter: stable` on the root can't do this job: the lock takes the body out of
+  # flow, and a fixed element's containing block includes the reserved gutter, so the body would
+  # lay out a scrollbar wider than it does unlocked.
+  test 'the scrollbar gutter is held as padding while locked, and given back afterwards' do
     visit primitives_overlay_path
-    assert_equal '', page.evaluate_script('document.documentElement.style.scrollbarGutter')
+    gutter = scrollbar_width
+    padding_before = computed_body_padding_right
 
     find('#modal-trigger').click
     assert_state '#modal-content', 'open'
-    assert_equal 'stable', page.evaluate_script('document.documentElement.style.scrollbarGutter')
-    assert_equal '', body_style('paddingRight'), 'measured padding was applied where CSS would do'
+    assert_in_delta padding_before + gutter, computed_body_padding_right, 0.5,
+                    'the scrollbar width was not held as padding'
+    assert_equal '', page.evaluate_script('document.documentElement.style.scrollbarGutter')
 
     find('#modal-close').click
     assert_state '#modal-content', 'closed'
-    assert_equal '', page.evaluate_script('document.documentElement.style.scrollbarGutter')
+    assert_in_delta padding_before, computed_body_padding_right, 0.5
   end
 
   test 'an overlay that does not ask for the lock does not take it' do
@@ -95,5 +104,9 @@ class UiScrollLockTest < ApplicationSystemTestCase
 
   def scrollbar_width
     page.evaluate_script('window.innerWidth - document.documentElement.clientWidth')
+  end
+
+  def computed_body_padding_right
+    page.evaluate_script('parseFloat(getComputedStyle(document.body).paddingRight)')
   end
 end

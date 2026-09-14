@@ -46,19 +46,16 @@ function applyLock() {
     body,
     x: window.scrollX,
     y: window.scrollY,
-    gutter: root.style.scrollbarGutter,
     style: Object.fromEntries(LOCKED_PROPERTIES.map((property) => [property, body.style[property]]))
   }
 
-  // Reserve the scrollbar's gutter before it disappears, so locking shifts nothing sideways.
-  // CSS does it without measuring anything, including for fixed-position elements; the
-  // measured padding is the fallback where scrollbar-gutter isn't supported.
+  // Hold the scrollbar's gutter as padding before the scrollbar disappears, so locking shifts
+  // nothing sideways. Not `scrollbar-gutter: stable` on the root: the body is taken out of flow
+  // below, and a fixed element's containing block is the viewport including that reserved
+  // gutter, so the body would lay out one scrollbar wider than it does unlocked and every
+  // centered or right-aligned thing in the page would jump.
   if (scrollbar > 0) {
-    if (CSS.supports("scrollbar-gutter", "stable")) {
-      root.style.scrollbarGutter = "stable"
-    } else {
-      body.style.paddingRight = `${parseFloat(getComputedStyle(body).paddingRight) + scrollbar}px`
-    }
+    body.style.paddingRight = `${parseFloat(getComputedStyle(body).paddingRight) + scrollbar}px`
   }
 
   // overflow: hidden alone is ignored by iOS Safari for touch scrolling; taking the body out
@@ -74,11 +71,10 @@ function applyLock() {
 }
 
 function releaseLock() {
-  const { body, x, y, gutter, style } = lock
+  const { body, x, y, style } = lock
   lock = null
 
   LOCKED_PROPERTIES.forEach((property) => { body.style[property] = style[property] })
-  document.documentElement.style.scrollbarGutter = gutter
 
   // Restoring the scroll position in the same task as the styles means no frame is painted in
   // between, so the page never visibly jumps. A Turbo visit can swap <body> out from under an
