@@ -17,6 +17,8 @@ fr:
       results:
         one: "%{count} résultat"
         other: "%{count} résultats"
+    choices:
+      required_message: "Sélectionnez au moins une option."
     turbo_disable_with:
       processing: "Traitement en cours..."
     dark_mode:

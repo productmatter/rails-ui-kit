@@ -41,6 +41,19 @@ class DocsController < ApplicationController
     self.class.select_submissions = self.class.select_submissions.to_i + 1
   end
 
+  # The Choices docs page's server round trip: a checkbox group and a radio group posted
+  # together, re-rendered with a 422 and the model's errors when either is empty -- which is what
+  # a group looks like when the browser's own constraint was never reached (JavaScript off).
+  def choices_submit
+    membership = DemoMembership.new(plan: params.dig(:membership, :plan).to_s,
+                                    role_ids: params.dig(:membership, :role_ids))
+    valid = membership.valid?
+    render partial: 'docs/choices_round_trip',
+           locals: { membership: membership, roles: DocsController.roles,
+                     submission: self.class.choices_submissions = self.class.choices_submissions.to_i + 1 },
+           status: valid ? :ok : :unprocessable_entity
+  end
+
   # The Field docs page's help-text swap. A form in a frame re-renders by replacing the field, which
   # leaves nothing to animate from; answering with a morphing stream keeps the field and lets the
   # description and the error swap in place (ui-field-model-binding § Behavior, item 21). With
@@ -60,7 +73,15 @@ class DocsController < ApplicationController
   end
 
   class << self
-    attr_accessor :select_submissions, :field_submissions
+    attr_accessor :select_submissions, :field_submissions, :choices_submissions
+  end
+
+  # The Choices docs page's collection: objects, so the page can show description_method: and
+  # icon_method:, which need something to call.
+  def self.roles
+    [Struct.new(:id, :name, :tagline).new(1, 'Admin', 'Can change anything, including billing.'),
+     Struct.new(:id, :name, :tagline).new(2, 'Editor', 'Writes and publishes posts.'),
+     Struct.new(:id, :name, :tagline).new(3, 'Viewer', 'Reads everything, changes nothing.')]
   end
 
   # Option sets whose sizes are chosen so a typed prefix narrows the list to exactly 1, 2, 3, 11

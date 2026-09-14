@@ -218,6 +218,38 @@ If the generator skipped your `app/assets/tailwind/application.css`, add the imp
 <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>
 ```
 
+### Radio and checkbox groups
+
+`Ui::ChoicesComponent` renders what `collection_radio_buttons` and `collection_check_boxes`
+render — the same names, ids and hidden empty field — so unchecking every box clears the
+association instead of silently keeping the old value. `multiple: true` is the checkbox variant.
+
+```erb
+<%# Inside a Field, which supplies the id, name, description, error and required state.
+    A has_many is validated as `roles` but edited as `role_ids`, so name the errors. %>
+<%= render Ui::FieldComponent.new(model: @user, attribute: :role_ids, required: true,
+                                  errors: @user.errors[:roles]) do |field| %>
+  <% field.with_label { "Roles" } %>
+  <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: Role.order(:name),
+                        value_method: :id, text_method: :name) %>
+<% end %>
+
+<%# A card per choice, with a description line and a decorative icon. Columns are your class. %>
+<%= render Ui::ChoicesComponent.new(name: "account[plan_id]", appearance: :card, collection: plans,
+                                    value_method: :id, text_method: :name,
+                                    description_method: :tagline, checked: @account.plan_id,
+                                    disabled_values: [locked_plan.id], class: "sm:grid-cols-3") %>
+```
+
+Arrow keys, Space, single selection, `required` on radios and form reset are the browser's own;
+the kit adds one controller, `ui--choices`, for the one thing the platform can't say — "at least
+one of these checkboxes" — and attaches it only when the group is both `multiple:` and `required:`.
+
+**A locked checkbox is not authorization.** `disabled_values:` renders a choice the user can't
+change, and a checked one is carried by a hidden input so saving doesn't delete what the form
+showed as checked. A hidden input can be removed or edited in the browser, and a disabled one
+re-enabled: the server still decides what a user may change. Filter or merge locked values there.
+
 ### Triggering toasts
 
 The container renders toasts entirely client-side — no network round-trip.
@@ -237,37 +269,71 @@ document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", {
 
 ```js
 const ok = await window.defaultConfirmDialog("Delete this item?")
-const ok = await window.defaultConfirmDialog({ title: "Delete?", message: "Cannot be undone." })
+
+// Every part of the confirmation, in one spelling Ruby and JavaScript share:
+const ok = await window.defaultConfirmDialog({
+  title: "Publish this post?", message: "Readers will see it immediately.",
+  confirm_label: "Publish", confirm_variant: "default"
+})
 ```
 
-Or via Turbo's `data-turbo-confirm` attribute (the `ui--turbo-confirm` controller intercepts it):
+Or via Turbo's `data-turbo-confirm` attribute (the `ui--turbo-confirm` controller intercepts it).
+Each part travels as `data-turbo-confirm-` plus the option key, on the submit button, the form or
+a `data-turbo-method` link:
 
 ```erb
 <%= button_to "Delete", path, method: :delete,
     data: { turbo_confirm: "Are you sure?", turbo_confirm_title: "Delete account?" } %>
+
+<%= button_to "Publish", publish_path(@post), method: :patch,
+    data: { turbo_confirm: "Readers will see it immediately.", turbo_confirm_title: "Publish this post?",
+            turbo_confirm_confirm_label: "Publish", turbo_confirm_confirm_variant: "default" } %>
 ```
+
+A confirmation that names no variant gets the dialog's rendered default, which is destructive.
+Nothing one confirmation sets leaks into the next.
 
 ## Confirm dialog theming
 
-`Ui::ConfirmDialogComponent` accepts options to customize the styling without overriding the template:
+`Ui::ConfirmDialogComponent` renders a title, a message and two buttons. It renders **no icon**:
+a glyph is content you add, in a slot. Every class option is merged onto the component's own
+classes with `tailwind_merge`, so where your class and a default set the same property, yours
+wins and the defaults you didn't contradict stay:
 
 ```ruby
 Ui::ConfirmDialogComponent.new(
-  wrapper_class: "...",
-  body_class: "...",
-  footer_class: "...",
-  title_class: "...",
-  message_class: "...",
-  confirm_class: "...",
-  cancel_class: "...",
-  icon_wrapper_class: "...",
-  icon_class: "...",
-  confirm_label: "Yes, delete",
-  cancel_label: "Keep it"
+  confirm_variant: :default,   # :destructive (default), :default, :outline, :secondary, :ghost, :link
+  confirm_label: "Publish",
+  cancel_label: "Not yet",
+  class: "...",                # merged onto the <dialog> itself
+  wrapper_class: "...", body_class: "...", footer_class: "...",
+  title_class: "...", message_class: "...",
+  confirm_class: "...", cancel_class: "...", icon_wrapper_class: "..."
 )
 ```
 
-Each option falls back to a neutral default. The defaults assume Tailwind classes; consumers using a different CSS framework should pass their own classes.
+The confirm button is `Ui::ButtonComponent` at the variant you choose, and it defaults to
+`:destructive`, because in a Rails app this one dialog answers every `data-turbo-confirm` and
+those sit overwhelmingly on `destroy`. A confirmation that isn't destructive says so:
+`confirm_variant: :default`.
+
+An icon and rich body text are markup, so they come from a Ruby-rendered dialog — never through
+JavaScript or a data attribute — and you open that dialog by id:
+
+```erb
+<%= render Ui::ConfirmDialogComponent.new(id: "archive-confirm", title: "Archive this project?",
+      confirm_label: "Archive", confirm_variant: :default,
+      icon_wrapper_class: "rounded-full bg-primary/10 text-primary") do |dialog| %>
+  <% dialog.with_icon { render "icons/archive" } %>
+  <% dialog.with_body { tag.p("Nothing is deleted, and you can restore it at any time.") } %>
+<% end %>
+```
+```js
+if (await window.customConfirmDialog("#archive-confirm")) { /* proceed */ }
+```
+
+Colour comes from the tokens (`--popover`, `--muted`, `--destructive`), so the dialog follows
+your theme in light and dark without any class options at all.
 
 ## Dark mode
 

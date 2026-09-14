@@ -1,0 +1,35 @@
+<%# The server round trip the docs page and POST /demos/choices both render: two real groups in a
+    Turbo Frame, bound to a DemoMembership, re-rendered with a 422 and the model's errors when
+    either is empty. The has_many is validated as `roles` and edited as `role_ids`, so the Field
+    is told which errors are its own. %>
+<%= turbo_frame_tag "choices-round-trip" do %>
+  <%= form_with url: demo_choices_path, method: :post, data: { turbo_frame: "choices-round-trip" },
+                class: "grid gap-6" do %>
+    <%# Not marked required here on purpose: the point of this demo is the server's answer, and a
+        required checkbox group would be blocked in the browser before the request was made. The
+        model still validates it, which is exactly the no-JavaScript path. %>
+    <%= render Ui::FieldComponent.new(model: membership, attribute: :role_ids,
+                                      errors: membership.errors[:roles]) do |field| %>
+      <% field.with_label { "Roles" } %>
+      <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: roles,
+                            value_method: :id, text_method: :name) %>
+      <% field.with_description { "People with no role can sign in but see nothing." } %>
+    <% end %>
+
+    <%= render Ui::FieldComponent.new(model: membership, attribute: :plan, required: true) do |field| %>
+      <% field.with_label { "Plan" } %>
+      <% field.with_control(Ui::ChoicesComponent, options: [["Starter", "starter"], ["Growth", "growth"]]) %>
+    <% end %>
+
+    <div class="flex items-center gap-4">
+      <%= render(Ui::ButtonComponent.new(type: "submit", id: "choices-round-trip-submit")) { "Save" } %>
+      <% if submission.to_i.positive? %>
+        <p id="choices-round-trip-result" data-submission="<%= submission %>" class="text-sm text-muted-foreground">
+          Server received: <span class="font-mono"><%= membership.role_ids.presence&.join(", ") || "no roles" %></span>
+          / <span class="font-mono"><%= membership.plan.presence || "no plan" %></span>
+          <span class="text-xs">(response <%= submission %>)</span>
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

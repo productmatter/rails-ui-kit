@@ -29,6 +29,11 @@ module Ui
         @field.control_attributes(**@attributes)
       end
 
+      # Whether a `<label for>` can name what this control renders (ui-choices § Assumptions).
+      def labelable?
+        @component.respond_to?(:labelable?) ? @component.labelable? : true
+      end
+
       # The `required:` the caller passed here, or nil when they passed none.
       def stated_required
         @attributes[:required]
@@ -49,15 +54,21 @@ module Ui
       # The record's value in the shape each of the kit's own controls takes it. A value
       # the caller passed wins, and any other control gets none.
       def value_attributes(value)
-        if @component <= Ui::InputComponent
-          return {} if @attributes.key?(:value) || VALUELESS_INPUT_TYPES.include?(@attributes.fetch(:type, 'text').to_s)
+        keyword = value_keyword
+        return {} if keyword.nil? || @attributes.key?(keyword)
 
-          { value: value }
-        elsif @component <= Ui::SelectComponent
-          @attributes.key?(:selected) ? {} : { selected: value }
-        else
-          {}
-        end
+        { keyword => value }
+      end
+
+      # Each control's own word for "what the record holds": Input's `value:`, Select's
+      # `selected:` (Rails' word for `select`), Choices' `checked:` (Rails' word for the
+      # collection helpers).
+      def value_keyword
+        return :selected if @component <= Ui::SelectComponent
+        return :checked if @component <= Ui::ChoicesComponent
+        return unless @component <= Ui::InputComponent
+
+        :value unless VALUELESS_INPUT_TYPES.include?(@attributes.fetch(:type, 'text').to_s)
       end
     end
   end

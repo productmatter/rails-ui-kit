@@ -22,6 +22,11 @@ en:
       results:
         one: "%{count} result"
         other: "%{count} results"
+    choices:
+      # A checkbox group the browser has no "at least one checked" constraint for: this is both
+      # the screen-reader hint beside the visual `*` and the message ui--choices hands
+      # setCustomValidity, so a translation moves both at once.
+      required_message: "Select at least one option."
     turbo_disable_with:
       processing: "Processing..."
     dark_mode:

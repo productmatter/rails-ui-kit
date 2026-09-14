@@ -21,7 +21,7 @@
     <strong>Chrome</strong> is what the kit says on its own, that no call site ever writes: a toast's close-button
     accessible name, Select's "No results" and its result count, the unsaved-changes prompt. You don't pass these
     because you don't know they exist. <strong>Only chrome lives in
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — fifteen strings,
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — sixteen strings,
     several of them accessible names, which is the only thing a screen reader announces. It is not a translation
     of the components.
   </p>
@@ -71,6 +71,7 @@
         ["rails_ui_kit.select.show_options_label",      "Show options",            "show_options_label:",      "Ui::SelectComponent(search: true) — the chevron button's accessible name"],
         ["rails_ui_kit.select.no_results",              "No results",              "no_results:",              "Ui::SelectComponent(search: true) — shown when the filter matches nothing"],
         ["rails_ui_kit.select.results",                 "%{count} result / %{count} results", "results:",       "Ui::SelectComponent(search: true) — announced once typing settles. Give every plural category your locale uses; the browser picks with Intl.PluralRules"],
+        ["rails_ui_kit.choices.required_message",       "Select at least one option.", "required_message:",   "Ui::ChoicesComponent(multiple: true, required: true) — the screen-reader hint beside the * and the message ui--choices gives the browser"],
         ["rails_ui_kit.turbo_disable_with.processing",  "Processing...",           "data-turbo-disable-with",  "no owning component — render it into the meta tag yourself, see below"],
         ["rails_ui_kit.dark_mode.switch_to_light",      "Switch to light mode",    "data-ui--dark-mode-light-label-value", "no owning component — render it into the toggle button yourself, see below"],
         ["rails_ui_kit.dark_mode.switch_to_dark",       "Switch to dark mode",     "data-ui--dark-mode-dark-label-value",  "same"],

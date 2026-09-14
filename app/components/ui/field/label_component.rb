@@ -18,12 +18,20 @@ module Ui
       end
 
       def call
-        render(Ui::LabelComponent.new(for: @field.control_id, id: @field.label_id, **@attributes)) do
+        render(Ui::LabelComponent.new(**names_control, id: @field.label_id, **@attributes)) do
           safe_join([content? ? content : @field.label_text, required_marker].compact)
         end
       end
 
       private
+
+      # `for` has to point at one labelable element. A control that is a group of inputs isn't
+      # one, and pointing it at the first input would make clicking the group's label toggle that
+      # choice, so the group is named by `aria-labelledby` pointing back here instead
+      # (ui-choices § Behavior, item 10).
+      def names_control
+        @field.labelable_control? ? { for: @field.control_id } : {}
+      end
 
       def required_marker
         return unless @field.required?

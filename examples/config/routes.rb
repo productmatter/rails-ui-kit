@@ -22,5 +22,6 @@ Rails.application.routes.draw do
   post   'demos/submit', to: 'docs#demo_submit',  as: :demo_submit
   post   'demos/select', to: 'docs#select_submit', as: :demo_select
   post   'demos/field',  to: 'docs#field_submit',  as: :demo_field
+  post   'demos/choices', to: 'docs#choices_submit', as: :demo_choices
   delete 'demos/item',   to: 'docs#demo_delete',  as: :demo_delete
 end

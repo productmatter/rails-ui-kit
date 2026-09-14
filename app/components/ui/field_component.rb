@@ -60,6 +60,12 @@ module Ui
       "#{control_id}-label"
     end
 
+    # Whether the label may name the control with `for`. A control component says so for itself;
+    # a block-form control, which the field knows nothing about, is taken as labelable.
+    def labelable_control?
+      control.nil? || control.labelable?
+    end
+
     def description_id
       "#{control_id}-description"
     end

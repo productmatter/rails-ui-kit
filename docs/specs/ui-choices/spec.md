@@ -1,7 +1,7 @@
 ---
 slug: ui-choices
 type: feature
-status: draft
+status: ready-for-review
 decider: Jonathan Simmons
 blast_radius: medium
 size: large
@@ -202,8 +202,11 @@ mode.
 ### Submission
 
 5. **`include_hidden:` defaults to `true` for both variants, as in Rails.** Rails
-   prepends one `<input type="hidden" name="…" value="" autocomplete="off">` before the
-   inputs. It's `user[role_ids][]` for checkboxes and `user[plan]` for radios, and it
+   prepends one `<input type="hidden" name="…" value="">` before the inputs
+   (**corrected** 2026-09-14: `collection_helpers.rb` renders it through `hidden_field_tag`
+   with `id: nil` and `form:` only — the `autocomplete="off"` this spec claimed belongs to
+   `checkbox`'s hidden field, not the collection helpers'. Choices renders what the
+   collection helpers render, byte for byte). It's `user[role_ids][]` for checkboxes and `user[plan]` for radios, and it
    carries `form:` when given. Verified against ActionView 8.1.3.1 and 7.2.3.2, whose
    `collection_helpers.rb` files are byte-identical.
    - **Checkboxes.** Unchecking everything submits `user[role_ids][]=""`.
@@ -419,9 +422,12 @@ mode.
       `:invalid`, and so is its fieldset, from first paint before anyone has touched it
       (verified). Invalid styling reads `aria-invalid` only, as Input's does.
     - **The mark has to survive forced colours.** The check and the dot are an
-      `aria-hidden` SVG in `currentColor` beside an `appearance-none` input. In forced
-      colours the fill becomes `Canvas` and a background-drawn mark would vanish, but a
-      `currentColor` stroke becomes `CanvasText`.
+      `aria-hidden` SVG stroked in `currentColor` beside an `appearance-none` input, so a
+      background-drawn mark can't vanish with the fill. **Corrected** 2026-09-14, measured:
+      Chrome forces the input's own `background-color` to `Canvas` but leaves an SVG's
+      `stroke`/`color` alone, so a `currentColor` stroke does **not** become `CanvasText`
+      and the mark went white-on-white. The mark names the system colour itself
+      (`forced-colors:text-[CanvasText]`), and the acceptance check measures it.
 17. **`size:` sets each choice's minimum block size** to the step's
     `--control-height*` token (`ui-control-sizing`), in both appearances. So a
     one-line card matches the Input or Select beside it, and every choice stays a
