@@ -431,12 +431,12 @@ ui-presence-and-overlay-stack).
 
 ### Supersedes Dropdown's listbox kind
 
-36. **Dropdown's `kind: :listbox` is deprecated** in this scope's build and removed in
-    the following minor release. It shipped on `main` (0.2.0), so a live consumer may
-    render it. Until removal, rendering it still works and emits one deprecation
-    warning per process naming `Ui::SelectComponent`. The deprecation is in the same
-    CHANGELOG release as Select (`ui-component-library` § Business rules, rule 10).
-    Dropdown keeps `:menu` and `:dialog`. A caller who wants a value picker uses Select.
+36. **Dropdown's `kind: :listbox` is removed**, in the same release as Select, on the
+    decider's confirmation that no live consumer renders it. It had no selection model
+    and moved real DOM focus onto `[role="option"]` elements, the one focus model a
+    listbox must never use. The removal is in the same CHANGELOG release as Select
+    (`ui-component-library` § Business rules, rule 10). Dropdown keeps `:menu` and
+    `:dialog`. A caller who wants a value picker uses Select.
 
 ## Business rules
 
@@ -484,8 +484,8 @@ numbering is referenced as-is; the rules below are scope-local.
    indicator and the focus ring meet WCAG contrast on their token surfaces.
 9. **Nested behaves as standalone** (`ui-component-library` § Business rules, rule 7).
    Select inside a Modal is a required system test.
-10. **Select is the kit's only listbox.** Dropdown's `kind: :listbox` is deprecated in this
-    scope's build and removed one release later (§ Behavior, item 36).
+10. **Select is the kit's only listbox.** Dropdown's `kind: :listbox` is removed in this
+    scope's build (§ Behavior, item 36).
 
 **Should**
 
@@ -550,9 +550,10 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - **The kit's locale file is present.** `config/locales/rails_ui_kit.en.yml` is being
   introduced alongside this scope. Select adds its `select` keys there. If it hasn't
   landed at build time, escalate rather than hardcoding English.
-- **A live consumer may render `Ui::DropdownComponent` with `kind: :listbox`.** The kind
-  shipped on `main`, and consumers are outside this repository and weren't inspected,
-  so it is deprecated for one release rather than removed (§ Behavior, item 36).
+- **No live consumer renders `Ui::DropdownComponent` with `kind: :listbox`.** The kind
+  shipped on `main`, but the decider confirmed no consumer outside this repository uses
+  it, so it is removed outright in this scope's build rather than deprecated for a
+  release (§ Behavior, item 36).
 - **Customizable select (`appearance: base-select`) is not cross-browser.** It was
   Chromium-first at shaping time, and it offers no search either way. It's recorded as a
   future replacement to watch for select-only mode, and nothing here depends on it.
@@ -583,7 +584,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
   `matchWidth` and `strategy: "fixed"`.
 - `app/components/ui/field_component.rb`, `app/components/ui/field/control_component.rb`
   — prerequisite 4, and the attribute hand-off § Behavior, item 12 routes.
-- `app/components/ui/dropdown_component.rb`, `dropdown_controller.js` — deprecate
+- `app/components/ui/dropdown_component.rb`, `dropdown_controller.js` — remove
   `kind: :listbox` (§ Behavior, item 36).
 - `app/components/ui/native_select_component.rb` — being deleted. Its token classes are
   the starting point for the unenhanced select's styling (§ Behavior, item 2).
@@ -593,7 +594,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
   Modal, and a Turbo Stream replace.
 - `test/application_system_test_case.rb` — `assert_accessible`, `each_token_surface`,
   `contrast_ratio`; every system check below inherits it.
-- `CHANGELOG.md` — Select, and the deprecation of Dropdown's `kind: :listbox`.
+- `CHANGELOG.md` — Select, and the removal of Dropdown's `kind: :listbox`.
 
 ## Acceptance checks
 
@@ -613,7 +614,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - A Turbo Stream replacing a Select, a frame swap containing one, and a morphing refresh that changes its selection each leave a working Select showing the select's current value — run: `bundle exec rake test:system TEST=test/system/select_turbo_stream_test.rb`
 - Both modes pass `assert_accessible` closed, open, filtered, empty and invalid, in light and dark mode, and the combobox text, option text, active indicator and focus ring meet contrast on their surfaces — run: `bundle exec rake test:system TEST=test/system/select_accessibility_test.rb`
 - `registerControllers` registers `ui--select` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
-- Rendering Dropdown with `kind: :listbox` still renders and emits exactly one deprecation warning naming `Ui::SelectComponent` across repeated renders — run: `bundle exec rake test TEST=test/components/ui/dropdown_component_test.rb`
+- `kind: :listbox` is no longer a recognised Dropdown kind: passing it falls back to `:menu` rather than raising — run: `bundle exec rake test TEST=test/components/ui/dropdown_component_test.rb`
 
 ### judgeable
 

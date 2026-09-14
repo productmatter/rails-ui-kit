@@ -204,7 +204,6 @@ export default class extends Controller {
   setupAccessibility() {
     const ariaPopupType = {
       menu: "menu",
-      listbox: "listbox",
       dialog: "dialog"
     }[this.kindValue] || "menu"
 
@@ -296,9 +295,7 @@ export default class extends Controller {
       return
     }
 
-    if (this.kindValue === "menu") return this.activateItem(event)
-
-    this.handleKeyNavigation(event)
+    this.activateItem(event)
   }
 
   // Menu button keys, pressed on the trigger. Enter and Space reach the trigger's own click
@@ -388,43 +385,6 @@ export default class extends Controller {
     if (focusWasInside) this.triggerControl.focus()
   }
 
-  handleKeyNavigation(event) {
-    const items = this.getFocusableItems()
-    if (items.length === 0) return
-
-    const currentIndex = items.indexOf(document.activeElement)
-
-    switch (event.key) {
-      case "ArrowDown": {
-        event.preventDefault()
-        const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0
-        items[nextIndex]?.focus()
-        break
-      }
-      case "ArrowUp": {
-        event.preventDefault()
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1
-        items[prevIndex]?.focus()
-        break
-      }
-      case "Home":
-        event.preventDefault()
-        items[0]?.focus()
-        break
-      case "End":
-        event.preventDefault()
-        items[items.length - 1]?.focus()
-        break
-      case "Enter":
-      case " ":
-        if (this.kindValue === "listbox") {
-          event.preventDefault()
-          document.activeElement.click()
-        }
-        break
-    }
-  }
-
   focusContent() {
     // ArrowUp on the closed trigger asks for the last item; everything else opens on the first.
     const end = this.initialFocus || "first"
@@ -440,9 +400,7 @@ export default class extends Controller {
   }
 
   getFocusableItems() {
-    const selector = this.kindValue === "listbox"
-      ? '[role="option"]'
-      : 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const selector = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
     return Array.from(this.contentTarget.querySelectorAll(selector))
       .filter(item => !item.disabled && item.offsetParent !== null)

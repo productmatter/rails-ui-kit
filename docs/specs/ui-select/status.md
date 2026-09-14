@@ -3,7 +3,7 @@
 ready-for-review
 
 v1 is built: both modes, the Rails option API, Field, Turbo, the submission model and the
-deprecation of Dropdown's `kind: :listbox`, with every agent-loopable acceptance check
+removal of Dropdown's `kind: :listbox`, with every agent-loopable acceptance check
 passing. What remains is the judgeable review and
 Jonathan's three human gates — VoiceOver in Safari, the throttled-connection swap, and the
 phone check that confirms or overturns the coarse-pointer default. Remote search is designed
@@ -38,9 +38,10 @@ in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are reco
 - Closed both open questions on their defaults: select-only mode keeps the platform picker on
   a coarse pointer (`native_on_touch:`, default true), and the `ui_select` Capybara helper
   ships in `lib/rails_ui_kit/test_helpers.rb` with its own system test and a docs section.
-- Deprecated Dropdown's `kind: :listbox` (§ Behavior, item 36): it still renders, and warns
-  once per process naming `Ui::SelectComponent`, with the once-per-process behaviour pinned in
-  `dropdown_component_test.rb`. Removal lands one release later.
+- Removed Dropdown's `kind: :listbox` (§ Behavior, item 36), on the decider's confirmation
+  that no live consumer renders it: dropped from `KINDS`, with the fallback to `:menu` for
+  an unrecognised kind pinned in `dropdown_component_test.rb`. Landed in the same release as
+  Select rather than deprecated for one.
 - Fourteen system files and two unit files cover the scope: `select_keyboard`,
   `select_search`, `select_pointer`, `select_enhancement`, `select_accessibility`,
   `select_form_submission`, `select_validation`, `select_form_reset`, `select_turbo_stream`,
@@ -50,9 +51,8 @@ in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are reco
 
 ## In progress
 
-None. The next units in this scope's line are both deliberately later: removing Dropdown's
-`kind: :listbox` one release on, and building remote search behind `search_url:`
-(§ Behavior, items 27–31), which the v1 API is already shaped for.
+None. The next unit in this scope's line is deliberately later: building remote search
+behind `search_url:` (§ Behavior, items 27–31), which the v1 API is already shaped for.
 
 ## Last green checkpoint
 

@@ -3,7 +3,7 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
   <p class="text-neutral-600 dark:text-neutral-400">
-    A floating menu, listbox, or dialog positioned by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports three interaction modes.
+    A floating menu or dialog positioned by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports two interaction modes. Picking a value from a list? See <%= link_to "Select", select_path, class: "text-violet-600 dark:text-violet-400 hover:underline" %>.
   </p>
 </div>
 
@@ -25,26 +25,6 @@
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Duplicate</a>
         <a href="#" role="menuitem" aria-disabled="true" class="flex px-3 py-2 text-sm text-neutral-400 dark:text-neutral-500 cursor-default">Archive</a>
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">Delete</a>
-      </div>
-    <% end %>
-  <% end %>
-
-  <%# Listbox %>
-  <%# Deprecated: kept rendering for one release so a consumer that shipped against it keeps
-      working. A value picker is Ui::SelectComponent's job. %>
-  <%= render Ui::DropdownComponent.new(kind: :listbox, placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
-    <% d.with_trigger do %>
-      <button data-action="click->ui--dropdown#toggle"
-              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-        Listbox
-        <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
-      </button>
-    <% end %>
-    <% d.with_menu do %>
-      <div class="py-1 min-w-[10rem]">
-        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option A</div>
-        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option B</div>
-        <div role="option" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer">Option C</div>
       </div>
     <% end %>
   <% end %>
@@ -91,7 +71,7 @@
     </thead>
     <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
       <% [
-        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (the menu button pattern — see Keyboard below), :listbox (option roles), :dialog (focus moves to the first field on open)."],
+        ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (the menu button pattern — see Keyboard below), :dialog (focus moves to the first field on open)."],
         ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
         ["offset",         "Integer", "4",             "Gap between trigger and content in pixels."],
         ["match_width",    "Boolean", "false",          "Makes the dropdown match the trigger's width."],
@@ -164,10 +144,8 @@
     discover it, but Enter, Space and clicks don't choose it and a disabled link doesn't navigate.
   </p>
   <p>
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:listbox</code> and
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> don't follow this pattern:
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> moves focus to its first field and
-    leaves Tab to the browser.
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> doesn't follow this pattern:
+    it moves focus to its first field and leaves Tab to the browser.
   </p>
 </div>
 
@@ -188,7 +166,7 @@
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">menu</td>
-        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">option</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
+        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
       </tr>
     </tbody>
   </table>

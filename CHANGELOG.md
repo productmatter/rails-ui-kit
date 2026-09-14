@@ -80,8 +80,8 @@ This release rebuilds the kit on a shared foundation — design tokens, a compon
 - `rails_ui_kit:install` registers controllers where Stimulus's `application` is in scope. On a default `rails new` importmap app, `application` lives in `app/javascript/controllers/application.js`, so appending `registerControllers(application)` to `application.js` threw `ReferenceError` and registered nothing. The generator now inserts the call after `Application.start()` in whichever file has it, and skips with a message when it finds neither.
 - `ui--dropdown` puts `aria-haspopup` and `aria-expanded` on the caller's trigger control — normally a `<button>` — instead of the wrapper `<div>` the component renders around it, and returns focus to that control on Escape. A `<div>` is neither focusable nor announced with state, so a screen reader previously got no indication that a menu existed or was open, and closing with Escape dropped focus to `<body>`. No markup changes; the component resolves the first focusable element inside the trigger slot and falls back to the wrapper when there is none.
 
-### Deprecated
-- `Ui::DropdownComponent(kind: :listbox)`. It warns once per process and will be removed in the next minor release; use `Ui::SelectComponent`, which has a real selection model and the focus model a listbox needs. Dropdown keeps `:menu` and `:dialog`.
+### Removed
+- `Ui::DropdownComponent(kind: :listbox)`. It had no real selection model and moved focus onto `[role="option"]` elements, which a listbox must never do. Use `Ui::SelectComponent` instead. Dropdown keeps `:menu` and `:dialog`.
 
 ### Changed
 - `Ui::ModalComponent`'s surface uses the `--background` and `--foreground` tokens instead of `bg-white dark:bg-gray-900`, so a modal matches the rest of a token-themed page. In dark mode its background changes from Tailwind's cool `gray-900` to the kit's dark background.

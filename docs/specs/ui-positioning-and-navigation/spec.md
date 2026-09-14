@@ -415,8 +415,9 @@ live repository and the registry, and one did not survive.
 - **Migrating the seven shipped components** — owned by `ui-foundation-retrofit`. This
   scope specifies parity and leaves `dropdown_controller.js`, `popover_controller.js`
   and `tooltip_controller.js` in place; deleting their `position()` implementations is
-  the retrofit's job. The `dropdown_controller`'s incorrect listbox focus model is
-  likewise recorded here and corrected there.
+  the retrofit's job. The `dropdown_controller`'s incorrect listbox focus model,
+  recorded here, was resolved directly by removing `kind: :listbox` rather than by
+  retrofitting it onto this scope's primitives (`ui-select` § Behavior, item 36).
 - **Building the Phase C components** that consume these primitives — Tabs, Menubar,
   Select, Combobox and the rest are `ui-overlay-components`.
 - **CSS Anchor Positioning** — a future replacement to watch, not a dependency. Revisit

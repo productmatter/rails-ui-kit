@@ -4,8 +4,8 @@ require 'application_system_test_case'
 require 'primitives_helpers'
 
 # The activedescendant model: DOM focus never leaves the input, the option is announced through
-# aria-activedescendant, and .focus() is never called on an option -- the bug the shipped
-# Dropdown's kind: "listbox" has today.
+# aria-activedescendant, and .focus() is never called on an option -- the bug that
+# Dropdown's removed kind: "listbox" had, and the reason Select replaced it.
 class RovingFocusListboxTest < ApplicationSystemTestCase
   include PrimitivesHelpers
 

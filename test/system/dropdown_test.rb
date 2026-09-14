@@ -56,13 +56,13 @@ class DropdownTest < ApplicationSystemTestCase
   test 'DD3: opening one dropdown closes another that was open' do
     visit dropdown_path
     trigger_menu = menu_trigger
-    trigger_listbox = find("[data-ui--dropdown-target='trigger'] button", text: 'Listbox')
+    trigger_dialog = find("[data-ui--dropdown-target='trigger'] button", text: 'Dialog')
 
     trigger_menu.click
     assert_equal 'true', trigger_menu['aria-expanded']
 
-    trigger_listbox.click
-    assert_equal 'true', trigger_listbox['aria-expanded']
+    trigger_dialog.click
+    assert_equal 'true', trigger_dialog['aria-expanded']
     assert_equal 'false', trigger_menu['aria-expanded']
   end
 

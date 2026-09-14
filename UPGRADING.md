@@ -74,10 +74,10 @@ layer, so your definitions win wherever they are.
 
 ## Also worth knowing
 
-**`Ui::DropdownComponent(kind: :listbox)` is deprecated.** It still renders and still works, and
-warns once per process naming its replacement. `Ui::SelectComponent` is what you want: it has a
-real selection model, and the focus model a listbox needs. The kind is removed in the next minor
-release. Dropdown's `:menu` and `:dialog` are unaffected.
+**`Ui::DropdownComponent(kind: :listbox)` is gone.** It had no real selection model and moved
+focus onto `[role="option"]` elements, which a listbox must never do. Replace it with
+`Ui::SelectComponent`, which keeps the value in a real `<select>` and follows the WAI-ARIA
+combobox focus model. Dropdown's `:menu` and `:dialog` are unaffected.
 
 **Your existing Capybara `select` calls are unaffected — until you adopt `Ui::SelectComponent`.**
 An enhanced Select hides its native `<select>` under a custom combobox, so `select "X", from: "Y"`
