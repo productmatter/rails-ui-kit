@@ -7,9 +7,11 @@ module Ui
     test 'renders a dialog with default center position' do
       render_inline(Ui::ModalComponent.new) { 'hello' }
 
-      assert_selector "div[data-controller='ui--modal']"
-      assert_selector "dialog[data-ui--modal-target='dialog']"
-      assert_selector "div[data-ui--modal-target='backdrop']"
+      assert_selector "div[data-controller~='ui--modal'][data-controller~='ui--overlay']" \
+                      "[data-ui--overlay-mode-value='modal'][data-ui--overlay-open-value='true']" \
+                      "[data-ui--overlay-scroll-lock-value='true']"
+      assert_selector "dialog[data-ui--overlay-target='content']"
+      assert_includes page.find('dialog')[:class], 'backdrop:bg-black/50'
       assert_includes page.find('dialog')[:class], 'modal-center-hidden'
       assert_text 'hello'
     end

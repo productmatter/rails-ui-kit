@@ -109,11 +109,17 @@ export default class extends Controller {
     // its own answer now, before this confirm resets returnValue. One still open is superseded and resolves false.
     this.settle(dialog)
 
-    // A page restored from Turbo's cache can carry a non-modal `open` attribute; showModal() throws on it.
-    if (dialog.open && !dialog.matches(":modal")) dialog.removeAttribute("open")
-
     dialog.returnValue = ""
-    dialog.showModal()
+    const overlay = this.application.getControllerForElementAndIdentifier(dialog, "ui--overlay")
+
+    if (overlay) {
+      overlay.open()
+    } else {
+      // A host's own <dialog> without ui--overlay opens natively. A page restored from Turbo's cache can carry a
+      // non-modal `open` attribute; showModal() throws on it.
+      if (dialog.open && !dialog.matches(":modal")) dialog.removeAttribute("open")
+      dialog.showModal()
+    }
 
     return new Promise((resolve) => {
       // A "close" that arrives while the dialog is open again belongs to an earlier confirm; ignore it.
@@ -121,8 +127,21 @@ export default class extends Controller {
         if (!dialog.open) this.settle(dialog)
       }
 
+      // With ui--overlay, a button answers the confirm and the overlay closes the dialog, so it can animate out,
+      // release its scroll lock and return focus. Closed natively, the overlay would only learn of it from the queued
+      // "close" event, which would then close a confirm reopened in the same task.
+      const handleSubmit = (event) => {
+        if (event.target.method !== "dialog" || event.target.closest("dialog") !== dialog) return
+
+        event.preventDefault()
+        dialog.returnValue = event.submitter?.value ?? ""
+        this.settle(dialog)
+        overlay.close()
+      }
+
       dialog.addEventListener("close", handleClose)
-      this.pendingConfirms.set(dialog, { resolve, handleClose })
+      if (overlay) dialog.addEventListener("submit", handleSubmit)
+      this.pendingConfirms.set(dialog, { resolve, handleClose, handleSubmit })
     })
   }
 
@@ -132,6 +151,7 @@ export default class extends Controller {
 
     this.pendingConfirms.delete(dialog)
     dialog.removeEventListener("close", pending.handleClose)
+    dialog.removeEventListener("submit", pending.handleSubmit)
     pending.resolve(dialog.returnValue === "confirm")
   }
 }

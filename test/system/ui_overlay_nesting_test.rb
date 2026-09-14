@@ -114,6 +114,26 @@ class UiOverlayNestingTest < ApplicationSystemTestCase
     assert_state '#menu-content', 'closed'
   end
 
+  test 'a hint inside a modal takes the first Escape, and the modal is left open' do
+    visit primitives_overlay_path
+    find('#modal-trigger').click
+    assert_state '#modal-content', 'open'
+    inject_hint_in_modal
+    page.execute_script("document.querySelector('#modal-hint-overlay').setAttribute('data-ui--overlay-open-value', 'true')")
+    assert_state '#modal-hint-content', 'open'
+
+    # A tooltip is popover="manual", so it has no top-layer Escape ordering to inherit and
+    # consumes the key itself. Nothing else may act on that same key -- least of all the dialog
+    # it is inside (WCAG 1.4.13).
+    press :escape
+    assert_state '#modal-hint-content', 'closed'
+    assert_equal 'open', state_of('#modal-content')
+    assert page.evaluate_script("document.querySelector('#modal-content').matches(':modal')")
+
+    press :escape
+    assert_state '#modal-content', 'closed'
+  end
+
   private
 
   # A submenu: a second layer whose own markup lives inside the first one's content.
@@ -131,6 +151,22 @@ class UiOverlayNestingTest < ApplicationSystemTestCase
       document.querySelector('#menu-content').appendChild(wrapper)
     JS
     assert_selector '#submenu-trigger', visible: :all
+  end
+
+  # A tooltip's markup, inside the dialog, the way a component renders it next to its trigger.
+  def inject_hint_in_modal
+    page.execute_script(<<~JS)
+      const wrapper = document.createElement('div')
+      wrapper.id = 'modal-hint-overlay'
+      wrapper.setAttribute('data-controller', 'ui--overlay')
+      wrapper.setAttribute('data-ui--overlay-mode-value', 'hint')
+      wrapper.innerHTML = `
+        <button id="modal-hint-trigger" data-ui--overlay-target="trigger">Hinted</button>
+        <div id="modal-hint-content" data-ui--overlay-target="content" role="tooltip"
+             class="m-auto bg-neutral-900 px-2 py-1 text-xs text-white">Tooltip inside a modal</div>`
+      document.querySelector('#modal-content').appendChild(wrapper)
+    JS
+    assert_selector '#modal-hint-trigger', visible: :all
   end
 
   def open_modal_with_inner_layer

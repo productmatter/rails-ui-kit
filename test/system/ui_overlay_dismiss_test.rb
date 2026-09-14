@@ -91,6 +91,62 @@ class UiOverlayDismissTest < ApplicationSystemTestCase
     assert_equal 2, page.evaluate_script('window.__dismissals')
   end
 
+  test 'a vetoed modal refuses Escape however often it is pressed, not only the first time' do
+    visit primitives_overlay_path
+    count_dismiss_events('#guarded-overlay')
+    find('#guarded-trigger').click
+    assert_state '#guarded-content', 'open'
+
+    # Chrome only lets a close request be vetoed while the window holds history-action user
+    # activation, and consumes it on the first veto: from the second Escape on, <dialog>'s own
+    # `cancel` arrives non-cancelable and the dialog closes whatever the guard says. A guard
+    # exists to protect unsaved work, so the key is taken before it becomes a close request.
+    3.times { press :escape }
+    sleep 0.3
+
+    assert_equal 'open', state_of('#guarded-content')
+    assert page.evaluate_script("document.querySelector('#guarded-content').matches(':modal')")
+    assert_equal 3, page.evaluate_script('window.__dismissals'), 'a later Escape never reached the guard'
+  end
+
+  test 'ui--overlay:dismiss names the gesture, so a listener can refuse one and allow another' do
+    visit primitives_overlay_path
+    record_dismiss_reasons('#modal-overlay')
+
+    find('#modal-trigger').click
+    assert_state '#modal-content', 'open'
+    press :escape
+    assert_state '#modal-content', 'closed'
+
+    find('#modal-trigger').click
+    assert_state '#modal-content', 'open'
+    click_at(*OUTSIDE)
+    assert_state '#modal-content', 'closed'
+
+    find('#modal-trigger').click
+    assert_state '#modal-content', 'open'
+    inject_dismiss_action('#modal-content')
+    find('#modal-dismiss').click
+    assert_state '#modal-content', 'closed'
+
+    assert_equal %w[escape outside programmatic], page.evaluate_script('window.__reasons')
+  end
+
+  test 'a layer names its light dismissal too, though the browser only says that one happened' do
+    visit primitives_overlay_path
+    record_dismiss_reasons('#menu-overlay')
+
+    open_menu
+    press :escape
+    assert_state '#menu-content', 'closed'
+
+    open_menu
+    click_at(*OUTSIDE)
+    assert_state '#menu-content', 'closed'
+
+    assert_equal %w[escape outside], page.evaluate_script('window.__reasons')
+  end
+
   test 'once the listener stops cancelling, the same Escape dismisses the modal' do
     visit primitives_overlay_path
     find('#guarded-trigger').click
@@ -216,6 +272,27 @@ class UiOverlayDismissTest < ApplicationSystemTestCase
 
   def recorded_states
     page.evaluate_script('window.__states').chunk_while { |a, b| a == b }.map(&:first)
+  end
+
+  def record_dismiss_reasons(selector)
+    page.execute_script(<<~JS)
+      window.__reasons = []
+      document.querySelector('#{selector}').addEventListener('ui--overlay:dismiss', (event) => {
+        window.__reasons.push(event.detail.reason)
+      })
+    JS
+  end
+
+  # The public action a component calls on a person's behalf -- a Close button that should still
+  # be vetoable -- as opposed to #close, which never asks.
+  def inject_dismiss_action(selector)
+    page.execute_script(<<~JS)
+      const button = document.createElement('button')
+      button.id = 'modal-dismiss'
+      button.setAttribute('data-action', 'click->ui--overlay#dismiss')
+      button.textContent = 'Dismiss'
+      document.querySelector('#{selector}').appendChild(button)
+    JS
   end
 
   def count_dismiss_events(selector, cancel: false)

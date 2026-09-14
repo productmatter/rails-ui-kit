@@ -320,7 +320,11 @@
     <code class="font-mono text-xs">trigger</code> and <code class="font-mono text-xs">backdrop</code>. Emits
     <code class="font-mono text-xs">ui--overlay:opened</code>, <code class="font-mono text-xs">ui--overlay:closed</code> and
     <code class="font-mono text-xs">ui--overlay:dismiss</code>, the last one cancelable: calling
-    <code class="font-mono text-xs">preventDefault()</code> on it keeps the overlay open.</li>
+    <code class="font-mono text-xs">preventDefault()</code> on it keeps the overlay open. It names the gesture in
+    <code class="font-mono text-xs">event.detail.reason</code> &mdash; <code class="font-mono text-xs">"escape"</code>,
+    <code class="font-mono text-xs">"outside"</code> or <code class="font-mono text-xs">"programmatic"</code> &mdash; so a
+    listener can refuse one and allow the rest, the way Modal&rsquo;s
+    <code class="font-mono text-xs">close_on_backdrop: false</code> does.</li>
   <li>Style the states, don&rsquo;t hide them: presence owns the <code class="font-mono text-xs">hidden</code> attribute, so
     keep <code class="font-mono text-xs">display</code> out of your <code class="font-mono text-xs">data-state</code> rules
     or the exit animation has nothing to animate.</li>

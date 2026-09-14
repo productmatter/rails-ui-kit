@@ -1,17 +1,17 @@
 /*
  * rails-ui-kit component styles
  *
- * Modal transform states used by Ui::ModalComponent / ui--modal controller.
- * The controller swaps the *-hidden / *-visible class to transition between states;
- * the surrounding `transition-all duration-300 ease-in-out` (set on the dialog element
- * by the component) animates the transform.
+ * Modal transform states used by Ui::ModalComponent. The component renders one
+ * modal-<position>-hidden class; ui--presence's data-state="open" selects the visible
+ * transform, and the dialog's `transition-all duration-300 ease-in-out` animates between
+ * them, in and out.
  */
 
 .modal-center-hidden {
   transform: translate(-50%, -50%) scale(0.95);
 }
 
-.modal-center-visible {
+.modal-center-hidden[data-state="open"] {
   transform: translate(-50%, -50%) scale(1);
 }
 
@@ -19,7 +19,7 @@
   transform: scale(0.95);
 }
 
-.modal-full-screen-visible {
+.modal-full-screen-hidden[data-state="open"] {
   transform: scale(1);
 }
 
@@ -27,7 +27,7 @@
   transform: translateX(100%);
 }
 
-.modal-right-visible {
+.modal-right-hidden[data-state="open"] {
   transform: translateX(0);
 }
 
@@ -35,7 +35,7 @@
   transform: translateX(-100%);
 }
 
-.modal-left-visible {
+.modal-left-hidden[data-state="open"] {
   transform: translateX(0);
 }
 
@@ -43,7 +43,7 @@
   transform: translate(-50%, -100%);
 }
 
-.modal-top-visible {
+.modal-top-hidden[data-state="open"] {
   transform: translate(-50%, 0);
 }
 
@@ -51,7 +51,7 @@
   transform: translateY(-100%);
 }
 
-.modal-top-full-visible {
+.modal-top-full-hidden[data-state="open"] {
   transform: translateY(0);
 }
 
@@ -59,7 +59,7 @@
   transform: translate(-50%, 100%);
 }
 
-.modal-bottom-visible {
+.modal-bottom-hidden[data-state="open"] {
   transform: translate(-50%, 0);
 }
 
@@ -67,6 +67,6 @@
   transform: translateY(100%);
 }
 
-.modal-bottom-full-visible {
+.modal-bottom-full-hidden[data-state="open"] {
   transform: translateY(0);
 }

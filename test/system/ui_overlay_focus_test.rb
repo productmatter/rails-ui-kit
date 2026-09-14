@@ -96,6 +96,34 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
     assert_equal 'search-trigger', focused_id
   end
 
+  test 'focus comes back inside when the element holding it is swapped out from under it' do
+    visit primitives_overlay_path
+    find('#modal-trigger').click
+    assert_state '#modal-content', 'open'
+
+    # Removing the focused element announces nothing -- no blur, no focusout -- and leaves focus
+    # on <body>, outside the dialog, where Tab starts from the top of the page. This is what a
+    # Turbo Stream or a frame swap inside an open overlay does.
+    page.execute_script(<<~JS)
+      const content = document.querySelector('#modal-content')
+      content.querySelector('#modal-close').focus()
+      window.__focusBefore = document.activeElement.id
+      content.querySelector('#modal-close').remove()
+    JS
+
+    assert_equal 'modal-close', page.evaluate_script('window.__focusBefore')
+    assert_equal 'modal-content', focused_id, 'focus was left on <body> behind an open modal'
+
+    # Content swapped in over the focused element still says where focus belongs, and is obeyed.
+    page.execute_script(<<~JS)
+      const content = document.querySelector('#modal-content')
+      content.innerHTML = '<button id="doomed">Replaced next</button>'
+      document.querySelector('#doomed').focus()
+      content.innerHTML = '<input id="swapped-field" autofocus>'
+    JS
+    assert_equal 'swapped-field', focused_id
+  end
+
   test 'the trigger is operable from the keyboard alone, and reports its state' do
     visit primitives_overlay_path
     trigger = find('#menu-trigger')

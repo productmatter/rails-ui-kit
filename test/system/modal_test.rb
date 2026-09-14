@@ -243,14 +243,13 @@ class ModalTest < ApplicationSystemTestCase
   def inject_track_changes_modal
     page.execute_script(<<~JS)
       var wrapper = document.createElement('div')
-      wrapper.id = 'm4-wrapper'
-      wrapper.setAttribute('data-controller', 'ui--modal')
-      wrapper.setAttribute('data-ui--modal-position-value', 'center')
-      wrapper.setAttribute('data-ui--modal-track-changes-value', 'true')
-      wrapper.setAttribute('data-ui--modal-close-on-backdrop-value', 'true')
-      wrapper.setAttribute('data-action', 'click->ui--modal#closeOnBackdropClick keydown->ui--modal#closeOnEscape')
-      wrapper.innerHTML = '<div data-ui--modal-target="backdrop" class="fixed inset-0 z-[60]"></div>' +
-        '<dialog data-ui--modal-target="dialog" class="fixed z-[61] p-0 m-0">' +
+      Object.entries({
+        'id': 'm4-wrapper', 'data-controller': 'ui--modal ui--overlay',
+        'data-ui--modal-track-changes-value': 'true', 'data-ui--modal-close-on-backdrop-value': 'true',
+        'data-ui--overlay-mode-value': 'modal', 'data-ui--overlay-open-value': 'true', 'data-ui--overlay-scroll-lock-value': 'true',
+        'data-action': 'ui--overlay:dismiss->ui--modal#guardDismiss:self ui--overlay:closed->ui--modal#remove:self'
+      }).forEach(function([name, value]) { wrapper.setAttribute(name, value) })
+      wrapper.innerHTML = '<dialog data-ui--overlay-target="content" class="fixed p-0 m-0">' +
         '<form id="m4-form"><input id="m4-input" type="text" name="title"></form>' +
         '</dialog>'
       document.body.appendChild(wrapper)

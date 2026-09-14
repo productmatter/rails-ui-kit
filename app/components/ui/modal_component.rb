@@ -2,10 +2,14 @@
 
 module Ui
   class ModalComponent < ViewComponent::Base
+    # Enter and exit are keyed off the data-state ui--presence sets, so the dialog and its
+    # ::backdrop animate out before ui--overlay closes the dialog.
     BASE_CLASSES = %w[
-      fixed z-[61] p-0 m-0 max-h-none max-w-none
-      backdrop:bg-transparent bg-background text-foreground shadow-2xl
-      opacity-0 transition-all duration-300 ease-in-out focus-visible:outline-none
+      fixed p-0 m-0 max-h-none max-w-none
+      bg-background text-foreground shadow-2xl
+      opacity-0 data-[state=open]:opacity-100 transition-all duration-300 ease-in-out focus-visible:outline-none
+      backdrop:bg-black/50 backdrop:backdrop-blur-sm backdrop:opacity-0 data-[state=open]:backdrop:opacity-100
+      backdrop:transition-opacity backdrop:duration-300 backdrop:ease-in-out
     ].freeze
 
     DEFAULT_WIDE = 'w-full sm:w-[42rem]'
@@ -70,11 +74,14 @@ module Ui
     def controller_data
       {
         data: {
-          controller: 'ui--modal',
-          'ui--modal-position-value': position,
+          controller: 'ui--modal ui--overlay',
           'ui--modal-track-changes-value': track_changes,
           'ui--modal-close-on-backdrop-value': close_on_backdrop,
-          action: 'click->ui--modal#closeOnBackdropClick keydown->ui--modal#closeOnEscape'
+          'ui--overlay-mode-value': 'modal',
+          'ui--overlay-open-value': true,
+          'ui--overlay-scroll-lock-value': true,
+          action: 'ui--overlay:dismiss->ui--modal#guardDismiss:self ' \
+                  'ui--overlay:closed->ui--modal#remove:self'
         }
       }
     end

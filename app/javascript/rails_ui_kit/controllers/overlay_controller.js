@@ -12,7 +12,7 @@ import {
 //
 // Its three modes are platform primitives, not component names, and most of what an overlay
 // needs comes with them: the top layer places them, and being in the top layer is what makes
-// Escape close exactly the top one, LIFO, with no listener of ours anywhere:
+// Escape close exactly the top one, LIFO, with no ordering of ours anywhere:
 //
 //   modal → a <dialog> opened with showModal(). Focus trap, top layer, Escape: the browser's.
 //   layer → popover="auto". Top layer, light dismiss, Escape ordering: the browser's. No trap,
@@ -22,7 +22,10 @@ import {
 //
 // What is left for this controller is what the platform does not give: presence (so an
 // overlay can animate out at all), backdrop dismiss for <dialog>, a reference-counted body
-// scroll lock, focus return, and a cancelable dismiss event.
+// scroll lock, focus return, focus kept inside when content is swapped out from under it, and a
+// cancelable dismiss event -- including, for a modal, taking Escape from the key, because the
+// browser only lets a close request be vetoed while it holds fresh user activation
+// (see dismissOnEscape).
 //
 //   <div data-controller="ui--overlay"
 //        data-ui--overlay-mode-value="modal"
@@ -34,7 +37,8 @@ import {
 //   </div>
 //
 // Events: ui--overlay:opened, ui--overlay:closed, ui--overlay:dismiss (cancelable -- calling
-// preventDefault() on it keeps the overlay open).
+// preventDefault() on it keeps the overlay open; detail.reason names the gesture as "escape",
+// "outside" or "programmatic", so a listener can refuse one and allow the rest).
 const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 let sequence = 0
@@ -58,6 +62,8 @@ export default class extends Controller {
     this.onCancel = this.dismissOnCancel.bind(this)
     this.onClose = this.finishNativeClose.bind(this)
     this.onBeforeToggle = this.interceptLightDismiss.bind(this)
+    this.onContentKeydown = this.dismissOnEscape.bind(this)
+    this.onContentMutated = () => this.keepFocusInside()
     this.onHintKeydown = this.dismissHintOnEscape.bind(this)
     this.onFallbackKeydown = this.dismissFallbackOnEscape.bind(this)
     this.onFallbackFocusOut = this.dismissFallbackOnFocusOut.bind(this)
@@ -137,6 +143,7 @@ export default class extends Controller {
     if (this.shown || !this.hasContentTarget) return
 
     this.shown = true
+    this.escapePressed = false
     this.returnTarget = this.focusReturnTarget()
     if (this.scrollLockValue) lockScroll(this)
 
@@ -150,6 +157,7 @@ export default class extends Controller {
     if (this.hasBackdropTarget) presence.enter(this.backdropTarget)
 
     this.moveFocusIn()
+    this.watchForLostFocus()
     this.setExpanded(true)
     if (this.modeValue === "hint" && this.dismissibleValue) {
       document.addEventListener("keydown", this.onHintKeydown, true)
@@ -227,6 +235,7 @@ export default class extends Controller {
   }
 
   finish() {
+    this.stopWatchingForLostFocus()
     unlockScroll(this)
     this.restoreFocusIfLost()
     if (this.openValue) this.openValue = false
@@ -244,16 +253,23 @@ export default class extends Controller {
     this.finish()
   }
 
-  // Dismissal -- Escape or an outside click -- is vetoable. This is the seam a dirty-form
-  // confirmation hooks into; a programmatic close() skips it.
-  requestDismiss() {
+  // Dismissal -- Escape, an outside click, or a component asking on a person's behalf -- is
+  // vetoable. This is the seam a dirty-form confirmation hooks into; a programmatic close() skips
+  // it. `reason` is what lets a listener veto one gesture and allow another, so a Modal can refuse
+  // a backdrop click without also refusing Escape.
+  requestDismiss(reason) {
     if (!this.dismissibleValue) return false
 
-    return !this.dispatch("dismiss", { cancelable: true }).defaultPrevented
+    return !this.dispatch("dismiss", { cancelable: true, detail: { reason } }).defaultPrevented
   }
 
+  // The public action: a component asking for the same vetoable close a gesture would get.
   dismiss() {
-    if (this.requestDismiss()) this.hide()
+    this.dismissFor("programmatic")
+  }
+
+  dismissFor(reason) {
+    if (this.requestDismiss(reason)) this.hide()
   }
 
   // The closed resting state, applied at once: no exit animation, no pending timer or frame,
@@ -262,7 +278,10 @@ export default class extends Controller {
   reset() {
     this.shown = false
     this.closing = false
+    this.escapePressed = false
+    clearTimeout(this.escapeTimer)
     this.stopHintEscape()
+    this.stopWatchingForLostFocus()
 
     if (this.hasContentTarget) {
       const content = this.contentTarget
@@ -293,7 +312,7 @@ export default class extends Controller {
     if (!this.shown || this.modeValue !== "modal") return
     if (!this.isBackdrop(event.target) || !this.isBackdrop(this.pressTarget)) return
 
-    this.dismiss()
+    this.dismissFor("outside")
   }
 
   isBackdrop(node) {
@@ -302,10 +321,46 @@ export default class extends Controller {
     return node === this.contentTarget || (this.hasBackdropTarget && node === this.backdropTarget)
   }
 
-  // <dialog> fires `cancel` for Escape, and it is preventable -- which is exactly the seam the
-  // cancelable dismiss needs. There is no document-level listener here and no ordering of our
-  // own: a layer open inside this modal is above it in the top layer, so it takes the first
-  // Escape and this modal takes the second.
+  // Escape for a modal <dialog>, taken from the key rather than from `cancel`. `cancel` is
+  // cancelable only while the window has fresh history-action user activation, which Chrome
+  // consumes on the first vetoed close request: Escape, veto, Escape again and the second one is
+  // uncancelable, so an unsaved-changes guard loses its veto exactly when it matters. Preventing
+  // the keydown's default action stops the close request itself, whatever the activation state.
+  //
+  // This is not an ordering of our own. The listener is bound to the content, never to the
+  // document, so it only ever sees a key pressed inside this overlay, and it stands aside while
+  // anything the browser would close first is open (below). `cancel` stays wired for the close
+  // requests that never come through a key at all.
+  dismissOnEscape(event) {
+    if (event.key !== "Escape" || event.defaultPrevented || event.isComposing || !this.shown) return
+
+    // Remembered for the light-dismiss path, which is told that the overlay is closing but not by
+    // what. Cleared at the end of this task, so a later outside click is never read as this key.
+    this.escapePressed = true
+    clearTimeout(this.escapeTimer)
+    this.escapeTimer = setTimeout(() => { this.escapePressed = false })
+
+    if (this.modeValue !== "modal" || this.coveredByLayer()) return
+
+    event.preventDefault()
+    this.dismissFor("escape")
+  }
+
+  // Whether something sits above this overlay in the top layer, which is the browser's own
+  // ordering and not a stack of ours: a layer this content is not inside was opened after it, so
+  // the browser closes that one first and this key is not ours to take. Hints opt out of the
+  // browser's Escape handling entirely (popover="manual"), so they never displace anyone -- a
+  // visible tooltip consumes the key itself, in its own capture-phase listener, before this runs.
+  coveredByLayer() {
+    return Array.from(document.querySelectorAll(":popover-open")).some(
+      (other) => other.popover === "auto" && !other.contains(this.contentTarget)
+    )
+  }
+
+  // <dialog> fires `cancel` for a close request that never came through a key this overlay saw --
+  // a back gesture, requestClose(), a close request while focus sits outside the dialog. Where it
+  // is cancelable it is still the veto seam; where it is not, the `close` listener picks the
+  // bookkeeping up.
   dismissOnCancel(event) {
     if (event.target !== this.contentTarget || !this.shown) return
     // Chrome refuses to let a close request be trapped twice with nothing in between: the
@@ -314,7 +369,7 @@ export default class extends Controller {
     if (!event.cancelable) return
 
     event.preventDefault()
-    this.dismiss()
+    this.dismissFor("escape")
   }
 
   // Whatever closed the dialog without coming through this controller -- that second Escape, a
@@ -322,6 +377,10 @@ export default class extends Controller {
   // unlocked, the focus back where it came from and the state closed.
   finishNativeClose(event) {
     if (event.target !== this.contentTarget || !this.shown) return
+    // close() queues its event as a task, so a dialog closed and opened again inside one task is
+    // open by the time this arrives. That close belongs to the cycle before this one; acting on it
+    // would leave a dialog that is rendered and :modal marked closed, inerting the page invisibly.
+    if (this.contentTarget.open) return
 
     this.shown = false
     this.finishClosed()
@@ -341,11 +400,15 @@ export default class extends Controller {
     this.shown = false
     this.closing = true
     const focused = this.contentTarget.contains(document.activeElement) ? document.activeElement : null
+    // The browser says a light dismiss is happening, never which gesture did it. This runs inside
+    // the same task as that gesture, so an Escape this content has just seen is this dismissal's.
+    const reason = this.escapePressed ? "escape" : "outside"
+    this.escapePressed = false
 
-    recoverFromLightDismiss(this.contentTarget, () => this.recover(focused))
+    recoverFromLightDismiss(this.contentTarget, () => this.recover(focused, reason))
   }
 
-  recover(focused) {
+  recover(focused, reason) {
     // reset() -- a disconnect, or turbo:before-cache -- got here first and already closed it.
     if (!this.closing) return
 
@@ -354,7 +417,7 @@ export default class extends Controller {
     // That is not a dismissal: there is nothing to veto and nothing to animate.
     if (this.displacedByAnotherPopover()) return this.finishClosed()
 
-    const dismissed = this.requestDismiss()
+    const dismissed = this.requestDismiss(reason)
     this.place()
     this.shown = true
 
@@ -381,7 +444,7 @@ export default class extends Controller {
 
     event.preventDefault()
     event.stopPropagation()
-    this.dismiss()
+    this.dismissFor("escape")
   }
 
   stopHintEscape() {
@@ -396,14 +459,14 @@ export default class extends Controller {
     if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return
 
     event.preventDefault()
-    this.dismiss()
+    this.dismissFor("escape")
   }
 
   dismissFallbackOnFocusOut(event) {
     if (!this.shown || this.modeValue !== "layer") return
     if (event.relatedTarget && this.element.contains(event.relatedTarget)) return
 
-    this.dismiss()
+    this.dismissFor("outside")
   }
 
   // --- Wiring ------------------------------------------------------------------------------
@@ -441,6 +504,7 @@ export default class extends Controller {
       this.contentTarget.addEventListener("cancel", this.onCancel)
       this.contentTarget.addEventListener("close", this.onClose)
       this.contentTarget.addEventListener("beforetoggle", this.onBeforeToggle)
+      this.contentTarget.addEventListener("keydown", this.onContentKeydown)
     }
 
     if (supportsTopLayer()) return
@@ -461,14 +525,45 @@ export default class extends Controller {
     this.contentTarget.removeEventListener("cancel", this.onCancel)
     this.contentTarget.removeEventListener("close", this.onClose)
     this.contentTarget.removeEventListener("beforetoggle", this.onBeforeToggle)
+    this.contentTarget.removeEventListener("keydown", this.onContentKeydown)
   }
 
   // --- Focus -------------------------------------------------------------------------------
 
+  // Where focus goes when this overlay closes. An open() that overtakes a close still animating
+  // out finds focus inside the overlay's own content, which is about to stop being rendered:
+  // recording that would return focus to a dead node, so the target the interrupted cycle
+  // recorded is kept instead.
   focusReturnTarget() {
     const active = document.activeElement
+    const inside = this.hasContentTarget && this.contentTarget.contains(active)
+    if (active && active !== document.body && !inside) return active
 
-    return active && active !== document.body ? active : this.triggerControl
+    return this.returnTarget?.isConnected ? this.returnTarget : this.triggerControl
+  }
+
+  // An open overlay whose focused element is removed -- a Turbo Stream or frame swap inside it --
+  // is left with focus on <body>, outside the overlay, where Tab starts from the top of the page
+  // and a screen reader is no longer in the dialog. Nothing announces that removal, so it is
+  // watched for rather than listened for.
+  watchForLostFocus() {
+    if (this.modeValue === "hint" || !this.hasContentTarget) return
+
+    this.focusWatcher ||= new MutationObserver(this.onContentMutated)
+    this.focusWatcher.observe(this.contentTarget, { childList: true, subtree: true })
+  }
+
+  stopWatchingForLostFocus() {
+    this.focusWatcher?.disconnect()
+  }
+
+  keepFocusInside() {
+    if (!this.shown || !this.hasContentTarget) return
+
+    const active = document.activeElement
+    if (active && active !== document.body) return
+
+    this.moveFocusIn()
   }
 
   // Focus restore is the browser's for both <dialog> and popovers, so this only steps in where
