@@ -1,8 +1,8 @@
 ## State
 ready-for-review
 
-The lane is built and committed in `04237d6`, and both rake tasks are green. Three
-agent-loopable checks pass as written. The unit-lane check can't pass on any tree,
+The lane is built and committed in `04237d6`, the `SLOW=1` slow lane in `7dab090`, and both
+rake tasks are green. Four agent-loopable checks pass as written. The unit-lane check can't pass on any tree,
 because `ViewComponent::TestHelpers` loads Capybara itself; its substance, no Selenium
 in the unit lane, holds (re-checked 2026-09-13: `Capybara` defined, `Selenium` nil).
 What remains is the judgeable review and Jonathan's CI-shape human-gate. See § Corrections for the spec assumptions that turned out wrong
@@ -63,20 +63,31 @@ once built.
   `package-lock.json` or `examples/app/assets/builds/`.
 - Verified no orphaned Chrome/chromedriver processes survive after any run (individual
   `TEST=` invocations and the full `test:system` run alike).
+- Built the `SLOW=1` slow lane (`7dab090`) after `ui-select` shipped a racy assertion that
+  passed on its author's machine and failed three times out of three on the reviewer's:
+  `test/application_system_test_case.rb` emulates network latency through the driver's CDP
+  session (400 ms by default, `SLOW_LATENCY` overrides), leaves a CDP-less driver alone, and
+  `test/system/slow_lane_test.rb` asserts the opposite thing in each mode so neither can pass
+  vacuously. Proven by restoring the original racy read and watching `SLOW=1` fail it.
+- Ran the whole browser lane under `SLOW=1` once, one file at a time: 51 files, 320 runs,
+  2368 assertions, 0 failures, in 11m11s -- close to the unthrottled time, since latency is
+  per request and assets cache after the first page load. That clean result is why the switch
+  is recorded as a diagnostic to reach for rather than a CI job (§ Behavior, "When to reach
+  for it"; § Out of scope / deferred).
 
 ## In progress
-The `SLOW=1` switch is specified (§ Behavior, § Business rules rule 7, § Assumptions) and not
-yet built. It came out of `ui-select`: a racy assertion in `select_form_submission_test.rb`
-passed on the author's machine and failed three times out of three on the reviewer's, and
-emulated network latency was the only thing that reproduced it. The implementation is the
-base class plus `test/system/slow_lane_test.rb`, and the first use of it is one pass over the
-whole browser lane to see what else it finds.
+None -- the lane and the slow switch are both built and green.
 
 ## Last green checkpoint
-- `bundle exec rake test`: 116 runs, 335 assertions, 0 failures (count moves as sibling
-  scopes land component-test changes concurrently on this branch; the file list itself is
-  unchanged at 12 files, none under `test/system/`).
-- `bundle exec rake test:system`: 3 runs, 11 assertions, 0 failures, ~2.2s wall.
+2026-09-14, at `7dab090`:
+- `bundle exec rake test`: 349 runs, 1002 assertions, 0 failures (the count moves as sibling
+  scopes land; the unit lane's file list still contains nothing under `test/system/`).
+- `bundle exec rake test:system`, every file run on its own: 51 files, 0 failures -- and the
+  same sweep under `SLOW=1`: 51 files, 320 runs, 2368 assertions, 0 failures.
+- `SLOW=1 bundle exec rake test:system TEST=test/system/slow_lane_test.rb` and the same file
+  with the switch unset: 3 runs each, 0 failures, asserting opposite things about one request.
+- Earlier, at `04237d6`: `bundle exec rake test` 116 runs / 335 assertions and
+  `bundle exec rake test:system` 3 runs / 11 assertions, ~2.2s wall.
 - `bundle exec ruby -Itest -e 'require "test_helper"; ...'`: see § Corrections --
   `defined?(Capybara)` is true, `defined?(Selenium)` is false.
 - rubocop clean on every file this scope touched (`test/application_system_test_case.rb`,

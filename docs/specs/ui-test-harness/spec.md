@@ -117,6 +117,16 @@ milliseconds for an author who wants to push harder. A driver with no CDP sessio
 because a switch that breaks a lane it cannot slow is worse than one that quietly does
 nothing there.
 
+**When to reach for it.** Run `SLOW=1` against the file just written, before pushing it,
+whenever that file submits a form, swaps a frame, renders a stream or navigates. Those four
+shapes produced the only race this suite has had, they are the ones where an element survives
+the response that changes it, and the cost of checking is one file and a few seconds at the
+moment the test is still in the author's head. It is a diagnostic reached for on suspicion,
+not a gate: the whole lane ran under it at four hundred milliseconds on 2026-09-14 — 51
+files, 320 runs, clean — so a standing job would go green indefinitely and teach nobody
+anything, while the one race it would have caught was findable by writing the assertion
+correctly in the first place (§ Out of scope / deferred).
+
 ## Business rules
 
 1. `test/test_helper.rb` never requires Capybara, Selenium, `axe-core-*`, or anything

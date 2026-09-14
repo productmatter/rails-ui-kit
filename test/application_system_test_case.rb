@@ -32,6 +32,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # it is what reproduced the race in select_form_submission_test.rb that CPU throttling could
   # not. Off unless asked for, never set by CI, and never read by a test to decide what to
   # assert (docs/specs/ui-test-harness, § Business rules, rule 7).
+  #
+  # Reach for it on a file you have just written when that file submits a form, swaps a frame,
+  # renders a stream or navigates: those four shapes are where an element outlives the response
+  # that changes it, and they produced the only race this suite has had.
   SLOW_LATENCY_MS = 400
 
   setup { emulate_slow_network if slow_lane? }
