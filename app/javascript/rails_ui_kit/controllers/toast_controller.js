@@ -73,9 +73,12 @@ export default class extends Controller {
   // a repeated identical message is announced again instead of silently
   // no-op'd.
   announce() {
-    const region = this.liveRegion()
+    const name = this.liveRegionName()
+    const region = document.querySelector(`[data-ui--toast-container-target="${name}"]`)
+    if (!region) return this.warnMissingLiveRegion(name)
+
     const text = this.announcementText()
-    if (!region || !text) return
+    if (!text) return
 
     region.textContent = ""
     requestAnimationFrame(() => {
@@ -83,9 +86,33 @@ export default class extends Controller {
     })
   }
 
-  liveRegion() {
-    const name = this.typeValue === "error" ? "assertiveRegion" : "politeRegion"
-    return document.querySelector(`[data-ui--toast-container-target="${name}"]`)
+  liveRegionName() {
+    return this.typeValue === "error" ? "assertiveRegion" : "politeRegion"
+  }
+
+  // A missing live region means this toast -- and every one after it -- is silently
+  // never announced to screen reader users, while looking completely normal to everyone
+  // else: exactly the failure nothing else surfaces. Warned on the container controller,
+  // which outlives any single toast, so a burst of toasts warns once rather than flooding
+  // the console once per card; a flood is its own kind of silence. Falls back to this
+  // toast's own instance if it isn't inside a container at all. Never blocks the toast
+  // itself from rendering -- the announcement fails soft, the toast does not.
+  warnMissingLiveRegion(name) {
+    const owner = this.containerController || this
+    if (owner.warnedMissingLiveRegion) return
+    owner.warnedMissingLiveRegion = true
+
+    console.warn(
+      `ui--toast: no [data-ui--toast-container-target="${name}"] found, so toasts will not ` +
+      'be announced to screen readers. Render Ui::ToastContainerComponent instead of ' +
+      'hand-rolled toast container markup.'
+    )
+  }
+
+  get containerController() {
+    const containerElement = this.element.closest('[data-controller~="ui--toast-container"]')
+    if (!containerElement) return null
+    return this.application.getControllerForElementAndIdentifier(containerElement, "ui--toast-container")
   }
 
   announcementText() {

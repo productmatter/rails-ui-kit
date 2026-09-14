@@ -6,6 +6,9 @@ const MENU_ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitem
 // when the caller hasn't written the roles itself.
 const MENU_ITEM_CANDIDATE = 'a[href], button:not([disabled])'
 const ROVING_ITEM = "data-ui--roving-focus-target"
+// Placement, offset and match-width lived on ui--dropdown itself before positioning moved
+// to ui--anchor. Markup written against that version still carries these attribute names.
+const LEGACY_ANCHOR_ATTRIBUTES = ["placement-value", "offset-value", "match-width-value"]
 
 // Geometry belongs to ui--anchor on this element, and a menu's arrows, Home, End and typeahead to
 // ui--roving-focus on its content. What stays here is what neither primitive does: opening and
@@ -26,6 +29,7 @@ export default class extends Controller {
   }
 
   connect() {
+    this.forwardLegacyAnchorAttributes()
     this.setupAccessibility()
     this.reset()
     this.element.addEventListener("keydown", this.onKeydown)
@@ -145,6 +149,32 @@ export default class extends Controller {
   setAnchored(active) {
     const anchor = this.anchor
     if (anchor) anchor.activeValue = active
+  }
+
+  // Stimulus does not warn about an attribute for a value nobody declares any more, so a
+  // caller still writing data-ui--dropdown-placement-value (etc.) after the move to
+  // ui--anchor just silently stops positioning: the menu still opens, drawn wherever CSS
+  // happens to leave it, and only misses badly near a viewport edge. Forward each legacy
+  // attribute onto its ui--anchor equivalent -- unless the caller already set that one,
+  // which wins -- and warn once so the markup gets updated.
+  forwardLegacyAnchorAttributes() {
+    LEGACY_ANCHOR_ATTRIBUTES.forEach((attribute) => {
+      const legacyAttribute = `data-ui--dropdown-${attribute}`
+      if (!this.element.hasAttribute(legacyAttribute)) return
+
+      const anchorAttribute = `data-ui--anchor-${attribute}`
+      const alreadySet = this.element.hasAttribute(anchorAttribute)
+      if (!alreadySet) this.element.setAttribute(anchorAttribute, this.element.getAttribute(legacyAttribute))
+
+      console.warn(
+        `ui--dropdown: "${legacyAttribute}" is deprecated and no longer read by Dropdown; ` +
+        `use "${anchorAttribute}" instead (positioning moved to ui--anchor).` +
+        (alreadySet
+          ? ` "${anchorAttribute}" is already set on this element, so the legacy attribute is ignored.`
+          : ' The old attribute is forwarded automatically for now.'),
+        this.element
+      )
+    })
   }
 
   setupAccessibility() {

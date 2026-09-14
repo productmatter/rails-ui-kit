@@ -437,7 +437,107 @@ class DropdownTest < ApplicationSystemTestCase
     assert_accessible(within: "[data-ui--dropdown-kind-value='menu']")
   end
 
+  test 'DD19: legacy ui--dropdown positioning attributes still position the menu, and each warns once' do
+    visit dropdown_path
+    install_console_warning_capture
+
+    # A pre-144d104 integration: placement, offset and match-width written the old way, with
+    # no ui--anchor-* attributes of their own. Flip and shift are turned off so the assertions
+    # below depend only on the shim's forwarding, not on how much room this viewport happens
+    # to have above the trigger.
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var container = document.createElement('div')
+      container.id = 'dd19-container'
+      container.style.cssText = 'width:600px;display:block;margin-left:320px'
+      var clone = original.cloneNode(true)
+      clone.removeAttribute('data-ui--anchor-placement-value')
+      clone.removeAttribute('data-ui--anchor-offset-value')
+      clone.removeAttribute('data-ui--anchor-match-width-value')
+      clone.setAttribute('data-ui--anchor-flip-value', 'false')
+      clone.setAttribute('data-ui--anchor-shift-value', 'false')
+      clone.setAttribute('data-ui--dropdown-placement-value', 'top-end')
+      clone.setAttribute('data-ui--dropdown-offset-value', '4')
+      clone.setAttribute('data-ui--dropdown-match-width-value', 'true')
+      container.appendChild(clone)
+      document.body.appendChild(container)
+    JS
+
+    container = find('#dd19-container', visible: :all)
+    trigger = container.find("[data-ui--dropdown-target='trigger'] button")
+    trigger.click
+
+    content = container.find("[data-ui--dropdown-target='content']", visible: true)
+    assert_selector "#dd19-container [data-ui--dropdown-target='content'][data-side='top'][data-align='end']"
+    # Let the 100ms open transition settle -- mid-transition the content is still scaled down
+    # from origin-top, which throws the edges off by more than the tolerance below.
+    assert_selector "#dd19-container [data-ui--dropdown-target='content'].opacity-100.scale-100"
+
+    trigger_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', trigger)
+    content_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', content)
+    assert_in_delta trigger_rect['right'], content_rect['right'], 2
+    assert_in_delta trigger_rect['top'] - 4, content_rect['bottom'], 2
+    assert_equal page.evaluate_script('arguments[0].offsetWidth', trigger),
+                 page.evaluate_script('arguments[0].offsetWidth', content)
+
+    warnings = console_warnings
+    %w[placement offset match-width].each do |name|
+      assert warnings.any? { |warning|
+               warning.include?("data-ui--dropdown-#{name}-value") && warning.include?("data-ui--anchor-#{name}-value")
+             },
+             "expected a warning naming data-ui--dropdown-#{name}-value, got: #{warnings}"
+    end
+  end
+
+  test 'DD20: a caller-set ui--anchor value is not overwritten by the legacy shim' do
+    visit dropdown_path
+    install_console_warning_capture
+
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var container = document.createElement('div')
+      container.id = 'dd20-container'
+      container.style.cssText = 'width:600px;display:block;margin-left:320px'
+      var clone = original.cloneNode(true)
+      clone.setAttribute('data-ui--anchor-placement-value', 'bottom-start')
+      clone.setAttribute('data-ui--dropdown-placement-value', 'top-end')
+      container.appendChild(clone)
+      document.body.appendChild(container)
+    JS
+
+    container = find('#dd20-container', visible: :all)
+    dropdown = container.find("[data-controller~='ui--dropdown']", visible: :all)
+    assert_equal 'bottom-start', dropdown['data-ui--anchor-placement-value']
+
+    trigger = container.find("[data-ui--dropdown-target='trigger'] button")
+    trigger.click
+    assert_selector "#dd20-container [data-ui--dropdown-target='content'][data-side='bottom'][data-align='start']"
+
+    # The attribute is still legacy and still dead markup, so the shim still warns about it --
+    # it just doesn't act on it, since the caller's own value wins.
+    assert console_warnings.any? do |warning|
+      warning.include?('data-ui--dropdown-placement-value') && warning.include?('already set')
+    end
+  end
+
   private
+
+  # Captures console.warn calls made from here on, without silencing them -- the real warning
+  # still reaches the browser's own console too.
+  def install_console_warning_capture
+    page.execute_script(<<~JS)
+      window.__consoleWarnings = []
+      var originalWarn = console.warn.bind(console)
+      console.warn = function () {
+        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
+        originalWarn.apply(console, arguments)
+      }
+    JS
+  end
+
+  def console_warnings
+    page.evaluate_script('window.__consoleWarnings')
+  end
 
   # Sends keys to whatever currently has focus, the way a keyboard does -- unlike
   # Capybara's element.send_keys, which focuses the element it's called on first.
