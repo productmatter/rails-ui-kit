@@ -70,6 +70,20 @@
       <% field.with_description { "Disabled: out of the tab order, and it never submits." } %>
     <% end %>
   </div>
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[plan_sm]") do |field| %>
+      <% field.with_label { "Plan (size: :sm)" } %>
+      <% field.with_control(Ui::SelectComponent, options: plans, selected: "growth", size: :sm,
+                            native_on_touch: false) %>
+    <% end %>
+  </div>
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[plan_lg]") do |field| %>
+      <% field.with_label { "Plan (size: :lg)" } %>
+      <% field.with_control(Ui::SelectComponent, options: plans, selected: "growth", size: :lg,
+                            native_on_touch: false) %>
+    <% end %>
+  </div>
 </div>
 
 <%# Search %>
@@ -259,6 +273,7 @@
         ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
         ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
         ["search",             "Boolean",       "false",    "Switches the combobox to its editable, filtering mode."],
+        ["size",               "Symbol",        ":default", "One of :sm, :default, :lg — the heights Button's sizes have. The combobox, the select under it and search mode's show-options button all take it; the popup keeps matching the control's width."],
         ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances."],
         ["class",              "String",        "nil",      "Merged over the control's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>

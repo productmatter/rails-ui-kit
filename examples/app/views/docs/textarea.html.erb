@@ -4,7 +4,7 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Textarea</h1>
   <p class="text-muted-foreground">
     A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>,
-    the same control styling as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::InputComponent</code>. No variants.
+    the same control styling as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::InputComponent</code>, and the same <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code> scale.
   </p>
 </div>
 
@@ -30,6 +30,14 @@
   <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "disabled-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "disabled" } %>
     <%= render Ui::TextareaComponent.new(id: "disabled-textarea", name: "disabled", disabled: true) do %>Locked<% end %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "sm-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :sm" } %>
+    <%= render Ui::TextareaComponent.new(size: :sm, id: "sm-textarea", name: "sm", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "lg-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :lg" } %>
+    <%= render Ui::TextareaComponent.new(size: :lg, id: "lg-textarea", name: "lg", placeholder: "Add a note…") %>
   </div>
 </div>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
@@ -60,6 +68,7 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
+        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
         ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. Not a keyword, so field binding can set it later."],
         ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],

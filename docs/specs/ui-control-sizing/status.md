@@ -1,11 +1,11 @@
 ## State
 
-building
+ready-for-review
 
-Shaped and ratified 2026-09-14 (`426377b`), with both open questions decided on their
-defaults the same day. Steps 1 and 2 are built: the rule 3 regression check, green first
-against the unmodified components, then the tokens and the scale on all four controls.
-Still to do: the target-size check (step 3), and docs plus the CHANGELOG (step 4).
+Built and verified 2026-09-14. Every agent-loopable check in § Acceptance checks passes
+exactly as written. What remains is the judgeable review of the token surface and
+Jonathan's human gate: the side-by-side docs comparison and a mixed row at each size,
+at the kit's tokens and at a denser host value.
 
 ## Done
 
@@ -58,17 +58,32 @@ new steps.
 Parent rule 1 now names control height, and `ui-design-tokens` is corrected to
 `ready-for-review` in its status.md and the parent's § Scopes row.
 
-Next: the target-size check (step 3), then docs and the CHANGELOG entry in the existing
-`## [0.3.0]` section (step 4).
+Step 3 is done. CS6 measures WCAG 2.5.8's 24px floor directly, since axe won't. It covers
+every control at `sm`, an icon-only `sm` Button (added to the Field page's mixed row) and
+the `icon` Button, at the kit's own token values, with no clamp. Proved able to fail in
+both dimensions: `--control-height-sm` set to 20px failed on height ("the button is 20px
+in height"), and an icon-only `sm` Button narrowed failed on width ("22px in width").
+
+Step 4 is done. Input, Textarea and Select show `size: :sm` and `size: :lg` inside their
+existing previews, so the axe and contrast checks already there cover them. All four
+component pages document `size:` in their Options table. README's Overriding section
+documents the three tokens and says plainly that a control height under 24px breaks
+WCAG 2.5.8. The CHANGELOG entry is in the existing `## [0.3.0]` section.
+
+Nothing is in progress.
 
 ## Last green checkpoint
 
-Step 2 on `426377b` (uncommitted), after the Select extraction below. Rubocop:
-`bundle exec rubocop`, 109 files, no offenses. Unit lane: `bundle exec rake test`, 367 runs, 1107
-assertions, 0 failures. Browser lane, one file at a time with `pgrep -x chromedriver`
-checked before each: 52 of 52 files green, 325 runs, 2556 assertions, 0 failures. CS1/CS2
-alone: 2 runs, 106 assertions, the same count as step 1. The literal guard grep is clean.
-`specline_check`: 0 errors.
+Step 3 and 4 on `a3bd7bb` (uncommitted). `bundle exec rubocop`: 109 files, no offenses.
+`bundle exec rake test`: 367 runs, 1107 assertions, 0 failures. Browser lane, one file at
+a time with `pgrep -x chromedriver` checked before each: 52 files, 326 runs, 2592
+assertions. 51 were green on the first pass. `slow_lane_test.rb` SL1 failed once, a fetch
+of the Installation page measured at 268ms against its 250ms bound, on a machine at load
+average 22–36 with other workers running. Neither the page nor its request path is touched
+by this scope. Re-run alone three times, it was green 3 of 3. The four § Acceptance checks,
+run verbatim: `/unchanged/` 2 runs, `/align/` 3 runs, `/target/` 1 run, and the literal
+guard plus `control_size_test.rb` 20 runs, all 0 failures. CS1 and CS2 are unedited since
+`a3bd7bb`: the diff of the test file has no removed lines.
 
 ## Dead ends
 

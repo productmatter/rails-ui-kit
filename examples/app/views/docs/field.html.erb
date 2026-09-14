@@ -70,6 +70,12 @@
     <div id="sizes-<%= step %>-row" class="flex flex-wrap items-start gap-3">
       <span class="w-24 shrink-0 pt-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">size: :<%= step %></span>
       <%= render(Ui::ButtonComponent.new(size: step, id: "sizes-#{step}-button")) { "Save" } %>
+      <%= render Ui::ButtonComponent.new(size: step, variant: :outline, id: "sizes-#{step}-icon-button",
+                                         aria: { label: "Add, #{step}" }) do %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      <% end %>
       <%= render Ui::InputComponent.new(size: step, id: "sizes-#{step}-input", name: "sizes[#{step}]",
                                         value: "Jane Cooper", class: "w-40") %>
       <div class="w-40">

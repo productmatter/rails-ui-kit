@@ -292,6 +292,15 @@ your own `@theme` all win over them wherever they sit in the file.
 
 The full set is `background`/`foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent` (each with a `-foreground` pair), `destructive`, `border`, `input`, `ring`, `chart-1`…`chart-5`, `sidebar` and its variants, and `radius` — defined under `:root` and `.dark` in `app/assets/tailwind/rails_ui_kit/engine.css`. `ui--dark-mode` toggles the `.dark` class on `<html>`.
 
+**Control heights:** Button, Input, Select and Textarea share one `size:` scale — `:sm`, `:default`, `:lg` — and every control at a size reads its height from the same token: `--control-height-sm`, `--control-height` and `--control-height-lg`, which are 32, 36 and 40px at Tailwind's default spacing. Redefine them to make your app denser or roomier, and a row of controls at one size keeps lining up. A textarea's size sets its minimum height, one control height plus room for a line. These are kit extensions rather than shadcn names, so a shadcn theme that doesn't mention them leaves the kit's values in place. Each one is independent and honoured wherever you set it, including on a single part of a page:
+
+```css
+:root       { --control-height-sm: 1.75rem; --control-height: 2rem; --control-height-lg: 2.25rem; }
+.data-table { --control-height: 1.75rem; }
+```
+
+**Don't set a control height below 24px.** A control under 24 CSS pixels fails WCAG 2.5.8, Target Size (Minimum), so people with limited dexterity can't reliably hit it. The kit's own heights pass. It won't stop you setting a smaller one, the same way it won't stop you choosing an unreadable colour pair, so this one is on you.
+
 **A component's classes:** every component merges a `class:` you pass through `tailwind_merge`, so your utility replaces the component's conflicting default rather than racing it in stylesheet order:
 
 ```erb

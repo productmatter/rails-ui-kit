@@ -276,7 +276,7 @@ component's defaults, so it doesn't reopen anything already verified.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-control-sizing` | Control height as three kit-extension tokens (`--control-height-sm`/`--control-height`/`--control-height-lg`), and Button's `sm`/`default`/`lg` scale extended to Input, Select and Textarea so a row of controls at one step lines up by reading one token. Button's existing sizes, including `icon`, render unchanged. | `ui-design-tokens`, `ui-presentational-components`, `ui-select`, `ui-test-harness` | building |
+| `ui-control-sizing` | Control height as three kit-extension tokens (`--control-height-sm`/`--control-height`/`--control-height-lg`), and Button's `sm`/`default`/`lg` scale extended to Input, Select and Textarea so a row of controls at one step lines up by reading one token. Button's existing sizes, including `icon`, render unchanged. | `ui-design-tokens`, `ui-presentational-components`, `ui-select`, `ui-test-harness` | ready-for-review |
 
 ## Out of scope / deferred
 

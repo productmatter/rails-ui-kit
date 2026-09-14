@@ -4,8 +4,8 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Input</h1>
   <p class="text-muted-foreground">
     A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;input&gt;</code>
-    styled as a form control, drawn entirely from the design tokens. No variants — size and shape come from your
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>.
+    styled as a form control, drawn entirely from the design tokens. One option of its own, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code>, the control scale it shares with
+    Button, Select and Textarea; any other shape comes from your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>.
   </p>
 </div>
 
@@ -35,6 +35,14 @@
   <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "password-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "type: password" } %>
     <%= render Ui::InputComponent.new(type: "password", id: "password-input", name: "password", value: "hunter2") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "sm-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :sm" } %>
+    <%= render Ui::InputComponent.new(size: :sm, id: "sm-input", name: "sm", value: "Jane Cooper") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "lg-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :lg" } %>
+    <%= render Ui::InputComponent.new(size: :lg, id: "lg-input", name: "lg", value: "Jane Cooper") %>
   </div>
 </div>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
@@ -67,6 +75,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["type",         "String",  '"text"', "The input type attribute — text, email, password, and so on."],
+        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg — the heights Button's sizes have, so controls at one size line up. The kit's scale, not the HTML size attribute."],
         ["class",        "String",  "nil",    "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil",    "Set aria: { invalid: true } to draw the invalid boundary and focus colour. Not a keyword, so field binding can set it later."],
         ["disabled",     "Boolean", "nil",    "Forwarded straight to the native disabled attribute."],

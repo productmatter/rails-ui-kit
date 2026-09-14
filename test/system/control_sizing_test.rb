@@ -30,6 +30,9 @@ class ControlSizingTest < ApplicationSystemTestCase
   STEPS = { sm: 32.0, default: 36.0, lg: 40.0 }.freeze
   TEXTAREA_ALLOWANCE = 28.0
 
+  # WCAG 2.5.8's target minimum, in CSS px.
+  TARGET_MINIMUM = 24.0
+
   # v0.3.0's boxes. `height`, `min_height`, `width` and the paddings are in spacing units.
   CONTROLS = {
     'Button sm' => { page: :button, selector: '#button-sizes-preview [data-slot=button]', text: 'Small',
@@ -99,7 +102,32 @@ class ControlSizingTest < ApplicationSystemTestCase
     assert_step(:sm, 48.0)
   end
 
+  # Measured directly, because assert_accessible can't see it: axe-core 4.13 ships its
+  # `target-size` rule disabled. Asserted at the kit's own token values only -- a host that
+  # redefines a control height below 24px has chosen to break WCAG 2.5.8, and the kit doesn't
+  # clamp it (docs/specs/ui-control-sizing, § Business rules, rule 5).
+  test 'CS6: every control at the smallest step, and every icon-only Button, meets the 24px target minimum' do
+    visit field_path
+    disable_transitions
+
+    step_controls(:sm).merge('the textarea' => '#sizes-sm-textarea',
+                             'an icon-only Button at size: :sm' => '#sizes-sm-icon-button')
+                      .each { |name, selector| assert_target_size(name, selector) }
+
+    visit button_path
+    assert_target_size('the icon Button', "#button-sizes-preview [data-slot=button][aria-label='Add item']")
+  end
+
   private
+
+  def assert_target_size(name, selector)
+    rect = rect_of(selector)
+
+    %w[width height].each do |side|
+      assert_operator rect[side], :>=, TARGET_MINIMUM,
+                      "#{name} is #{rect[side]}px in #{side}, under WCAG 2.5.8's #{TARGET_MINIMUM}px target minimum"
+    end
+  end
 
   # Every control at one step, plus the textarea's minimum, against one height.
   def assert_step(step, height)

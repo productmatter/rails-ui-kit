@@ -129,7 +129,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["variant", "Symbol", ":default",  "One of :default, :destructive, :outline, :secondary, :ghost, :link."],
-        ["size",    "Symbol", ":default",  "One of :default, :sm, :lg, :icon."],
+        ["size",    "Symbol", ":default",  "One of :default, :sm, :lg, :icon. The first three are the control scale Input, Select and Textarea share, so controls at one size line up; :icon is a square at the default height."],
         ["href",    "String", "nil",       "When present the component renders an <a> instead of a <button>."],
         ["type",    "String", '"button"',  "Button type. Ignored on the <a> form."],
         ["class",   "String", "nil",       "Merged over the variant classes with tailwind_merge — the caller always wins."],
