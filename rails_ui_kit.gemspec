@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   ]
 
   spec.add_dependency 'class_variants', '~> 1.1'
-  spec.add_dependency 'rails', '>= 7.0'
+  spec.add_dependency 'rails', '>= 7.2'
   spec.add_dependency 'stimulus-rails'
   spec.add_dependency 'tailwind_merge', '~> 1.5'
   spec.add_dependency 'turbo-rails'

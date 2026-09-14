@@ -321,7 +321,7 @@ Stimulus controllers can't call `I18n.t`, so the components that own a controlle
 
 ## Dependencies
 
-- Rails >= 7.0
+- Rails >= 7.2
 - Ruby >= 3.2
 - Tailwind CSS 4 via tailwindcss-rails >= 4.0
 - view_component >= 3.0

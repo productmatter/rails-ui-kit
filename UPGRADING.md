@@ -115,11 +115,19 @@ what it says.
 - `Ui::KbdComponent` → `<kbd class="inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-sm border border-border bg-muted px-1 font-mono text-xs font-medium text-muted-foreground select-none">Esc</kbd>`
 - `Ui::AspectRatioComponent` → `<div class="relative w-full aspect-square"><div class="absolute inset-0"><%= child %></div></div>` (swap `aspect-square` for `aspect-video`, `aspect-[3/4]` or `aspect-[4/3]` to match the ratio you used)
 
-**Ruby and Tailwind — these are new floors, introduced on this branch, not old ones you already
-cleared.** Minimum Ruby moves from 3.1 to 3.2 (`tailwind_merge` requires it), and Tailwind 3 /
-Sprockets support is dropped — Tailwind CSS 4 via `tailwindcss-rails` is now the only supported
-path. If your app is on Ruby 3.1 or Tailwind 3, `bundle update` will tell you before anything
-subtler does.
+**Ruby, Rails and Tailwind — these are new floors, introduced on this branch, not old ones you
+already cleared.** Minimum Ruby moves from 3.1 to 3.2 (`tailwind_merge` requires it), minimum
+Rails moves from 7.0 to 7.2 (`turbo-rails` and `view_component` already required 7.1, so 7.0
+never actually worked; 7.2 is the oldest release the suite was run against, and it passed with
+no changes), and Tailwind 3 / Sprockets support is dropped — Tailwind CSS 4 via
+`tailwindcss-rails` is now the only supported path. If your app is on Ruby 3.1, Rails 7.0/7.1,
+or Tailwind 3, `bundle update` will tell you before anything subtler does.
+
+One thing that looks like a kit bug and isn't: **Rails 7.2 and 8.0 raise `unknown keyword:
+quirks_mode` with version 3 of the `json` gem**, from inside Rails' own JSON encoder. It breaks
+any Rails app on those versions, not only the kit's components, and Rails fixed it in 8.1. If you
+see it, keep `json` below 3 or move to Rails 8.1. Rails 7.2 is also past its security-maintenance
+window, which is reason enough to plan the move regardless.
 
 ## Grep checklist
 
