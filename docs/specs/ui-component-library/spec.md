@@ -267,6 +267,13 @@ retrofit moved them onto the primitives.
 A future scope enters this table only after passing rule 0, pulled by a client build.
 Nothing is queued behind Select.
 
+**Across Phases B and C — control metrics.** Additive, and invisible at every
+component's defaults, so it doesn't reopen anything already verified.
+
+| Scope | Owns | Depends on | Status |
+|---|---|---|---|
+| `ui-control-sizing` | Control height as three kit-extension tokens (`--control-height-sm`/`--control-height`/`--control-height-lg`), and Button's `sm`/`default`/`lg` scale extended to Input, Select and Textarea so a row of controls at one step lines up by reading one token. Button's existing sizes, including `icon`, render unchanged. | `ui-design-tokens`, `ui-presentational-components`, `ui-select`, `ui-test-harness` | draft |
+
 ## Out of scope / deferred
 
 Each of these is a decision, not an oversight. Reopening one is a reshape of this
