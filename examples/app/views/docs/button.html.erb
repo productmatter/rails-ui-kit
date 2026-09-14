@@ -41,7 +41,7 @@
 
 <%# Sizes %>
 <h2 class="text-base font-semibold mb-3">Sizes</h2>
-<div class="rounded-lg border border-border bg-muted flex flex-wrap items-center gap-4 p-8 mb-8">
+<div id="button-sizes-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-center gap-4 p-8 mb-8">
   <%= render(Ui::ButtonComponent.new(size: :sm)) { "Small" } %>
   <%= render(Ui::ButtonComponent.new) { "Default" } %>
   <%= render(Ui::ButtonComponent.new(size: :lg)) { "Large" } %>

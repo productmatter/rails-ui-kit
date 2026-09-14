@@ -1,11 +1,11 @@
-<%= tag.div(**root_attributes(data: root_data)) do %>
+<%= tag.div(**root_attributes(data: primitives.root_data)) do %>
   <%= content_tag(:select, native_options, select_attributes) %>
   <% if search? %>
     <%= tag.input(**combobox_attributes) %>
     <%# APG keeps this button for touch screen-reader users, who have no other way to open the
         list. It is out of the tab order, because the text field is the control. %>
     <button type="button" tabindex="-1" hidden aria-label="<%= show_options_label %>"
-            class="absolute right-0 top-0 flex h-9 w-8 items-center justify-center text-muted-foreground"
+            class="<%= show_options_class %>"
             data-ui--select-target="showOptions" data-action="click->ui--select#toggle">
       <%= render_chevron %>
     </button>

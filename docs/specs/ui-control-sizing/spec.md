@@ -1,7 +1,7 @@
 ---
 slug: ui-control-sizing
 type: feature
-status: draft
+status: ratified
 decider: Jonathan Simmons
 blast_radius: medium
 size: small
@@ -212,7 +212,10 @@ any of them.
 - `app/javascript/rails_ui_kit/controllers/anchor_controller.js`: the width matching
   the popup relies on. Not modified.
 - `test/system/select_enhancement_test.rb`: SE2 (same box) and SE3 (popup width), the
-  existing geometry checks this scope extends to every step.
+  existing geometry checks at the default step. `test/system/control_sizing_test.rb` makes
+  the same two measurements at every step.
+- `examples/app/views/docs/field.html.erb`: the `#control-sizes-preview` mixed row, with
+  every control at each step, which the browser checks and the human gate both use.
 
 ## Acceptance checks
 

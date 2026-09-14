@@ -72,6 +72,19 @@
     --sidebar-ring: oklch(0.52 0.17 277);
 
     --radius: 0.5rem;
+
+    /* Kit extensions — a control's height at each step of the shared size scale, so Button,
+       Input, Select and Textarea at one step line up by reading one token instead of four
+       literals. Written in Tailwind's own spacing unit, which is exactly what h-8, h-9 and
+       h-10 computed to before these existed, so a host that has already retuned --spacing
+       keeps the sizes it had. Three independent values, not a scale derived from one: each is
+       honoured wherever it is redefined, including below :root, where a derived scale would
+       move one step and leave the others at the root's value. Metrics don't change between
+       light and dark, so they are defined here only. A value under 24px puts a control under
+       WCAG 2.5.8's target minimum. */
+    --control-height-sm: calc(var(--spacing) * 8);
+    --control-height: calc(var(--spacing) * 9);
+    --control-height-lg: calc(var(--spacing) * 10);
   }
 
   .dark {

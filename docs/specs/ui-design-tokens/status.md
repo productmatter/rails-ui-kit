@@ -1,15 +1,19 @@
 ## State
 
-building
+ready-for-review
 
-`ui-test-harness`, the blocker, has shipped the browser lane and is built. The
-`.dark`-on-`<html>` regression check now has somewhere to run and is green:
-`bundle exec rake test:system TEST=test/system/dark_mode_toggle_test.rb` — 1
-run, 3 assertions, 0 failures. Every agent-loopable check for this scope is
-green. Another worker is implementing this scope's 2026-09-13 token-contract
-changes (kit extensions, host-wins layering, `@custom-variant dark` ownership,
-Tailwind-4-only) right now, so the scope itself is mid-build, not merely
-unblocked.
+Built. **Corrected 2026-09-14:** this read `building`, describing the 2026-09-13
+token-contract changes (kit extensions, host-wins layering, `@custom-variant dark`
+ownership, Tailwind-4-only) as in progress. They landed and are in the v0.3.0 CHANGELOG.
+Every agent-loopable check was re-run green on 2026-09-14: the `@theme` mapping and
+`@theme inline` greps, no engine `@custom-variant dark`, the install generator test
+(14 runs, 0 failures) and `test/system/dark_mode_toggle_test.rb`. What remains is the
+judgeable review and the two human gates, Jonathan's approval of the `oklch()` values
+and the tweakcn spot-check, neither of which has a recorded sign-off.
+
+`ui-control-sizing` added three more kit extensions under rule 5 on 2026-09-14,
+`--control-height-sm`, `--control-height` and `--control-height-lg`, owned and tested
+by that scope.
 
 ## Done
 - Read the parent spec (`ui-component-library/spec.md`) in full, plus

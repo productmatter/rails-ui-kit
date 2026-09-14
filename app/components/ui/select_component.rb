@@ -15,7 +15,7 @@ module Ui
 
     # The visible control's box, shared by the select and the combobox that takes over from
     # it, so the swap between them shifts nothing.
-    CONTROL_CLASSES = 'flex h-9 w-full min-w-0 appearance-none items-center rounded-md border border-input ' \
+    CONTROL_CLASSES = 'flex w-full min-w-0 appearance-none items-center rounded-md border border-input ' \
                       'bg-transparent dark:bg-muted/50 pl-3 pr-8 text-sm shadow-xs transition-colors ' \
                       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
                       'disabled:pointer-events-none disabled:opacity-50 ' \
@@ -46,22 +46,30 @@ module Ui
     # the select's change events bubble to (§ Behavior, item 12).
     CONTROL_ARIA = %i[describedby invalid label labelledby].freeze
 
-    # A page of options is ten, which is what the APG select-only combobox example jumps.
-    PAGE_STEP = 10
+    # The control's height at each step of the shared size scale, read from the same tokens as
+    # Button, Input and Textarea (ui-control-sizing). Not a class_variants axis: variants render
+    # onto this component's root, and the height belongs on the control and the show-options
+    # button, which are not the root.
+    SIZE_CLASSES = {
+      sm: 'h-(--control-height-sm)',
+      default: 'h-(--control-height)',
+      lg: 'h-(--control-height-lg)'
+    }.freeze
 
     class_variants(base: 'group/select relative w-full')
 
-    attr_reader :name, :control_id, :option_set
+    attr_reader :name, :control_id, :option_set, :size, :primitives
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
-                   search: false, native_on_touch: true, **attributes)
+                   search: false, native_on_touch: true, size: :default, **attributes)
       @name = name.to_s
       @control_id = (id || derive_control_id).to_s
       @required = boolean_attribute?(required)
       @disabled = boolean_attribute?(disabled)
       @autofocus = boolean_attribute?(autofocus)
       @search = boolean_attribute?(search)
-      @native_on_touch = boolean_attribute?(native_on_touch)
+      @primitives = Ui::Select::Primitives.new(search: @search, native_on_touch: boolean_attribute?(native_on_touch))
+      @size = resolve_size(size)
       @form = form
       @option_set = Ui::Select::OptionSet.new(**option_keywords(attributes))
       super(**attributes)
@@ -110,51 +118,6 @@ module Ui
       tag.svg(tag.path(d: 'm6 9 6 6 6-6'), **attributes)
     end
 
-    # The primitives Select composes. ui--media-query is what tells select-only mode it is on a
-    # touch screen, where the platform picker is the better control.
-    def root_data
-      {
-        controller: 'ui--media-query ui--select ui--overlay ui--anchor ui--roving-focus',
-        action: 'change->ui--select#render ui--roving-focus:activated->ui--select#markActive ' \
-                'ui--overlay:opened->ui--select#opened ui--overlay:closed->ui--select#closed',
-        'ui--media-query-query-value': '(pointer: coarse)',
-        'ui--select-search-value': search?,
-        'ui--select-native-on-touch-value': @native_on_touch,
-        # The count is only known once the filter runs, so the plural forms go over as strings
-        # and ui--select picks one. Locales with more plural categories than these two need the
-        # host to override the strings themselves.
-        'ui--select-results-one-value': I18n.t('rails_ui_kit.select.results.one'),
-        'ui--select-results-other-value': I18n.t('rails_ui_kit.select.results.other')
-      }.merge(popup_data, navigation_data)
-    end
-
-    # A layer in the top layer, anchored under the control and matching its width. It opens
-    # without taking focus, because a combobox keeps DOM focus on its own control, and it is
-    # positioned against the viewport, because the top layer is.
-    def popup_data
-      {
-        'ui--overlay-mode-value': 'layer',
-        'ui--overlay-scroll-lock-value': false,
-        'ui--overlay-move-focus-value': false,
-        'ui--anchor-placement-value': 'bottom-start',
-        'ui--anchor-match-width-value': true,
-        'ui--anchor-strategy-value': 'fixed'
-      }
-    end
-
-    # Each mode's APG example, as primitive values: virtual focus either way, then select-only
-    # clamps at the ends and owns typing and the page keys, while search mode wraps and leaves
-    # every editing key to its text field.
-    def navigation_data
-      {
-        'ui--roving-focus-focus-model-value': 'activedescendant',
-        'ui--roving-focus-loop-value': search?,
-        'ui--roving-focus-typeahead-value': !search?,
-        'ui--roving-focus-page-step-value': search? ? 0 : PAGE_STEP,
-        'ui--roving-focus-active-class': 'bg-accent text-accent-foreground'
-      }
-    end
-
     # What makes this a form control, plus the aria the control carries wherever it renders.
     def select_attributes
       {
@@ -172,20 +135,12 @@ module Ui
         aria: { controls: listbox_id, expanded: 'false' }.merge(@control_aria),
         data: { 'ui--select-target': 'combobox', 'ui--overlay-target': 'trigger',
                 'ui--anchor-target': 'anchor', 'ui--roving-focus-target': 'input',
-                action: combobox_actions }
+                action: primitives.combobox_actions }
       }
       return shared.merge(tabindex: 0) unless search?
 
       # No name, so the text field never submits: the select next to it is what posts.
       shared.deep_merge(type: 'text', autocomplete: 'off', aria: { autocomplete: 'list' })
-    end
-
-    def combobox_actions
-      actions = ['keydown->ui--select#keydown']
-      # A text field opens on typing rather than on a click, so a caret placed in it doesn't
-      # reopen the list the user just closed.
-      actions << (search? ? 'input->ui--select#filter' : 'click->ui--select#toggle')
-      actions.join(' ')
     end
 
     def popup_attributes
@@ -200,11 +155,16 @@ module Ui
     # (ui-component-library § Business rules, rule 5) — both renderings of it, since they are
     # the same box.
     def control_class
-      MERGER.merge([CONTROL_CLASSES, caller_class].compact.join(' '))
+      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], caller_class].compact.join(' '))
     end
 
     def select_class
-      MERGER.merge([CONTROL_CLASSES, NATIVE_CLASSES, ENHANCED_CLASSES, caller_class].compact.join(' '))
+      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], NATIVE_CLASSES, ENHANCED_CLASSES, caller_class].compact.join(' '))
+    end
+
+    # Spans the control's height at every step, so the chevron stays centred in the field.
+    def show_options_class
+      "absolute right-0 top-0 flex #{SIZE_CLASSES[size]} w-8 items-center justify-center text-muted-foreground"
     end
 
     # Variant classes only: the caller's class went to the control.
@@ -213,6 +173,13 @@ module Ui
     end
 
     private
+
+    # An unknown size fails exactly as an unknown variant does on every other component, through
+    # Ui::Base's own handling: raised in development and test, the default elsewhere.
+    def resolve_size(value)
+      key = (value.presence || :default).to_sym
+      SIZE_CLASSES.key?(key) ? key : (unknown_variant(:size, value, SIZE_CLASSES.keys) || :default)
+    end
 
     def option_keywords(attributes)
       attributes.extract!(*Ui::Select::OptionSet::KEYS).merge(required: @required)

@@ -144,7 +144,7 @@ module Ui
       assert_includes classes_for('label'), 'text-base'
       assert_not_includes classes_for('label'), 'text-sm'
       assert_includes classes_for('input'), 'h-20'
-      assert_not_includes classes_for('input'), 'h-9'
+      assert_not_includes classes_for('input'), 'h-(--control-height)'
       assert_includes classes_for('field-description'), 'text-foreground'
       assert_not_includes classes_for('field-description'), 'text-muted-foreground'
     end

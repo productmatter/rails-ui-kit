@@ -207,7 +207,7 @@ module Ui
 
       classes = page.find('select', visible: :all)['class'].split
       assert_includes classes, 'h-12'
-      assert_not_includes classes, 'h-9'
+      assert_not_includes classes, 'h-(--control-height)'
       assert_not_includes page.find("[data-slot='select']", visible: :all)['class'].split, 'h-12'
     end
 

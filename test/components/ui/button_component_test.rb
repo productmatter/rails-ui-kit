@@ -14,10 +14,10 @@ module Ui
     }.freeze
 
     SIZE_MARKERS = {
-      default: 'h-9',
-      sm: 'h-8',
-      lg: 'h-10',
-      icon: 'size-9'
+      default: 'h-(--control-height)',
+      sm: 'h-(--control-height-sm)',
+      lg: 'h-(--control-height-lg)',
+      icon: 'size-(--control-height)'
     }.freeze
 
     def button_classes
@@ -78,23 +78,23 @@ module Ui
     test 'renders only the requested size classes' do
       render_inline(Ui::ButtonComponent.new(size: :lg)) { 'Save' }
 
-      assert_includes button_classes, 'h-10'
-      assert_not_includes button_classes, 'h-9'
-      assert_not_includes button_classes, 'h-8'
+      assert_includes button_classes, 'h-(--control-height-lg)'
+      assert_not_includes button_classes, 'h-(--control-height)'
+      assert_not_includes button_classes, 'h-(--control-height-sm)'
     end
 
     test 'accepts string variant and size values' do
       render_inline(Ui::ButtonComponent.new(variant: 'outline', size: 'sm')) { 'Save' }
 
       assert_includes button_classes, 'border-input'
-      assert_includes button_classes, 'h-8'
+      assert_includes button_classes, 'h-(--control-height-sm)'
     end
 
     test 'defaults to the default variant and size' do
       render_inline(Ui::ButtonComponent.new) { 'Save' }
 
       assert_includes button_classes, 'bg-primary'
-      assert_includes button_classes, 'h-9'
+      assert_includes button_classes, 'h-(--control-height)'
     end
 
     test 'renders an anchor when href is given' do
@@ -114,7 +114,7 @@ module Ui
       render_inline(Ui::ButtonComponent.new(href: '/settings', variant: :outline, size: :lg)) { 'Settings' }
 
       assert_includes button_classes, 'border-input'
-      assert_includes button_classes, 'h-10'
+      assert_includes button_classes, 'h-(--control-height-lg)'
     end
 
     test 'accepts a custom button type' do
@@ -190,7 +190,7 @@ module Ui
       render_inline(Ui::ButtonComponent.new(variant: nil, size: nil)) { 'Save' }
 
       assert_includes button_classes, 'bg-primary'
-      assert_includes button_classes, 'h-9'
+      assert_includes button_classes, 'h-(--control-height)'
     end
 
     test 'an unknown variant raises in development and test' do
@@ -240,7 +240,7 @@ module Ui
       render_inline(Ui::ButtonComponent.new(size: :lg, class: 'h-20')) { 'Save' }
 
       assert_includes button_classes, 'h-20'
-      assert_not_includes button_classes, 'h-10'
+      assert_not_includes button_classes, 'h-(--control-height-lg)'
     end
 
     test 'forwards arbitrary html attributes to the root element' do

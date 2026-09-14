@@ -53,6 +53,41 @@
   </div>
 </div>
 
+<%# Control sizing %>
+<h2 class="text-base font-semibold mb-3">Control sizing</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+  Button, Input, Select and Textarea share one <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code>
+  scale — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:sm</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:default</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:lg</code> — and every control at a step reads the same
+  token for its height, so a row of them lines up without a single height class. Retune the scale for your whole app by redefining
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height-sm</code>,
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height</code> or
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height-lg</code>; see Overriding in the README.
+</p>
+<div id="control-sizes-preview" class="rounded-lg border border-border bg-muted grid gap-6 p-8 mb-8">
+  <% %i[sm default lg].each do |step| %>
+    <div id="sizes-<%= step %>-row" class="flex flex-wrap items-start gap-3">
+      <span class="w-24 shrink-0 pt-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">size: :<%= step %></span>
+      <%= render(Ui::ButtonComponent.new(size: step, id: "sizes-#{step}-button")) { "Save" } %>
+      <%= render Ui::InputComponent.new(size: step, id: "sizes-#{step}-input", name: "sizes[#{step}]",
+                                        value: "Jane Cooper", class: "w-40") %>
+      <div class="w-40">
+        <%= render Ui::SelectComponent.new(size: step, id: "sizes-#{step}-select", name: "sizes[#{step}_select]",
+                                           options: [%w[Draft draft], %w[Published published]], selected: "draft",
+                                           native_on_touch: false, aria: { label: "Status, #{step}" }) %>
+      </div>
+      <div class="w-40">
+        <%= render Ui::SelectComponent.new(size: step, id: "sizes-#{step}-search", name: "sizes[#{step}_search]",
+                                           options: [%w[Draft draft], %w[Published published]], selected: "draft",
+                                           search: true, aria: { label: "Searchable status, #{step}" }) %>
+      </div>
+      <%= render Ui::TextareaComponent.new(size: step, id: "sizes-#{step}-textarea", name: "sizes[#{step}_note]",
+                                           placeholder: "Add a note…", class: "w-40") %>
+    </div>
+  <% end %>
+</div>
+
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
