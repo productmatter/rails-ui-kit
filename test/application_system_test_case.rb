@@ -21,6 +21,47 @@ end
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :rails_ui_kit_headless_chrome, screen_size: [1400, 1400]
 
+  # The slow lane, on demand:
+  #
+  #   SLOW=1 bundle exec rake test:system TEST=test/system/select_form_submission_test.rb
+  #   SLOW=1 SLOW_LATENCY=800 bundle exec rake test:system
+  #
+  # A test that reads a value before the response that changes it passes on a fast machine and
+  # fails on a slow one, and a green run never says which kind of test it is. SLOW=1 emulates
+  # network latency through the driver's CDP session, so that read loses the race every time --
+  # it is what reproduced the race in select_form_submission_test.rb that CPU throttling could
+  # not. Off unless asked for, never set by CI, and never read by a test to decide what to
+  # assert (docs/specs/ui-test-harness, § Business rules, rule 7).
+  SLOW_LATENCY_MS = 400
+
+  setup { emulate_slow_network if slow_lane? }
+
+  def slow_lane?
+    ENV['SLOW'].present? && ENV['SLOW'] != '0'
+  end
+
+  def slow_latency_ms
+    (ENV['SLOW_LATENCY'].presence || SLOW_LATENCY_MS).to_i
+  end
+
+  def emulate_slow_network(driver: page.driver)
+    browser = cdp_browser(driver)
+    return unless browser
+
+    browser.execute_cdp('Network.enable')
+    browser.execute_cdp('Network.emulateNetworkConditions', offline: false, latency: slow_latency_ms,
+                                                            downloadThroughput: -1, uploadThroughput: -1)
+  end
+
+  # The driver's CDP session, or nil where there is none -- rack_test, which the no-JavaScript
+  # checks run under. Such a lane is left at full speed rather than raised at: a switch that
+  # breaks a lane it cannot slow is worse than one that quietly does nothing there.
+  def cdp_browser(driver = page.driver)
+    browser = driver.respond_to?(:browser) ? driver.browser : nil
+
+    browser if browser.respond_to?(:execute_cdp)
+  end
+
   # Runs a real axe-core audit against the current Capybara page and fails with
   # axe's own violation report -- not a bare boolean -- when it finds violations.
   # `within` narrows the audit to a CSS selector, mirroring axe's own `context`.
