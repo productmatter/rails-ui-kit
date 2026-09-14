@@ -112,7 +112,7 @@ bundle update rails_ui_kit
 
 Bundler locks the git source to a specific commit SHA in `Gemfile.lock`, so apps don't silently drift on redeploy. To pull new changes from `main`, run `bundle update rails_ui_kit` and commit the updated lockfile. Re-running `bin/rails generate rails_ui_kit:install` after an upgrade is safe — it's a no-op when the wiring is already in place.
 
-See [CHANGELOG.md](CHANGELOG.md) for what's in each version.
+See [CHANGELOG.md](CHANGELOG.md) for what's in each version. If you hand-write any component markup or Stimulus attributes rather than rendering the components, check [UPGRADING.md](UPGRADING.md) too — it covers what breaks and the exact fix.
 
 ## Private repo authentication
 
