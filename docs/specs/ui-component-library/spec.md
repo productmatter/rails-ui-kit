@@ -234,7 +234,8 @@ list needs positioning, overlay stack, roving tabindex and typeahead simultaneou
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
-| `ui-overlay-components` | Tooltip → Popover → Dialog → Alert Dialog → Sheet → Drawer → Dropdown Menu → Context Menu → Hover Card → Tabs → Menubar → Navigation Menu → Select → Combobox → Toast, in that order. | `ui-foundation-retrofit` | planned |
+| `ui-select` | `Ui::SelectComponent`: a Rails-aware select built from a collection, array, hash or model enum, with a select-only and a searchable combobox mode (APG), the real `<select>` kept as the single source of truth so it still submits, validates, resets and works without JavaScript; Field and Turbo integration; remote search designed for a later phase; supersedes Dropdown's `kind: :listbox`. | `ui-positioning-and-navigation`, `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
+| `ui-overlay-components` | Tooltip → Popover → Dialog → Alert Dialog → Sheet → Drawer → Dropdown Menu → Context Menu → Hover Card → Tabs → Menubar → Navigation Menu → Toast, in that order. Select and Combobox moved to `ui-select`. | `ui-foundation-retrofit` | planned |
 
 **Phase D — Deferred decisions.**
 
