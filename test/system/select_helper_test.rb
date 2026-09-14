@@ -81,7 +81,7 @@ class SelectHelperTest < ApplicationSystemTestCase
     page.driver.browser.execute_cdp('Emulation.setTouchEmulationEnabled', enabled: true, maxTouchPoints: 5)
     page.driver.browser.execute_cdp('Emulation.setDeviceMetricsOverride', width: 390, height: 844,
                                                                           deviceScaleFactor: 3, mobile: true)
-    assert_selector "[data-slot='select']:has(select#standalone_plan)[data-enhanced='false']"
+    assert_no_selector '#standalone_plan-combobox', wait: 5
 
     ui_select 'Growth', from: 'Billing plan'
 

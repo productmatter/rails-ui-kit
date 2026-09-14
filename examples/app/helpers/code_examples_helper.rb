@@ -155,13 +155,44 @@ module CodeExamplesHelper
     '<%= render Ui::ConfirmDialogComponent.new %>'
   end
 
+  def example_confirm_icon
+    <<~'CODE'
+      <%= render Ui::ConfirmDialogComponent.new(icon_wrapper_class: "rounded-full bg-destructive/10 text-destructive") do |dialog| %>
+        <% dialog.with_icon do %>
+          <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+          </svg>
+        <% end %>
+      <% end %>
+    CODE
+  end
+
+  def example_confirm_rich
+    <<~'CODE'
+      <%= render Ui::ConfirmDialogComponent.new(id: "archive-confirm", title: "Archive this project?",
+            confirm_label: "Archive", confirm_variant: :default,
+            icon_wrapper_class: "rounded-full bg-primary/10 text-primary") do |dialog| %>
+        <% dialog.with_icon { render "icons/archive" } %>
+        <% dialog.with_body do %>
+          <p>Archiving hides it from the project list. Nothing is deleted.</p>
+        <% end %>
+      <% end %>
+
+      // Then, from JavaScript:
+      if (await window.customConfirmDialog("#archive-confirm")) { /* proceed */ }
+    CODE
+  end
+
   def example_confirm_js
     <<~'CODE'
       const ok = await window.defaultConfirmDialog("Delete this item?")
       if (ok) { /* proceed */ }
 
-      // With title:
-      const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This is permanent." })
+      // With a title, custom labels and a non-destructive confirm button:
+      const ok = await window.defaultConfirmDialog({
+        title: "Publish this post?", message: "Readers will see it immediately.",
+        confirm_label: "Publish", confirm_variant: "default"
+      })
     CODE
   end
 
@@ -207,11 +238,13 @@ module CodeExamplesHelper
       <%= button_to "Delete", record_path(@record), method: :delete,
           data: { turbo_confirm: "Delete this record?" } %>
 
-      <%# Custom title via data attribute %>
+      <%# Every part of the confirmation, as data-turbo-confirm- plus the option key %>
       <%= button_to "Publish", publish_path(@post), method: :post,
           data: {
-            turbo_confirm: "This will make the post public.",
-            turbo_confirm_title: "Publish post?"
+            turbo_confirm: "Readers will see it immediately.",
+            turbo_confirm_title: "Publish this post?",
+            turbo_confirm_confirm_label: "Publish",
+            turbo_confirm_confirm_variant: "default"
           } %>
     RUBY
   end
@@ -366,6 +399,42 @@ module CodeExamplesHelper
     YAML
   end
 
+  def example_choices_usage
+    <<~'RUBY'
+      <%# Reads like collection_check_boxes: a collection, a value method and a text method %>
+      <%= render Ui::ChoicesComponent.new(name: "user[role_ids]", multiple: true,
+                                          collection: Role.order(:name), value_method: :id,
+                                          text_method: :name, checked: @user.role_ids) %>
+
+      <%# Or like collection_radio_buttons: one choice, so no [] and no array %>
+      <%= render Ui::ChoicesComponent.new(name: "account[plan_id]", collection: Plan.order(:price),
+                                          value_method: :id, text_method: :name,
+                                          checked: @account.plan_id) %>
+
+      <%# Arrays, hashes and enums, as options_for_select reads them %>
+      <%= render Ui::ChoicesComponent.new(name: "shirt[size]", options: %w[S M L]) %>
+      <%= render Ui::ChoicesComponent.new(name: "order[status]", model: Order, enum: :status,
+                                          checked: @order.status) %>
+
+      <%# Inside a Field, which supplies the id, the name, the description, the error and required.
+          A has_many is validated as `roles` and edited as `role_ids`, so say which errors are its %>
+      <%= render Ui::FieldComponent.new(model: @user, attribute: :role_ids, required: true,
+                                        errors: @user.errors[:roles]) do |field| %>
+        <% field.with_label { "Roles" } %>
+        <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: Role.order(:name),
+                              value_method: :id, text_method: :name) %>
+        <% field.with_description { "People with no role can sign in but see nothing." } %>
+      <% end %>
+
+      <%# The card appearance: a description line, a decorative icon, and your own columns %>
+      <%= render Ui::ChoicesComponent.new(name: "account[plan_id]", appearance: :card,
+                                          collection: plans, value_method: :id, text_method: :name,
+                                          description_method: :tagline,
+                                          icon_method: ->(plan) { plan_icon(plan) },
+                                          class: "sm:grid-cols-3") %>
+    RUBY
+  end
+
   def example_i18n_standalone_controllers
     <<~'RUBY'
       <button data-controller="ui--dark-mode"
@@ -377,16 +446,6 @@ module CodeExamplesHelper
 
       <%# Layout <head> — global fallback for every button without its own data-turbo-disable-with %>
       <meta name="turbo-disable-with-default" content="<%= I18n.t('rails_ui_kit.turbo_disable_with.processing') %>">
-    RUBY
-  end
-
-  def example_media_query_usage
-    <<~'RUBY'
-      <div data-controller="ui--media-query"
-           data-ui--media-query-query-value="(min-width: 768px)"
-           data-ui--media-query-matches-class="border-primary">
-        <%# Reads data-media-matches="true|false", or listens for ui--media-query:change %>
-      </div>
     RUBY
   end
 end

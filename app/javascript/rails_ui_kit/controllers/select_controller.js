@@ -38,7 +38,7 @@ export default class extends Controller {
     results: Object,
     locale: { type: String, default: "" },
     // The platform picker beats anything we can draw on a phone, and the unenhanced select is
-    // already the no-JavaScript path, so select-only mode leaves it alone on a coarse pointer
+    // already the no-JavaScript path, so select-only mode keeps it on a coarse pointer
     // (ui-select open-questions.md). Search mode always enhances: no native picker searches.
     nativeOnTouch: { type: Boolean, default: true }
   }
@@ -49,12 +49,12 @@ export default class extends Controller {
     this.onFormReset = this.restoreAfterReset.bind(this)
     this.onBeforeCache = () => this.rest()
     this.onMorph = this.renderFromMorph.bind(this)
-    this.onMediaChange = () => this.applyEnhancement()
+    this.onPointerChange = () => this.applyEnhancement()
   }
 
   connect() {
     this.selectTarget.addEventListener("focus", this.onSelectFocus)
-    this.element.addEventListener("ui--media-query:change", this.onMediaChange)
+    this.watchPointer()
     document.addEventListener("turbo:before-cache", this.onBeforeCache)
     document.addEventListener("turbo:morph-element", this.onMorph)
     this.form?.addEventListener("reset", this.onFormReset)
@@ -65,7 +65,7 @@ export default class extends Controller {
 
   disconnect() {
     this.selectTarget.removeEventListener("focus", this.onSelectFocus)
-    this.element.removeEventListener("ui--media-query:change", this.onMediaChange)
+    this.coarsePointer?.removeEventListener("change", this.onPointerChange)
     document.removeEventListener("turbo:before-cache", this.onBeforeCache)
     document.removeEventListener("turbo:morph-element", this.onMorph)
     this.form?.removeEventListener("reset", this.onFormReset)
@@ -78,12 +78,17 @@ export default class extends Controller {
   // over the combobox: a browser cannot focus an invalid control it does not render, so a
   // display:none or inert select with `required` would block submission with nothing to show
   // for it.
+  //
+  // Which of the two is visible on a touch screen is the component's own CSS, a media query the
+  // browser re-evaluates live. What CSS can't reach is the accessibility tree and the tab order,
+  // so they are set here, and again whenever the primary pointer changes: a screen reader meets
+  // exactly the control that is showing.
   applyEnhancement() {
     const enhance = !this.nativeOnly
-    this.element.dataset.enhanced = enhance ? "true" : "false"
+    this.element.dataset.enhanced = "true"
 
-    this.comboboxTarget.toggleAttribute("hidden", !enhance)
-    if (this.hasShowOptionsTarget) this.showOptionsTarget.toggleAttribute("hidden", !enhance)
+    this.comboboxTarget.hidden = false
+    if (this.hasShowOptionsTarget) this.showOptionsTarget.hidden = false
     this.selectTarget.setAttribute("aria-hidden", enhance ? "true" : "false")
     if (enhance) {
       this.selectTarget.setAttribute("tabindex", "-1")
@@ -92,6 +97,15 @@ export default class extends Controller {
       this.selectTarget.removeAttribute("tabindex")
       this.close()
     }
+  }
+
+  // The same query the component's pointer-coarse: classes compile to, watched only where it
+  // decides anything.
+  watchPointer() {
+    if (this.searchValue || !this.nativeOnTouchValue) return
+
+    this.coarsePointer = window.matchMedia("(pointer: coarse)")
+    this.coarsePointer.addEventListener("change", this.onPointerChange)
   }
 
   // A <div role="combobox"> is not a labelable element, so a <label for> cannot name it. Inside
@@ -112,12 +126,14 @@ export default class extends Controller {
     return this.popupTarget.querySelector('[role="listbox"]')
   }
 
+  // Whether the combobox is the control: connected, and not on a touch screen that keeps the
+  // platform picker.
   get enhanced() {
-    return this.element.dataset.enhanced === "true"
+    return this.element.dataset.enhanced === "true" && !this.nativeOnly
   }
 
   get nativeOnly() {
-    return !this.searchValue && this.nativeOnTouchValue && this.element.dataset.mediaMatches === "true"
+    return this.coarsePointer?.matches === true
   }
 
   // --- the mirror --------------------------------------------------------------------------

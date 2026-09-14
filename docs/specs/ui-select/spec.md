@@ -107,6 +107,15 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
    can't render, so `required` would block the submission silently. Both states use the
    same height, padding, border and chevron, so the swap causes no layout shift. If
    JavaScript is off, or fails to load, the page keeps a working native select.
+
+   On a coarse pointer, select-only mode keeps the platform picker (`native_on_touch:`,
+   default `true`, open-questions.md). **Corrected 2026-09-14:** that swap is a media
+   query in the component's own CSS — the combobox is `display: none` where
+   `(pointer: coarse)` matches, and the select gives up its box only where it doesn't —
+   so the browser makes it live, with no primitive and no data attribute in between.
+   `ui--select` keeps a `matchMedia` listener for the one thing CSS can't do: the select
+   is `aria-hidden="true"` with `tabindex="-1"` where the combobox is showing, and
+   neither where the native select is, so a screen reader meets exactly one control.
 3. **User choice writes the select, then announces it.** Choosing an option sets
    `select.value`, then dispatches bubbling `input` and `change` events from the select.
    `ui--select` re-renders from its own `change` listener, so there is exactly one

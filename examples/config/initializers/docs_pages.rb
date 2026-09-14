@@ -30,6 +30,9 @@ module DocsPages
     { slug: :select, prefix: 'components', title: 'Select', section: 'Forms',
       summary: 'A select built from a Rails collection, enum or options hash: a real <select> that submits, ' \
                'mirrored into a WAI-ARIA combobox with full keyboard support.' },
+    { slug: :choices, prefix: 'components', title: 'Choices', section: 'Forms',
+      summary: 'A radio or checkbox group over real inputs, with collection_radio_buttons / collection_check_boxes ' \
+               'names, ids and hidden field, in a list or card appearance.' },
     { slug: :input, prefix: 'components', title: 'Input', section: 'Forms',
       summary: 'A native <input> drawn from the design tokens, with invalid and disabled states read from the element itself.' },
     { slug: :textarea, prefix: 'components', title: 'Textarea', section: 'Forms',
@@ -65,9 +68,7 @@ module DocsPages
     { slug: :primitives_overlay, prefix: 'utilities', title: 'Overlay & Presence', section: 'Primitives',
       summary: 'ui--overlay and ui--presence: top layer, focus, scroll lock, dismissal and exit animations.' },
     { slug: :primitives_navigation, prefix: 'utilities', title: 'Positioning & Navigation', section: 'Primitives',
-      summary: 'ui--anchor and ui--roving-focus: anchored positioning and keyboard navigation for your own widgets.' },
-    { slug: :media_query, prefix: 'utilities', title: 'Media Query', section: 'Primitives',
-      summary: 'A matchMedia watcher that writes a data attribute, toggles a class and dispatches a change event.' }
+      summary: 'ui--anchor and ui--roving-focus: anchored positioning and keyboard navigation for your own widgets.' }
   ].freeze
 
   SECTIONS = ['Getting Started', 'Forms', 'Overlays', 'Feedback', 'Primitives'].freeze

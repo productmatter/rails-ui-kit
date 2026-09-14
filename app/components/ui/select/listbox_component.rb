@@ -26,7 +26,8 @@ module Ui
       def initialize(id:, option_set: nil, labelledby: nil, **attributes)
         @control_id = id.to_s
         @labelledby = labelledby
-        @option_set = option_set || Ui::Select::OptionSet.new(**attributes.extract!(*Ui::Select::OptionSet::KEYS))
+        @option_set = option_set ||
+                      Ui::OptionSet.new(component: self.class.name, **attributes.extract!(*Ui::OptionSet::KEYS))
         super(**attributes)
       end
 

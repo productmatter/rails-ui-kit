@@ -15,17 +15,21 @@ module Ui
         @native_on_touch = native_on_touch
       end
 
-      # The primitives Select composes. ui--media-query is what tells select-only mode it is on a
-      # touch screen, where the platform picker is the better control.
+      # The primitives Select composes.
       def root_data
         {
-          controller: 'ui--media-query ui--select ui--overlay ui--anchor ui--roving-focus',
+          controller: 'ui--select ui--overlay ui--anchor ui--roving-focus',
           action: 'change->ui--select#render ui--roving-focus:activated->ui--select#markActive ' \
                   'ui--overlay:opened->ui--select#opened ui--overlay:closed->ui--select#closed',
-          'ui--media-query-query-value': '(pointer: coarse)',
           'ui--select-search-value': search?,
           'ui--select-native-on-touch-value': @native_on_touch
         }.merge(popup_data, navigation_data)
+      end
+
+      # Select-only mode on a touch screen keeps the platform picker. Search mode always enhances,
+      # because no native picker searches.
+      def native_on_touch?
+        !search? && @native_on_touch
       end
 
       def combobox_actions

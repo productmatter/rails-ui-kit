@@ -39,6 +39,19 @@ module Ui
                        'group-data-[enhanced=true]/select:opacity-0 ' \
                        'group-data-[enhanced=true]/select:pointer-events-none'
 
+    # Select-only mode keeps the platform picker on a touch screen (ui-select open-questions.md),
+    # and the browser makes that swap itself, live: the combobox is display:none wherever the
+    # primary pointer is coarse, and the select gives up its box only wherever it isn't. The two
+    # media queries are exact complements, so exactly one control is ever the visible one.
+    # ui--select flips what CSS can't reach: the select's aria-hidden and tabindex.
+    TOUCH_COMBOBOX_CLASSES = 'pointer-coarse:hidden'
+    TOUCH_ENHANCED_CLASSES = 'group-data-[enhanced=true]/select:not-pointer-coarse:absolute ' \
+                             'group-data-[enhanced=true]/select:not-pointer-coarse:inset-0 ' \
+                             'group-data-[enhanced=true]/select:not-pointer-coarse:h-full ' \
+                             'group-data-[enhanced=true]/select:not-pointer-coarse:w-full ' \
+                             'group-data-[enhanced=true]/select:not-pointer-coarse:opacity-0 ' \
+                             'group-data-[enhanced=true]/select:not-pointer-coarse:pointer-events-none'
+
     POPUP_CLASSES = 'overflow-visible rounded-md border border-border bg-popover text-popover-foreground ' \
                     'shadow-md outline-none transition duration-100 ease-out origin-top ' \
                     'data-[state=closed]:opacity-0 data-[state=closed]:scale-95 ' \
@@ -80,7 +93,7 @@ module Ui
                    native_on_touch: native_on_touch)
       @size = resolve_size(size)
       @form = form
-      @option_set = Ui::Select::OptionSet.new(**option_keywords(attributes))
+      @option_set = Ui::OptionSet.new(component: self.class.name, **option_keywords(attributes))
       super(**attributes)
       extract_control_aria!
     end
@@ -165,11 +178,13 @@ module Ui
     # (ui-component-library § Business rules, rule 5) — both renderings of it, since they are
     # the same box.
     def control_class
-      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], caller_class].compact.join(' '))
+      touch = TOUCH_COMBOBOX_CLASSES if primitives.native_on_touch?
+      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], touch, caller_class].compact.join(' '))
     end
 
     def select_class
-      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], NATIVE_CLASSES, ENHANCED_CLASSES, caller_class].compact.join(' '))
+      enhanced = primitives.native_on_touch? ? TOUCH_ENHANCED_CLASSES : ENHANCED_CLASSES
+      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], NATIVE_CLASSES, enhanced, caller_class].compact.join(' '))
     end
 
     # Spans the control's height at every step, so the chevron stays centred in the field.
@@ -211,7 +226,7 @@ module Ui
     end
 
     def option_keywords(attributes)
-      attributes.extract!(*Ui::Select::OptionSet::KEYS).merge(required: @required)
+      attributes.extract!(*Ui::OptionSet::KEYS).merge(required: @required)
     end
 
     def extract_control_aria!

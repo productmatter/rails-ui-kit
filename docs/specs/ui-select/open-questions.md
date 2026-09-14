@@ -11,8 +11,8 @@ custom popup, since no native picker searches. For select-only mode on a coarse 
 the custom popup is arguably worse than what the phone already does well.
 
 Keeping the native picker there is cheap, because the unenhanced native select is
-already the no-JavaScript path (§ Behavior, item 2), and `ui--media-query` already
-exists. The cost is a second enhanced/unenhanced branch to test.
+already the no-JavaScript path (§ Behavior, item 2), and the swap itself is one media
+query in the component's own CSS. The cost is a second enhanced/unenhanced branch to test.
 
 decider: Jonathan Simmons
 options: (a) select-only mode stays unenhanced — the styled native select and its platform picker — when `(pointer: coarse)` matches, and search mode always enhances; (b) enhance everywhere, so there is one behaviour on every device; (c) a per-instance `native_on_touch:` option, defaulting to (a)

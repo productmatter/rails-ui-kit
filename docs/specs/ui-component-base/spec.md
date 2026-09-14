@@ -34,7 +34,7 @@ place of the conflicting default, in every component built on `Ui::Base`.
 - Not a new class-merge algorithm — `tailwind_merge` is adopted verbatim, same rule.
 - Not the token values themselves — owned by `ui-design-tokens`.
 - Not the Stimulus behavior primitives (presence, overlay stack, positioning, group
-  navigation, field binding, media-query watching) — owned by
+  navigation, field binding) — owned by
   `ui-presence-and-overlay-stack` and `ui-positioning-and-navigation`.
 - Not a retrofit of the seven existing components onto this layer — owned by
   `ui-foundation-retrofit`. This scope ships `Ui::Base` and proves it against a
@@ -187,7 +187,7 @@ caller-supplied slot content to add it.
 - **Token values** — owned by `ui-design-tokens`; `Ui::Base` only consumes
   whatever token-backed utility classes a component's variant table names.
 - **The Stimulus primitives** (presence, overlay stack, positioning, group
-  navigation, field binding, media-query watching) — owned by
+  navigation, field binding) — owned by
   `ui-presence-and-overlay-stack` and `ui-positioning-and-navigation`.
 - **Migrating the seven existing components onto `Ui::Base`** — owned by
   `ui-foundation-retrofit`. This scope proves the mechanism against a throwaway

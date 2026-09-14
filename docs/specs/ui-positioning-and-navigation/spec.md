@@ -31,9 +31,10 @@ that looks correct and is unusable with a screen reader. The shipped
 elements for `kind: "listbox"`, which is the wrong model. Building this once, with
 both models explicit, is the only way the overlay family in Phase C is affordable.
 
-**E — field binding** and **F — media-query watching** are small by nature. E is
-server-rendered and needs no JavaScript at all. F is a `matchMedia` wrapper that
-Sidebar and Drawer need in Phase C. Neither earns much space here and neither gets it.
+**E — field binding** is small by nature: server-rendered, and it needs no JavaScript at
+all. It doesn't earn much space here and doesn't get it. **F — media-query watching** was
+shipped and then removed (§ Behavior, Primitive F): a component that swaps on a media
+query does it in its own CSS, which the browser re-evaluates live.
 
 Rails has no Radix, so there is no primitive layer to adopt. This is the one place in
 the plan where building rather than adopting is the correct call — `ui-component-library`
@@ -41,8 +42,8 @@ the plan where building rather than adopting is the correct call — `ui-compone
 
 ## Goal
 
-`Ui::` components can obtain anchored positioning, two-model group keyboard navigation,
-error-state field binding and breakpoint state by declaring a shared primitive, with
+`Ui::` components can obtain anchored positioning, two-model group keyboard navigation
+and error-state field binding by declaring a shared primitive, with
 `@floating-ui/dom` imported in exactly one module in the repository and every primitive
 releasing every listener, observer and `autoUpdate` handle on `disconnect()`.
 
@@ -244,18 +245,25 @@ default wrapper on those fields. The engine doesn't set the proc globally either
 Silently changing how every form in a client's application renders is not a change a
 UI kit gets to make unannounced.
 
-### Primitive F — `ui--media-query`
+### Primitive F — `ui--media-query`, removed
 
-A `matchMedia` wrapper. One value, `query` (e.g. `"(min-width: 768px)"`); one optional
-class, `matches`; writes `data-media-matches="true|false"` on its element and dispatches
-`ui--media-query:change` with `{ matches, query }`. It listens via
-`MediaQueryList.addEventListener("change", …)` and removes that listener on
-`disconnect()`. Sidebar and Drawer consume it in Phase C. That is the whole primitive.
+**Removed 2026-09-14** on the decider's ruling, and no longer part of this scope (see
+§ Corrections in `status.md`). It shipped as a `matchMedia` wrapper for Sidebar and
+Drawer, which were cut against rule 0 and never existed. Its one real consumer was
+Select, which watched `(pointer: coarse)` to keep the platform picker on a touch screen.
+
+A component that swaps on a media query now carries the query in its own CSS
+(Tailwind 4's `pointer-coarse:` / `not-pointer-coarse:`, verified against a real
+compile), so the browser makes the swap itself and live. What CSS can't reach — the
+accessibility tree and the tab order — is flipped by the component's own controller
+from a `matchMedia` listener it owns, which for Select is `select_controller.js`. There
+is no shared primitive to consume, and `ui-component-library` § Business rules, rule 4
+no longer lists media-query watching as one.
 
 ### Registration and test infrastructure
 
-The three controllers register as `ui--anchor`, `ui--roving-focus` and
-`ui--media-query` in `registerControllers` in `app/javascript/rails_ui_kit/index.js`,
+The two controllers register as `ui--anchor` and `ui--roving-focus`
+in `registerControllers` in `app/javascript/rails_ui_kit/index.js`,
 matching the `ui--` prefix every shipped controller already uses.
 
 Keyboard behavior cannot be asserted by rendering markup, so most of this scope's
@@ -271,7 +279,7 @@ own (§ Business rules of ui-test-harness, rule 5; `relations.md` carries the ed
 
 Inherits every rule in `ui-component-library` § Business rules unmodified; rules 4, 6
 and 9 do most of the work here. The following are scope-local and refine rule 4 for
-these four primitives.
+these primitives.
 
 **Must**
 
@@ -387,9 +395,8 @@ live repository and the registry, and one did not survive.
 - A roving group still has exactly one tabbable enabled item after items are added and removed by a Turbo Stream update, including removal of the active item — run: `bundle exec rake test:system TEST=test/system/roving_focus_dynamic_test.rb`
 - Typeahead selects by first letter and resets its buffer after `typeaheadTimeout` — run: `bundle exec rake test:system TEST=test/system/roving_focus_typeahead_test.rb`
 - `Ui::Field` renders `data-invalid`, `aria-invalid`, a space-joined `aria-describedby` from an errors object and a label id derived from the control id, and emits no `.field_with_errors` wrapper — run: `bundle exec rake test TEST=test/components/ui/field_component_test.rb`
-- `ui--media-query` reflects breakpoint state and releases its `change` listener on disconnect — run: `bundle exec rake test:system TEST=test/system/media_query_test.rb`
 - The primitives demo page has no accessibility violations — run: `bundle exec rake test:system TEST=test/system/primitives_a11y_test.rb`
-- `registerControllers` registers `ui--anchor`, `ui--roving-focus` and `ui--media-query` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
+- `registerControllers` registers `ui--anchor` and `ui--roving-focus` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 
 ### judgeable
 

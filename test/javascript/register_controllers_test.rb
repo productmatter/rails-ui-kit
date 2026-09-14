@@ -15,7 +15,6 @@ class RegisterControllersTest < ActiveSupport::TestCase
   {
     'ui--anchor' => 'AnchorController',
     'ui--roving-focus' => 'RovingFocusController',
-    'ui--media-query' => 'MediaQueryController',
     'ui--select' => 'SelectController',
     'ui--field' => 'FieldController'
   }.each do |identifier, constant|

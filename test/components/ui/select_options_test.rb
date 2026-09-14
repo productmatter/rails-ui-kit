@@ -143,17 +143,17 @@ module Ui
 
     test 'enum labels resolve through the model, falling back to the humanised key' do
       assert_equal %w[Pending Shipped Delivered],
-                   Ui::Select::OptionSet.new(model: TestOrder, enum: :status).items.map(&:text)
+                   Ui::OptionSet.new(component: 'Ui::SelectComponent', model: TestOrder, enum: :status).items.map(&:text)
 
       I18n.with_locale(:fr) do
         assert_equal ['En attente', 'Expédiée', 'Delivered'],
-                     Ui::Select::OptionSet.new(model: TestOrder, enum: :status).items.map(&:text)
+                     Ui::OptionSet.new(component: 'Ui::SelectComponent', model: TestOrder, enum: :status).items.map(&:text)
       end
     end
 
     test 'an enum submits its key, which is what the enum setter accepts' do
       assert_equal %w[pending shipped delivered],
-                   Ui::Select::OptionSet.new(model: TestOrder, enum: :status).items.map(&:value)
+                   Ui::OptionSet.new(component: 'Ui::SelectComponent', model: TestOrder, enum: :status).items.map(&:value)
     end
 
     test 'the listbox can be built from an option set the component already normalised' do

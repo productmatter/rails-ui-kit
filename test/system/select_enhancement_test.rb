@@ -91,19 +91,22 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     assert_selector "##{ID}-listbox [role=option][data-selected='true']", count: 1, visible: :all
   end
 
+  # The swap is the component's own CSS, so the browser makes it the moment the pointer changes;
+  # the accessibility tree is ui--select's, so it is checked in Chrome's own tree, both ways.
   test 'SE8: on a coarse pointer, select-only mode stays the native select and its platform picker' do
     id = 'standalone_plan'
-    assert_selector "##{id}-combobox"
+    assert_combobox_is_the_control id
 
     emulate_touch
-    assert_selector "[data-slot='select']:has(select##{id})[data-enhanced='false']"
-    assert_no_selector "##{id}-combobox"
-    assert_selector "select##{id}:not([tabindex])[aria-hidden='false']", visible: :all
+    assert_no_selector "##{id}-combobox", wait: 5
+    assert_selector "select##{id}:not([tabindex])[aria-hidden='false']", visible: true
     assert_operator laid_out_rect("##{id}")['height'], :>, 0, 'the native select is not rendered to tap'
+    assert_equal '1', style_of("##{id}", 'opacity'), 'the native select is still transparent'
+    assert ax_node("select##{id}"), 'the native select is not in the accessibility tree'
+    assert_nil ax_node("##{id}-combobox"), 'the hidden combobox is still in the accessibility tree'
 
     stop_emulating_touch
-    assert_selector "##{id}-combobox"
-    assert_selector "[data-slot='select']:has(select##{id})[data-enhanced='true']"
+    assert_combobox_is_the_control id
   end
 
   test 'SE9: native_on_touch: false enhances on a coarse pointer, for a caller who wants one behaviour' do
@@ -174,6 +177,25 @@ class SelectEnhancementTest < ApplicationSystemTestCase
         return Object.entries(counts).filter(([, count]) => count > 1).map(([id]) => id)
       })()
     JS
+  end
+
+  def assert_combobox_is_the_control(id)
+    assert_selector "##{id}-combobox", visible: true
+    assert_operator laid_out_rect("##{id}-combobox")['height'], :>, 0
+    assert_selector "select##{id}[tabindex='-1'][aria-hidden='true']", visible: :all
+    assert_equal '0', style_of("##{id}", 'opacity'), 'the select is not laid transparently over the combobox'
+    assert ax_node("##{id}-combobox"), 'the combobox is not in the accessibility tree'
+    assert_nil ax_node("select##{id}"), 'the covered select is still in the accessibility tree'
+  end
+
+  # Chrome's own accessibility tree: the node for an element, or nil where the element is ignored
+  # (display:none, aria-hidden) and so never reaches a screen reader.
+  def ax_node(selector)
+    browser = page.driver.browser
+    root = browser.execute_cdp('DOM.getDocument', depth: 0)['root']['nodeId']
+    node = browser.execute_cdp('DOM.querySelector', nodeId: root, selector: selector)['nodeId']
+    ax = browser.execute_cdp('Accessibility.getPartialAXTree', nodeId: node, fetchRelatives: false)['nodes'].first
+    ax unless ax.nil? || ax['ignored']
   end
 
   def style_of(selector, property)
