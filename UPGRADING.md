@@ -1,6 +1,6 @@
 # Upgrading
 
-This covers the ~40 commits between the last release and this branch. It reports findings,
+This covers everything between v0.2.0 and v0.3.0. It reports findings,
 not predictions: this branch was tested against a real consuming app before this was written,
 and the two failures below (§1, §2) are exactly what that test found — one of them silent.
 
@@ -73,6 +73,17 @@ section. Import order doesn't matter — the kit's values sit in a sub-layer of 
 layer, so your definitions win wherever they are.
 
 ## Also worth knowing
+
+**`Ui::DropdownComponent(kind: :listbox)` is deprecated.** It still renders and still works, and
+warns once per process naming its replacement. `Ui::SelectComponent` is what you want: it has a
+real selection model, and the focus model a listbox needs. The kind is removed in the next minor
+release. Dropdown's `:menu` and `:dialog` are unaffected.
+
+**Your existing Capybara `select` calls are unaffected — until you adopt `Ui::SelectComponent`.**
+An enhanced Select hides its native `<select>` under a custom combobox, so `select "X", from: "Y"`
+no longer picks what a user would. The kit ships a helper for that case: `require
+"rails_ui_kit/test_helpers"`, include `RailsUiKit::TestHelpers`, and use `ui_select "X", from: "Y"`.
+It also drives a plain `<select>`, so one call covers both.
 
 **Modal markup**, only if you hand-write it instead of rendering `Ui::ModalComponent`:
 - `data-ui--modal-target="dialog"` → `data-ui--overlay-target="content"`.
