@@ -92,21 +92,25 @@ module CodeExamplesHelper
 
   def example_modal_trigger
     <<~'RUBY'
-      <turbo-frame id="modal"></turbo-frame>
-      <%= link_to "Open", edit_record_path(@record), data: { turbo_frame: "modal" } %>
+      <%# In your layout, once %>
+      <div id="modal" data-turbo-permanent></div>
+
+      <%# The trigger: data-turbo-stream asks for the Turbo Stream response %>
+      <%= link_to "Edit", edit_project_path(@project),
+            id: dom_id(@project, :edit), data: { turbo_stream: true } %>
     RUBY
   end
 
   def example_modal_response
     <<~'RUBY'
-      <turbo-frame id="modal">
-        <%= render Ui::ModalComponent.new(position: :right) do %>
-          <div class="p-6">
-            <h2 class="text-lg font-semibold mb-4">Edit record</h2>
-            <%= render "form", record: @record %>
-          </div>
+      <%# app/views/projects/edit.turbo_stream.erb %>
+      <%= turbo_stream.update "modal" do %>
+        <%= render Ui::ModalComponent.new(aria: { labelledby: "project_modal_title" }) do %>
+          <%= turbo_frame_tag "project_modal_content" do %>
+            <%= render "form", project: @project %>
+          <% end %>
         <% end %>
-      </turbo-frame>
+      <% end %>
     RUBY
   end
 

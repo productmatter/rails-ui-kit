@@ -1,0 +1,18 @@
+<%# A list row. Its id is what a stream targets to replace or remove it, and the trigger ids are
+    what focus returns to -- including when this very row was re-rendered by the same response. %>
+<li id="<%= dom_id(project) %>" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
+  <div class="min-w-0">
+    <p class="truncate text-sm font-medium text-foreground"><%= project.name %></p>
+    <p class="truncate text-xs text-muted-foreground"><%= project.summary %></p>
+  </div>
+  <div class="flex shrink-0 items-center gap-1">
+    <%# data-turbo-stream asks for the Turbo Stream response that opens the modal. %>
+    <%= render(Ui::ButtonComponent.new(href: project_path(project), id: dom_id(project, :open), variant: :ghost, size: :sm,
+                                       data: { turbo_stream: true })) { "Open" } %>
+    <%= render(Ui::ButtonComponent.new(href: edit_project_path(project), id: dom_id(project, :edit), variant: :ghost, size: :sm,
+                                       data: { turbo_stream: true })) { "Edit" } %>
+    <%# The frame-target pattern: read-only content, rendered into its own turbo-frame. %>
+    <%= render(Ui::ButtonComponent.new(href: activity_project_path(project), id: dom_id(project, :activity), variant: :ghost, size: :sm,
+                                       data: { turbo_frame: "project_activity_modal" })) { "Activity" } %>
+  </div>
+</li>

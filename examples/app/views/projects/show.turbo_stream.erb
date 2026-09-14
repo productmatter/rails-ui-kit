@@ -1,0 +1,9 @@
+<%# Opens the modal: the response renders it into the layout's <div id="modal">. Any other region
+    this response changed would be updated by further turbo_stream lines in this same template. %>
+<%= turbo_stream.update "modal" do %>
+  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_title" }) do %>
+    <%= turbo_frame_tag "project_modal_content" do %>
+      <%= render "projects/details", project: @project %>
+    <% end %>
+  <% end %>
+<% end %>

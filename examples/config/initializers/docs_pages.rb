@@ -45,6 +45,9 @@ module DocsPages
 
     { slug: :modal, prefix: 'components', title: 'Modal', section: 'Overlays',
       summary: 'A modal that opens when rendered, driven by Turbo Frames and Streams, with an optional guard for unsaved changes.' },
+    { slug: :modal_turbo, prefix: 'guides', title: 'Modal & Turbo', section: 'Overlays',
+      summary: 'The full Turbo lifecycle of a modal: opened by a stream, re-rendered in a content frame, ' \
+               'closed by the server. The companion guide ships inside the gem.' },
     { slug: :dropdown, prefix: 'components', title: 'Dropdown', section: 'Overlays',
       summary: 'An anchored menu or dialog that follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead and Escape.' },
     { slug: :popover, prefix: 'components', title: 'Popover', section: 'Overlays',

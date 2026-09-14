@@ -1,0 +1,9 @@
+<%# Opens over whatever is already in the container: a stream that updates "modal" while a modal
+    is open replaces it, and there is exactly one dialog afterwards. %>
+<%= turbo_stream.update "modal" do %>
+  <%= render Ui::ModalComponent.new(aria: { labelledby: "invitation_modal_title" }) do %>
+    <%= turbo_frame_tag "invitation_modal_content" do %>
+      <%= render "invitations/form", invitation: @invitation %>
+    <% end %>
+  <% end %>
+<% end %>

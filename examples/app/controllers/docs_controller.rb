@@ -10,6 +10,12 @@ class DocsController < ApplicationController
     define_method(DocsPages.action_for(page)) {}
   end
 
+  # The Modal + Turbo guide's page. Its demo endpoints live in ProjectsController and
+  # InvitationsController, the way a host app's would; this only lists the records.
+  def modal_turbo
+    @projects = Project.all
+  end
+
   def modal_demo
     @position = (params[:position] || "center").to_sym
     respond_to do |format|

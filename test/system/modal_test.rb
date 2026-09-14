@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
 require 'application_system_test_case'
+require_relative 'modal_turbo_helpers'
 
+# Ui::ModalComponent's own regressions -- each one a bug this component has actually had. The
+# full Turbo lifecycle lives in test/system/modal_turbo_*_test.rb, which drives the same demo.
 class ModalTest < ApplicationSystemTestCase
-  test 'M1: closing a modal rendered into a plain div removes it, leaving no backdrop to block clicks' do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
+  include ModalTurboHelpers
 
-    find("[data-action='click->ui--modal#close']", text: 'Close').click
-    assert_no_selector "[data-controller~='ui--modal']"
+  test 'M1: closing a modal rendered into a plain div removes it, leaving no backdrop to block clicks' do
+    open_modal(1)
+
+    within('#modal') { click_on 'Close' }
+    no_modal
 
     # A real click on a page link navigates -- nothing left behind intercepts it.
     click_on 'Turbo Confirm'
@@ -17,64 +20,51 @@ class ModalTest < ApplicationSystemTestCase
   end
 
   test 'M6: closing a modal inside a turbo-frame with a sibling only removes the modal, not the sibling' do
-    visit modal_path
-    find('#frame-modal-trigger').click
-    frame = find('turbo-frame#frame-modal', visible: :all)
-    assert_selector 'turbo-frame#frame-modal dialog[open]'
+    open_activity_modal(1)
 
     page.execute_script(<<~JS)
-      var frame = document.querySelector('turbo-frame#frame-modal')
-      var sibling = document.createElement('div')
+      const frame = document.querySelector('turbo-frame#project_activity_modal')
+      const sibling = document.createElement('div')
       sibling.id = 'frame-modal-sibling'
       sibling.textContent = 'sibling content'
       frame.appendChild(sibling)
     JS
 
-    within frame do
-      find("[data-action='click->ui--modal#close']", text: 'Close').click
-    end
+    within('turbo-frame#project_activity_modal') { click_on 'Close' }
 
-    assert_no_selector "[data-controller~='ui--modal']"
+    assert_no_selector '[data-controller~="ui--modal"]'
     assert_selector '#frame-modal-sibling', visible: :all
   end
 
   test "M2: a Turbo Stream that empties the modal's container unlocks the body and restores focus" do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
-    assert_equal 'hidden', page.evaluate_script('document.body.style.overflow')
+    open_modal(1)
+    assert scroll_locked?
 
-    page.execute_script(<<~JS)
-      Turbo.renderStreamMessage('<turbo-stream action="update" target="stream-modal"><template></template></turbo-stream>')
-    JS
+    stream('<turbo-stream action="update" target="modal"><template></template></turbo-stream>')
 
-    assert_no_selector "[data-controller~='ui--modal']"
-    assert_equal '', page.evaluate_script('document.body.style.overflow')
-    assert page.evaluate_script("document.activeElement === document.getElementById('stream-modal-trigger')")
+    no_modal
+    assert_scroll_unlocked
+    assert_equal 'open_project_1', focused_id
   end
 
   test 'M3: after Turbo navigation and Back, the modal is gone, unlocked, and the trigger opens a real modal again' do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
+    open_modal(1)
 
     # The open dialog's native backdrop blocks every click, including a sidebar link, so
     # trigger the Turbo visit directly -- this is exactly the path a real navigation takes.
-    page.execute_script('Turbo.visit(arguments[0])', installation_path)
+    page.execute_script('Turbo.visit(arguments[0])', '/installation')
     assert_selector 'h1', text: 'Installation'
 
     page.go_back
-    assert_selector 'h1', text: 'Modal'
-    assert_no_selector "[data-controller~='ui--modal']"
-    assert_equal '', page.evaluate_script('document.body.style.overflow')
+    assert_selector 'h1', text: 'Modal & Turbo'
+    no_modal
+    assert_scroll_unlocked
 
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
-    assert page.evaluate_script("document.querySelector('dialog[open]').matches(':modal')")
+    open_modal(1)
+    assert page.evaluate_script("document.querySelector('#modal dialog').matches(':modal')")
   end
 
   test 'M4: a track_changes modal falls back to the browser confirm() when the default confirm dialog is missing' do
-    visit modal_path
     inject_track_changes_modal
 
     page.execute_script("document.getElementById('m4-form').dispatchEvent(new CustomEvent('form:changed', { bubbles: true }))")
@@ -91,158 +81,47 @@ class ModalTest < ApplicationSystemTestCase
   end
 
   test "M7: the demo modal's dialog is named via aria-labelledby pointing at its heading" do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    dialog = find('dialog[open]')
-    labelledby = dialog['aria-labelledby']
-    assert_equal 'stream-modal-title', labelledby
-    assert_equal 'Acme rebrand', find("##{labelledby}").text
+    open_modal(1)
+
+    assert_equal 'project_modal_title', dialog['aria-labelledby']
+    assert_equal 'Acme rebrand', find('#project_modal_title').text
   end
 
-  test 'stream pattern: closing then reopening via stream ends with the new modal open, locked, and focused' do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
-    find("[data-action='click->ui--modal#close']", text: 'Close').click
-    assert_no_selector "[data-controller~='ui--modal']"
+  test 'closing then reopening via stream ends with the new modal open, locked, and focused' do
+    open_modal(1)
+    within('#modal') { click_on 'Close' }
+    no_modal
 
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
-    assert_equal 'hidden', page.evaluate_script('document.body.style.overflow')
-    assert page.evaluate_script("document.querySelector('dialog[open]').contains(document.activeElement)")
+    open_modal(2)
+
+    assert_selector '#modal dialog', text: 'Q3 campaign'
+    assert scroll_locked?
+    assert page.evaluate_script("document.querySelector('#modal dialog').contains(document.activeElement)")
   end
 
-  test 'stream pattern: a stream that replaces an open modal with another ends with the new one open, locked, and focused' do
-    visit modal_path
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]'
-
-    find('button', text: 'Replace via stream').click
-
-    assert_selector 'dialog[open]', text: 'A different modal'
-    assert_equal 'hidden', page.evaluate_script('document.body.style.overflow')
-    assert page.evaluate_script("document.querySelector('dialog[open]').contains(document.activeElement)")
-  end
-
-  test 'stream/frame pattern: swapping only the inner content frame does not reopen the dialog' do
-    visit modal_path
-    stub_show_modal_call_counter
-
-    find('#stream-modal-trigger').click
-    assert_selector 'dialog[open]', text: 'Acme rebrand'
-    assert_equal 1, page.evaluate_script('window.__showModalCalls')
-
-    within find('turbo-frame#stream_modal_content') do
-      click_link 'Edit'
-    end
-    assert_selector 'turbo-frame#stream_modal_content h2', text: 'Edit project'
-    assert_equal 1, page.evaluate_script('window.__showModalCalls')
-
-    within find('turbo-frame#stream_modal_content') do
-      click_button 'Save'
-    end
-    assert_selector 'turbo-frame#stream_modal_content p#stream-name-error'
-    assert_equal 1, page.evaluate_script('window.__showModalCalls')
-
-    within find('turbo-frame#stream_modal_content') do
-      fill_in 'Project name', with: 'Renamed'
-      click_button 'Save'
-    end
-    assert_selector 'turbo-frame#stream_modal_content', text: 'Project saved'
-    assert_equal 1, page.evaluate_script('window.__showModalCalls')
-  end
-
-  test 'stream/frame pattern: focus stays inside the dialog across an inner content frame swap' do
-    visit modal_path
-
-    find('#stream-modal-trigger').click
-    track_frame_renders
-
-    # Turbo swaps the frame's content, then waits two repaints before dispatching
-    # turbo:frame-render, which is what moves focus. Seeing the new content isn't the
-    # finish line; the frame-render event is.
-    within find('turbo-frame#stream_modal_content') do
-      click_link 'Edit'
-    end
-    assert_focus_in_dialog_after_frame_render(1)
-
-    within find('turbo-frame#stream_modal_content') do
-      fill_in 'Project name', with: 'Renamed'
-      click_button 'Save'
-    end
-    assert_selector 'turbo-frame#stream_modal_content', text: 'Project saved'
-    assert_focus_in_dialog_after_frame_render(2)
-  end
-
-  test 'stream/frame pattern: an autofocused field in the newly rendered frame keeps focus' do
-    visit modal_path
-    find('#stream-modal-trigger').click
+  test 'an autofocused field in the newly rendered content frame keeps focus' do
+    open_modal(1)
     track_frame_renders
     page.execute_script(<<~JS)
-      document.addEventListener('turbo:before-frame-render', function(event) {
-        var field = event.detail.newFrame.querySelector('input[name="name"]')
+      document.addEventListener('turbo:before-frame-render', (event) => {
+        const field = event.detail.newFrame.querySelector('input[name="project[name]"]')
         if (field) field.setAttribute('autofocus', '')
       })
     JS
 
-    within find('turbo-frame#stream_modal_content') do
-      click_link 'Edit'
+    within '#modal turbo-frame#project_modal_content' do
+      click_on 'Edit'
     end
+
     assert_focus_in_dialog_after_frame_render(1)
-    assert page.evaluate_script("document.activeElement.name === 'name'")
-  end
-
-  test 'stream/frame pattern: the turbo-frame trigger opens, navigates inside, closes, and reopens' do
-    visit modal_path
-    find('#frame-modal-trigger').click
-    assert_selector 'turbo-frame#frame-modal dialog[open]'
-
-    within find('turbo-frame#frame-modal') do
-      click_link 'Edit'
-    end
-    assert_selector 'turbo-frame#frame-modal h2', text: 'Edit project'
-
-    within find('turbo-frame#frame-modal') do
-      find("[data-action='click->ui--modal#close']", text: 'Close').click
-    end
-    assert_no_selector "[data-controller~='ui--modal']"
-
-    find('#frame-modal-trigger').click
-    assert_selector 'turbo-frame#frame-modal dialog[open]'
+    assert_equal 'project[name]', page.evaluate_script('document.activeElement.name')
   end
 
   private
 
-  def track_frame_renders
-    page.execute_script(<<~JS)
-      window.__frameRenders = 0
-      document.addEventListener('turbo:frame-render', function() { window.__frameRenders++ })
-    JS
-  end
-
-  def assert_focus_in_dialog_after_frame_render(count)
-    Timeout.timeout(Capybara.default_max_wait_time) do
-      sleep 0.05 until page.evaluate_script('window.__frameRenders') >= count
-    end
-    assert page.evaluate_script("document.querySelector('dialog[open]').contains(document.activeElement)"),
-           "expected focus inside the dialog, got #{page.evaluate_script('document.activeElement.outerHTML.slice(0, 80)')}"
-  end
-
-  def stub_show_modal_call_counter
-    page.execute_script(<<~JS)
-      window.__showModalCalls = 0
-      var proto = HTMLDialogElement.prototype
-      var original = proto.showModal
-      proto.showModal = function(...args) {
-        window.__showModalCalls++
-        return original.apply(this, args)
-      }
-    JS
-  end
-
-  # The docs page has no track_changes demo, so build one matching the exact markup
-  # Ui::ModalComponent renders (data-controller, targets and values), which Stimulus
-  # picks up and connects the same as if it had come from the server.
+  # There is no track_changes demo with a hand-written form, so build one matching the exact
+  # markup Ui::ModalComponent renders (data-controller, targets and values), which Stimulus picks
+  # up and connects the same as if it had come from the server.
   def inject_track_changes_modal
     page.execute_script(<<~JS)
       var wrapper = document.createElement('div')

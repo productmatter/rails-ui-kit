@@ -11,6 +11,13 @@ Rails.application.routes.draw do
     end
   end
 
+  # The Modal + Turbo guide's demo resources: real routes, real actions, real 422s. Every route
+  # sample in docs/guides/modal-and-turbo.md is one of these.
+  resources :projects, path: 'demos/projects', only: %i[show edit update destroy] do
+    get :activity, on: :member
+  end
+  resources :invitations, path: 'demos/invitations', only: %i[new create]
+
   get    'demos/modal',  to: 'docs#modal_demo',   as: :modal_demo
   post   'demos/submit', to: 'docs#demo_submit',  as: :demo_submit
   post   'demos/select', to: 'docs#select_submit', as: :demo_select

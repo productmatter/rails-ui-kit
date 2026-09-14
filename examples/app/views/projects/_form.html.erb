@@ -1,0 +1,16 @@
+<div class="p-6 sm:p-8">
+  <h2 id="project_modal_title" class="text-base font-semibold text-foreground">Edit project</h2>
+
+  <%# ui--form-change is what makes track_changes: true mean anything: it tells the modal when
+      the form is dirty, so closing it asks first. %>
+  <%= form_with model: project, class: "mt-5 grid gap-4", data: { controller: "ui--form-change" } do |form| %>
+    <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
+    <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
+
+    <div class="mt-2 flex items-center justify-end gap-2">
+      <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
+      <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+      <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
+    </div>
+  <% end %>
+</div>

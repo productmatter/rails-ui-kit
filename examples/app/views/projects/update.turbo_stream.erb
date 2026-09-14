@@ -1,0 +1,8 @@
+<%# The success response, and the whole close: the server knows the save went through, so it
+    closes the modal with its exit animation and updates every region the change touched.
+    The row is a plain <li id="project_1">, not a turbo-frame -- a stream targets any id. %>
+<%= turbo_stream.ui_close_modal %>
+<%= turbo_stream.replace @project %>
+<%= turbo_stream.update "flash" do %>
+  <p class="rounded-md bg-muted px-3 py-2 text-sm text-foreground"><%= flash[:notice] %></p>
+<% end %>

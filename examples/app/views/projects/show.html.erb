@@ -1,0 +1,5 @@
+<%# The same content as a bare frame. An in-modal "Cancel" link navigates the content frame here,
+    which swaps the frame alone: the dialog is never re-mounted and never re-animates. %>
+<%= turbo_frame_tag "project_modal_content" do %>
+  <%= render "projects/details", project: @project %>
+<% end %>

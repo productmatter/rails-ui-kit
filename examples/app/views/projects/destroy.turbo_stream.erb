@@ -1,0 +1,5 @@
+<%= turbo_stream.ui_close_modal %>
+<%= turbo_stream.remove @project %>
+<%= turbo_stream.update "flash" do %>
+  <p class="rounded-md bg-muted px-3 py-2 text-sm text-foreground"><%= flash[:notice] %></p>
+<% end %>

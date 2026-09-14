@@ -23,6 +23,8 @@
   <% end %>
   <%= stylesheet_link_tag "tailwind", data: { turbo_track: "reload" } %>
   <%= javascript_importmap_tags %>
+  <%# A page that opts into morphing refreshes does it with turbo_refreshes_with, which provides :head. %>
+  <%= yield :head %>
 </head>
 <body class="h-full bg-background text-foreground antialiased" data-controller="ui--dark-mode">
 
@@ -32,7 +34,10 @@
   </div>
   <%= render Ui::ToastContainerComponent.new %>
   <div data-controller="ui--turbo-confirm ui--turbo-disable-with" class="hidden"></div>
-  <turbo-frame id="modal"></turbo-frame>
+  <%# The modal container: a plain div, not a turbo-frame, so a stream can render any modal into
+      it and a form inside one behaves like a form anywhere else. data-turbo-permanent keeps an
+      open modal through a morphing page refresh, which would otherwise morph it away. %>
+  <div id="modal" data-turbo-permanent></div>
 
   <div class="flex h-full">
 
