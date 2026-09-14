@@ -1,0 +1,131 @@
+<% content_for :title, "Field" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Field</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    Wires a label, a control, an optional description and errors into one accessible unit.
+    Every id is derived from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name:</code> --
+    the caller never writes one. Ships no Stimulus controller; it's server-rendered.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="field-preview" class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "signup[name]") do |field| %>
+      <% field.with_label { "Name" } %>
+      <% field.with_control(Ui::InputComponent, placeholder: "Jane Cooper") %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "signup[email]") do |field| %>
+      <% field.with_label { "Email" } %>
+      <% field.with_control(Ui::InputComponent, type: "email", placeholder: "you@example.com") %>
+      <% field.with_description { "We'll only use this to send your receipt." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "signup[coupon]", errors: ["is not a recognised code"]) do |field| %>
+      <% field.with_label { "Coupon code" } %>
+      <% field.with_control(Ui::InputComponent, value: "SUMMER-2020") %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "signup[plan]") do |field| %>
+      <% field.with_label { "Plan" } %>
+      <% field.with_control(Ui::InputComponent, value: "Enterprise (fixed)", disabled: true) %>
+      <% field.with_description { "Set by your organisation." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%# The block form: Textarea's value is block content, so it needs the block form
+        rather than the with_control(component, **attrs) shorthand %>
+    <%= render Ui::FieldComponent.new(name: "signup[bio]") do |field| %>
+      <% field.with_label { "Bio" } %>
+      <% field.with_control(placeholder: "Tell us about yourself") { |c| render(Ui::TextareaComponent.new(**c.attributes)) } %>
+      <% field.with_description { "Shown on your public profile." } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#field-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="field-usage" class="text-neutral-200"><%= h(example_field_usage) %></code></pre>
+</div>
+
+<%# Parts %>
+<h2 class="text-base font-semibold mb-3">Parts</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">data-slot</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["with_label",       "label",             "Ui::LabelComponent, for= set to the control's id automatically."],
+        ["with_control",     "(the control's own)", "Ui::InputComponent by default; pass a component class, or a block for Textarea, a <select> or anything else."],
+        ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in."],
+        ["(errors:)",        "field-error",       "Rendered automatically when errors: is non-empty -- there is no with_error slot to call."],
+      ].each do |slot, data_slot, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= slot %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= data_slot %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["name",       "String",  "required", "The control's HTML name, e.g. \"user[email]\". Its id is derived from this the way form_with derives one, unless control_id: is given."],
+        ["errors",     "Array",   "nil",      "A plain array of message strings, e.g. @user.errors[:email]. Any non-empty array marks the field invalid."],
+        ["control_id", "String",  "nil",      "Overrides the derived id when the caller needs a specific one."],
+        ["class",      "String",  "nil",      "Merged over the wrapper's default classes -- the caller always wins."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Notes %>
+<h2 class="text-base font-semibold mb-3">Notes</h2>
+<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+  <li>Errors set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-invalid="true"</code> on the control and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-invalid="true"</code> on the wrapper -- styling keys off those attributes, never off DOM structure, so Rails' <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">div.field_with_errors</code> wrapper can't break it.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code> lists only the parts that actually render, in reading order, however you call the slots.</li>
+  <li>No live-region role by default -- errors are already on the page at load. A Turbo Stream that replaces a single field can pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role: "alert"</code> straight through the control's forwarded attributes.</li>
+  <li>Renders no markup of its own beyond the wrapper; label, control, description and error are all real, independent components you can render on their own.</li>
+</ul>

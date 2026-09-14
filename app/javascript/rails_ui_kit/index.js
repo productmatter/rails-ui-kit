@@ -9,6 +9,11 @@ import TurboDisableWithController from "rails_ui_kit/controllers/turbo_disable_w
 import DarkModeController from "rails_ui_kit/controllers/dark_mode_controller"
 import TooltipController from "rails_ui_kit/controllers/tooltip_controller"
 import PopoverController from "rails_ui_kit/controllers/popover_controller"
+import MediaQueryController from "rails_ui_kit/controllers/media_query_controller"
+import AnchorController from "rails_ui_kit/controllers/anchor_controller"
+import RovingFocusController from "rails_ui_kit/controllers/roving_focus_controller"
+import PresenceController from "rails_ui_kit/controllers/presence_controller"
+import OverlayController from "rails_ui_kit/controllers/overlay_controller"
 
 export {
   ModalController,
@@ -21,7 +26,12 @@ export {
   TurboDisableWithController,
   DarkModeController,
   TooltipController,
-  PopoverController
+  PopoverController,
+  MediaQueryController,
+  AnchorController,
+  RovingFocusController,
+  PresenceController,
+  OverlayController
 }
 
 export function registerControllers(application) {
@@ -36,4 +46,9 @@ export function registerControllers(application) {
   application.register("ui--dark-mode", DarkModeController)
   application.register("ui--tooltip", TooltipController)
   application.register("ui--popover", PopoverController)
+  application.register("ui--media-query", MediaQueryController)
+  application.register("ui--anchor", AnchorController)
+  application.register("ui--roving-focus", RovingFocusController)
+  application.register("ui--presence", PresenceController)
+  application.register("ui--overlay", OverlayController)
 }

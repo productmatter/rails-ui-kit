@@ -1,0 +1,8 @@
+<%= tag.div(**root_attributes(data: { invalid: (true if invalid?) })) do %>
+  <%= label %>
+  <%= control %>
+  <%= description %>
+  <% if invalid? %>
+    <%= render(Ui::Field::ErrorComponent.new(id: error_id)) { errors.to_sentence } %>
+  <% end %>
+<% end %>

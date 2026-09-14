@@ -1,0 +1,504 @@
+import { Controller } from "@hotwired/stimulus"
+import * as presence from "rails_ui_kit/overlay/presence"
+import {
+  FALLBACK_Z_INDEX,
+  lockScroll,
+  recoverFromLightDismiss,
+  supportsTopLayer,
+  unlockScroll
+} from "rails_ui_kit/overlay/overlay_stack"
+
+// Primitive B -- the overlay stack.
+//
+// Its three modes are platform primitives, not component names, and most of what an overlay
+// needs comes with them: the top layer places them, and being in the top layer is what makes
+// Escape close exactly the top one, LIFO, with no listener of ours anywhere:
+//
+//   modal → a <dialog> opened with showModal(). Focus trap, top layer, Escape: the browser's.
+//   layer → popover="auto". Top layer, light dismiss, Escape ordering: the browser's. No trap,
+//           which is what a menu or a listbox wants.
+//   hint  → popover="manual". Top layer, and critically no light dismiss, so a tooltip
+//           appearing never closes the menu the pointer is inside.
+//
+// What is left for this controller is what the platform does not give: presence (so an
+// overlay can animate out at all), backdrop dismiss for <dialog>, a reference-counted body
+// scroll lock, focus return, and a cancelable dismiss event.
+//
+//   <div data-controller="ui--overlay"
+//        data-ui--overlay-mode-value="modal"
+//        data-ui--overlay-scroll-lock-value="true"
+//        data-ui--overlay-initial-focus-value="input"
+//        data-action="ui--overlay:dismiss->unsaved#confirm">
+//     <button data-ui--overlay-target="trigger" data-action="ui--overlay#toggle">Open</button>
+//     <dialog data-ui--overlay-target="content">…</dialog>
+//   </div>
+//
+// Events: ui--overlay:opened, ui--overlay:closed, ui--overlay:dismiss (cancelable -- calling
+// preventDefault() on it keeps the overlay open).
+const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+let sequence = 0
+
+export default class extends Controller {
+  static targets = ["content", "trigger", "backdrop"]
+
+  static values = {
+    open: Boolean,
+    mode: { type: String, default: "layer" },
+    dismissible: { type: Boolean, default: true },
+    scrollLock: { type: Boolean, default: false },
+    restoreFocus: { type: Boolean, default: true },
+    initialFocus: { type: String, default: "" }
+  }
+
+  initialize() {
+    this.onBeforeCache = () => this.reset()
+    this.onPointerDown = this.rememberPress.bind(this)
+    this.onClick = this.dismissOnBackdrop.bind(this)
+    this.onCancel = this.dismissOnCancel.bind(this)
+    this.onClose = this.finishNativeClose.bind(this)
+    this.onBeforeToggle = this.interceptLightDismiss.bind(this)
+    this.onHintKeydown = this.dismissHintOnEscape.bind(this)
+    this.onFallbackKeydown = this.dismissFallbackOnEscape.bind(this)
+    this.onFallbackFocusOut = this.dismissFallbackOnFocusOut.bind(this)
+  }
+
+  connect() {
+    // Stimulus replays a stored value before connect(), which is how a page restored from
+    // Turbo's cache would otherwise reopen an overlay and pull focus into it. An overlay
+    // rendered open -- a Modal delivered by a Turbo Stream, say -- still opens, from the
+    // closed resting state, through the normal enter path.
+    const renderedOpen = this.openValue
+
+    this.shown = false
+    this.closing = false
+    this.prepareContent()
+    this.addListeners()
+    this.reset()
+    this.connected = true
+    if (!renderedOpen) return
+
+    // Opened here rather than by putting the value back, because Stimulus reads a value's
+    // change from the live attribute: reset() clearing it and this restoring it inside one task
+    // look to it like no change at all, and the callback never runs.
+    this.openValue = true
+    this.show()
+  }
+
+  disconnect() {
+    this.connected = false
+    this.removeListeners()
+    // However the overlay leaves the page -- closed, emptied by a Turbo Stream, navigated
+    // away from -- removal without a close is a close.
+    this.reset()
+  }
+
+  // The content element can be replaced or emptied on its own, without the controller element
+  // going anywhere. That is a close too.
+  contentTargetDisconnected() {
+    this.reset()
+  }
+
+  openValueChanged() {
+    if (!this.connected) return
+
+    if (this.openValue) {
+      this.show()
+    } else {
+      this.hide()
+    }
+  }
+
+  open() {
+    this.openValue = true
+  }
+
+  close() {
+    this.openValue = false
+  }
+
+  toggle(event) {
+    event?.preventDefault()
+    this.openValue = !this.active
+  }
+
+  // Open, or on its way out. A trigger press while the overlay is animating out means "stay
+  // closed": the browser's light dismiss has usually already started closing a layer by the
+  // time the click on its trigger lands.
+  get active() {
+    if (this.shown || this.closing) return true
+
+    return this.hasContentTarget && this.contentTarget.dataset.state === "closing"
+  }
+
+  // --- Opening -----------------------------------------------------------------------------
+
+  show() {
+    if (this.shown || !this.hasContentTarget) return
+
+    this.shown = true
+    this.returnTarget = this.focusReturnTarget()
+    if (this.scrollLockValue) lockScroll(this)
+
+    // Rendered before it is placed: showModal() and showPopover() can only move focus into an
+    // element the browser is actually laying out.
+    this.contentTarget.removeAttribute("hidden")
+    if (this.hasBackdropTarget) this.backdropTarget.removeAttribute("hidden")
+    this.place()
+
+    presence.enter(this.contentTarget)
+    if (this.hasBackdropTarget) presence.enter(this.backdropTarget)
+
+    this.moveFocusIn()
+    this.setExpanded(true)
+    if (this.modeValue === "hint" && this.dismissibleValue) {
+      document.addEventListener("keydown", this.onHintKeydown, true)
+    }
+
+    this.dispatch("opened")
+  }
+
+  place() {
+    const content = this.contentTarget
+
+    if (this.modeValue === "modal") {
+      if (typeof content.showModal !== "function") {
+        console.error("ui--overlay: mode \"modal\" needs a <dialog> content target", content)
+        return
+      }
+      // A page restored from Turbo's cache can carry a non-modal `open` attribute; showModal()
+      // throws on it.
+      if (content.open && !content.matches(":modal")) content.removeAttribute("open")
+      if (!content.matches(":modal")) content.showModal()
+      return
+    }
+
+    if (!supportsTopLayer() || content.matches(":popover-open")) return
+
+    // `source` ties the popover to its trigger, so the browser's light dismiss counts a click
+    // on the trigger as inside the popover rather than as a dismissal.
+    content.showPopover(this.triggerControl ? { source: this.triggerControl } : undefined)
+  }
+
+  moveFocusIn() {
+    // A hint describes the control the pointer or focus is already on; taking focus off it
+    // would be the bug, not the feature.
+    if (this.modeValue === "hint") return
+
+    const content = this.contentTarget
+    const initial = this.initialFocusValue && content.querySelector(this.initialFocusValue)
+    if (initial) return initial.focus()
+
+    // An explicit autofocus is the author saying where focus goes; honour it. What is not
+    // honoured is the browser's fallback of focusing the first focusable descendant, which is
+    // arbitrary -- a menu's first item, a modal's "Open a layer inside" button.
+    const autofocus = content.querySelector("[autofocus]")
+    if (autofocus) return autofocus.focus()
+
+    // An overlay with no focusable children still receives focus, and still returns it.
+    if (!content.hasAttribute("tabindex")) content.setAttribute("tabindex", "-1")
+    content.focus()
+  }
+
+  // --- Closing -----------------------------------------------------------------------------
+
+  async hide() {
+    if (!this.shown || !this.hasContentTarget) return
+
+    this.shown = false
+    this.setExpanded(false)
+    this.stopHintEscape()
+
+    // Awaited before close() / hidePopover(), which is the only reason a <dialog> can animate
+    // out at all: closing it first takes it out of the top layer and nothing renders.
+    const closed = presence.exit(this.contentTarget)
+    if (this.hasBackdropTarget) presence.exit(this.backdropTarget)
+    if (!(await closed)) return // a re-open overtook this close; the overlay stays open
+
+    this.unplace()
+    this.finish()
+  }
+
+  unplace() {
+    const content = this.contentTarget
+
+    if (content.open && typeof content.close === "function") return content.close()
+    if (content.matches(":popover-open")) content.hidePopover()
+  }
+
+  finish() {
+    unlockScroll(this)
+    this.restoreFocusIfLost()
+    if (this.openValue) this.openValue = false
+
+    this.dispatch("closed")
+  }
+
+  // Closed without an exit animation, because something else already took the element out of
+  // the top layer: a native close, or another popover opening over this one.
+  finishClosed() {
+    presence.reset(this.contentTarget)
+    if (this.hasBackdropTarget) presence.reset(this.backdropTarget)
+    this.setExpanded(false)
+    this.stopHintEscape()
+    this.finish()
+  }
+
+  // Dismissal -- Escape or an outside click -- is vetoable. This is the seam a dirty-form
+  // confirmation hooks into; a programmatic close() skips it.
+  requestDismiss() {
+    if (!this.dismissibleValue) return false
+
+    return !this.dispatch("dismiss", { cancelable: true }).defaultPrevented
+  }
+
+  dismiss() {
+    if (this.requestDismiss()) this.hide()
+  }
+
+  // The closed resting state, applied at once: no exit animation, no pending timer or frame,
+  // nothing left on <body> and no focus stranded on it. Runs on connect, on disconnect and on
+  // turbo:before-cache.
+  reset() {
+    this.shown = false
+    this.closing = false
+    this.stopHintEscape()
+
+    if (this.hasContentTarget) {
+      const content = this.contentTarget
+      // Never call showModal() on a <dialog> restored with a stale `open` attribute.
+      if (content.open && !content.matches(":modal")) content.removeAttribute("open")
+      this.unplace()
+      presence.reset(content)
+    }
+    if (this.hasBackdropTarget) presence.reset(this.backdropTarget)
+
+    unlockScroll(this)
+    this.setExpanded(false)
+    this.restoreFocusIfLost()
+    if (this.openValue) this.openValue = false
+  }
+
+  // --- Dismiss gestures --------------------------------------------------------------------
+
+  rememberPress(event) {
+    this.pressTarget = event.target
+  }
+
+  // The one dismiss gesture the platform doesn't give us: a modal <dialog> has no native
+  // backdrop dismiss. Both the press and the click have to land on the dialog itself (a click
+  // on the ::backdrop targets the dialog), so drag-selecting text from inside the panel out
+  // onto the backdrop leaves the overlay open.
+  dismissOnBackdrop(event) {
+    if (!this.shown || this.modeValue !== "modal") return
+    if (!this.isBackdrop(event.target) || !this.isBackdrop(this.pressTarget)) return
+
+    this.dismiss()
+  }
+
+  isBackdrop(node) {
+    if (!node) return false
+
+    return node === this.contentTarget || (this.hasBackdropTarget && node === this.backdropTarget)
+  }
+
+  // <dialog> fires `cancel` for Escape, and it is preventable -- which is exactly the seam the
+  // cancelable dismiss needs. There is no document-level listener here and no ordering of our
+  // own: a layer open inside this modal is above it in the top layer, so it takes the first
+  // Escape and this modal takes the second.
+  dismissOnCancel(event) {
+    if (event.target !== this.contentTarget || !this.shown) return
+    // Chrome refuses to let a close request be trapped twice with nothing in between: the
+    // second Escape fires `cancel` non-cancelable and closes the dialog regardless. The
+    // `close` listener picks the bookkeeping up from there.
+    if (!event.cancelable) return
+
+    event.preventDefault()
+    this.dismiss()
+  }
+
+  // Whatever closed the dialog without coming through this controller -- that second Escape, a
+  // <form method="dialog"> submit, a close() from other code -- still has to leave the page
+  // unlocked, the focus back where it came from and the state closed.
+  finishNativeClose(event) {
+    if (event.target !== this.contentTarget || !this.shown) return
+
+    this.shown = false
+    this.finishClosed()
+  }
+
+  // `popover` gives a layer its top-layer placement, its Escape ordering and its light
+  // dismiss. What it does not give is any say in that dismissal: beforetoggle is cancelable
+  // only on the way in, and the hide is immediate -- so there is nowhere to run an exit
+  // animation, and no way to honour a vetoed ui--overlay:dismiss. The browser has not painted
+  // when beforetoggle fires, so putting the popover back before the next frame is invisible,
+  // and from there this controller closes it on its own terms.
+  interceptLightDismiss(event) {
+    if (event.target !== this.contentTarget || event.newState !== "closed" || !this.shown) return
+    // <dialog> fires these too, and it has `cancel` -- a preventable close request -- instead.
+    if (this.modeValue === "modal") return
+
+    this.shown = false
+    this.closing = true
+    const focused = this.contentTarget.contains(document.activeElement) ? document.activeElement : null
+
+    recoverFromLightDismiss(this.contentTarget, () => this.recover(focused))
+  }
+
+  recover(focused) {
+    // reset() -- a disconnect, or turbo:before-cache -- got here first and already closed it.
+    if (!this.closing) return
+
+    this.closing = false
+    // Another auto popover opened over this one, so the browser closed this one to make room.
+    // That is not a dismissal: there is nothing to veto and nothing to animate.
+    if (this.displacedByAnotherPopover()) return this.finishClosed()
+
+    const dismissed = this.requestDismiss()
+    this.place()
+    this.shown = true
+
+    if (dismissed) return this.hide()
+    // Vetoed: the browser moved focus out when it hid the popover, so put it back.
+    if (focused?.isConnected) focused.focus()
+  }
+
+  displacedByAnotherPopover() {
+    const content = this.contentTarget
+
+    return Array.from(document.querySelectorAll(":popover-open")).some(
+      (other) => other.popover === "auto" && !other.contains(content) && !content.contains(other)
+    )
+  }
+
+  // The one named exception to "no document-level dismissal listener". popover="manual" opts
+  // out of the browser's Escape handling, so hint content has none to inherit and this is what
+  // gives it Escape at all. Capture phase, only while visible, consuming the key with both
+  // preventDefault() and stopPropagation() so it never also closes a surrounding <dialog> or
+  // another layer (WCAG 1.4.13).
+  dismissHintOnEscape(event) {
+    if (event.key !== "Escape" || event.defaultPrevented || event.isComposing || !this.shown) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    this.dismiss()
+  }
+
+  stopHintEscape() {
+    document.removeEventListener("keydown", this.onHintKeydown, true)
+  }
+
+  // Both of these run only where `popover` is unsupported and there is no light dismiss to
+  // delegate to. They are bound to this controller's own element, never to the document, and
+  // a nested overlay consumes the key before its ancestor sees it.
+  dismissFallbackOnEscape(event) {
+    if (!this.shown || this.modeValue === "modal") return
+    if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return
+
+    event.preventDefault()
+    this.dismiss()
+  }
+
+  dismissFallbackOnFocusOut(event) {
+    if (!this.shown || this.modeValue !== "layer") return
+    if (event.relatedTarget && this.element.contains(event.relatedTarget)) return
+
+    this.dismiss()
+  }
+
+  // --- Wiring ------------------------------------------------------------------------------
+
+  prepareContent() {
+    if (!this.hasContentTarget) return
+
+    const content = this.contentTarget
+    if (!content.id) content.id = `ui-overlay-${(sequence += 1)}`
+
+    if (this.modeValue !== "modal") {
+      if (supportsTopLayer()) {
+        content.popover = this.modeValue === "hint" ? "manual" : "auto"
+      } else {
+        // The only stacking value in the kit, applied once by the stack module's constant --
+        // not per depth, and never as a literal in a component.
+        content.style.zIndex = FALLBACK_Z_INDEX
+        if (!content.hasAttribute("tabindex")) content.setAttribute("tabindex", "-1")
+      }
+    }
+
+    const trigger = this.triggerControl
+    if (!trigger || this.modeValue === "hint") return
+
+    trigger.setAttribute("aria-controls", content.id)
+    trigger.setAttribute("aria-expanded", "false")
+  }
+
+  addListeners() {
+    document.addEventListener("turbo:before-cache", this.onBeforeCache)
+    this.element.addEventListener("pointerdown", this.onPointerDown, true)
+    this.element.addEventListener("click", this.onClick)
+
+    if (this.hasContentTarget) {
+      this.contentTarget.addEventListener("cancel", this.onCancel)
+      this.contentTarget.addEventListener("close", this.onClose)
+      this.contentTarget.addEventListener("beforetoggle", this.onBeforeToggle)
+    }
+
+    if (supportsTopLayer()) return
+
+    this.element.addEventListener("keydown", this.onFallbackKeydown)
+    this.element.addEventListener("focusout", this.onFallbackFocusOut)
+  }
+
+  removeListeners() {
+    document.removeEventListener("turbo:before-cache", this.onBeforeCache)
+    this.element.removeEventListener("pointerdown", this.onPointerDown, true)
+    this.element.removeEventListener("click", this.onClick)
+    this.element.removeEventListener("keydown", this.onFallbackKeydown)
+    this.element.removeEventListener("focusout", this.onFallbackFocusOut)
+
+    if (!this.hasContentTarget) return
+
+    this.contentTarget.removeEventListener("cancel", this.onCancel)
+    this.contentTarget.removeEventListener("close", this.onClose)
+    this.contentTarget.removeEventListener("beforetoggle", this.onBeforeToggle)
+  }
+
+  // --- Focus -------------------------------------------------------------------------------
+
+  focusReturnTarget() {
+    const active = document.activeElement
+
+    return active && active !== document.body ? active : this.triggerControl
+  }
+
+  // Focus restore is the browser's for both <dialog> and popovers, so this only steps in where
+  // the browser left focus nowhere: on <body>, or on an element inside the overlay that is
+  // about to stop being rendered. A dismiss that moved focus somewhere else on purpose keeps it.
+  restoreFocusIfLost() {
+    const target = this.returnTarget
+    this.returnTarget = null
+    if (!this.restoreFocusValue || !target?.isConnected) return
+
+    const active = document.activeElement
+    const inside = this.hasContentTarget && this.contentTarget.contains(active)
+    if (active && active !== document.body && !inside) return
+
+    target.focus({ preventScroll: true })
+  }
+
+  setExpanded(open) {
+    const trigger = this.triggerControl
+    if (!trigger || this.modeValue === "hint") return
+
+    trigger.setAttribute("aria-expanded", open ? "true" : "false")
+  }
+
+  // ARIA state belongs on the caller's control, not on a wrapping <div>: a wrapper is neither
+  // focusable nor announced with state, and in a block layout it spans the full width.
+  get triggerControl() {
+    if (!this.hasTriggerTarget) return null
+    if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
+
+    return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
+  }
+}

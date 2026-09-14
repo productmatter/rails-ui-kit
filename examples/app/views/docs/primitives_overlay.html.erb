@@ -1,0 +1,354 @@
+<% content_for :title, "Overlay & Presence" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Primitives</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Overlay &amp; Presence</h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    The two cross-cutting behaviours every overlay in the kit is built from:
+    <code class="font-mono text-xs">ui--presence</code>, which holds an element in the page until its exit
+    animation has finished, and <code class="font-mono text-xs">ui--overlay</code>, which places it in the
+    browser&rsquo;s top layer, dismisses it and gives focus back. Everything on this page is driven by those two
+    controllers on plain markup — no components involved.
+  </p>
+</div>
+
+<%# Demo-only glue: the primitives' public API is a value and two events, so the buttons that
+    sit outside a presence element flip its value, and the dismissal guard is an ordinary
+    listener on the cancelable event -- which is exactly how Modal's unsaved-changes
+    confirmation will hook into it. %>
+<style>
+  /* Classic, space-taking scrollbars on this page, so the scroll lock's "no horizontal shift"
+     guarantee is actually exercised here: macOS overlay scrollbars reserve no width at all. */
+  html::-webkit-scrollbar { width: 15px; }
+  html::-webkit-scrollbar-thumb { background: #a3a3a3; border-radius: 8px; }
+</style>
+
+<h2 class="text-base font-semibold mb-3">Presence</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+  The controlled element carries <code class="font-mono text-xs">data-state="open&nbsp;|&nbsp;closing&nbsp;|&nbsp;closed"</code>
+  and nothing else: no classes are added or removed. Closing leaves it visible and laid out at
+  <code class="font-mono text-xs">closing</code> until its own animation reports done, then hides it with the
+  <code class="font-mono text-xs">hidden</code> attribute. An element with no declared transition closes in the same
+  frame, and under <code class="font-mono text-xs">prefers-reduced-motion: reduce</code> so does one that has.
+</p>
+
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8 space-y-6">
+  <div>
+    <div class="flex items-center gap-2 mb-3">
+      <button id="fade-open" data-presence="fade-panel" data-presence-open="true"
+              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">Open</button>
+      <button id="fade-close" data-presence="fade-panel" data-presence-open="false"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">Close</button>
+      <span class="text-xs text-neutral-500">500ms fade + slide</span>
+    </div>
+    <div id="fade-panel"
+         data-controller="ui--presence"
+         class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-4 text-sm
+                transition duration-500 ease-out
+                data-[state=closed]:opacity-0 data-[state=closed]:-translate-y-2
+                data-[state=closing]:opacity-0 data-[state=closing]:-translate-y-2"
+         hidden>
+      I stay in the page, laid out, for the whole 500ms of my exit animation. Only when it finishes does
+      <code class="font-mono text-xs">data-state</code> become <code class="font-mono text-xs">closed</code> and the
+      <code class="font-mono text-xs">hidden</code> attribute come back.
+    </div>
+  </div>
+
+  <div>
+    <div class="flex items-center gap-2 mb-3">
+      <button id="instant-open" data-presence="instant-panel" data-presence-open="true"
+              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">Open</button>
+      <button id="instant-close" data-presence="instant-panel" data-presence-open="false"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">Close</button>
+      <span class="text-xs text-neutral-500">no transition declared</span>
+    </div>
+    <div id="instant-panel"
+         data-controller="ui--presence"
+         class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-4 text-sm"
+         hidden>
+      Nothing is declared on me, so I close in the same frame — the primitive measures rather than waits.
+    </div>
+  </div>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Overlay</h2>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+  Three modes, each one a platform primitive: <code class="font-mono text-xs">modal</code> is a
+  <code class="font-mono text-xs">&lt;dialog&gt;</code> opened with <code class="font-mono text-xs">showModal()</code>,
+  <code class="font-mono text-xs">layer</code> is <code class="font-mono text-xs">popover="auto"</code>, and
+  <code class="font-mono text-xs">hint</code> is <code class="font-mono text-xs">popover="manual"</code>. Paint order,
+  Escape ordering and light dismiss come with them. Placement is the top layer&rsquo;s; <em>positioning</em> arrives
+  separately with <code class="font-mono text-xs">ui--anchor</code>, so the panels below open centred.
+</p>
+
+<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-8 mb-8">
+  <div class="flex flex-wrap items-center gap-3">
+
+    <%# Modal, with a layer and a second modal nested inside it %>
+    <div id="modal-overlay"
+         data-controller="ui--overlay"
+         data-ui--overlay-mode-value="modal"
+         data-ui--overlay-scroll-lock-value="true">
+      <button id="modal-trigger"
+              data-ui--overlay-target="trigger"
+              data-action="click->ui--overlay#toggle"
+              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">
+        Open modal
+      </button>
+
+      <dialog id="modal-content"
+              data-ui--overlay-target="content"
+              aria-labelledby="modal-title"
+              class="mx-auto mt-10 mb-auto w-full max-w-lg max-h-[40vh] overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-700
+                     bg-white dark:bg-neutral-950 p-6 text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+                     transition duration-300 ease-out
+                     data-[state=open]:scale-100
+                     data-[state=closed]:opacity-0 data-[state=closed]:scale-95
+                     data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
+        <h3 id="modal-title" class="text-base font-semibold mb-2">A modal overlay</h3>
+        <p id="modal-text" class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+          The focus trap, the top layer and Escape are the browser&rsquo;s. The scroll lock, the backdrop click and
+          the exit animation are the primitive&rsquo;s. Drag-select this sentence out onto the backdrop and let go —
+          the overlay stays open, because the gesture began inside it.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <%# A layer opened inside a modal: in the top layer too, so it is neither clipped by
+              this dialog's scroll box nor painted behind it, and Escape closes it first. %>
+          <div id="inner-layer-overlay" data-controller="ui--overlay" data-ui--overlay-mode-value="layer">
+            <button id="inner-layer-trigger"
+                    data-ui--overlay-target="trigger"
+                    data-action="click->ui--overlay#toggle"
+                    class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              Open a layer inside
+            </button>
+            <div id="inner-layer-content"
+                 data-ui--overlay-target="content"
+                 role="menu"
+                 aria-label="Nested layer"
+                 class="m-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
+                        transition duration-200 ease-out
+                        data-[state=closed]:opacity-0 data-[state=closed]:scale-95
+                        data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
+              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">Rename</button>
+              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">Duplicate</button>
+            </div>
+          </div>
+
+          <%# A second lock-requesting overlay: closing it must not unlock the page under the first. %>
+          <div id="nested-overlay"
+               data-controller="ui--overlay"
+               data-ui--overlay-mode-value="modal"
+               data-ui--overlay-scroll-lock-value="true">
+            <button id="nested-modal-trigger"
+                    data-ui--overlay-target="trigger"
+                    data-action="click->ui--overlay#toggle"
+                    class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              Open a second modal
+            </button>
+            <dialog id="nested-modal-content"
+                    data-ui--overlay-target="content"
+                    aria-labelledby="nested-modal-title"
+                    class="m-auto w-full max-w-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
+                           text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+                           transition duration-300 ease-out
+                           data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
+              <h3 id="nested-modal-title" class="text-base font-semibold mb-2">Second modal</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                Closing me leaves the page locked, because the modal underneath still holds a lock.
+              </p>
+              <button id="nested-modal-close"
+                      data-action="click->ui--overlay#close"
+                      class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                Close
+              </button>
+            </dialog>
+          </div>
+
+          <button id="modal-close"
+                  data-action="click->ui--overlay#close"
+                  class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+            Close
+          </button>
+        </div>
+      </dialog>
+    </div>
+
+    <%# A standalone layer: light dismiss, Escape and paint order are the browser's %>
+    <div id="menu-overlay" data-controller="ui--overlay" data-ui--overlay-mode-value="layer">
+      <button id="menu-trigger"
+              data-ui--overlay-target="trigger"
+              data-action="click->ui--overlay#toggle"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+        Open layer
+      </button>
+      <div id="menu-content"
+           data-ui--overlay-target="content"
+           role="menu"
+           aria-label="Standalone layer"
+           class="m-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
+                  transition duration-200 ease-out
+                  data-[state=closed]:opacity-0 data-[state=closed]:scale-95
+                  data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
+        <button id="menu-item-edit" role="menuitem" class="block w-full rounded px-3 py-1.5 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">Edit</button>
+        <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800">Delete</button>
+      </div>
+    </div>
+
+    <%# A hint: manual, so it never light-dismisses the layer the pointer is inside %>
+    <div id="hint-overlay" data-controller="ui--overlay" data-ui--overlay-mode-value="hint">
+      <button id="hint-trigger"
+              data-ui--overlay-target="trigger"
+              data-action="click->ui--overlay#toggle"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+        Show hint
+      </button>
+      <div id="hint-content"
+           data-ui--overlay-target="content"
+           role="tooltip"
+           class="mx-auto mb-auto mt-24 rounded-md bg-neutral-900 px-2 py-1 text-xs text-white shadow-lg
+                  transition duration-150 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
+        Escape dismisses me without closing anything underneath.
+      </div>
+    </div>
+
+    <%# A dismissal a listener vetoes -- the seam Modal's unsaved-changes guard uses %>
+    <div id="guarded-overlay"
+         data-controller="ui--overlay"
+         data-ui--overlay-mode-value="modal"
+         data-ui--overlay-scroll-lock-value="true">
+      <button id="guarded-trigger"
+              data-ui--overlay-target="trigger"
+              data-action="click->ui--overlay#toggle"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+        Open guarded modal
+      </button>
+      <dialog id="guarded-content"
+              data-ui--overlay-target="content"
+              aria-labelledby="guarded-title"
+              class="m-auto w-full max-w-md rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
+                     text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+                     transition duration-300 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
+        <h3 id="guarded-title" class="text-base font-semibold mb-2">Guarded modal</h3>
+        <label class="flex items-center gap-2 text-sm mb-4">
+          <input id="guard-toggle" type="checkbox" checked class="rounded border-neutral-300">
+          Refuse Escape and backdrop dismissal
+        </label>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+          A listener on <code class="font-mono text-xs">ui--overlay:dismiss</code> calls
+          <code class="font-mono text-xs">preventDefault()</code> while that box is ticked. The Close button below
+          closes programmatically, which never asks.
+        </p>
+        <button id="guarded-close"
+                data-action="click->ui--overlay#close"
+                class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+          Close
+        </button>
+      </dialog>
+    </div>
+
+    <%# Removed from the page while open: the lock and the focus still come back %>
+    <div id="removable-overlay"
+         data-controller="ui--overlay"
+         data-ui--overlay-mode-value="modal"
+         data-ui--overlay-scroll-lock-value="true">
+      <button id="removable-trigger"
+              data-ui--overlay-target="trigger"
+              data-action="click->ui--overlay#toggle"
+              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+        Open removable modal
+      </button>
+      <dialog id="removable-content"
+              data-ui--overlay-target="content"
+              aria-labelledby="removable-title"
+              class="m-auto w-full max-w-md rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
+                     text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+                     transition duration-300 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
+        <h3 id="removable-title" class="text-base font-semibold mb-2">Removable modal</h3>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+          A Turbo Stream that empties this overlay&rsquo;s container never runs its close. Removal is a close:
+          the page unlocks and focus goes back to the trigger anyway.
+        </p>
+        <button id="remove-overlay"
+                class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+          Remove me from the DOM
+        </button>
+      </dialog>
+    </div>
+  </div>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Values</h2>
+<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-neutral-50 dark:bg-neutral-900">
+      <tr>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Controller</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
+        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+      <% [
+        ["ui--presence", "open",          "false",    "Boolean. The whole API: true enters, false exits."],
+        ["ui--presence", "timeout",       "1000",     "Number, ms. Ceiling on the safety timer derived from the element's computed duration."],
+        ["ui--overlay",  "open",          "false",    "Boolean. Ignored until the controller has connected."],
+        ["ui--overlay",  "mode",          '"layer"',  "modal (<dialog>), layer (popover=auto) or hint (popover=manual)."],
+        ["ui--overlay",  "dismissible",   "true",     "Whether Escape and outside clicks may dismiss it at all."],
+        ["ui--overlay",  "scrollLock",    "false",    "Locks body scroll while open, reference-counted across every open overlay."],
+        ["ui--overlay",  "restoreFocus",  "true",     "Returns focus to the trigger on close, including after Escape or removal."],
+        ["ui--overlay",  "initialFocus",  '""',       "Selector, resolved within the content target, for what takes focus on open."]
+      ].each do |controller, name, default, desc| %>
+        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
+          <td class="px-4 py-3 font-mono text-xs text-neutral-500"><%= controller %></td>
+          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
+          <td class="px-4 py-3 font-mono text-xs text-neutral-500 dark:text-neutral-400"><%= default %></td>
+          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Targets &amp; events</h2>
+<ul class="mb-8 space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+  <li><code class="font-mono text-xs">ui--presence</code> — no targets; it operates on its own element. Emits
+    <code class="font-mono text-xs">ui--presence:opened</code>, <code class="font-mono text-xs">ui--presence:closing</code>
+    and <code class="font-mono text-xs">ui--presence:closed</code>. Actions: <code class="font-mono text-xs">open</code>,
+    <code class="font-mono text-xs">close</code>, <code class="font-mono text-xs">toggle</code>.</li>
+  <li><code class="font-mono text-xs">ui--overlay</code> — targets <code class="font-mono text-xs">content</code> (required),
+    <code class="font-mono text-xs">trigger</code> and <code class="font-mono text-xs">backdrop</code>. Emits
+    <code class="font-mono text-xs">ui--overlay:opened</code>, <code class="font-mono text-xs">ui--overlay:closed</code> and
+    <code class="font-mono text-xs">ui--overlay:dismiss</code>, the last one cancelable: calling
+    <code class="font-mono text-xs">preventDefault()</code> on it keeps the overlay open.</li>
+  <li>Style the states, don&rsquo;t hide them: presence owns the <code class="font-mono text-xs">hidden</code> attribute, so
+    keep <code class="font-mono text-xs">display</code> out of your <code class="font-mono text-xs">data-state</code> rules
+    or the exit animation has nothing to animate.</li>
+</ul>
+
+<%# Room to scroll, so the scroll lock has something to hold still. %>
+<div class="h-[150vh]" aria-hidden="true"></div>
+
+<script>
+  // Buttons that sit outside a presence element drive it through its value, which is the
+  // controller's whole public API.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-presence]");
+    if (!button) return;
+    var panel = document.getElementById(button.dataset.presence);
+    panel.setAttribute("data-ui--presence-open-value", button.dataset.presenceOpen);
+  });
+
+  // The overlay whose content leaves the page while it is open, the way a Turbo Stream that
+  // empties its container does. No close() runs; the primitive treats the removal as one.
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest("#remove-overlay")) return;
+    document.getElementById("removable-content").remove();
+  });
+
+  // The vetoable dismissal, as an ordinary listener on the cancelable event.
+  document.addEventListener("ui--overlay:dismiss", function (event) {
+    if (event.target.id !== "guarded-overlay") return;
+    if (document.getElementById("guard-toggle").checked) event.preventDefault();
+  });
+</script>

@@ -26,6 +26,7 @@ module DocsPages
     { slug: :confirm_dialog, title: 'Confirm Dialog', section: 'Components' },
     { slug: :dropdown, title: 'Dropdown', section: 'Components' },
     { slug: :empty, title: 'Empty', section: 'Components' },
+    { slug: :field, title: 'Field', section: 'Components' },
     { slug: :input, title: 'Input', section: 'Components' },
     { slug: :input_group, title: 'Input Group', section: 'Components' },
     { slug: :item, title: 'Item', section: 'Components' },
@@ -46,6 +47,9 @@ module DocsPages
 
     { slug: :dark_mode, title: 'Dark Mode', section: 'Utilities' },
     { slug: :form_change, title: 'Form Change', section: 'Utilities' },
+    { slug: :media_query, title: 'Media Query', section: 'Utilities' },
+    { slug: :primitives_navigation, title: 'Positioning & Navigation', section: 'Utilities' },
+    { slug: :primitives_overlay, title: 'Overlay & Presence', section: 'Utilities' },
     { slug: :turbo_confirm, title: 'Turbo Confirm', section: 'Utilities' },
     { slug: :turbo_disable_with, title: 'Turbo Disable With', section: 'Utilities' }
   ].freeze

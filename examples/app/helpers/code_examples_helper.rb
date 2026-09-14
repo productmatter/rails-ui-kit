@@ -574,4 +574,39 @@ module CodeExamplesHelper
       <% end %>
     RUBY
   end
+
+  def example_field_usage
+    <<~'RUBY'
+      <%= render Ui::FieldComponent.new(name: "user[email]") do |field| %>
+        <% field.with_label { "Email" } %>
+        <% field.with_control(Ui::InputComponent, type: "email") %>
+        <% field.with_description { "We'll never share your email." } %>
+      <% end %>
+
+      <%# errors: takes a plain array of messages -- @user.errors[:email], not the
+          errors object itself, since the HTML name ("user[email]") and the model
+          attribute ("email") aren't the same thing %>
+      <%= render Ui::FieldComponent.new(name: "user[email]", errors: @user.errors[:email]) do |field| %>
+        <% field.with_label { "Email" } %>
+        <% field.with_control(Ui::InputComponent, type: "email", value: @user.email) %>
+      <% end %>
+
+      <%# A block form covers Textarea, a <select> or any custom control -- it receives
+          the field's own id/name/aria wiring through c.attributes %>
+      <%= render Ui::FieldComponent.new(name: "user[bio]") do |field| %>
+        <% field.with_label { "Bio" } %>
+        <% field.with_control { |c| render(Ui::TextareaComponent.new(**c.attributes)) { @user.bio } } %>
+      <% end %>
+    RUBY
+  end
+
+  def example_media_query_usage
+    <<~'RUBY'
+      <div data-controller="ui--media-query"
+           data-ui--media-query-query-value="(min-width: 768px)"
+           data-ui--media-query-matches-class="border-primary">
+        <%# Reads data-media-matches="true|false", or listens for ui--media-query:change %>
+      </div>
+    RUBY
+  end
 end
