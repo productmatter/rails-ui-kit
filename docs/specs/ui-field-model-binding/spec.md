@@ -1,7 +1,7 @@
 ---
 slug: ui-field-model-binding
 type: feature
-status: draft
+status: building
 decider: Jonathan Simmons
 blast_radius: medium
 size: large
@@ -47,7 +47,8 @@ guessed at. This spec is shaped around that honesty (§ Behavior, items 9–12).
 **Appetite.** One component, extended and not replaced. The model-bound constructor.
 Name, id, label and error derivation. Required detection and its accessibility layer.
 Taking the existing Select `422` round trip onto a real ActiveModel object. One small
-prerequisite on Select. No form builder (§ Out of scope / deferred).
+prerequisite on Select. The help text swapping to the error, animated where a morph
+keeps the old field (§ Behavior, items 19–23). No form builder (§ Out of scope / deferred).
 
 ## Goal
 
@@ -55,7 +56,9 @@ prerequisite on Select. No form builder (§ Out of scope / deferred).
 `form_with(model:)` for the same record, the model's error messages, a label matching
 `form.label`, and `required` on the control and a hidden-from-assistive-technology
 marker on the label exactly when the attribute has an unconditional presence validator.
-The v0.3.0 `name:`/`errors:` form renders unchanged, and the Select docs page's `422`
+The v0.3.0 `name:`/`errors:` form renders unchanged apart from the swap: an invalid
+field's help text gives way to its error, and it animates, and the error is announced,
+when a morph delivers the change. The Select docs page's `422`
 round trip passes its existing browser tests with its errors, value and `required`
 coming from an ActiveModel object.
 
@@ -66,7 +69,9 @@ coming from an ActiveModel object.
   architectural decision and not a gap.
 - **Not client-side validation.** The only constraint Field puts in the browser is
   native `required`. It emits no `pattern`, `minlength`, `maxlength`, `min` or `max`
-  from length, format or numericality validators, and ships no JavaScript.
+  from length, format or numericality validators, and ships no validation JavaScript.
+  The only script is the help-text swap's animation (§ Behavior, item 22), which
+  validates nothing.
 - **Not a complete mirror of the model's validations.** Required detection deliberately
   under-reports (§ Business rules, rule 2). The server stays the authority and the
   `422` re-render stays the path for everything the browser doesn't catch.
@@ -78,7 +83,8 @@ coming from an ActiveModel object.
 - **Not an ActiveRecord integration.** No ActiveRecord constant, association reflection,
   column metadata or database constraint is read (§ Business rules, rule 4).
 - **Not a change to the v0.3.0 API.** `name:`, `errors:` and `control_id:` keep their
-  meaning and their output (§ Business rules, rule 1).
+  meaning and their output, apart from the hidden description on an invalid field
+  (§ Business rules, rule 1, and its amendment).
 
 ## Behavior
 
@@ -344,6 +350,106 @@ coming from an ActiveModel object.
     derived name, id, `required`, errors and value are the ones the hand-written version
     produced.
 
+### Help text and the error
+
+Added 2026-09-14 on the orchestrator's directive, relaying the decider: help text is
+optional, and when the field becomes invalid the help text swaps to the error message with
+animation, and back when it becomes valid. It applies to both constructors, because help
+text isn't a model concept.
+
+19. **The error takes the help text's place.** An invalid field renders its description
+    with the `hidden` attribute, and the error where the description was. A valid field
+    renders the description and no error element. A field with no description shows the
+    error, or nothing, as in v0.3.0. This is server-rendered, so it holds with JavaScript
+    off and on every render path in item 21. **It supersedes v0.3.0**, where an invalid
+    field showed the description *and* the error (§ Business rules, rule 1 is amended to
+    match).
+
+    **The description stays in the DOM while hidden.** Three reasons. It has to exist for
+    the swap back to animate (item 22). `aria-describedby` still names it (item 20), and
+    an id that points at nothing would be a dangling reference. And the help text is
+    usually the instruction for fixing the error ("Letters and numbers only"), so taking
+    it away from assistive technology at the moment the user needs it would be worse than
+    keeping it.
+20. **`aria-describedby` is correct in both states, and unchanged from v0.3.0.** Valid:
+    the description's id. Invalid: the description's id, then the error's. A hidden
+    element that `aria-describedby` references directly is still part of the computed
+    description (Accessible Name and Description Computation 1.2, step 2A's exception),
+    so a screen reader on an invalid field hears the error and the instruction. The list
+    is rendered by the server for each state, so a morph carries the right one to the
+    control with no client code. The browser lane holds the computed description, not
+    just the attribute.
+21. **Where a swap is observable.** Verified 2026-09-14 against `turbo-rails` 2.0.23
+    (Turbo 8.0.23) in this repository. "Observed" means driven in the examples app in
+    headless Chrome; "read" means read in the bundled `turbo.js`.
+
+    | How the invalid state arrives | Old field DOM kept? | Evidence |
+    |---|---|---|
+    | Initial page load, or a POST with JavaScript off | no: a new document | — |
+    | A Turbo Frame form whose response is a `422` (the docs page's `docs#select_submit` round trip) | **no**: `FrameController#loadResponse` uses `FrameRenderer`, which replaces the frame's children. `MorphingFrameRenderer` is used only by `reload()` on a `src` frame with `refresh="morph"`, never for a form response | observed: only `turbo:before-frame-render` fires, the new field is a different node and the old one is disconnected |
+    | A Turbo Stream `replace` or `update` without `method` | no: the target is replaced | read |
+    | A Turbo Stream `replace`/`update` with `method="morph"` (`turbo_stream.replace(target, method: :morph)`) | **yes**: `morphElements` keeps matched nodes and changes their attributes and text | observed: same node, attributes changed in place |
+    | A Turbo Drive form `422` | only when the page declares `turbo-refresh-method` `morph` **and** `PageView#isPageRefresh` holds (no current visit, or the same path with a `replace` action). A form reached by a Drive `advance` visit re-renders with `PageRenderer`. | read |
+    | A morphing page refresh (`turbo_refreshes_with method: :morph`) | yes | read |
+
+    So the swap animates on a morph and only on a morph. Every other path delivers a new
+    field, which renders its final state with no animation, exactly as an initial page
+    load does. There is no earlier state on the page to animate from, and inventing one
+    would animate every Drive navigation too. A host that wants the swap on a form in a
+    frame renders it through a morph: a Turbo Stream response with `method: :morph`, or
+    `turbo:before-frame-render` setting `event.detail.render` to `Turbo.morphChildren`.
+    The Field docs page's swap demo uses the stream response.
+22. **The animation is Primitive D, composed by import.** A `ui--field` controller on
+    the wrapper imports `rails_ui_kit/overlay/presence`, the module `ui--presence` and
+    `ui--overlay` already share, the same way `ui--overlay` composes it (parent rule 4).
+    It declares no duration, sets no timer and writes no animation of its own. The
+    description and the error fade on `data-state`, through Tailwind classes on the
+    parts.
+    - **Out, then in.** The outgoing part exits and holds its space until
+      `presence.exit` settles. Then the incoming part enters. The two never occupy the
+      space together, so the field's height changes once, at the swap, not twice.
+    - **Nothing on connect.** The controller only acts on `turbo:morph-element` for its
+      own wrapper, after the morph has finished. Initial page load, a frame render and a
+      stream replace connect a new controller that animates nothing.
+    - **The morph can't undo the animation.** A morph sets every attribute to the
+      server's markup, which would remove `data-state`, re-add `hidden` at once and
+      delete a leaving error before it had faded. While a Field is morphed, the
+      controller cancels `turbo:before-morph-attribute` for `hidden`, `data-state` and a
+      removed `role` on its description and error. The wrapper's `data-invalid` is the
+      state the server sent, and the controller derives both parts from it. It also
+      cancels `turbo:before-morph-element` for the error's removal, runs the error's exit,
+      and removes it once the exit settles.
+    - **Interruption.** A morph that arrives mid-swap starts a new swap toward the newest
+      state. Presence reverses an element in place, and the superseded swap does nothing
+      more. A leaving error that the next morph renders again is kept rather than removed.
+    - **Reduced motion.** Under `prefers-reduced-motion: reduce`, presence skips the wait
+      and doesn't defer the entry to a frame (`presence.js`, `settle` and `enter`), and
+      the parts carry `motion-reduce:transition-none`. The swap completes in the task
+      that the morph ran in.
+    - **Page cache.** On `turbo:before-cache` the field snaps to its resting state for its
+      current `data-invalid`, so a snapshot is never cached mid-swap.
+    - The wrapper's `data-controller` is joined with a caller's rather than replaced by
+      it.
+23. **The error is announced when it appears.** On the morph path, the controller gives
+    the error `role="alert"` before revealing it. A node with that role entering the
+    accessibility tree is announced. The role survives later morphs, so a message that
+    changes while the field stays invalid is announced as well. A server-rendered error
+    (initial load, a frame render, a stream replace) carries no role, as in v0.3.0,
+    because a role on every error on arrival would announce the whole form
+    (`Ui::Field::ErrorComponent`). `turbo:before-cache` removes the role, so restoring a
+    snapshot announces nothing.
+
+    **The trade-off.** `alert` is assertive. When one response makes several fields
+    invalid, each one is announced. That is accepted: the response is the answer to the
+    submission the user just made, and a polite region set on an element that has only
+    just been inserted isn't reliably announced at all.
+
+    **A correction.** `ErrorComponent`'s comment said a stream could pass `role: "alert"`
+    to the error "through attribute forwarding", and the Field docs page said to pass it
+    "through the control's forwarded attributes". Field has no path that forwards
+    attributes to its error, and `role="alert"` on the control would make the input
+    itself an alert. Both are corrected to point at the morph path.
+
 ## Business rules
 
 Inherits every rule in `ui-component-library` § Business rules unmodified, and Primitive
@@ -356,6 +462,13 @@ scope-local.
    rendered in v0.3.0. Every existing test in `test/components/ui/field_component_test.rb`
    passes without being removed or weakened. The model-bound form is additive and lands
    in `CHANGELOG.md`'s `[Unreleased]` section, not as a breaking change.
+
+   **Amended 2026-09-14 for the help-text swap (§ Behavior, item 19), on the decider's
+   request.** One rendered difference is intended: an invalid field's description carries
+   `hidden`. Its id, classes, content and place in `aria-describedby` are unchanged. The
+   three existing tests that locate the description on an *invalid* field gain
+   `visible: :all`, since Capybara skips hidden elements. Their assertions stay
+   otherwise as written, and a new test asserts that the description is hidden.
 2. **Required detection never guesses.** Only the validators item 9 names mark a field
    required. Adding a validator kind, or reading an option the rule now excludes, is a
    reshape of this spec, not an implementation choice. When the rule and a caller's
@@ -427,7 +540,7 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
 
   **At a contradiction** at build time, follow what the helper actually renders, correct
   the table, and record a correction.
-- **The gemspec allows Rails ≥ 7.0, and only 8.1.3.1 has been observed.** `field_name` and
+- **The gemspec allows Rails ≥ 7.2 (raised from 7.0 on this branch, `81e2cf9`), and only 8.1.3.1 has been observed.** `field_name` and
   `field_id` have been public since 7.0. Because Field calls `field_name` rather than
   reimplementing it, names track whichever Rails version is running. Label order,
   validator options and the `belongs_to` condition were read from 8.1.3.1 source only,
@@ -441,10 +554,15 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
   contradiction** on a supported ViewComponent version, derive at `before_render`
   through `helpers`, and keep every slot lambda that reads `control_id` working.
 - **The examples app doesn't load ActiveModel by default.** `examples/config/application.rb`
-  requires only `action_controller` and `action_view`, and `ActiveModel` wasn't defined
-  until required. `DemoTrip` follows `demo_order.rb` and requires `active_model` itself.
-  If that stops working, escalate rather than adding `active_record/railtie` to the docs
-  app.
+  required only `action_controller` and `action_view`, and `ActiveModel` wasn't defined
+  until required. ~~`DemoTrip` follows `demo_order.rb` and requires `active_model` itself.~~
+  **Corrected at build, 2026-09-14:** that stopped working the moment `DemoTrip` produced a
+  message. It autoloads during a request, after I18n has loaded its translations, so
+  `require 'active_model'` added ActiveModel's `en.yml` to the load path too late, and
+  `select_no_javascript` SN4 rendered "Translation missing" in place of "can't be blank".
+  The docs app now requires `active_model/railtie`, which loads ActiveModel before I18n
+  does. That is ActiveModel only: still no `active_record/railtie` and no database, so
+  the escalation this assumption named doesn't apply.
 - **WebDriver's computed label is available in the browser lane.** Rule 6's check reads
   the control's accessible name through Selenium's `Element#accessible_name`, which is
   chromedriver's Get Computed Label. **At a contradiction**, read it from CDP
@@ -461,6 +579,11 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
 
 - `app/components/ui/field_component.rb`, `field_component.html.erb`: the constructor,
   derivation, the resolved `required`, the default label and control.
+- `app/components/ui/field/model_binding.rb`: everything read from the record (items 4,
+  6, 9, 13 and 16), kept out of the component so it stays under `Metrics/ClassLength`.
+- `app/components/ui/field/label_component.rb`: defers the label to render time, as
+  `ControlComponent` does for the control, so the marker follows a `required:` given to
+  `with_control` after the label is set.
 - `app/components/ui/field/control_component.rb`: where `required`, and the value per
   control (item 16), join the attribute hand-off at render time.
 - `app/components/ui/label_component.rb`: read only; the marker is Field's content in
@@ -478,6 +601,16 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
   `select_no_javascript_test.rb`, `field_test.rb`: browser checks this scope must keep
   green or extends.
 - `CHANGELOG.md`: `[Unreleased]`.
+- `app/javascript/rails_ui_kit/controllers/field_controller.js` and its registration in
+  `index.js`: the swap (§ Behavior, items 22 and 23). `overlay/presence.js`: read only.
+- `app/components/ui/field/description_component.rb`, `error_component.rb`: the
+  `data-state` fade classes, and the corrected comment.
+- `examples/app/views/docs/field.html.erb` and a `POST /demos/field` action that answers
+  with a morphing Turbo Stream (`_field_swap_demo.html.erb`, `demo_signup.rb`): the swap's
+  demo and its browser tests. `demo_profile.rb`: the required preview and the
+  `required: false` escape hatch.
+- `examples/config/application.rb`: requires `active_model/railtie` (§ Assumptions, the
+  correction).
 
 ## Acceptance checks
 
@@ -496,6 +629,11 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
 - A required Select left blank still blocks submission with no request sent, now with `required` derived from the presence validator, and its combobox carries `aria-required="true"` — run: `bundle exec rake test:system TEST=test/system/select_validation_test.rb`
 - With JavaScript off, the model-bound Select posts, and a blank submission comes back `422` with the model's error on the select — run: `bundle exec rake test:system TEST=test/system/select_no_javascript_test.rb`
 - The Field docs page's required preview passes `assert_accessible` in light and dark mode. The control's computed accessible name is exactly the label text with no `*`, and the marker meets 4.5:1 on every token surface in both modes — run: `bundle exec rake test:system TEST=test/system/field_test.rb`
+- An invalid field renders its description `hidden` with the error after it, and a valid field renders the description visible with no error, for both constructors. `aria-describedby` is the description's id when valid and the description's then the error's when invalid. The wrapper's `data-controller` includes `ui--field` alongside a caller's own — run: `bundle exec rake test TEST=test/components/ui/field_message_swap_test.rb`
+- Over a real `POST /demos/field` round trip answered with a morphing stream, becoming invalid holds the description at `data-state="closing"` while the error stays hidden, then enters the error. Becoming valid holds the error in place until its exit settles, then removes it and enters the description. A second submission mid-swap settles on the newest state. In both states the control's computed description is what item 20 says — run: `SLOW=1 bundle exec rake test:system TEST=test/system/field_swap_test.rb`
+- No presence transition runs on initial page load of an invalid field, or when the Select round trip's frame render delivers an invalid field. Under `prefers-reduced-motion: reduce` the swap completes with no `closing` state observable — run: `SLOW=1 bundle exec rake test:system TEST=test/system/field_swap_test.rb`
+- A page cached mid-swap and restored by Back shows the field at rest for its current state, with no leaving error and no `closing` part — run: `SLOW=1 bundle exec rake test:system TEST=test/system/field_swap_test.rb`
+- An error revealed by a morph has `role="alert"` in the accessibility tree before it's shown, and keeps it across a later morph that changes its message. A server-rendered error has no role — run: `SLOW=1 bundle exec rake test:system TEST=test/system/field_swap_test.rb`
 - The unit lane and lint are green — run: `bundle exec rake test && bundle exec rubocop`
 
 ### judgeable
@@ -503,13 +641,15 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
 - Precedence is one rule applied the same way to every derived value, with no merge and no per-value exception, judged against § Behavior, item 2 and § Business rules, rule 8.
 - Required detection reads nothing beyond `kind == :presence` and the permitted option keys, and each ambiguous path resolves to not required, judged against § Behavior, items 9–11 and § Business rules, rules 2 and 7.
 - Every Rails-matching claim is held by a test that renders the Rails helper and compares, not by a literal expected string, per § Business rules, rule 3.
-- The existing Field tests pass without being edited to accommodate the change, and the `select_*` system tests named above are unmodified, per § Business rules, rule 1 and § Behavior, item 18.
+- The existing Field tests pass without being edited to accommodate the change, except the `visible: :all` the rule 1 amendment names for the hidden description, and the `select_*` system tests named above are unmodified, per § Business rules, rule 1 and § Behavior, item 18.
+- The swap owns no animation mechanism of its own. Every wait goes through `presence.enter`/`presence.exit`, and nothing animates on a path § Behavior, item 21 lists as delivering a new field, per parent rule 4.
 - Nothing in the change adds a method to a Rails class, subclasses `FormBuilder`, or registers a builder, per § Out of scope / deferred.
 
 ### human-gate
 
 - Jonathan uses the Field docs page's required preview with VoiceOver in Safari and confirms that the field reads as its label plus "required", with no "star" or "asterisk".
 - Jonathan accepts the marker's glyph, colour and placement, or rules otherwise.
+- Jonathan submits the Field docs page's swap demo with VoiceOver in Safari. He confirms that the error is announced when it appears, and that the swap reads as one change in both directions.
 
 ## Out of scope / deferred
 
@@ -554,6 +694,11 @@ Inherits `ui-component-library` § Assumptions and Primitive E's in
   The asymmetry is the reason to wait. `ui-select` § Behavior, item 14 now records
   `form.ui_select` as not planned, under this decision. Select binds to a record through
   Field.
+- **Animating the swap on a render that replaces the field.** A frame render, a stream
+  `replace` without `method: :morph` and a Drive render deliver a new field, with no
+  earlier state on the page to animate from (§ Behavior, item 21). Detecting "this
+  arrived by a frame, not a page" to animate on connect would be a heuristic that also
+  fires on every Drive navigation. A host that wants the swap renders through a morph.
 - **Nested-attribute name derivation.** Supported through explicit `name:` (§ Behavior,
   item 5). Deriving it needs the parent form's object name, the association and the
   index, which is builder territory.

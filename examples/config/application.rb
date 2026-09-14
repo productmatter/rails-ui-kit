@@ -3,6 +3,9 @@
 require_relative 'boot'
 
 require 'rails'
+# ActiveModel's railtie, for the docs app's form objects (DemoTrip): it loads ActiveModel before
+# I18n does, so validation messages translate. There is still no ActiveRecord and no database.
+require 'active_model/railtie'
 require 'action_controller/railtie'
 require 'action_view/railtie'
 

@@ -1,0 +1,15 @@
+<%# The Field page's swap demo, and what POST /demos/field sends back: as a morphing Turbo Stream
+    with JavaScript, so the field is kept and its help text and error swap in place. %>
+<%= form_with model: signup, url: demo_field_path, id: "field-swap-demo", class: "flex flex-wrap items-end gap-4" do %>
+  <div class="w-72">
+    <%= render Ui::FieldComponent.new(model: signup, attribute: :username, id: "field-swap-username") do |field| %>
+      <% field.with_description { "Letters and numbers. Try admin, or leave it blank." } %>
+    <% end %>
+  </div>
+  <%= render(Ui::ButtonComponent.new(type: "submit", id: "field-swap-submit")) { "Check" } %>
+  <% if submission.to_i.positive? %>
+    <p id="field-swap-result" data-submission="<%= submission %>" class="text-sm text-muted-foreground">
+      Response <%= submission %>: <%= signup.errors.empty? ? "available" : "not available" %>
+    </p>
+  <% end %>
+<% end %>

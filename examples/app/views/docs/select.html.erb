@@ -169,7 +169,7 @@
   round trip is the one Rails always had.
 </p>
 <div id="select-round-trip-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
-  <%= render 'docs/select_round_trip', errors: {}, values: {}, cities: DocsController.cities, submission: 0 %>
+  <%= render 'docs/select_round_trip', trip: DemoTrip.new, cities: DocsController.cities, submission: 0 %>
 </div>
 
 <%# In a Modal %>

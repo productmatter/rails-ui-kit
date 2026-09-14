@@ -5,7 +5,7 @@ require 'test_helper'
 module Ui
   class FieldComponentTest < ViewComponent::TestCase
     def classes_for(slot)
-      page.find("[data-slot='#{slot}']")['class'].split
+      page.find("[data-slot='#{slot}']", visible: :all)['class'].split
     end
 
     def control
@@ -61,7 +61,7 @@ module Ui
       render_field(errors: ['is invalid'])
 
       assert_equal 'user_email-description user_email-error', control['aria-describedby']
-      assert_equal 'user_email-description', page.find("[data-slot='field-description']")['id']
+      assert_equal 'user_email-description', page.find("[data-slot='field-description']", visible: :all)['id']
       assert_equal 'user_email-error', page.find("[data-slot='field-error']")['id']
     end
 
@@ -236,7 +236,7 @@ module Ui
       assert_selector "#erb-field[data-invalid='true'] > label[for='user_email']", text: 'Email'
       assert_selector "#erb-field > input#user_email[type='email'][aria-invalid='true']"
       assert_equal 'user_email-description user_email-error', page.find('input')['aria-describedby']
-      assert_selector '#user_email-description strong', text: 'receipts'
+      assert_selector '#user_email-description strong', text: 'receipts', visible: :all
       assert_selector '#user_email-error', text: 'is invalid'
       assert_equal 1, page.all("[data-slot='input']").size
     end

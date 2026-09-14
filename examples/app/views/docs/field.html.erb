@@ -5,7 +5,8 @@
   <p class="text-muted-foreground">
     Wires a label, a control, an optional description and errors into one accessible unit.
     Every id is derived from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name:</code> --
-    the caller never writes one. Ships no Stimulus controller; it's server-rendered.
+    the caller never writes one. Or hand it the record, and it reads the name, errors, label, value and whether the field is
+    required from the model. It's server-rendered; its one controller only animates the help text giving way to an error.
   </p>
 </div>
 
@@ -28,9 +29,10 @@
   </div>
 
   <div class="w-64">
-    <%= render Ui::FieldComponent.new(name: "signup[coupon]", errors: ["is not a recognised code"]) do |field| %>
+    <%= render Ui::FieldComponent.new(name: "signup[coupon]", errors: ["is not a recognised code"], id: "coupon-field") do |field| %>
       <% field.with_label { "Coupon code" } %>
       <% field.with_control(Ui::InputComponent, value: "SUMMER-2020") %>
+      <% field.with_description { "Printed on your invoice." } %>
     <% end %>
   </div>
 
@@ -51,6 +53,45 @@
       <% field.with_description { "Shown on your public profile." } %>
     <% end %>
   </div>
+</div>
+
+<%# Bound to a model %>
+<h2 class="text-base font-semibold mb-3">Bound to a model</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">model: @profile, attribute: :email</code> renders the name and id <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">form_with</code> would,
+  the label <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">form.label</code> would, the model's errors and its value. The field is marked required only when the
+  attribute has a presence validator with no <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">if:</code>, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">on:</code> or <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">allow_nil:</code>:
+  the control gets native <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>, and the label gets a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">*</code> that screen readers don't read,
+  because they already hear "required" from the control. Anything you pass yourself wins.
+</p>
+<div id="field-required-preview" class="rounded-lg border border-border bg-muted flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(model: DemoProfile.new, attribute: :email) do |field| %>
+      <% field.with_control(Ui::InputComponent, type: "email", placeholder: "you@example.com") %>
+      <% field.with_description { "Required by the model's presence validator." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%# The handle's presence validator can never fail, because a callback fills it in first. Marking it
+        required would block a form the model accepts, so this field says so itself. %>
+    <%= render Ui::FieldComponent.new(model: DemoProfile.new, attribute: :handle, required: false) do |field| %>
+      <% field.with_description { "Leave blank to use your email's name. required: false, because a callback fills it." } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Help text and errors %>
+<h2 class="text-base font-semibold mb-3">Help text gives way to the error</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  An invalid field hides its description and shows the error in its place. The swap is server-rendered, so it holds without
+  JavaScript. When a morph delivers the change &mdash; a Turbo Stream with
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">method: :morph</code>, or a morphing page refresh &mdash; the
+  help text fades out, the error fades in and is announced, and the reverse happens once the field is valid. A frame render or a
+  plain replace delivers a new field instead, which appears already in its final state, just as it would on a page load.
+</p>
+<div id="field-swap-preview" class="rounded-lg border border-border bg-muted p-12 mb-8">
+  <%= render "docs/field_swap_demo", signup: DemoSignup.new, submission: 0 %>
 </div>
 
 <%# Control sizing %>
@@ -117,10 +158,11 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["with_label",       "label",             "Ui::LabelComponent, for= set to the control's id and id= to \"<control id>-label\" automatically, so a control that can't be named by for= can use aria-labelledby."],
-        ["with_control",     "(the control's own)", "Ui::InputComponent by default; pass a component class, or a block for Textarea, a <select> or anything else."],
-        ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in."],
-        ["(errors:)",        "field-error",       "Rendered automatically when errors: is non-empty -- there is no with_error slot to call."],
+        ["with_label",       "label",             "Ui::LabelComponent, for= set to the control's id and id= to \"<control id>-label\" automatically, so a control that can't be named by for= can use aria-labelledby. With model:, rendered even if you don't call it, with the text form.label would use; a block replaces the text."],
+        ["with_control",     "(the control's own)", "Ui::InputComponent by default; pass a component class, or a block for a custom control. With model:, rendered even if you don't call it, and Input, Textarea and Select get the record's value (never for a password or file input). A block reads field.value itself."],
+        ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in. Hidden while the field is invalid, and still named, so screen readers keep the instruction."],
+        ["(errors)",         "field-error",       "Rendered automatically when the field has errors -- from errors:, or the model's -- in the description's place. There is no with_error slot to call."],
+        ["(required)",       "field-required-indicator", "An aria-hidden * at the end of the label, whenever the field resolves to required."],
       ].each do |slot, data_slot, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
@@ -146,9 +188,12 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["name",       "String",  "required", "The control's HTML name, e.g. \"user[email]\". Its id is derived from this the way form_with derives one, unless control_id: is given."],
-        ["errors",     "Array",   "nil",      "A plain array of message strings, e.g. @user.errors[:email]. Any non-empty array marks the field invalid."],
-        ["control_id", "String",  "nil",      "Overrides the derived id when the caller needs a specific one."],
+        ["name",       "String",  "nil",      "The control's HTML name, e.g. \"user[email]\". Its id is derived from this the way form_with derives one, unless control_id: is given. Required unless model: is given; with model:, it replaces the derived name, e.g. for a nested attribute."],
+        ["model",      "record",  "nil",      "An ActiveModel record (anything with to_model, model_name and errors). Not a class or a symbol: for a bare scope, pass name:."],
+        ["attribute",  "Symbol",  "nil",      "The attribute this field edits, with model:. A single name: no nesting and no trailing ?."],
+        ["errors",     "Array",   "nil",      "A plain array of message strings, e.g. @user.errors[:email]. Any non-empty array marks the field invalid. With model:, replaces the model's errors; [] shows none."],
+        ["required",   "Boolean", "nil",      "Marks the control, the label and the wrapper required, or not. With model:, replaces what the validators say. A required: passed to with_control wins over this."],
+        ["control_id", "String",  "nil",      "Overrides the derived id when the caller needs a specific one, e.g. under form_with(namespace:)."],
         ["class",      "String",  "nil",      "Merged over the wrapper's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
@@ -167,6 +212,8 @@
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
   <li>Errors set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-invalid="true"</code> on the control and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-invalid="true"</code> on the wrapper -- styling keys off those attributes, never off DOM structure, so Rails' <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">div.field_with_errors</code> wrapper can't break it.</li>
   <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code> lists only the parts that actually render, in reading order, however you call the slots.</li>
-  <li>No live-region role by default -- errors are already on the page at load. A Turbo Stream that replaces a single field can pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role: "alert"</code> straight through the control's forwarded attributes.</li>
+  <li>A server-rendered error has no live-region role, because it is already on the page when the page or frame arrives. An error a morph reveals gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="alert"</code> as it appears, so it is announced. To get that for a single field, answer with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo_stream.replace(..., method: :morph)</code> rather than a plain replace.</li>
+  <li>Required detection under-reports on purpose. Conditional validators, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">on: :create</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">allow_nil</code>, length, format, custom validations and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">belongs_to</code> don't mark a field required; pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">required: true</code> when you know better. A field wrongly marked required blocks a form the model would accept, so the one case to watch is a presence validator on a value the server fills in itself: pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">required: false</code>.</li>
+  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">belongs_to</code> puts its error on the association, not the foreign key: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">errors: @post.errors[:author_id] + @post.errors[:author]</code>.</li>
   <li>Renders no markup of its own beyond the wrapper; label, control, description and error are all real, independent components you can render on their own.</li>
 </ul>

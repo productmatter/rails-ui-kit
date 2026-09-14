@@ -17,16 +17,15 @@ class DocsController < ApplicationController
     end
   end
 
-  # The Select docs page's server round trip. A blank city comes back as a 422 with the error on
-  # the Field, which is what a real Rails validation failure renders; anything else comes back
-  # with the submitted value selected.
+  # The Select docs page's server round trip. A blank city, or one the server won't take, comes
+  # back as a 422 with the model's error on the Field, which is what a real Rails validation
+  # failure renders; anything else comes back with the submitted value selected.
   def select_submit
-    city = params.dig(:trip, :city).to_s
-    errors = { city: select_city_error(city) }.compact
+    trip = DemoTrip.new(city: params.dig(:trip, :city).to_s)
+    valid = trip.valid?
     render partial: 'docs/select_round_trip',
-           locals: { errors: errors, values: { city: city }, cities: DocsController.cities,
-                     submission: next_select_submission },
-           status: errors.any? ? :unprocessable_entity : :ok
+           locals: { trip: trip, cities: DocsController.cities, submission: next_select_submission },
+           status: valid ? :ok : :unprocessable_entity
   end
 
   # The result element survives every response, so it carries which response drew it. A reader
@@ -36,17 +35,26 @@ class DocsController < ApplicationController
     self.class.select_submissions = self.class.select_submissions.to_i + 1
   end
 
-  # Two server-side failures a client can't catch for itself: nothing chosen, which only a
-  # browser with JavaScript off can post at all since the select is required, and a city the
-  # server won't take.
-  def select_city_error(city)
-    return ["can't be blank"] if city.blank?
+  # The Field docs page's help-text swap. A form in a frame re-renders by replacing the field, which
+  # leaves nothing to animate from; answering with a morphing stream keeps the field and lets the
+  # description and the error swap in place (ui-field-model-binding § Behavior, item 21). With
+  # JavaScript off the same partial comes back as HTML.
+  def field_submit
+    signup = DemoSignup.new(username: params.dig(:signup, :username).to_s)
+    status = signup.valid? ? :ok : :unprocessable_entity
+    locals = { signup: signup, submission: self.class.field_submissions = self.class.field_submissions.to_i + 1 }
 
-    ['is not available this week'] if city == 'tokyo'
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace('field-swap-demo', partial: 'docs/field_swap_demo', locals: locals, method: :morph),
+               status: status
+      end
+      format.html { render partial: 'docs/field_swap_demo', locals: locals, status: status }
+    end
   end
 
   class << self
-    attr_accessor :select_submissions
+    attr_accessor :select_submissions, :field_submissions
   end
 
   def self.cities

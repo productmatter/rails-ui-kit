@@ -23,6 +23,38 @@ class FieldTest < ApplicationSystemTestCase
     end
   end
 
+  test 'the required preview passes an accessibility audit in light and dark mode' do
+    assert_accessible(within: '#field-required-preview')
+
+    use_dark_mode(true)
+    assert_accessible(within: '#field-required-preview')
+  end
+
+  # The marker is aria-hidden, so the name a screen reader speaks is the label text alone, and
+  # "required" comes from the control (ui-field-model-binding § Business rules, rule 6).
+  test 'a required control is named by its label text alone, with no marker glyph' do
+    control = find('#profile_email')
+    assert_selector '#profile_email[required]'
+    assert_selector "label[for='profile_email'] [data-slot=field-required-indicator]", text: '*'
+
+    assert_equal 'Email', control.native.accessible_name
+  end
+
+  test 'a field given required: false over its validator renders no marker and no required' do
+    assert_selector '#profile_handle:not([required])'
+    assert_no_selector "label[for='profile_handle'] [data-slot=field-required-indicator]"
+  end
+
+  test 'the required marker reaches 4.5:1 on every token surface in light and dark mode' do
+    container = find_by_id('field-required-preview')
+    marker = container.find('[data-slot=field-required-indicator]')
+
+    each_token_surface(container) do |mode, surface|
+      ratio = contrast_ratio(color_of(:text, marker), color_of(:background, container))
+      assert_operator ratio, :>=, 4.5, "the required marker is #{ratio.round(2)}:1 on #{surface} in #{mode} mode"
+    end
+  end
+
   private
 
   def preview

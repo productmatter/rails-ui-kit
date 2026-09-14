@@ -234,6 +234,22 @@ module CodeExamplesHelper
 
   def example_field_usage
     <<~'RUBY'
+      <%# From the record: name, id, label, errors, value and required %>
+      <%= render Ui::FieldComponent.new(model: @user, attribute: :email) %>
+
+      <%# Any part can still be given; what you state wins %>
+      <%= render Ui::FieldComponent.new(model: @user, attribute: :email, required: false) do |field| %>
+        <% field.with_label { "Work email" } %>
+        <% field.with_control(Ui::InputComponent, type: "email") %>
+        <% field.with_description { "We'll never share your email." } %>
+      <% end %>
+
+      <%# A single field answered with a morph keeps the field, so the help text and error swap in place %>
+      <%= turbo_stream.replace dom_id(@user, :email_field), method: :morph do %>
+        <%= render Ui::FieldComponent.new(model: @user, attribute: :email, id: dom_id(@user, :email_field)) %>
+      <% end %>
+
+      <%# Without a record: the name and errors are yours to pass %>
       <%= render Ui::FieldComponent.new(name: "user[email]") do |field| %>
         <% field.with_label { "Email" } %>
         <% field.with_control(Ui::InputComponent, type: "email") %>

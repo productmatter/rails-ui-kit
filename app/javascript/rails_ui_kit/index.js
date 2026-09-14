@@ -15,6 +15,7 @@ import RovingFocusController from "rails_ui_kit/controllers/roving_focus_control
 import PresenceController from "rails_ui_kit/controllers/presence_controller"
 import OverlayController from "rails_ui_kit/controllers/overlay_controller"
 import SelectController from "rails_ui_kit/controllers/select_controller"
+import FieldController from "rails_ui_kit/controllers/field_controller"
 
 export {
   ModalController,
@@ -33,7 +34,8 @@ export {
   RovingFocusController,
   PresenceController,
   OverlayController,
-  SelectController
+  SelectController,
+  FieldController
 }
 
 export function registerControllers(application) {
@@ -54,4 +56,5 @@ export function registerControllers(application) {
   application.register("ui--presence", PresenceController)
   application.register("ui--overlay", OverlayController)
   application.register("ui--select", SelectController)
+  application.register("ui--field", FieldController)
 }
