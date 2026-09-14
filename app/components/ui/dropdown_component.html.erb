@@ -1,11 +1,11 @@
 <div <%= tag.attributes(controller_data) %>>
-  <%= content_tag :div, data: { "ui--dropdown-target": "trigger" } do %>
+  <%= content_tag :div, data: { "ui--dropdown-target": "trigger", "ui--anchor-target": "anchor" } do %>
     <%= trigger %>
   <% end %>
 
   <%= content_tag :div,
       class: content_wrapper_classes,
-      data: { "ui--dropdown-target": "content" },
+      data: content_data,
       role: kind,
       aria: { label: label } do %>
     <%= menu %>

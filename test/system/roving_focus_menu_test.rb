@@ -38,7 +38,7 @@ class RovingFocusMenuTest < ApplicationSystemTestCase
     press :arrow_down
     assert_focused_item 'Duplicate'
     press :arrow_down
-    assert_focused_item 'Archive' # aria-disabled, and this group sets skipDisabled: false
+    assert_focused_item 'Archive' # aria-disabled, and navigable: this group leaves skipDisabled at its default
     press :arrow_down
     assert_focused_item 'Delete'
     press :arrow_down
@@ -146,6 +146,34 @@ class RovingFocusMenuTest < ApplicationSystemTestCase
 
     assert_single_tab_stop('#roving-toolbar', 'roving-toolbar-bold')
     assert_equal '-1', find('#roving-toolbar-underline')['tabindex']
+  end
+
+  test 'RM12: a natively disabled item is never focused and never the tab stop, though an aria-disabled one is' do
+    page.execute_script(<<~JS)
+      const group = document.createElement('div')
+      group.id = 'roving-native-disabled'
+      group.setAttribute('role', 'menu')
+      group.setAttribute('aria-label', 'Native disabled')
+      group.setAttribute('data-controller', 'ui--roving-focus')
+      group.innerHTML = `
+        <button type="button" role="menuitem" id="native-one" data-ui--roving-focus-target="item">One</button>
+        <button type="button" role="menuitem" id="native-two" disabled data-ui--roving-focus-target="item">Two</button>
+        <button type="button" role="menuitem" id="native-three" aria-disabled="true" data-ui--roving-focus-target="item">Three</button>`
+      document.querySelector('#roving-menu').appendChild(group)
+    JS
+
+    assert_single_tab_stop('#roving-native-disabled', 'native-one')
+    focus_item('native-one')
+
+    # A `disabled` control cannot take focus or be tabbed to, so it would be a dead end in both
+    # directions; aria-disabled is the attribute that keeps an item discoverable, as Three is.
+    press :arrow_down
+    assert_focused_item 'Three'
+    assert_single_tab_stop('#roving-native-disabled', 'native-three')
+    assert_equal '-1', find('#native-two')['tabindex']
+
+    press :arrow_down
+    assert_focused_item 'One'
   end
 
   test 'RM11: a page restored from Turbo\'s cache keeps each group\'s position without pulling focus in' do

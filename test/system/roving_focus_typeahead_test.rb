@@ -74,6 +74,7 @@ class RovingFocusTypeaheadTest < ApplicationSystemTestCase
       group.setAttribute('aria-label', 'Typeahead skip')
       group.setAttribute('data-controller', 'ui--roving-focus')
       group.setAttribute('data-ui--roving-focus-typeahead-value', 'true')
+      group.setAttribute('data-ui--roving-focus-skip-disabled-value', 'true')
       group.innerHTML = `
         <button type="button" id="skip-copy" data-ui--roving-focus-target="item">Copy</button>
         <button type="button" id="skip-cut" aria-disabled="true" data-ui--roving-focus-target="item">Cut</button>

@@ -103,7 +103,7 @@ export default class extends Controller {
     typeahead: { type: Boolean, default: false },
     typeaheadTimeout: { type: Number, default: 500 },
     activeId: { type: String, default: "" },
-    skipDisabled: { type: Boolean, default: true }
+    skipDisabled: { type: Boolean, default: false }
   }
 
   initialize() {
@@ -188,10 +188,14 @@ export default class extends Controller {
     return item.matches(DISABLED)
   }
 
-  // Disabled items are skipped unless skipDisabled is false, in which case they take the position
-  // (a menu item stays discoverable, per the APG) and are only refused activation.
+  // Disabled items take the position by default (a menu item stays discoverable, per the APG) and
+  // are only refused activation; skipDisabled leaves them out of navigation altogether.
   isNavigable(item) {
     if (this.skipDisabledValue && this.isDisabled(item)) return false
+    // A natively disabled control cannot take focus and cannot be tabbed to, so in the roving
+    // model it can only be a dead end and a tab stop that leads nowhere. aria-disabled is the
+    // attribute that keeps an item discoverable; `disabled` is the one that removes it.
+    if (this.model === rovingModel && item.matches(":disabled")) return false
     return !item.hidden && item.getClientRects().length > 0
   }
 

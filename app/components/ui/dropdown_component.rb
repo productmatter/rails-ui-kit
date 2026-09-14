@@ -22,13 +22,22 @@ module Ui
     def controller_data
       {
         data: {
-          controller: 'ui--dropdown',
+          controller: 'ui--dropdown ui--anchor',
           'ui--dropdown-kind-value': kind,
-          'ui--dropdown-placement-value': placement,
-          'ui--dropdown-offset-value': offset,
-          'ui--dropdown-match-width-value': match_width
+          'ui--anchor-placement-value': placement,
+          'ui--anchor-offset-value': offset,
+          'ui--anchor-match-width-value': match_width
         }
       }
+    end
+
+    # A menu's arrows, Home, End and typeahead are ui--roving-focus's; the listbox and dialog
+    # kinds keep the controller's own handling.
+    def content_data
+      data = { 'ui--dropdown-target': 'content', 'ui--anchor-target': 'floating' }
+      return data unless kind == :menu
+
+      data.merge(controller: 'ui--roving-focus', 'ui--roving-focus-typeahead-value': true)
     end
 
     def content_wrapper_classes

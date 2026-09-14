@@ -44,13 +44,13 @@ class TooltipTest < ApplicationSystemTestCase
 
   test 'TT2: inside a dialog with its own Escape handler, the tooltip consumes the first Escape only' do
     visit tooltip_path
+    # A rendered tooltip, moved inside a modal <dialog> that handles Escape itself.
     page.execute_script(<<~JS)
       var dialog = document.createElement('dialog')
       dialog.id = 'tt2-dialog'
-      dialog.innerHTML = '<div data-controller="ui--tooltip">' +
-        '<div data-ui--tooltip-target="trigger"><button id="tt2-trigger">Hover me</button></div>' +
-        '<div class="hidden opacity-0" data-ui--tooltip-target="content">Tip' +
-        '<div data-ui--tooltip-target="arrow"></div></div></div>'
+      var clone = document.querySelector("[data-controller~='ui--tooltip']").cloneNode(true)
+      clone.querySelector('button').id = 'tt2-trigger'
+      dialog.appendChild(clone)
       document.body.appendChild(dialog)
       dialog.showModal()
       window.__dialogEscapeRan = false
@@ -71,8 +71,8 @@ class TooltipTest < ApplicationSystemTestCase
     assert_equal false, page.evaluate_script('window.__dialogEscapeRan')
     assert_selector "#tt2-dialog [data-ui--tooltip-target='content']", visible: :hidden
 
-    # Let the 100ms hide animation finish (content gets the "hidden" class) before the
-    # second Escape, so the tooltip's own handler no-ops and the dialog's handler runs.
+    # Let the 100ms exit animation finish (ui--presence puts the hidden attribute back) before
+    # the second Escape, so the tooltip has nothing left to consume and the dialog's handler runs.
     sleep 0.15
     trigger.send_keys(:escape)
     assert_equal true, page.evaluate_script('window.__dialogEscapeRan')
@@ -143,15 +143,14 @@ class TooltipTest < ApplicationSystemTestCase
 
   test 'TT6: after following a turbo-linked trigger and pressing Back with the pointer elsewhere, no tooltip is visible' do
     visit tooltip_path
+    # A rendered tooltip whose trigger is a Turbo-navigating link.
     page.execute_script(<<~JS, installation_path)
-      var wrapper = document.createElement('div')
+      var wrapper = document.querySelector("[data-controller~='ui--tooltip']").cloneNode(true)
       wrapper.id = 'tt6-wrapper'
-      wrapper.setAttribute('data-controller', 'ui--tooltip')
       // Clear of the fixed sidebar, which would otherwise receive the hover instead.
       wrapper.style.cssText = 'margin-left:320px'
-      wrapper.innerHTML = '<div data-ui--tooltip-target="trigger"><a id="tt6-link" href="' + arguments[0] + '">Go</a></div>' +
-        '<div class="hidden opacity-0" data-ui--tooltip-target="content">Tip' +
-        '<div data-ui--tooltip-target="arrow"></div></div>'
+      var slot = wrapper.querySelector("[data-ui--tooltip-target='trigger']")
+      slot.innerHTML = '<a id="tt6-link" href="' + arguments[0] + '">Go</a>'
       document.body.appendChild(wrapper)
     JS
 
@@ -172,7 +171,7 @@ class TooltipTest < ApplicationSystemTestCase
 
     page.go_back
     assert_selector 'h1', text: 'Tooltip'
-    assert_selector "#tt6-wrapper [data-ui--tooltip-target='content'].hidden", visible: :hidden
+    assert_selector "#tt6-wrapper [data-ui--tooltip-target='content'][hidden]", visible: :hidden
     assert_no_selector "[data-ui--tooltip-target='content']", visible: true
   end
 

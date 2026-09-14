@@ -22,8 +22,8 @@ class PopoverTest < ApplicationSystemTestCase
 
     trigger.click
     find("[data-ui--popover-target='content'] button", match: :first).send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'PO2: opening one popover closes another that was open' do
@@ -42,11 +42,11 @@ class PopoverTest < ApplicationSystemTestCase
     second = find('button', text: 'Open popover 2')
 
     first.click
-    assert_equal 'true', first['aria-expanded']
+    assert_expanded 'true', first
 
     second.click
-    assert_equal 'true', second['aria-expanded']
-    assert_equal 'false', first['aria-expanded']
+    assert_expanded 'true', second
+    assert_expanded 'false', first
   end
 
   test 'PO3: in a block layout, clicking empty wrapper space does not toggle the popover' do
@@ -89,36 +89,45 @@ class PopoverTest < ApplicationSystemTestCase
     assert_equal 'false', find("[data-ui--popover-target='trigger'] button")['aria-expanded']
   end
 
-  test 'PO7: Escape closes when focus is inside or on the trigger, leaves it open when focus is elsewhere, and honours defaultPrevented' do
+  test 'PO7: Escape closes from inside, from the trigger or from nowhere and returns focus; from elsewhere it closes without taking focus; and it honours defaultPrevented' do
     visit popover_path
     trigger = find("[data-ui--popover-target='trigger'] button")
+    content = find("[data-ui--popover-target='content']", visible: :all)
 
-    # 1. Click on plain text inside the panel (not a button): focus lands on <body>,
-    # so the document has nothing focused and Escape still needs to close it via the trigger.
+    # 1. Click on plain text inside the panel (not a button). The panel took focus when it opened
+    # (ui--overlay's layer mode), so focus is on the panel itself rather than on any control, and
+    # Escape still closes it and hands focus back to the trigger.
     trigger.click
-    assert_equal 'true', trigger['aria-expanded']
+    assert_expanded 'true', trigger
     text = find("[data-ui--popover-target='content'] p", match: :first)
     text_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', text)
     page.driver.browser.action.move_to_location(
       (text_rect['left'] + 2).to_i, (text_rect['top'] + 2).to_i
     ).click.perform
+    assert_focused content
+    press :escape
+    assert_closed trigger
+
+    # 2. Nothing focused at all -- focus on <body> -- still closes it and returns focus.
+    trigger.click
+    assert_expanded 'true', trigger
+    page.execute_script('document.activeElement.blur()')
     assert page.evaluate_script('document.activeElement === document.body')
-    find('body').send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    press :escape
+    assert_closed trigger
 
-    # 2. Open, focus a button inside the panel, Escape: closed, focus back on the trigger.
+    # 3. Open, focus a button inside the panel, Escape: closed, focus back on the trigger.
     trigger.click
-    assert_equal 'true', trigger['aria-expanded']
+    assert_expanded 'true', trigger
     find("[data-ui--popover-target='content'] button", match: :first).send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_closed trigger
 
-    # 3. Open, then programmatically focus an outside button: Popover has no
-    # focus-leaves-closes-it behaviour (unlike Dropdown), so it stays open, and
-    # Escape does nothing because focus isn't inside it, on the trigger, or on body.
+    # 4. Open, then programmatically focus an outside button: Popover has no
+    # focus-leaves-closes-it behaviour (unlike Dropdown), so it stays open. The panel is a
+    # popover="auto" in the top layer, and the platform gives Escape to the topmost one wherever
+    # focus is -- so Escape closes it, but never pulls focus back from that button.
     trigger.click
-    assert_equal 'true', trigger['aria-expanded']
+    assert_expanded 'true', trigger
     page.execute_script(<<~JS)
       var btn = document.createElement('button')
       btn.id = 'po7-outside'
@@ -127,18 +136,18 @@ class PopoverTest < ApplicationSystemTestCase
       btn.focus()
     JS
     outside = find('#po7-outside')
-    assert_equal 'true', trigger['aria-expanded']
-    assert focused?(outside)
+    sleep 0.25
+    assert_expanded 'true', trigger
+    assert_focused outside
     outside.send_keys(:escape)
-    assert_equal 'true', trigger['aria-expanded']
-    assert focused?(outside)
-    trigger.click # close it back down for the next case
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
+    sleep 0.25
+    assert_focused outside
 
-    # 4. A capture-phase listener that preventDefault()s the first Escape blocks it;
+    # 5. A capture-phase listener that preventDefault()s the first Escape blocks it;
     # the second Escape goes through normally.
     trigger.click
-    assert_equal 'true', trigger['aria-expanded']
+    assert_expanded 'true', trigger
     page.execute_script(<<~JS)
       window.__po7PreventCount = 0
       document.addEventListener('keydown', function(e) {
@@ -150,14 +159,45 @@ class PopoverTest < ApplicationSystemTestCase
     JS
     button_in_panel = find("[data-ui--popover-target='content'] button", match: :first)
     button_in_panel.send_keys(:escape)
-    assert_equal 'true', trigger['aria-expanded']
+    # The overlay closes a dismissed layer a frame later, so give a close that slipped through
+    # time to show before asserting it didn't.
+    sleep 0.25
+    assert_expanded 'true', trigger
     find("[data-ui--popover-target='content'] button", match: :first).send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
   end
 
   private
 
   def focused?(element)
     page.evaluate_script('document.activeElement === arguments[0]', element)
+  end
+
+  # ui--overlay closes a light-dismissed or Escaped layer on the next frame and returns focus once
+  # its exit animation has finished, so these wait the way any Capybara assertion does.
+  def assert_expanded(expected, trigger)
+    trigger.synchronize do
+      actual = trigger['aria-expanded']
+      raise Capybara::ExpectationNotMet, "aria-expanded is #{actual.inspect}" unless actual == expected
+    end
+    assert_equal expected, trigger['aria-expanded']
+  end
+
+  # A trigger press while the panel is animating out means "stay closed", so a test that reopens
+  # waits for the panel to leave the page first -- which is also when focus comes back.
+  def assert_closed(trigger)
+    assert_expanded 'false', trigger
+    assert_no_selector "[data-ui--popover-target='content']", visible: true
+    assert_focused trigger
+  end
+
+  def assert_focused(element)
+    element.synchronize { raise Capybara::ExpectationNotMet, 'not focused' unless focused?(element) }
+    assert focused?(element)
+  end
+
+  # Sends keys to whatever currently has focus, the way a keyboard does.
+  def press(*keys)
+    page.driver.browser.action.send_keys(*keys).perform
   end
 end

@@ -10,9 +10,9 @@ module Ui
         dropdown.with_menu { "<a href='#'>Item</a>".html_safe }
       end
 
-      assert_selector "div[data-controller='ui--dropdown']"
-      assert_selector "div[data-ui--dropdown-target='trigger'] button", text: 'Toggle'
-      assert_selector "div[data-ui--dropdown-target='content'] a", text: 'Item'
+      assert_selector "div[data-controller~='ui--dropdown'][data-controller~='ui--anchor']"
+      assert_selector "div[data-ui--dropdown-target='trigger'][data-ui--anchor-target='anchor'] button", text: 'Toggle'
+      assert_selector "div[data-ui--dropdown-target='content'][data-ui--anchor-target='floating'] a", text: 'Item', visible: :all
     end
 
     test 'default kind is menu' do
@@ -22,7 +22,8 @@ module Ui
       end
 
       assert_selector "div[data-ui--dropdown-kind-value='menu']"
-      assert_selector "div[role='menu']"
+      # A menu's keyboard navigation is ui--roving-focus's.
+      assert_selector "div[role='menu'][data-controller='ui--roving-focus']", visible: :all
     end
 
     test 'kind: :listbox sets aria role on content' do
@@ -31,7 +32,8 @@ module Ui
         dropdown.with_menu { 'y' }
       end
 
-      assert_selector "div[role='listbox']"
+      assert_selector "div[role='listbox']", visible: :all
+      assert_no_selector "div[role='listbox'][data-controller]", visible: :all
     end
 
     test 'passes placement and offset values' do
@@ -40,8 +42,9 @@ module Ui
         dropdown.with_menu { 'y' }
       end
 
-      assert_selector "div[data-ui--dropdown-placement-value='top-end']"
-      assert_selector "div[data-ui--dropdown-offset-value='8']"
+      # Geometry is ui--anchor's, so placement and offset are its values.
+      assert_selector "div[data-ui--anchor-placement-value='top-end']"
+      assert_selector "div[data-ui--anchor-offset-value='8']"
     end
 
     test 'label names the content' do
@@ -50,7 +53,7 @@ module Ui
         dropdown.with_menu { 'y' }
       end
 
-      assert_selector "div[role='dialog'][aria-label='Filter results']"
+      assert_selector "div[role='dialog'][aria-label='Filter results']", visible: :all
     end
 
     test 'content has no aria-label without a label' do
@@ -59,7 +62,7 @@ module Ui
         dropdown.with_menu { 'y' }
       end
 
-      assert_no_selector '[aria-label]'
+      assert_no_selector '[aria-label]', visible: :all
     end
   end
 end

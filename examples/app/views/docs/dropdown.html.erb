@@ -3,7 +3,7 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
   <p class="text-neutral-600 dark:text-neutral-400">
-    A floating menu, listbox, or dialog positioned with Floating UI. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports three interaction modes.
+    A floating menu, listbox, or dialog positioned by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports three interaction modes.
   </p>
 </div>
 
@@ -143,8 +143,10 @@
 </div>
 <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 mb-8 text-sm text-neutral-600 dark:text-neutral-400 space-y-3">
   <p>
-    The menu is a single tab stop. Items are given <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="-1"</code>
-    and take focus from the arrow keys, so Tab moves past the whole menu rather than through its items.
+    The menu is a single tab stop, navigated by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>:
+    the focused item carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="0"</code>
+    and every other item <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="-1"</code>,
+    so Tab moves past the whole menu rather than through its items. Closed, no item is rendered, so the trigger is the only stop.
   </p>
   <p>
     Items don't have to carry roles. If the menu slot contains no

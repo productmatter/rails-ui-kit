@@ -9,9 +9,10 @@ module Ui
         tooltip.with_trigger { '<button>Save</button>'.html_safe }
       end
 
-      assert_selector "div[data-controller='ui--tooltip']"
-      assert_selector "div[data-ui--tooltip-target='trigger'] button", text: 'Save'
-      assert_selector "div[data-ui--tooltip-target='content']", text: 'Save changes'
+      assert_selector "div[data-controller~='ui--tooltip'][data-controller~='ui--overlay'][data-controller~='ui--anchor']"
+      assert_selector "div[data-ui--tooltip-target='trigger'][data-ui--anchor-target='anchor'] button", text: 'Save'
+      assert_selector "div[data-ui--tooltip-target='content'][data-ui--overlay-target='content']",
+                      text: 'Save changes', visible: :all
     end
 
     test 'default placement is top' do
@@ -19,7 +20,7 @@ module Ui
         tooltip.with_trigger { 'x' }
       end
 
-      assert_selector "div[data-ui--tooltip-placement-value='top']"
+      assert_selector "div[data-ui--anchor-placement-value='top']"
     end
 
     test 'accepts valid placement' do
@@ -27,7 +28,7 @@ module Ui
         tooltip.with_trigger { 'x' }
       end
 
-      assert_selector "div[data-ui--tooltip-placement-value='bottom-end']"
+      assert_selector "div[data-ui--anchor-placement-value='bottom-end']"
     end
 
     test 'falls back to top for invalid placement' do
@@ -35,7 +36,7 @@ module Ui
         tooltip.with_trigger { 'x' }
       end
 
-      assert_selector "div[data-ui--tooltip-placement-value='top']"
+      assert_selector "div[data-ui--anchor-placement-value='top']"
     end
 
     test 'passes offset value' do
@@ -43,7 +44,19 @@ module Ui
         tooltip.with_trigger { 'x' }
       end
 
-      assert_selector "div[data-ui--tooltip-offset-value='12']"
+      assert_selector "div[data-ui--anchor-offset-value='12']"
+    end
+
+    # A hint in the browser's top layer, positioned by ui--anchor, with its own arrow.
+    test 'the tooltip is an overlay hint and the anchor\'s floating element' do
+      render_inline(Ui::TooltipComponent.new(text: 'Tip')) do |tooltip|
+        tooltip.with_trigger { 'x' }
+      end
+
+      assert_selector "div[data-ui--overlay-mode-value='hint']"
+      assert_selector "div[data-ui--anchor-strategy-value='fixed']"
+      assert_selector "[data-ui--tooltip-target='content'][data-ui--anchor-target='floating'][hidden]", visible: :all
+      assert_selector "[data-ui--anchor-target='arrow']", visible: :all
     end
 
     test 'tooltip content accepts pointer events so the pointer can move onto it' do
@@ -51,7 +64,7 @@ module Ui
         tooltip.with_trigger { 'x' }
       end
 
-      classes = page.find("[data-ui--tooltip-target='content']")['class']
+      classes = page.find("[data-ui--tooltip-target='content']", visible: :all)['class']
       refute_includes classes, 'pointer-events-none'
     end
   end

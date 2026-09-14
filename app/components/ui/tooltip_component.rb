@@ -23,17 +23,23 @@ module Ui
     def controller_data
       {
         data: {
-          controller: 'ui--tooltip',
-          'ui--tooltip-placement-value': placement,
-          'ui--tooltip-offset-value': offset
+          controller: 'ui--tooltip ui--overlay ui--anchor',
+          'ui--overlay-mode-value': 'hint',
+          'ui--overlay-restore-focus-value': false,
+          'ui--anchor-placement-value': placement,
+          'ui--anchor-offset-value': offset,
+          'ui--anchor-strategy-value': 'fixed'
         }
       }
     end
 
     def tooltip_classes
+      # A popover in the top layer: overflow-visible keeps the browser's popover default from
+      # clipping the arrow.
       %w[
-        absolute z-50 hidden opacity-0
+        overflow-visible
         transition-opacity duration-100 ease-out
+        data-[state=closed]:opacity-0 data-[state=closing]:opacity-0
         px-2 py-1 text-xs font-medium rounded shadow-sm
         bg-neutral-900 text-white dark:bg-white dark:text-neutral-900
         whitespace-nowrap

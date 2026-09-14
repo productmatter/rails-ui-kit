@@ -1,21 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
-import { computePosition, flip, shift, offset } from "@floating-ui/dom"
 
 const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 const MENU_ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]'
 // Ordinary host markup for a menu: links and buttons, which kind: :menu adopts as its items
 // when the caller hasn't written the roles itself.
 const MENU_ITEM_CANDIDATE = 'a[href], button:not([disabled])'
-const TYPEAHEAD_TIMEOUT = 500
+const ROVING_ITEM = "data-ui--roving-focus-target"
 
+// Geometry belongs to ui--anchor on this element, and a menu's arrows, Home, End and typeahead to
+// ui--roving-focus on its content. What stays here is what neither primitive does: opening and
+// closing, ARIA on the trigger, role adoption, activation, and Escape, Tab and focusout.
 export default class extends Controller {
   static targets = ["trigger", "content"]
 
   static values = {
     kind: { type: String, default: "menu" },
-    placement: { type: String, default: "bottom-start" },
-    offset: { type: Number, default: 4 },
-    matchWidth: { type: Boolean, default: false },
     open: Boolean
   }
 
@@ -76,9 +75,9 @@ export default class extends Controller {
     this.cancelPending()
 
     this.prepareMenuItems()
-    this.position()
 
     this.contentTarget.classList.remove("hidden")
+    this.setAnchored(true)
     this.frame = requestAnimationFrame(() => {
       this.contentTarget.classList.remove("opacity-0", "scale-95")
       this.contentTarget.classList.add("opacity-100", "scale-100")
@@ -87,7 +86,7 @@ export default class extends Controller {
     this.triggerControl.setAttribute("aria-expanded", "true")
 
     this.setupListeners()
-    this.focusTimer = setTimeout(() => this.focusContent(), 10)
+    this.focusContent()
   }
 
   hide() {
@@ -96,6 +95,7 @@ export default class extends Controller {
     this.initialFocus = null
     this.cancelPending()
     this.cleanup()
+    this.setAnchored(false)
 
     this.contentTarget.classList.remove("opacity-100", "scale-100")
     this.contentTarget.classList.add("opacity-0", "scale-95")
@@ -114,6 +114,7 @@ export default class extends Controller {
     this.initialFocus = null
     this.cancelPending()
     this.cleanup()
+    this.setAnchored(false)
 
     this.contentTarget.classList.remove("opacity-100", "scale-100")
     this.contentTarget.classList.add("hidden", "opacity-0", "scale-95")
@@ -122,35 +123,28 @@ export default class extends Controller {
     if (this.openValue) this.openValue = false
   }
 
-  // The trigger target wraps the caller's control, normally a <button>. ARIA state, focus
-  // and positioning belong on that control: a wrapping <div> is neither focusable nor
-  // announced with state, and in a block layout it spans the full width. Falls back to the
-  // wrapper when it holds nothing focusable.
+  // The trigger target wraps the caller's control, normally a <button>. ARIA state and focus
+  // belong on that control: a wrapping <div> is neither focusable nor announced with state, and
+  // in a block layout it spans the full width. Falls back to the wrapper when it holds nothing
+  // focusable.
   get triggerControl() {
     if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
     return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
-  position() {
-    const reference = this.triggerControl
+  get anchor() {
+    return this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+  }
 
-    if (this.matchWidthValue) {
-      this.contentTarget.style.width = `${reference.offsetWidth}px`
-    }
+  get rovingFocus() {
+    return this.application.getControllerForElementAndIdentifier(this.contentTarget, "ui--roving-focus")
+  }
 
-    computePosition(reference, this.contentTarget, {
-      placement: this.placementValue,
-      middleware: [
-        offset(this.offsetValue),
-        flip(),
-        shift({ padding: 8 })
-      ]
-    }).then(({ x, y }) => {
-      Object.assign(this.contentTarget.style, {
-        left: `${x}px`,
-        top: `${y}px`
-      })
-    })
+  // Positioned only while shown. Written as the value so an anchor that connects later still
+  // reads it, and so a snapshot taken on turbo:before-cache is cached inactive.
+  setAnchored(active) {
+    const anchor = this.anchor
+    if (anchor) anchor.activeValue = active
   }
 
   setupAccessibility() {
@@ -170,11 +164,11 @@ export default class extends Controller {
     this.prepareMenuItems()
   }
 
-  // A menu is one tab stop: the trigger. Its items are reached with the arrow keys and take
-  // focus from script only, so Tab never walks through them. Markup that carries no menu roles
-  // -- plain links and buttons, which is what a host app usually writes -- is adopted as the
-  // items, so it navigates like a menu rather than not at all. Runs on connect and on every
-  // open, so content swapped in later (a lazy Turbo frame, say) is picked up too.
+  // Markup that carries no menu roles -- plain links and buttons, which is what a host app
+  // usually writes -- is adopted as the items, so it navigates like a menu rather than not at
+  // all. Every item becomes a ui--roving-focus item, which keeps the menu a single tab stop.
+  // Runs on connect and on every open, so content swapped in later (a lazy Turbo frame, say) is
+  // picked up too.
   prepareMenuItems() {
     if (this.kindValue !== "menu") return
 
@@ -185,7 +179,7 @@ export default class extends Controller {
       items.forEach(item => item.setAttribute("role", "menuitem"))
     }
 
-    items.forEach(item => item.setAttribute("tabindex", "-1"))
+    items.forEach(item => { if (!item.hasAttribute(ROVING_ITEM)) item.setAttribute(ROVING_ITEM, "item") })
   }
 
   setupListeners() {
@@ -205,10 +199,6 @@ export default class extends Controller {
       if (event.key === "Escape" && (!active || active === document.body)) this.closeOnEscape(event)
     }
     document.addEventListener("keydown", this.documentKeydownHandler)
-
-    this.scrollHandler = () => this.position()
-    window.addEventListener("scroll", this.scrollHandler, true)
-    window.addEventListener("resize", this.scrollHandler)
   }
 
   cleanup() {
@@ -221,25 +211,17 @@ export default class extends Controller {
       document.removeEventListener("keydown", this.documentKeydownHandler)
       this.documentKeydownHandler = null
     }
-
-    if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler, true)
-      window.removeEventListener("resize", this.scrollHandler)
-      this.scrollHandler = null
-    }
   }
 
   cancelPending() {
     clearTimeout(this.hideTimer)
-    clearTimeout(this.focusTimer)
     clearTimeout(this.listenTimer)
-    clearTimeout(this.typeaheadTimer)
     cancelAnimationFrame(this.frame)
-    this.typeahead = ""
   }
 
   // Bound to this element, so it only sees keys pressed while focus is inside the dropdown:
-  // on the trigger or in the content. Escape never pulls focus back from elsewhere.
+  // on the trigger or in the content. Escape never pulls focus back from elsewhere. In a menu,
+  // ui--roving-focus on the content sees each key first and cancels the ones it moves on.
   handleKeydown(event) {
     if (event.key === "Escape") return this.closeOnEscape(event)
     if (event.defaultPrevented || event.isComposing) return
@@ -260,7 +242,7 @@ export default class extends Controller {
       return
     }
 
-    if (this.kindValue === "menu") return this.handleMenuKeydown(event)
+    if (this.kindValue === "menu") return this.activateItem(event)
 
     this.handleKeyNavigation(event)
   }
@@ -277,42 +259,22 @@ export default class extends Controller {
 
     event.preventDefault()
 
-    if (this.shown) return this.focusEnd(end)
+    if (this.shown) return this.focusMenuEnd(end)
 
     this.initialFocus = end
     this.open()
   }
 
-  handleMenuKeydown(event) {
-    if (event.altKey || event.ctrlKey || event.metaKey) return
-
-    switch (event.key) {
-      case "ArrowDown":
-        event.preventDefault()
-        return this.moveFocus(1)
-      case "ArrowUp":
-        event.preventDefault()
-        return this.moveFocus(-1)
-      case "Home":
-        event.preventDefault()
-        return this.focusEnd("first")
-      case "End":
-        event.preventDefault()
-        return this.focusEnd("last")
-      case "Enter":
-      case " ":
-        return this.activateItem(event)
-      default:
-        if (event.key.length === 1) this.typeaheadTo(event)
-    }
-  }
-
-  // Enter and Space activate the focused item. A link or button already activates itself on
-  // Enter -- including Ctrl/Cmd+Enter to open in a new tab -- so that is left alone; Space, and
+  // Space activates the focused item. A link or button already activates itself on Enter --
+  // including Ctrl/Cmd+Enter to open in a new tab -- so that is left alone; Space, and Enter on
   // anything that isn't natively activatable, is clicked from here. Choosing an item closes the
   // menu through the content click handler. A disabled item takes focus but never activates:
-  // cancelling the keydown also stops a disabled link following its href on Enter.
+  // ui--roving-focus cancels the key before it arrives here, which also stops a disabled link
+  // following its href on Enter.
   activateItem(event) {
+    if (event.key !== "Enter" && event.key !== " ") return
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+
     const item = event.target.closest(MENU_ITEM)
     if (!item || !this.contentTarget.contains(item)) return
 
@@ -323,37 +285,16 @@ export default class extends Controller {
     item.click()
   }
 
-  // Printable characters move to the next item whose name starts with what's been typed. The
-  // buffer holds for half a second, so "du" reaches Duplicate rather than stopping at Delete.
-  typeaheadTo(event) {
-    clearTimeout(this.typeaheadTimer)
-    this.typeahead = (this.typeahead || "") + event.key.toLowerCase()
-    this.typeaheadTimer = setTimeout(() => { this.typeahead = "" }, TYPEAHEAD_TIMEOUT)
+  // Revealed before this runs: ui--roving-focus only moves to items that are rendered.
+  focusMenuEnd(end) {
+    const rovingFocus = this.rovingFocus
+    if (!rovingFocus) return
 
-    const items = this.menuItems
-    if (items.length === 0) return
-
-    // A single character searches from the item after the focused one, so repeating it steps
-    // through the items that share an initial; further characters refine from the current one.
-    const from = items.indexOf(document.activeElement) + (this.typeahead.length > 1 ? 0 : 1)
-
-    for (let step = 0; step < items.length; step++) {
-      const item = items[(from + step + items.length) % items.length]
-      if (this.itemLabel(item).startsWith(this.typeahead)) {
-        event.preventDefault()
-        return item.focus()
-      }
+    if (end === "last") {
+      rovingFocus.focusLast()
+    } else {
+      rovingFocus.focusFirst()
     }
-  }
-
-  // Steps to the next or previous item, wrapping at both ends.
-  moveFocus(step) {
-    const items = this.menuItems
-    if (items.length === 0) return
-
-    const index = items.indexOf(document.activeElement)
-    const from = index === -1 && step < 0 ? items.length : index
-    items[(from + step + items.length) % items.length].focus()
   }
 
   focusEnd(end) {
@@ -362,19 +303,8 @@ export default class extends Controller {
     item?.focus()
   }
 
-  itemLabel(item) {
-    return (item.getAttribute("aria-label") || item.textContent || "").trim().toLowerCase()
-  }
-
   isEnabled(item) {
     return item.getAttribute("aria-disabled") !== "true"
-  }
-
-  // Every item, aria-disabled ones included: per the APG, a disabled menu item stays focusable
-  // so it can be discovered, and only activation is refused.
-  get menuItems() {
-    return Array.from(this.contentTarget.querySelectorAll(MENU_ITEM))
-      .filter(item => !item.disabled && item.offsetParent !== null)
   }
 
   // Escape reaches this from two paths that never overlap: the element listener while focus
@@ -446,6 +376,7 @@ export default class extends Controller {
     const end = this.initialFocus || "first"
     this.initialFocus = null
 
+    if (this.kindValue === "menu") return this.focusMenuEnd(end)
     if (this.getFocusableItems().length > 0) return this.focusEnd(end)
 
     if (this.kindValue === "dialog") {
@@ -455,8 +386,6 @@ export default class extends Controller {
   }
 
   getFocusableItems() {
-    if (this.kindValue === "menu") return this.menuItems
-
     const selector = this.kindValue === "listbox"
       ? '[role="option"]'
       : 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'

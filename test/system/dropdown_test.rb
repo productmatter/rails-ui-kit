@@ -74,8 +74,8 @@ class DropdownTest < ApplicationSystemTestCase
       container.id = 'dd4-container'
       container.style.cssText = 'width:600px;display:block;margin-left:320px'
       var clone = original.cloneNode(true)
-      clone.setAttribute('data-ui--dropdown-placement-value', 'bottom-end')
-      clone.setAttribute('data-ui--dropdown-match-width-value', 'true')
+      clone.setAttribute('data-ui--anchor-placement-value', 'bottom-end')
+      clone.setAttribute('data-ui--anchor-match-width-value', 'true')
       container.appendChild(clone)
       document.body.appendChild(container)
     JS
@@ -354,36 +354,41 @@ class DropdownTest < ApplicationSystemTestCase
     assert_focused_item 'Delete'
   end
 
-  test 'DD15: the trigger is the only tab stop -- items are tabindex="-1" and Tab leaves the menu' do
+  test 'DD15: the menu is one tab stop -- only the focused item is tabindex="0" and Tab leaves the menu' do
     visit dropdown_path
     trigger = menu_trigger
     open_menu_with_keyboard
 
-    items = all("[role='menu'] [role='menuitem']", visible: true)
-    assert_equal 4, items.size
-    items.each { |item| assert_equal '-1', item['tabindex'] }
+    # ui--roving-focus's model: the tab stop moves with focus, and every other item is -1.
+    assert_equal %w[0 -1 -1 -1], menu_tabindexes
+    press :arrow_down
+    assert_focused_item 'Duplicate'
+    assert_equal %w[-1 0 -1 -1], menu_tabindexes
 
     press :tab
     assert_equal 'false', trigger['aria-expanded']
+    refute page.evaluate_script('!!document.activeElement.closest(\'[role="menuitem"]\')')
+
+    # Closed, the tabindex="0" item is not rendered, so the trigger is the menu's only tab stop.
+    page.execute_script('arguments[0].focus()', trigger)
+    press :tab
     refute page.evaluate_script('!!document.activeElement.closest(\'[role="menuitem"]\')')
   end
 
   test 'DD16: a menu of plain links with no roles is navigable and is given menuitem roles' do
     visit dropdown_path
+    # The rendered Menu dropdown with its slot swapped for role-less host markup.
     page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
       var container = document.createElement('div')
       container.id = 'dd16'
-      container.innerHTML = `
-        <div data-controller="ui--dropdown" data-ui--dropdown-kind-value="menu">
-          <div data-ui--dropdown-target="trigger">
-            <button type="button" data-action="click->ui--dropdown#toggle">Plain</button>
-          </div>
-          <div class="hidden absolute z-50 opacity-0 scale-95 bg-white" data-ui--dropdown-target="content">
-            <a href="#">Alpha</a>
-            <a href="#">Beta</a>
-            <button type="button">Gamma</button>
-          </div>
-        </div>`
+      var clone = original.cloneNode(true)
+      clone.querySelector("[data-ui--dropdown-target='trigger'] button").textContent = 'Plain'
+      clone.querySelector("[data-ui--dropdown-target='content']").innerHTML = `
+        <a href="#">Alpha</a>
+        <a href="#">Beta</a>
+        <button type="button">Gamma</button>`
+      container.appendChild(clone)
       document.body.appendChild(container)
     JS
 
@@ -480,6 +485,10 @@ class DropdownTest < ApplicationSystemTestCase
 
   def last_activated_item
     page.evaluate_script('window.__ddActivated')
+  end
+
+  def menu_tabindexes
+    all("[data-ui--dropdown-kind-value='menu'] [role='menuitem']", visible: true).map { |item| item['tabindex'] }
   end
 
   def menu_trigger
