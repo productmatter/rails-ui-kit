@@ -7,7 +7,7 @@ A Rails Engine packaging reusable UI components as paired ViewComponents and Sti
 | Component | Stimulus identifier(s) | Description |
 |---|---|---|
 | `Ui::ButtonComponent` | — | 6 variants × 4 sizes on the design tokens; renders `<a>` when given `href` |
-| `Ui::ModalComponent` | `ui--modal` | 8-position modal dialog with backdrop, form-change tracking, Turbo Frame support |
+| `Ui::ModalComponent` | `ui--modal` | 8-position modal dialog with backdrop, form-change tracking, and a full Turbo Stream lifecycle ([guide](docs/guides/modal-and-turbo.md)) |
 | `Ui::DropdownComponent` | `ui--dropdown` | Floating-UI-positioned dropdown with keyboard nav, 3 modes (menu/listbox/dialog) |
 | `Ui::PopoverComponent` | `ui--popover` | Click-triggered floating panel for rich HTML, click-outside and Escape to close |
 | `Ui::TooltipComponent` | `ui--tooltip` | Hover/focus text tooltip with `role="tooltip"` and automatic `aria-describedby` |
@@ -113,6 +113,27 @@ Bundler locks the git source to a specific commit SHA in `Gemfile.lock`, so apps
 
 See [CHANGELOG.md](CHANGELOG.md) for what's in each version. If you hand-write any component markup or Stimulus attributes rather than rendering the components, check [UPGRADING.md](UPGRADING.md) too — it covers what breaks and the exact fix.
 
+## Guides, and your coding agents
+
+The kit ships its guides inside the gem, under `docs/guides/` — start with
+[`modal-and-turbo.md`](docs/guides/modal-and-turbo.md) before building a modal, a modal form or
+any Turbo-driven overlay. Read the copy that matches the version your app has installed:
+
+```bash
+cat "$(bundle info --path rails_ui_kit)/docs/guides/modal-and-turbo.md"
+```
+
+To point your coding agents at them, opt in with:
+
+```bash
+bin/rails generate rails_ui_kit:agent_skill
+```
+
+It writes a Claude Code skill (`.claude/skills/rails-ui-kit/SKILL.md`) and one line in
+`AGENTS.md` for other agents. Both point at the guides **in the installed gem** rather than
+copying them, so `bundle update rails_ui_kit` updates what your agents read, with nothing to
+re-run. `rails_ui_kit:install` never writes either.
+
 ## Private repo authentication
 
 The Gemfile entry above uses HTTPS, which works on developer machines that have a GitHub credential helper or token configured. Two common forms:
@@ -169,9 +190,10 @@ If the generator skipped your `app/assets/tailwind/application.css`, add the imp
 ## Usage
 
 ```erb
-<%= render Ui::ModalComponent.new(position: :right, track_changes: true) do %>
+<%# Name every modal. To open and close it with Turbo, follow docs/guides/modal-and-turbo.md. %>
+<%= render Ui::ModalComponent.new(position: :right, track_changes: true, aria: { labelledby: "settings_title" }) do %>
   <div class="p-6">
-    <h2 class="text-xl font-semibold">Settings</h2>
+    <h2 id="settings_title" class="text-xl font-semibold">Settings</h2>
     <%= form_with(...) do |f| %>
       <div data-controller="ui--form-change">
         <%= f.text_field :name %>

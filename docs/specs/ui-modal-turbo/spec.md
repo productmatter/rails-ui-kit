@@ -58,9 +58,12 @@ describes exactly that code ships in the gem's file list and is what
 - **Not a copy of the guide in the host.** The skill points to the installed gem's
   guide, so upgrading the gem can never leave stale agent instructions behind.
 - **Not a skill per component.** One kit-wide skill; later components add a reference.
-- **Not the overlay primitives.** Scroll lock, focus restore and exit animation stay in
-  today's `ui--modal`. Moving them onto `ui--overlay`/`ui--presence` belongs to
-  `ui-presence-and-overlay-stack` and `ui-foundation-retrofit`.
+- **Not the overlay primitives.** Scroll lock, focus restore and exit animation already belong to
+  `ui--overlay`/`ui--presence`: `6116cbd` moved Modal onto them before this scope was built, so
+  `ui--modal` is what makes it this component and nothing else (corrected 2026-09-14 against the
+  shipped code; the ratified text had them still in `ui--modal`). This scope touches the
+  primitives only where a lifecycle step proved them wrong — focus restored by the trigger's id,
+  and the scroll lock surviving a morphing refresh (§ Behavior, items 7 and 13).
 - **Not a rebuild of `examples/`** (§ Non-goals of ui-component-library). It gains
   demo endpoints; nothing else is restructured.
 
@@ -160,7 +163,11 @@ a system test that drives that demo.
     - Format negotiation. A form submission asks for Turbo Stream first. An invalid
       `render :edit` can therefore pick up the modal's *open* template,
       `edit.turbo_stream.erb`, and re-mount the modal instead of re-rendering the frame.
-    - `data-turbo-action="advance"`, for a modal whose URL should enter history.
+    - `data-turbo-action="advance"`, and why it must not go on a trigger that opens a modal:
+      the advance visit caches a page snapshot as soon as the response lands, and the page-cache
+      teardown removes the modal that has just opened (corrected 2026-09-14 — the ratified text
+      read as though it were a pattern to document positively; `modal_turbo_frame_test.rb` proves
+      what it actually does).
 14. **Demos, guide and tests are one source.** The `examples/` Modal demos move from
     inline `<template>` stand-ins to real endpoints that return real streams and real
     `422`s. The system tests in § Acceptance checks drive those endpoints, so the
@@ -248,15 +255,24 @@ a system test that drives that demo.
   form submission is rejected. `turbo:submit-end` reports `detail.success` for a `2xx`
   response. Non-GET submissions list Turbo Stream first in `Accept`, which is the
   format-negotiation gotcha in § Behavior, item 13.
-- **The page-cache teardown and morphing refreshes are unverified together.**
-  `6a07152` removes an open modal on `turbo:before-cache`. Whether a morphing refresh
-  fires that event, and so closes a modal inside a `data-turbo-permanent` container
-  anyway, has not been observed. Verify it in the browser before the guide states the
-  gotcha. **At a contradiction**, escalate. Don't weaken the cache teardown, which
-  fixes a live Back-button bug.
-- **The docs app has no database.** `examples/` has no `db/` and no models. The demo
-  resource is an in-memory ActiveModel object with real validations, reset between
-  tests. Its controller code must still read like a host app's ActiveRecord
+- **The page-cache teardown and morphing refreshes.** Observed 2026-09-14 in
+  `modal_turbo_morph_refresh_test.rb`: a morphing refresh (`Turbo.session.refresh`) does **not**
+  fire `turbo:before-cache` -- it passes `shouldCacheSnapshot: false` -- so the teardown never
+  runs and a modal inside a `data-turbo-permanent` container survives. Two things had to be
+  fixed for "survives" to be true rather than skin-deep: the refresh morphs `<body>`'s attributes,
+  which took the scroll lock's inline styles with it (now re-applied on `turbo:morph`), and
+  without the permanent container the modal is morphed away entirely. The cache teardown is
+  untouched.
+- **`data-turbo-action="advance"` and the cache teardown do not mix.** Observed 2026-09-14: the
+  advance visit caches a snapshot as soon as the frame response lands, which fires
+  `turbo:before-cache` ~15ms after the modal opened and removes it. The guide therefore documents
+  `advance` as a thing *not* to put on a modal trigger, with
+  `modal_turbo_frame_test.rb` proving the behaviour (§ Behavior, item 13; corrected 2026-09-14 —
+  the ratified text assumed it was a pattern to document positively).
+- **The docs app has no database.** `examples/` has no `db/`. It does already have ActiveModel
+  form objects (`DemoTrip`, `DemoSignup`) — corrected 2026-09-14, the ratified text said "no
+  models" — and the demo resource follows them: an in-memory ActiveModel object with real
+  validations, reset between tests. Its controller code must still read like a host app's ActiveRecord
   controller. If that isn't possible without distorting the guide's samples, escalate
   rather than adding a database.
 - **`bundle info --path rails_ui_kit` finds the installed guide** for both rubygems
@@ -277,9 +293,14 @@ a system test that drives that demo.
 
 ## Critical files
 
-- `app/javascript/rails_ui_kit/controllers/modal_controller.js` — gains
-  `closeOnSuccess`; `close`/`performClose` is the animated path both API additions
-  reuse.
+- `app/javascript/rails_ui_kit/controllers/modal_controller.js` — gains `closeOnSuccess` and
+  `closeFromServer`, which both reach the one animated close, `ui--overlay#close`, which awaits
+  `ui--presence`'s exit (corrected 2026-09-14: there is no `performClose` in the shipped
+  controller — that was `6a07152`'s shape, replaced by `6116cbd`).
+- `app/javascript/rails_ui_kit/controllers/overlay_controller.js`,
+  `app/javascript/rails_ui_kit/overlay/overlay_stack.js` — focus return by the trigger's id
+  (§ Behavior, item 7) and re-applying the scroll lock after a morphing refresh morphs it off
+  `<body>` (§ Behavior, item 13). Both are the primitive's job, not Modal's.
 - `app/javascript/rails_ui_kit/index.js` — the registration surface; the
   `ui_close_modal` stream action is registered from here.
 - `lib/rails_ui_kit/engine.rb` — where the `turbo_stream.ui_close_modal` helper joins
@@ -302,10 +323,11 @@ a system test that drives that demo.
   inline `<template>` stand-ins, which real endpoints replace.
 - `examples/app/views/docs/modal_demo.turbo_stream.erb` — the position-preview stream.
 - `examples/app/views/layouts/docs.html.erb` — moves from today's single shared
-  `<turbo-frame id="modal">` to the blessed `<div id="modal">` for the primary
-  pattern (§ Behavior, item 1). The frame-target pattern (item 2) keeps its own
-  separate `<turbo-frame id="modal">` in a read-only demo, not the shared layout
-  container.
+  `<turbo-frame id="modal">` to the blessed `<div id="modal" data-turbo-permanent>` for the
+  primary pattern (§ Behavior, item 1), and gains a `yield :head` so a page can opt into
+  morphing refreshes. The frame-target pattern (item 2) has its own container in the read-only
+  demo, `<turbo-frame id="project_activity_modal">` — not a second `id="modal"`, which would be
+  a duplicate id on the same page (corrected 2026-09-14).
 - `test/application_system_test_case.rb`, `test/system/` — the lane every lifecycle
   test joins.
 - `test/generators/install_generator_test.rb` — the precedent for the new generator
@@ -327,7 +349,7 @@ a system test that drives that demo.
 - An open modal in a `data-turbo-permanent` container survives a morphing page refresh — run: `bundle exec rake test:system TEST=test/system/modal_turbo_morph_refresh_test.rb`
 - The demo modal passes an axe audit when open and in its validation-error state — run: `bundle exec rake test:system TEST=test/system/modal_turbo_accessibility_test.rb`
 - `turbo_stream.ui_close_modal` renders a `ui_close_modal` stream targeting `modal`, or the id it is given — run: `bundle exec rake test TEST=test/turbo_stream_ui_close_modal_test.rb`
-- The guide exists and is in the built gem's file list — run: `ruby -e "raise('guide not packaged') unless Gem::Specification.load('rails_ui_kit.gemspec').files.include?('docs/guides/modal-and-turbo.md')"`
+- The guide exists, is in the built gem's file list, and every sample in it is still a verbatim slice of the demo file it names — run: `bundle exec rake test TEST=test/modal_and_turbo_guide_test.rb` (the packaging check the ratified text gave as a `ruby -e` one-liner is the first test in that file; drift between the guide and the demos is the check that matters and needed a test of its own — corrected 2026-09-14)
 - The agent-skill generator writes `SKILL.md` and one `AGENTS.md` pointer line idempotently, and install writes neither — run: `bundle exec rake test TEST=test/generators/agent_skill_generator_test.rb`
 
 ### judgeable

@@ -20,8 +20,12 @@ Gem::Specification.new do |spec|
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['rubygems_mfa_required'] = 'true'
 
+  # docs/guides/**/* and not docs/**/*: the guides are part of what the gem ships (the agent skill
+  # points a host's agents at them in the installed gem), while docs/specs and docs/audits are the
+  # product record and stay out of it.
   spec.files = Dir[
     '{app,config,lib}/**/*',
+    'docs/guides/**/*',
     'MIT-LICENSE',
     'Rakefile',
     'README.md',
