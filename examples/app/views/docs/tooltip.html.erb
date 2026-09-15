@@ -1,20 +1,21 @@
 <% content_for :title, "Tooltip" %>
 
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Overlays</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Tooltip</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
-    A text-only tooltip anchored to any trigger element. Shown on hover and focus.
-    Positioned with Floating UI and fully accessible via <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code>.
+  <p class="text-muted-foreground">
+    A short text hint for a control, shown on hover and on keyboard focus: the name of an icon-only button, or what a
+    shortcut does. It is read as the control's description, paints above dialogs and menus without closing them, and stays
+    on screen near a viewport edge. Like Popover, it's here for the browser behaviour, not for anything Rails-specific.
   </p>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
+<div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
   <% [["top", "Top"], ["bottom", "Bottom"], ["left", "Left"], ["right", "Right"]].each do |placement, label| %>
     <%= render Ui::TooltipComponent.new(text: "Tooltip #{label.downcase}", placement: placement) do |t| %>
       <% t.with_trigger do %>
-        <button class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+        <button class="rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
           <%= label %>
         </button>
       <% end %>
@@ -32,27 +33,27 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["text",      "String",  "required", "The tooltip text content."],
         ["placement", "String",  '"top"',    "Floating UI placement. One of: top, top-start, top-end, bottom, bottom-start, bottom-end, left, left-start, left-end, right, right-start, right-end."],
         ["offset",    "Integer", "6",        "Gap in pixels between the trigger and the tooltip."],
       ].each do |name, type, default, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
@@ -60,44 +61,39 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Slots</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">trigger</td>
-        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The element that receives hover and focus events to show the tooltip.</td>
+        <td class="px-4 py-3 font-mono text-xs text-primary">trigger</td>
+        <td class="px-4 py-3 text-muted-foreground">The element that receives hover and focus events to show the tooltip.</td>
       </tr>
     </tbody>
   </table>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 mb-8 text-sm text-neutral-600 dark:text-neutral-400">
-  <p>
-    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code>
-    control never receives focus, so keyboard and screen reader users can't trigger a tooltip on it even
-    though hover still shows it for a mouse. If a disabled control needs a tooltip, use
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-disabled="true"</code>
-    instead of the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code>
-    attribute so the control stays focusable.
-  </p>
-</div>
-
-<h2 class="text-base font-semibold mb-3">Stimulus Controller</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--tooltip</code>
-  — registered automatically by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">registerControllers(application)</code>.
-</p>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>Resolves the focusable control inside the trigger slot and puts <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-describedby</code>, positioning and hover/focus listeners on that control, not the wrapper — so a block-level trigger doesn't show the tooltip when hovering empty space beside it.</li>
-  <li>Positioning, including the arrow, is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code> &mdash; the kit&rsquo;s only importer of Floating UI &mdash; with flip and shift near a viewport edge, kept current on scroll and resize while the tooltip is up.</li>
-  <li>Showing and hiding are <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--overlay</code> in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">hint</code> mode: the tooltip is a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">popover="manual"</code> in the browser&rsquo;s top layer, so it paints above a dialog or a menu and, unlike a layer, never closes one by appearing over it.</li>
-  <li>Listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusin</code>, and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">focusout</code> on the control, plus <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseenter</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">mouseleave</code> on the tooltip content itself, so the pointer can travel onto it.</li>
-  <li>Dismissable with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Escape</code> without moving focus, in the capture phase, so a surrounding dialog neither closes with it nor sees the key; stays visible while the control has focus or hover; and clears on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:before-cache</code> so Back never restores it visible.</li>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The control in the trigger slot gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code> pointing at the tooltip, which has
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="tooltip"</code>. The tooltip describes the control; it doesn't name it, so an icon-only button still needs
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-label</code>.</li>
+  <li>It shows on focus as well as hover, and stays while either lasts. The pointer can travel onto the tooltip without it
+      disappearing.</li>
+  <li>Escape hides it without moving focus, and without closing a dialog the control sits in.</li>
+  <li>A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">disabled</code> control never receives focus, so keyboard and screen reader users can't reach its
+      tooltip even though a mouse can. If a disabled control needs one, use <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> instead, so it
+      stays focusable.</li>
 </ul>
+
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  Anything a user needs to read to use the page belongs on the page, not behind a hover: a touch screen has no hover. Content
+  with a link, a button or more than a sentence is a <%= link_to "Popover", popover_path, class: "text-primary underline" %>.
+  Help text for a form field is a <%= link_to "Field", field_path, class: "text-primary underline" %> description.
+</p>

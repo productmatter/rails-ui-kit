@@ -1,39 +1,43 @@
 <% content_for :title, "Dropdown" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Overlays</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
-    A floating menu or dialog positioned by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">kind: :menu</code> follows the WAI-ARIA menu button pattern: arrow keys, Home/End, typeahead, Escape. Supports two interaction modes. Picking a value from a list? See <%= link_to "Select", select_path, class: "text-violet-600 dark:text-violet-400 hover:underline" %>.
+  <p class="text-muted-foreground">
+    The actions for a record, behind one button: Edit, Duplicate, a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">button_to</code> Delete with its
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-confirm</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">kind: :menu</code> follows the WAI-ARIA menu button pattern — arrow keys,
+    Home/End, typeahead, Escape — and works on the links and buttons Rails renders, including content Turbo swaps in later.
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">kind: :dialog</code> holds a small form instead, such as a filter. Both are anchored to their trigger and stay on
+    screen.
   </p>
 </div>
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-start justify-center gap-6 p-12 mb-8">
+<div class="rounded-lg border border-border bg-background flex flex-wrap items-start justify-center gap-6 p-12 mb-8">
   <%# Menu %>
-  <%= render Ui::DropdownComponent.new(kind: :menu, placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
+  <%= render Ui::DropdownComponent.new(kind: :menu, placement: "bottom-start", content_classes: "rounded-md border border-border bg-popover text-popover-foreground shadow-lg") do |d| %>
     <% d.with_trigger do %>
       <button data-action="click->ui--dropdown#toggle"
-              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+              class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
         Menu
         <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
       </button>
     <% end %>
     <% d.with_menu do %>
       <div class="py-1 min-w-[10rem]">
-        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Edit</a>
-        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700">Duplicate</a>
-        <a href="#" role="menuitem" aria-disabled="true" class="flex px-3 py-2 text-sm text-neutral-400 dark:text-neutral-500 cursor-default">Archive</a>
-        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">Delete</a>
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Edit</a>
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Duplicate</a>
+        <a href="#" role="menuitem" aria-disabled="true" class="flex px-3 py-2 text-sm text-muted-foreground cursor-default">Archive</a>
+        <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-destructive hover:bg-accent focus:bg-accent">Delete</a>
       </div>
     <% end %>
   <% end %>
 
   <%# Dialog %>
-  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", placement: "bottom-start", content_classes: "rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-900") do |d| %>
+  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", placement: "bottom-start", content_classes: "rounded-md border border-border bg-popover text-popover-foreground shadow-lg") do |d| %>
     <% d.with_trigger do %>
       <button data-action="click->ui--dropdown#toggle"
-              class="flex items-center gap-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+              class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
         Dialog
         <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
       </button>
@@ -41,7 +45,7 @@
     <% d.with_menu do %>
       <label class="block w-56 p-3 text-sm">
         <span class="mb-1.5 block font-medium">Name contains</span>
-        <input type="text" class="w-full rounded-md border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1.5 text-sm">
+        <input type="text" class="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm">
       </label>
     <% end %>
   <% end %>
@@ -59,17 +63,17 @@
 
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (the menu button pattern — see Keyboard below), :dialog (focus moves to the first field on open)."],
         ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
@@ -78,33 +82,33 @@
         ["content_classes","String",  '""',            "Additional classes on the floating content wrapper."],
         ["label",          "String",  "nil",           "Accessible name for the floating content. Give every :dialog one."],
       ].each do |name, type, default, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 </div>
 
-<%# Keyboard %>
-<h2 class="text-base font-semibold mb-3">Keyboard</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<p class="text-sm text-muted-foreground mb-3">
   <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">kind: :menu</code>
-  implements the <a class="text-violet-600 dark:text-violet-400 hover:underline" href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">WAI-ARIA menu button pattern</a>.
+  implements the <a class="text-primary underline" href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">WAI-ARIA menu button pattern</a>.
 </p>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-4">
+<div class="overflow-x-auto rounded-lg border border-border mb-4">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Key</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">On the trigger</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">In the open menu</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">On the trigger</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">In the open menu</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["Enter / Space", "Opens the menu on the first item.", "Activates the focused item and closes the menu."],
         ["↓",             "Opens the menu on the first item.", "Moves to the next item, wrapping to the first."],
@@ -114,16 +118,16 @@
         ["Esc",           "—",                                 "Closes the menu and returns focus to the trigger."],
         ["Tab",           "Moves on to the next control.",     "Closes the menu; focus continues past it."],
       ].each do |key, on_trigger, in_menu| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400 whitespace-nowrap"><%= key %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= on_trigger %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= in_menu %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary whitespace-nowrap"><%= key %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= on_trigger %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= in_menu %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 </div>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 mb-8 text-sm text-neutral-600 dark:text-neutral-400 space-y-3">
+<div class="rounded-lg border border-border p-4 mb-8 text-sm text-muted-foreground space-y-3">
   <p>
     The menu is a single tab stop, navigated by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>:
     the focused item carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="0"</code>
@@ -151,23 +155,32 @@
 
 <%# Slots %>
 <h2 class="text-base font-semibold mb-3">Slots</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <tr>
-        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">trigger</td>
-        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The button that opens the dropdown. Wire <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--dropdown#toggle"</code> to your button.</td>
+        <td class="px-4 py-3 font-mono text-xs text-primary">trigger</td>
+        <td class="px-4 py-3 text-muted-foreground">The button that opens the dropdown. Wire <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--dropdown#toggle"</code> to your button.</td>
       </tr>
       <tr>
-        <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400">menu</td>
-        <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
+        <td class="px-4 py-3 font-mono text-xs text-primary">menu</td>
+        <td class="px-4 py-3 text-muted-foreground">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
       </tr>
     </tbody>
   </table>
 </div>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  Picking a value for a form is a <%= link_to "Select", select_path, class: "text-primary underline" %>, not a menu: a menu runs
+  actions, a select posts a value. Site navigation is a list of links, not <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="menu"</code>, which changes how screen
+  readers and the keyboard treat every item. Rich content that isn't a list of actions is a
+  <%= link_to "Popover", popover_path, class: "text-primary underline" %>.
+</p>

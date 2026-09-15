@@ -1,0 +1,40 @@
+<% content_for :title, "Building a form" %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guides</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Building a form</h1>
+  <p class="text-muted-foreground">
+    From <code class="font-mono text-xs">form_with</code> to a form bound to its record: every field's name, id, label,
+    value, errors and required state read from the model, and the shapes Rails makes awkward — an enum, a
+    <code class="font-mono text-xs">belongs_to</code>, a <code class="font-mono text-xs">has_many</code> edited as ids,
+    nested attributes — done the way that survives a 422.
+  </p>
+</div>
+
+<div class="rounded-lg border border-border bg-background px-5 py-4 mb-8">
+  <p class="text-sm text-foreground font-medium mb-1">The guide ships inside the gem</p>
+  <p class="text-sm text-muted-foreground">
+    Read it at <code class="font-mono text-xs">docs/guides/forms.md</code> in the installed
+    gem (<code class="font-mono text-xs">bundle info --path rails_ui_kit</code>). Every sample in it is a slice of the demo below,
+    and a test fails if one drifts. To point your coding agents at it, run
+    <code class="font-mono text-xs">bin/rails g rails_ui_kit:agent_skill</code>.
+  </p>
+</div>
+
+<h2 class="text-base font-semibold mb-3">The demo</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  A member record with a name, a status enum, a team, roles and an address, edited through a real route and a real
+  controller. Clear the team and save: the server answers 422 and the error lands on the field that edits it.
+</p>
+<div class="mb-8">
+  <%= render(Ui::ButtonComponent.new(href: edit_member_path(Member::SEED[:id]), id: "open-forms-demo", variant: :outline)) { "Open the demo form" } %>
+</div>
+
+<h2 class="text-base font-semibold mb-3">What the guide covers</h2>
+<ul class="mb-8 space-y-2 text-sm text-muted-foreground list-disc ps-5">
+  <li>A model-bound <%= link_to "Field", field_path, class: "text-primary underline" %>, and what it derives from the record.</li>
+  <li>A <%= link_to "Select", select_path, class: "text-primary underline" %> from an enum and from a <code class="font-mono text-xs">belongs_to</code> collection, and why the association's error needs naming.</li>
+  <li><%= link_to "Choices", choices_path, class: "text-primary underline" %> for a <code class="font-mono text-xs">has_many</code>: errors on <code class="font-mono text-xs">roles</code>, input named <code class="font-mono text-xs">role_ids</code>, and why a locked checkbox is not authorization.</li>
+  <li>Nested attributes through an explicit <code class="font-mono text-xs">name:</code>.</li>
+  <li>The 422 re-render, the submitting state, and the <code class="font-mono text-xs">ui_select</code> test helper.</li>
+</ul>

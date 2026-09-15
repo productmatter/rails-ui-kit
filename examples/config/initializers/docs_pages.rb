@@ -20,11 +20,16 @@ module DocsPages
   PAGES = [
     { slug: :root, title: 'Introduction', section: 'Getting Started', path: '/', action: :index },
     { slug: :installation, title: 'Installation', section: 'Getting Started' },
+    { slug: :theming, prefix: 'guides', title: 'Theming', section: 'Getting Started',
+      summary: 'Tokens in light and dark, control heights, class merging and chrome strings: how an app makes the kit its own.' },
     { slug: :dark_mode, prefix: 'utilities', title: 'Dark Mode', section: 'Getting Started',
       summary: 'A persisted light and dark toggle, synced across tabs.' },
     { slug: :i18n, prefix: 'utilities', title: 'Internationalization', section: 'Getting Started',
       summary: 'Every string the kit renders lives in a locale file your app can override.' },
 
+    { slug: :forms_guide, path: 'guides/forms', title: 'Building a form', section: 'Forms',
+      summary: 'A form bound to its record, end to end: enums, belongs_to, has_many ids, nested attributes, ' \
+               'the 422 and the submitting state. The companion guide ships inside the gem.' },
     { slug: :field, prefix: 'components', title: 'Field', section: 'Forms',
       summary: 'Wires a label, control, description and errors into one accessible unit, deriving every id from the attribute name.' },
     { slug: :select, prefix: 'components', title: 'Select', section: 'Forms',
@@ -32,7 +37,7 @@ module DocsPages
                'mirrored into a WAI-ARIA combobox with full keyboard support.' },
     { slug: :choices, prefix: 'components', title: 'Choices', section: 'Forms',
       summary: 'A radio or checkbox group over real inputs, with collection_radio_buttons / collection_check_boxes ' \
-               'names, ids and hidden field, in a list or card appearance.' },
+               'names, ids and hidden field, in a list or card variant.' },
     { slug: :input, prefix: 'components', title: 'Input', section: 'Forms',
       summary: 'A native <input> drawn from the design tokens, with invalid and disabled states read from the element itself.' },
     { slug: :textarea, prefix: 'components', title: 'Textarea', section: 'Forms',

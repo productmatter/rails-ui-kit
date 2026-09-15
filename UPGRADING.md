@@ -2,9 +2,11 @@
 
 This covers everything between v0.2.0 and v0.3.0. It reports findings,
 not predictions: this branch was tested against a real consuming app before this was written,
-and the two failures below (§1, §2) are exactly what that test found — one of them silent.
+and the two failures below (§1, §2) are exactly what that test found — one of them silent. §4 and
+§5 are visible changes to the confirm dialog, not failures: nothing errors except a removed
+keyword.
 
-**Headline: run `bundle update`, then fix three things.** Most of the CHANGELOG's Unreleased
+**Headline: run `bundle update`, then fix five things.** Most of the CHANGELOG's 0.3.0
 section is new components, bug fixes, and internal refactors that need nothing from you. This
 file is only the part that touches a hand-rolled app.
 
@@ -72,6 +74,46 @@ The full token list and how the layering works is in README's [Overriding](READM
 section. Import order doesn't matter — the kit's values sit in a sub-layer of Tailwind's lowest
 layer, so your definitions win wherever they are.
 
+## 4. The confirm dialog no longer shows a warning icon (visible, not loud)
+
+`Ui::ConfirmDialogComponent` no longer renders the red warning triangle. Its default is a title,
+a message and the two buttons. The confirm button is still destructive red by default. A dialog
+that isn't confirming something destructive can now say so with `confirm_variant: :default`, or
+`data-turbo-confirm-confirm-variant="default"`.
+
+**To get an icon back,** render it as content. This restores the 0.2.0 look:
+
+```erb
+<%= render Ui::ConfirmDialogComponent.new(icon_wrapper_class: "rounded-full bg-destructive/10 text-destructive") do |dialog| %>
+  <% dialog.with_icon do %>
+    <svg class="size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+    </svg>
+  <% end %>
+<% end %>
+```
+
+The icon shows on every confirmation that dialog opens, from JavaScript and Turbo too. An icon
+can't be passed through JavaScript.
+
+## 5. Confirm dialog class options add to the defaults instead of replacing them (visible, one loud)
+
+`wrapper_class:`, `body_class:`, `footer_class:`, `title_class:`, `message_class:`,
+`confirm_class:`, `cancel_class:` and `icon_wrapper_class:` used to replace the component's
+classes. They're now merged on top: where your class and a default set the same property, yours
+wins, and the defaults you didn't contradict stay. If you passed a complete class string, the
+result is usually what you had. **The one difference:** if you relied on replacing a default
+wholesale, the default utilities your classes don't conflict with come back. Your
+`wrapper_class: "rounded-none"` still removes the radius, but the token background and shadow you
+didn't mention now render. To drop one, pass a class that sets the same property (`shadow-none`,
+`bg-transparent`). `icon_class:` is removed and raises `ArgumentError`. Style your icon inside the
+`icon` slot.
+
+```bash
+grep -rn 'ConfirmDialogComponent.new' app/ | grep '_class:'
+grep -rn 'icon_class:' app/ | grep -i confirm
+```
+
 ## Also worth knowing
 
 **`Ui::DropdownComponent(kind: :listbox)` is gone.** It had no real selection model and moved
@@ -101,7 +143,9 @@ the browser's top layer, which gives Escape to whatever's topmost.
 **ConfirmDialog**: `Ui::ConfirmDialogComponent` now renders Cancel before Confirm (previously
 Confirm first), with `footer_class`, `confirm_class` and `cancel_class` changed to match. If you
 override any of those three, or relied on `sm:flex-row-reverse` / the old button margins, check
-the layout.
+the layout. Both buttons are now `Ui::ButtonComponent`, so they carry its height, padding and
+focus ring; the dialog's panel now fills the width of a phone screen instead of shrinking to its
+text. See §4 and §5 for the icon and the class options.
 
 **Boolean attributes — a bug fix, not a style change.** `disabled: "false"` (and the same for
 `readonly`, `required`, `checked`, `selected`, `multiple`, `hidden`, `open`) used to render as
@@ -110,10 +154,6 @@ false. If anything in your app passed a stringified `"false"` expecting the old 
 behavior — e.g. `disabled: some_boolean_column.to_s` from a form param or serialized value — it
 will now render enabled. `aria-*` and `data-*` are untouched; `aria-invalid="false"` still means
 what it says.
-
-**Deleted components**, with their one-line replacements:
-- `Ui::KbdComponent` → `<kbd class="inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-sm border border-border bg-muted px-1 font-mono text-xs font-medium text-muted-foreground select-none">Esc</kbd>`
-- `Ui::AspectRatioComponent` → `<div class="relative w-full aspect-square"><div class="absolute inset-0"><%= child %></div></div>` (swap `aspect-square` for `aspect-video`, `aspect-[3/4]` or `aspect-[4/3]` to match the ratio you used)
 
 **Ruby, Rails and Tailwind — these are new floors, introduced on this branch, not old ones you
 already cleared.** Minimum Ruby moves from 3.1 to 3.2 (`tailwind_merge` requires it), minimum
@@ -146,13 +186,14 @@ grep -rn 'data-ui--popover-open-value' app/
 # Copy-pasted toast container markup missing the live regions (§1)
 grep -rln 'data-controller="ui--toast-container"' app/ | xargs grep -L 'role="status"\|role="alert"'
 
-# Deleted components
-grep -rn 'Ui::KbdComponent\|Ui::AspectRatioComponent\|Ui::Kbd::GroupComponent' app/
+# Confirm dialog class options, now merged rather than replacing (§5)
+grep -rn 'ConfirmDialogComponent.new' app/ | grep '_class:'
+grep -rn 'icon_class:' app/ | grep -i confirm
 
 # disabled/readonly/etc. passed as a literal string anywhere near these components
 grep -rn 'disabled: .*\.to_s\|disabled: "false"' app/
 ```
 
-Everything else in [CHANGELOG.md](CHANGELOG.md)'s Unreleased section — new components, the
+Everything else in [CHANGELOG.md](CHANGELOG.md)'s 0.3.0 section — new components, the
 accessibility and focus-handling fixes, the token retune — needs no action; it's additive or
 fixes a bug you'd have hit either way.

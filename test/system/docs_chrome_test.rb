@@ -76,7 +76,7 @@ class DocsChromeTest < ApplicationSystemTestCase
 
     [false, true].each do |dark|
       use_dark_mode(dark)
-      badge = find('aside span', text: '0.1.0')
+      badge = find('aside span', text: RailsUiKit::VERSION)
       ratio = contrast_ratio(color_of(:text, badge), color_of(:background, badge))
       assert_operator ratio, :>=, 4.5, "version badge is #{ratio.round(2)}:1 in #{dark ? 'dark' : 'light'} mode"
     end

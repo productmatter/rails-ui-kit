@@ -1,4 +1,4 @@
-<% content_for :title, "Choices" %>
+<% content_for :title, "Choices (radio & checkbox groups)" %>
 <%
   roles = DocsController.roles
   plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
@@ -10,8 +10,8 @@
                 Struct.new(:id, :name, :tagline).new("scale", "Scale", "Everything, plus priority support.")]
 %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
-  <h1 class="text-3xl font-bold tracking-tight mb-3">Choices</h1>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Choices <span class="text-muted-foreground font-semibold">(radio &amp; checkbox groups)</span></h1>
   <p class="text-muted-foreground">
     A radio group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: false</code>)
     or a checkbox group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: true</code>)
@@ -41,10 +41,10 @@
   <% end %>
 </div>
 
-<%# Card appearance %>
-<h2 class="text-base font-semibold mb-3">The card appearance</h2>
+<%# Card variant %>
+<h2 class="text-base font-semibold mb-3">The card variant</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">appearance: :card</code> makes the
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">variant: :card</code> makes the
   whole card the target — text, description, icon and padding all check the input, and focus still lands on the input
   itself. Columns are your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>,
   so cards stack at phone widths unless you say otherwise.
@@ -52,7 +52,7 @@
 <div id="choices-card-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <%= render Ui::FieldComponent.new(name: "card[plan]") do |field| %>
     <% field.with_label { "Billing plan" } %>
-    <% field.with_control(Ui::ChoicesComponent, appearance: :card, collection: card_plans, value_method: :id,
+    <% field.with_control(Ui::ChoicesComponent, variant: :card, collection: card_plans, value_method: :id,
                           text_method: :name, description_method: :tagline, icon_method: plan_icon,
                           checked: "growth", class: "sm:grid-cols-3") %>
   <% end %>
@@ -183,7 +183,7 @@
         ["required",            "Boolean",       "false",    "Radios: required on every radio. Checkboxes: the marker, the screen-reader hint and ui--choices' \"at least one\"."],
         ["disabled",            "Boolean",       "false",    "Renders <fieldset disabled>, so every input and hidden field is disabled and the attribute is left untouched."],
         ["form",                "String",        "nil",      "The id of a form elsewhere on the page; goes on every input and the hidden fields, as in Rails."],
-        ["appearance",          "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
+        ["variant",             "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
         ["size",                "Symbol",        ":default", "One of :sm, :default, :lg — each choice's minimum height, from the same tokens Input and Select read."],
         ["description_method",  "Symbol/Proc",   "nil",      "A second line per choice. Needs collection:, since there is no object to call it on otherwise."],
         ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. Needs collection: too."],
@@ -214,7 +214,7 @@
       as "Pro Unlimited projects". The icon is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
   <li>Focus is always on a real input — no card, label or fieldset is focusable, and nothing adds a
       <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tabindex</code>. In the card
-      appearance the ring is drawn on the card, and only for the keyboard.</li>
+      variant the ring is drawn on the card, and only for the keyboard.</li>
   <li>A checkbox never carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
       or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-required</code>: both would
       say every box is required. The group says it once, in the hint.</li>

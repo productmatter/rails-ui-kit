@@ -1,39 +1,46 @@
 <% content_for :title, "Turbo Disable With" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Utilities</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Turbo Disable With</h1>
   <p class="text-muted-foreground">
-    Disables form submit buttons during Turbo form submissions and shows a loading indicator — text, spinner, or pulse animation.
+    The submitting state for a Rails form: while a submission runs, every button marked
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code> is disabled, keeps its size and shows a loading state — text, a spinner or a
+    pulse — and a screen reader hears it. It is restored when Turbo reports the response.
   </p>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-6 p-12 mb-8">
   <%= form_with url: demo_submit_path do %>
-    <button type="submit"
-            data-turbo-disable-with="Saving..."
-            data-turbo-disable-style="text"
-            class="rounded-md bg-violet-600 hover:bg-violet-700 px-4 py-2 text-sm font-medium text-white transition-colors">
-      Text style
-    </button>
+    <%= render(Ui::ButtonComponent.new(type: "submit", data: { turbo_disable_with: "Saving...", turbo_disable_style: "text" })) { "Text style" } %>
   <% end %>
   <%= form_with url: demo_submit_path do %>
-    <button type="submit"
-            data-turbo-disable-with="Saving..."
-            data-turbo-disable-style="spinner"
-            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-      Spinner style
-    </button>
+    <%= render(Ui::ButtonComponent.new(type: "submit", variant: :outline, data: { turbo_disable_with: "Saving...", turbo_disable_style: "spinner" })) { "Spinner style" } %>
   <% end %>
   <%= form_with url: demo_submit_path do %>
-    <button type="submit"
-            data-turbo-disable-with="Saving..."
-            data-turbo-disable-style="pulse"
-            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-      Pulse style
-    </button>
+    <%= render(Ui::ButtonComponent.new(type: "submit", variant: :outline, data: { turbo_disable_with: "Saving...", turbo_disable_style: "pulse" })) { "Pulse style" } %>
   <% end %>
 </div>
+
+<h2 class="text-base font-semibold mb-3">Rails' and Turbo's own versions</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  There are three attributes with nearly the same name. Use this one, and only this one, on a button:
+</p>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li><strong>Rails' <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disable-with</code></strong> is what <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">f.submit</code> adds on its own. It is read by
+      rails-ujs, which a Rails 7+ app no longer loads, so under Turbo it does nothing.</li>
+  <li><strong>Turbo's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code></strong> swaps the text of the button that submitted, for a
+      Turbo-driven submission. Text only, that one button only.</li>
+  <li><strong>The kit's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code></strong> adds what those don't: the spinner and pulse styles at
+      the button's own height; every marked button in the form, not only the one clicked; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-busy</code> and a
+      polite announcement; forms with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo="false"</code>, which Turbo never sees; restoring the button
+      before Turbo caches the page and when the browser brings it back from its back-forward cache; and a default text that
+      is translatable, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">rails_ui_kit.turbo_disable_with.processing</code>.</li>
+</ul>
+<p class="text-sm text-muted-foreground mb-8">
+  Don't combine it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code> on the same button: both rewrite its content, and they
+  restore it at different moments.
+</p>
 
 <h2 class="text-base font-semibold mb-3">Setup</h2>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">Mount once in your layout:</p>
@@ -84,7 +91,15 @@
 </p>
 
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
   <li>Announces the loading state via an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-live="polite"</code> region so screen readers are notified.</li>
   <li>Re-enables and restores the original button text on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:submit-end</code>.</li>
+  <li>The button is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-busy="true"</code> while it waits, and disabled, so it can't be pressed twice.</li>
 </ul>
+
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  A submission that finishes faster than a person can see doesn't need it, and a request that runs for more than a few
+  seconds needs more than it: progress, or a job the page reports on. For a submit button rendered by
+  <%= link_to "Button", button_path, class: "text-primary underline" %>, pass the attribute through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data:</code>.
+</p>

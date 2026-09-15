@@ -29,11 +29,9 @@
   <strong>Open</strong> and <strong>Edit</strong> request a Turbo Stream that renders the modal into
   the layout's <code class="font-mono text-xs">&lt;div id="modal"&gt;</code>. Inside it, links swap
   only the content frame; saving answers with a stream that closes the modal, updates the row and
-  writes the flash; an invalid save answers 422 and re-renders the error in place.
+  shows a toast; an invalid save answers 422 and re-renders the error in place.
   <strong>Activity</strong> is the read-only frame-target pattern.
 </p>
-
-<div id="flash" role="status" aria-live="polite" class="mb-3 empty:hidden"></div>
 
 <div class="rounded-lg border border-border bg-background mb-4">
   <ul id="projects" class="list-none">

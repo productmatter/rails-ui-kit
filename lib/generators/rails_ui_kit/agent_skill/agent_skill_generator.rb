@@ -21,7 +21,7 @@ module RailsUiKit
       POINTER = "- **rails_ui_kit**: read the kit's own guide before building or changing one of " \
                 'its components, from the installed gem rather than a copy — ' \
                 "`$(bundle info --path rails_ui_kit)/#{GUIDES_PATH}` " \
-                '(start with `modal-and-turbo.md` for modals and Turbo-driven overlays).'.freeze
+                '(`forms.md` for forms, `modal-and-turbo.md` for modals and Turbo-driven overlays).'.freeze
 
       desc 'Point this app\'s coding agents at the rails_ui_kit guides in the installed gem'
 
@@ -31,9 +31,8 @@ module RailsUiKit
 
       def point_agents_file
         return create_file(AGENTS_PATH, "#{POINTER}\n") unless File.exist?(destination_path(AGENTS_PATH))
+        return say_status(:unchanged, AGENTS_PATH, :blue) if File.read(destination_path(AGENTS_PATH)).include?(POINTER)
 
-        # Idempotent without help: Thor leaves a file that already contains this line alone, and
-        # reports it as unchanged.
         append_to_file AGENTS_PATH, "\n#{POINTER}\n"
       end
 

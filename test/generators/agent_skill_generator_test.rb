@@ -36,6 +36,15 @@ module RailsUiKit
       assert_match(/turbo/i, description)
     end
 
+    test 'an agent building a form is pointed at the forms guide in the installed gem' do
+      run_generator
+
+      skill = File.read(host_path(SKILL_PATH))
+      assert_match(/\bform\b/i, skill[/^description: (.+)$/, 1])
+      assert_includes skill, 'docs/guides/forms.md'
+      assert File.exist?(File.expand_path('../../docs/guides/forms.md', __dir__))
+    end
+
     # The whole design: the skill resolves the guide from the installed gem, so upgrading the gem
     # can never leave a host with instructions for the version it used to have.
     test 'the skill points at the guide in the installed gem and copies none of it' do
@@ -73,18 +82,21 @@ module RailsUiKit
     end
 
     test 're-running changes nothing that is already in place' do
-      write_host_file('AGENTS.md', "# How we work\n")
+      [-> { write_host_file('AGENTS.md', "# How we work\n") }, -> {}].each do |host_setup|
+        prepare_destination
+        host_setup.call
 
-      run_generator
-      first_agents = File.read(host_path('AGENTS.md'))
-      first_skill = File.read(host_path(SKILL_PATH))
+        run_generator
+        first_agents = File.read(host_path('AGENTS.md'))
+        first_skill = File.read(host_path(SKILL_PATH))
 
-      output = run_generator(['--force'])
+        output = run_generator(['--force'])
 
-      assert_equal first_agents, File.read(host_path('AGENTS.md'))
-      assert_equal first_skill, File.read(host_path(SKILL_PATH))
-      assert_equal 1, File.read(host_path('AGENTS.md')).scan('bundle info --path rails_ui_kit').size
-      assert_match(/unchanged\s+AGENTS\.md/, output)
+        assert_equal first_agents, File.read(host_path('AGENTS.md'))
+        assert_equal first_skill, File.read(host_path(SKILL_PATH))
+        assert_equal 1, File.read(host_path('AGENTS.md')).scan('bundle info --path rails_ui_kit').size
+        assert_match(/unchanged\s+AGENTS\.md/, output)
+      end
     end
 
     # rails_ui_kit:install stays quiet: installing a gem is not consent to write into .claude/ or

@@ -25,19 +25,28 @@ module CodeExamplesHelper
         Delete
       <% end %>
 
-      <%# A caller class beats the variant default — bg-red-500 wins, bg-primary is dropped %>
-      <%= render(Ui::ButtonComponent.new(class: "bg-red-500 w-full")) { "Custom" } %>
+      <%# Submitting: disabled, with a spinner, until Turbo reports the response %>
+      <%= render Ui::ButtonComponent.new(type: "submit",
+                                         data: { turbo_disable_with: t(".saving"), turbo_disable_style: "spinner" }) do %>
+        Save changes
+      <% end %>
+
+      <%# A caller class beats the default it conflicts with: rounded-full wins, rounded-md is dropped %>
+      <%= render(Ui::ButtonComponent.new(class: "rounded-full w-full")) { "Follow" } %>
     RUBY
   end
 
   def example_input_usage
     <<~'RUBY'
-      <div class="grid gap-2">
-        <%= render(Ui::LabelComponent.new(for: "email")) { "Email" } %>
-        <%= render Ui::InputComponent.new(type: "email", id: "email", name: "email", placeholder: "you@example.com") %>
-      </div>
+      <%# In a form, through Field: named, valued, labelled and marked invalid from the record %>
+      <%= render Ui::FieldComponent.new(model: @user, attribute: :email) do |field| %>
+        <% field.with_control(Ui::InputComponent, type: "email", autocomplete: "email") %>
+      <% end %>
 
-      <%# Invalid state is driven by aria-invalid, not a keyword, so field binding can set it later %>
+      <%# On its own, name it yourself %>
+      <%= render Ui::InputComponent.new(type: "search", name: "q", placeholder: "Search", aria: { label: "Search" }) %>
+
+      <%# Invalid state is aria-invalid, not a keyword: in a form, Field sets it from the errors %>
       <%= render Ui::InputComponent.new(id: "email", name: "email", aria: { invalid: true }) %>
 
       <%= render Ui::InputComponent.new(id: "email", name: "email", disabled: true) %>
@@ -46,6 +55,12 @@ module CodeExamplesHelper
 
   def example_label_usage
     <<~'RUBY'
+      <%# In a form, Field renders the label from the record; a block replaces the text %>
+      <%= render Ui::FieldComponent.new(model: @user, attribute: :email) do |field| %>
+        <% field.with_label { "Work email" } %>
+      <% end %>
+
+      <%# On its own %>
       <%= render(Ui::LabelComponent.new(for: "terms")) { "Accept the terms" } %>
 
       <%# peer-disabled dims the label when the control it names is disabled %>
@@ -56,10 +71,13 @@ module CodeExamplesHelper
 
   def example_textarea_usage
     <<~'RUBY'
-      <div class="grid gap-2">
-        <%= render(Ui::LabelComponent.new(for: "notes")) { "Notes" } %>
-        <%= render Ui::TextareaComponent.new(id: "notes", name: "notes", placeholder: "Add a note") %>
-      </div>
+      <%# In a form, through Field: the record's value becomes the content %>
+      <%= render Ui::FieldComponent.new(model: @project, attribute: :summary) do |field| %>
+        <% field.with_control(Ui::TextareaComponent, rows: 4) %>
+      <% end %>
+
+      <%# On its own %>
+      <%= render Ui::TextareaComponent.new(id: "notes", name: "notes", placeholder: "Add a note", aria: { label: "Notes" }) %>
 
       <%# The block is the textarea's value — a <textarea> has no value attribute %>
       <%= render Ui::TextareaComponent.new(id: "notes", name: "notes") do %>Existing notes<% end %>
@@ -84,7 +102,7 @@ module CodeExamplesHelper
         <% end %>
         <% p.with_panel do %>
           <p class="font-semibold text-sm mb-2">Title</p>
-          <p class="text-sm text-neutral-500">Any HTML content here.</p>
+          <p class="text-sm text-muted-foreground">Any HTML content here.</p>
         <% end %>
       <% end %>
     RUBY
@@ -122,8 +140,8 @@ module CodeExamplesHelper
         <% end %>
         <% d.with_menu do %>
           <div class="py-1">
-            <a href="#" role="menuitem" class="flex px-3 py-2 text-sm hover:bg-neutral-100">Edit</a>
-            <a href="#" role="menuitem" class="flex px-3 py-2 text-sm hover:bg-neutral-100">Delete</a>
+            <a href="#" role="menuitem" class="flex px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Edit</a>
+            <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-destructive hover:bg-accent focus:bg-accent">Delete</a>
           </div>
         <% end %>
       <% end %>
@@ -198,21 +216,23 @@ module CodeExamplesHelper
 
   def example_dark_mode_usage
     <<~'RUBY'
-      <%# Wire the controller once in your layout %>
-      <div data-controller="ui--dark-mode"></div>
-
-      <%# Or attach a toggle button directly %>
-      <button data-controller="ui--dark-mode" data-action="click->ui--dark-mode#toggle">
-        Toggle theme
-      </button>
+      <%# Once, in your layout, on an element that contains the toggle %>
+      <body data-controller="ui--dark-mode">
+        <%# The toggle target is what gets aria-pressed and a "Switch to dark mode" name %>
+        <button type="button"
+                data-ui--dark-mode-target="toggle"
+                data-action="click->ui--dark-mode#toggle">
+          Toggle theme
+        </button>
+      </body>
     RUBY
   end
 
   def example_dark_mode_css
     <<~'CODE'
       @import "tailwindcss";
-
-      @variant dark (&:where(.dark, .dark *));
+      @import "../builds/tailwind/rails_ui_kit.css";
+      @custom-variant dark (&:where(.dark, .dark *));
     CODE
   end
 
@@ -426,8 +446,8 @@ module CodeExamplesHelper
         <% field.with_description { "People with no role can sign in but see nothing." } %>
       <% end %>
 
-      <%# The card appearance: a description line, a decorative icon, and your own columns %>
-      <%= render Ui::ChoicesComponent.new(name: "account[plan_id]", appearance: :card,
+      <%# The card variant: a description line, a decorative icon, and your own columns %>
+      <%= render Ui::ChoicesComponent.new(name: "account[plan_id]", variant: :card,
                                           collection: plans, value_method: :id, text_method: :name,
                                           description_method: :tagline,
                                           icon_method: ->(plan) { plan_icon(plan) },
@@ -446,6 +466,34 @@ module CodeExamplesHelper
 
       <%# Layout <head> — global fallback for every button without its own data-turbo-disable-with %>
       <meta name="turbo-disable-with-default" content="<%= I18n.t('rails_ui_kit.turbo_disable_with.processing') %>">
+    RUBY
+  end
+
+  def example_theming_tokens
+    <<~'CSS'
+      @import "tailwindcss";
+      @import "../builds/tailwind/rails_ui_kit.css";
+      @custom-variant dark (&:where(.dark, .dark *));
+
+      :root { --primary: oklch(0.55 0.19 145); --primary-foreground: oklch(0.98 0.02 145); --radius: 0.375rem; }
+      .dark { --primary: oklch(0.72 0.15 145); --primary-foreground: oklch(0.2 0.04 145); }
+    CSS
+  end
+
+  def example_theming_control_heights
+    <<~'CSS'
+      :root       { --control-height-sm: 1.75rem; --control-height: 2rem; --control-height-lg: 2.25rem; }
+      .data-table { --control-height: 1.75rem; }
+    CSS
+  end
+
+  def example_theming_class_merge
+    <<~'RUBY'
+      <%# rounded-full replaces the button's rounded-md; every other default stays %>
+      <%= render(Ui::ButtonComponent.new(class: "rounded-full")) { "Follow" } %>
+
+      <%# A default with a modifier is replaced only by a class with the same modifier %>
+      <%= render Ui::ButtonComponent.new(class: "px-2 has-[>svg]:px-2") do %>…<% end %>
     RUBY
   end
 end

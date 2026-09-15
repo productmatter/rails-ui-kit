@@ -1,10 +1,12 @@
 <% content_for :title, "Textarea" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Textarea</h1>
   <p class="text-muted-foreground">
-    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>,
-    the same control styling as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::InputComponent</code>, and the same <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code> scale.
+    Longer text in a form. Give a <%= link_to "Field", field_path, class: "text-primary underline" %>
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_control(Ui::TextareaComponent)</code> and the record's value, errors and label come with it. On its own
+    it is a native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code> with the same control styling as Input and the same
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code> scale.
   </p>
 </div>
 
@@ -70,7 +72,7 @@
       <% [
         ["size",         "Symbol",  ":default", "One of :sm, :default, :lg. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
         ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
-        ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. Not a keyword, so field binding can set it later."],
+        ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],
         ["…",            "Any",     "—",   "Every other keyword (id:, name:, placeholder:, data:, aria:, …) is forwarded to the root element."],
       ].each do |name, type, default, desc| %>
@@ -85,10 +87,18 @@
   </table>
 </div>
 
-<%# Notes %>
-<h2 class="text-base font-semibold mb-3">Notes</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>There is no <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">value:</code> keyword — a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;textarea&gt;</code> has no value attribute, its text is its element content, so pass it as the block.</li>
-  <li>Same fill, boundary and focus treatment as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::InputComponent</code>.</li>
-  <li>No Stimulus controller, and no auto-resize behaviour — that would need one.</li>
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The same boundary, focus ring and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> treatment as Input; in a Field, the Field sets
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code>.</li>
+  <li>There is no <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">value:</code> keyword: a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>'s text is its content, so pass it as the
+      block. Inside a Field bound to a record, the Field does that for you.</li>
 </ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  A single line is an <%= link_to "Input", input_path, class: "text-primary underline" %>. Rich text needs an editor, which the kit
+  doesn't ship. And this textarea doesn't grow with its content: that would need a controller, and the kit doesn't add one.
+</p>

@@ -1,10 +1,11 @@
 <% content_for :title, "Label" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Label</h1>
   <p class="text-muted-foreground">
-    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label&gt;</code>,
-    dimmed when the control it names — or the group it sits in — is disabled. No variants.
+    A <%= link_to "Field", field_path, class: "text-primary underline" %> renders this for you, with the text
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">form.label</code> would show for the record and a required marker when the model validates presence. On its own
+    it is a native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label&gt;</code>, dimmed when the control it names — or the group it sits in — is disabled.
   </p>
 </div>
 
@@ -72,10 +73,20 @@
   </table>
 </div>
 
-<%# Notes %>
-<h2 class="text-base font-semibold mb-3">Notes</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>Dimming is CSS-only: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">peer-disabled:*</code> tracks a sibling control carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">class: "peer"</code> and the native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disabled</code> attribute; the sibling must come before the label in markup order for the CSS selector to reach it.</li>
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">group-data-[disabled=true]:*</code> tracks any ancestor carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">class: "group"</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-disabled="true"</code> — put the label itself in that group when the label and its control sit inside a shared wrapper.</li>
-  <li>No Stimulus controller. Pair it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::InputComponent</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::TextareaComponent</code>.</li>
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>A real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label for&gt;</code>: clicking it focuses the control, and it is the control's accessible name.</li>
+  <li>Dimming is CSS only. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">peer-disabled:*</code> tracks a sibling control carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "peer"</code>, which
+      has to come before the label in markup; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">group-data-[disabled=true]:*</code> tracks an ancestor with
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "group"</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, in any order.</li>
+  <li>A dimmed label is still read: disabled is announced by the control, not by the label's colour.</li>
 </ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  In a form, use <%= link_to "Field", field_path, class: "text-primary underline" %>, which renders the label, points it at the
+  control and keeps the ids in step. A group of radios or checkboxes is named by a legend-like group label, which
+  <%= link_to "Choices", choices_path, class: "text-primary underline" %> inside a Field provides — not a label pointing at the first box.
+</p>

@@ -15,13 +15,15 @@
   plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
 %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Select</h1>
   <p class="text-muted-foreground">
-    A real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>
-    built from a Rails collection, enum or options hash, mirrored into a WAI-ARIA combobox. The select is the only
-    place the value lives, so it submits, validates <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>,
-    resets with its form and still works with JavaScript off.
+    One choice from a list Rails already has: a model's enum (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">model: Order, enum: :status</code>, labelled through
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">human_attribute_name</code>), a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">belongs_to</code> collection read the way <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_select</code> reads
+    it, or an options array or hash. Inside a model-bound <%= link_to "Field", field_path, class: "text-primary underline" %> the
+    record's value is selected and its errors shown. It renders a real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, mirrored into a WAI-ARIA
+    combobox; the select is the only place the value lives, so it submits, validates <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>, resets with its
+    form and still works with JavaScript off.
   </p>
 </div>
 
@@ -364,9 +366,9 @@
   </table>
 </div>
 
-<%# Notes %>
-<h2 class="text-base font-semibold mb-3">Notes</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+<%# Behaviour %>
+<h2 class="text-base font-semibold mb-3">Behaviour</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
   <li>The native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;select&gt;</code> is the only value store. To change the value from your own code, set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">select.value</code> and dispatch <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> — there is no second API.</li>
   <li>Choosing an option dispatches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
   <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
@@ -374,5 +376,24 @@
   <li>In search mode a click on the text field places the caret; the chevron button beside it opens the list, which is also what a touch screen-reader user reaches for. Typing opens it too.</li>
   <li>Escape is the cancel key in both modes: with the list open it closes it, and on a closed search field it puts the text back to the selected option's label. It never changes the value, so a dependent select or an auto-save never sees a change the user meant as "never mind". This is a deliberate deviation from the APG key table, where the text field <em>is</em> the value.</li>
   <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
-  <li>Positioning is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>'s, the top layer and dismissal are <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--overlay</code>'s, and the keyboard model is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>'s. Select adds the submission mirror and the key tables, and nothing else.</li>
 </ul>
+
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The combobox is named by the Field's label, and described by its description and error; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> and
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on.</li>
+  <li>Focus never leaves the combobox. The active option is announced through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
+      search mode the number of results is announced once typing settles.</li>
+  <li>Where it isn't enhanced — JavaScript off, or select-only mode on a phone — the user has the platform's own select,
+      which is fully accessible on its own.</li>
+</ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  A handful of options the user should compare at a glance are radios: <%= link_to "Choices", choices_path, class: "text-primary underline" %>.
+  So is picking several from a short list, as checkboxes; a searchable multi-select isn't built yet. A value that isn't from a
+  known list is an <%= link_to "Input", input_path, class: "text-primary underline" %>. An action menu is a
+  <%= link_to "Dropdown", dropdown_path, class: "text-primary underline" %>, not a select.
+</p>

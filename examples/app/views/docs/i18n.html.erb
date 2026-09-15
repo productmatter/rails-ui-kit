@@ -1,6 +1,6 @@
 <% content_for :title, "Internationalization" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Utilities</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Internationalization</h1>
   <p class="text-muted-foreground">
     Two kinds of words, translated in two places. This page is about the second kind.
@@ -21,7 +21,7 @@
     <strong>Chrome</strong> is what the kit says on its own, that no call site ever writes: a toast's close-button
     accessible name, Select's "No results" and its result count, the unsaved-changes prompt. You don't pass these
     because you don't know they exist. <strong>Only chrome lives in
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — sixteen strings,
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — the handful of strings listed under Keys below,
     several of them accessible names, which is the only thing a screen reader announces. It is not a translation
     of the components.
   </p>
@@ -45,7 +45,7 @@
 
 <h2 class="text-base font-semibold mb-3">Keys</h2>
 <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  Fifteen strings. Each one resolves <strong>call site → your locale file → the kit's default</strong>: the
+  Every chrome string the kit renders. Each one resolves <strong>call site → your locale file → the kit's default</strong>: the
   keyword is the key's last segment, so if you know one you know the other.
 </p>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
@@ -68,6 +68,8 @@
         ["rails_ui_kit.confirm_dialog.cancel_label",    "Cancel",                  "cancel_label:",            "Ui::ConfirmDialogComponent"],
         ["rails_ui_kit.toast.close_label",              "Close notification",      "close_label:",             "Ui::ToastComponent — the dismiss button's accessible name. Pass it to Ui::ToastContainerComponent as well, so toasts JavaScript creates get it too"],
         ["rails_ui_kit.toast.default_title",            "Notification",            "default_title:",           "Ui::ToastComponent(message: nil) and window.triggerToast(type) with no message"],
+        ["rails_ui_kit.toast.actions_hint",             "Press F8 to reach its actions.", "actions_hint:",     "Ui::ToastComponent and Ui::ToastContainerComponent — announced after a toast that has actions"],
+        ["rails_ui_kit.toast.region_label",             "Notifications",           "region_label:",            "Ui::ToastContainerComponent — the name of the toast stack's landmark, which F8 reaches"],
         ["rails_ui_kit.select.show_options_label",      "Show options",            "show_options_label:",      "Ui::SelectComponent(search: true) — the chevron button's accessible name"],
         ["rails_ui_kit.select.no_results",              "No results",              "no_results:",              "Ui::SelectComponent(search: true) — shown when the filter matches nothing"],
         ["rails_ui_kit.select.results",                 "%{count} result / %{count} results", "results:",       "Ui::SelectComponent(search: true) — announced once typing settles. Give every plural category your locale uses; the browser picks with Intl.PluralRules"],
