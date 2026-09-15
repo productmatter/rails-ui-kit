@@ -97,6 +97,21 @@ caller-authored markup, so a component's template is responsible for stamping
 `data-slot` on its own slot-wrapper elements — `Ui::Base` cannot reach into
 caller-supplied slot content to add it.
 
+A keyword named like a class hook — ending in `_class` or `_classes` — that reaches the
+catch-all hash is one the component did not declare: a class option removed in a release,
+or one guessed at. Forwarded, it would render as a meaningless HTML attribute and style
+nothing. `Ui::Base` raises `ArgumentError` for it in development and test, naming `class:`
+and the `with_<slot>(class: …)` form, and logs and drops it elsewhere (added by
+`ui-foundation-retrofit`, 2026-09-15).
+
+A closed-set keyword that isn't a `class_variants` axis — Dropdown's `kind:`, a
+`placement:` — resolves through the same unknown-value handling as a variant: matched by
+string form, so a symbol and a string are the same value, raising `UnknownVariantError` in
+development and test and falling back to the default with a logged warning elsewhere. A
+class option kept for one release after its replacement ships merges, never replaces, and
+warns through `RailsUiKit.deprecator`, which the engine registers with the host app's
+deprecators.
+
 ## Business rules
 
 1. Every `Ui::*Component` written after this scope ships inherits from `Ui::Base`,

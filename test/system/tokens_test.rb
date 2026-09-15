@@ -53,6 +53,20 @@ class TokensTest < ApplicationSystemTestCase
     assert_equal 'oklch(0.175 0.008 75)', token('--background', dark: true)
   end
 
+  # The three status colours a toast reads are kit extensions (ui-toast § Assumptions): present in
+  # both modes by default, and a host that defines --success -- as a shadcn theme author would --
+  # wins over the kit's value like any other token.
+  test 'the kit status tokens exist in both modes, and a host --success wins' do
+    load_host_css(KIT_IMPORT)
+    %w[--success --success-foreground --warning --warning-foreground --info --info-foreground].each do |name|
+      assert_match(/\Aoklch\(/, token(name), "#{name} is missing in light mode")
+      assert_match(/\Aoklch\(/, token(name, dark: true), "#{name} is missing in dark mode")
+    end
+
+    load_host_css(KIT_IMPORT, ":root { --success: #{HOST_LIGHT}; }")
+    assert_equal HOST_LIGHT, token('--success')
+  end
+
   private
 
   def load_host_css(*parts)

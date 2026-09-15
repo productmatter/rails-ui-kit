@@ -10,135 +10,115 @@ const ROVING_ITEM = "data-ui--roving-focus-target"
 // to ui--anchor. Markup written against that version still carries these attribute names.
 const LEGACY_ANCHOR_ATTRIBUTES = ["placement-value", "offset-value", "match-width-value"]
 
-// Geometry belongs to ui--anchor on this element, and a menu's arrows, Home, End and typeahead to
-// ui--roving-focus on its content. What stays here is what neither primitive does: opening and
-// closing, ARIA on the trigger, role adoption, activation, and Escape, Tab and focusout.
+// A click can reach toggle() twice when the caller also wires click->ui--dropdown#toggle on their
+// own control, as markup written before Dropdown bound its trigger does; the second call must not
+// undo the first.
+const toggledEvents = new WeakSet()
+
+// ui--overlay on this element, in layer mode, owns showing and hiding (a popover="auto" in the top
+// layer, animated through presence), light dismiss, Escape, aria-expanded / aria-controls and focus
+// return, and its ui--overlay:opened|closed|dismiss events are Dropdown's events. ui--anchor owns
+// geometry, and ui--roving-focus a menu's arrows, Home, End and typeahead. What stays here is what
+// none of them does: binding the trigger, the menu button's own keys, role adoption, activation,
+// where focus lands on open, and closing when focus leaves.
 export default class extends Controller {
   static targets = ["trigger", "content"]
 
   static values = {
-    kind: { type: String, default: "menu" },
-    open: Boolean
+    kind: { type: String, default: "menu" }
   }
 
   initialize() {
+    this.onTriggerClick = (event) => {
+      if (this.triggerControl.contains(event.target)) this.toggle(event)
+    }
     this.onKeydown = this.handleKeydown.bind(this)
     this.onFocusout = this.handleFocusout.bind(this)
     this.onContentClick = this.handleContentClick.bind(this)
-    this.onBeforeCache = () => this.reset()
+    this.onOpened = (event) => { if (event.target === this.element) this.handleOpened() }
+    this.onClosed = (event) => { if (event.target === this.element) this.handleClosed() }
+    // ui--overlay resets itself for the snapshot, without a closed event.
+    this.onBeforeCache = () => this.handleClosed()
   }
 
   connect() {
     this.forwardLegacyAnchorAttributes()
     this.setupAccessibility()
-    this.reset()
+    this.triggerTarget.addEventListener("click", this.onTriggerClick)
     this.element.addEventListener("keydown", this.onKeydown)
     this.element.addEventListener("focusout", this.onFocusout)
     this.contentTarget.addEventListener("click", this.onContentClick)
+    this.element.addEventListener("ui--overlay:opened", this.onOpened)
+    this.element.addEventListener("ui--overlay:closed", this.onClosed)
     document.addEventListener("turbo:before-cache", this.onBeforeCache)
-    this.connected = true
   }
 
   disconnect() {
-    this.connected = false
+    this.triggerTarget.removeEventListener("click", this.onTriggerClick)
     this.element.removeEventListener("keydown", this.onKeydown)
     this.element.removeEventListener("focusout", this.onFocusout)
     this.contentTarget.removeEventListener("click", this.onContentClick)
+    this.element.removeEventListener("ui--overlay:opened", this.onOpened)
+    this.element.removeEventListener("ui--overlay:closed", this.onClosed)
     document.removeEventListener("turbo:before-cache", this.onBeforeCache)
-    this.reset()
+    this.initialFocus = null
   }
 
+  // Reads the open value rather than ui--overlay's own toggle, which treats a press during the exit
+  // animation as "stay closed": a menu chosen from and reopened straight away has to reopen.
   toggle(event) {
-    event?.preventDefault()
-    this.openValue = !this.openValue
-  }
+    if (event) {
+      if (toggledEvents.has(event)) return
+      toggledEvents.add(event)
+      event.preventDefault()
+    }
 
-  open() {
-    this.openValue = true
-  }
-
-  close() {
-    this.openValue = false
-  }
-
-  // Stimulus replays a stored open-value before connect(), which is how a page restored
-  // from Turbo's cache used to reopen the menu and pull focus into it. Only act once connected.
-  openValueChanged() {
-    if (!this.connected) return
-
-    if (this.openValue) {
-      this.show()
+    if (this.isOpen) {
+      this.close()
     } else {
-      this.hide()
+      this.open()
     }
   }
 
-  show() {
-    if (this.shown) return
-    this.shown = true
-    this.cancelPending()
+  open() {
+    this.overlay?.open()
+  }
 
+  close() {
+    this.overlay?.close()
+  }
+
+  handleOpened() {
     this.prepareMenuItems()
-
-    this.contentTarget.classList.remove("hidden")
     this.setAnchored(true)
-    this.frame = requestAnimationFrame(() => {
-      this.contentTarget.classList.remove("opacity-0", "scale-95")
-      this.contentTarget.classList.add("opacity-100", "scale-100")
-    })
-
-    this.triggerControl.setAttribute("aria-expanded", "true")
-
-    this.setupListeners()
     this.focusContent()
   }
 
-  hide() {
-    if (!this.shown) return
-    this.shown = false
+  handleClosed() {
     this.initialFocus = null
-    this.cancelPending()
-    this.cleanup()
     this.setAnchored(false)
-
-    this.contentTarget.classList.remove("opacity-100", "scale-100")
-    this.contentTarget.classList.add("opacity-0", "scale-95")
-    this.hideTimer = setTimeout(() => {
-      this.contentTarget.classList.add("hidden")
-    }, 100)
-
-    this.triggerControl.setAttribute("aria-expanded", "false")
   }
 
-  // The closed resting state, applied at once: no animation, no pending timers or frames,
-  // no open-state listeners. Runs on connect, on disconnect and on turbo:before-cache, so
-  // the cached snapshot is always closed.
-  reset() {
-    this.shown = false
-    this.initialFocus = null
-    this.cancelPending()
-    this.cleanup()
-    this.setAnchored(false)
-
-    this.contentTarget.classList.remove("opacity-100", "scale-100")
-    this.contentTarget.classList.add("hidden", "opacity-0", "scale-95")
-    this.triggerControl.setAttribute("aria-expanded", "false")
-
-    if (this.openValue) this.openValue = false
+  get isOpen() {
+    return this.overlayController?.openValue === true
   }
 
-  // The trigger target wraps the caller's control, normally a <button>. ARIA state and focus
-  // belong on that control: a wrapping <div> is neither focusable nor announced with state, and
-  // in a block layout it spans the full width. Falls back to the wrapper when it holds nothing
+  // The trigger target wraps the caller's control, normally a <button>. Clicks, ARIA state and
+  // focus belong on that control: a wrapping <div> is neither focusable nor announced with state,
+  // and in a block layout it spans the full width. Falls back to the wrapper when it holds nothing
   // focusable.
   get triggerControl() {
     if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
     return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
-  get anchor() {
-    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
-    if (!controller) this.warnMissingCompanion("ui--anchor", this.element, "positioning silently does nothing")
+  get overlayController() {
+    return this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+  }
+
+  get overlay() {
+    const controller = this.overlayController
+    if (!controller) this.warnMissingCompanion("ui--overlay", this.element, "opening, closing and dismissal do nothing")
     return controller
   }
 
@@ -151,11 +131,10 @@ export default class extends Controller {
   }
 
   // Stimulus does not warn about a data-controller identifier that simply isn't present, so
-  // markup missing "ui--anchor" or "ui--roving-focus" -- old copy-pasted markup predating the
-  // move onto the shared primitives in 144d104, say -- still opens: it just silently keeps
-  // whatever position or focus it already had, with nothing in the console saying why. Warned
-  // once per identifier per instance, in the style of forwardLegacyAnchorAttributes above;
-  // never thrown, since a missing companion has to fail soft, not break Dropdown outright.
+  // markup missing "ui--overlay", "ui--anchor" or "ui--roving-focus" -- old copy-pasted markup
+  // predating the move onto the shared primitives, say -- fails with nothing in the console saying
+  // why. Warned once per identifier per instance, in the style of forwardLegacyAnchorAttributes
+  // below; never thrown, since a missing companion has to fail soft, not break Dropdown outright.
   warnMissingCompanion(identifier, element, consequence) {
     this.warnedMissingCompanions ||= new Set()
     if (this.warnedMissingCompanions.has(identifier)) return
@@ -168,11 +147,17 @@ export default class extends Controller {
     )
   }
 
-  // Positioned only while shown. Written as the value so an anchor that connects later still
-  // reads it, and so a snapshot taken on turbo:before-cache is cached inactive.
+  // Positioned from opened until the exit animation has finished, however the panel was closed.
+  // Written as the value so a snapshot taken on turbo:before-cache is cached inactive. A missing
+  // anchor is only worth a warning when there is something to position: on connect, or on the way
+  // out, ui--anchor may simply not have connected yet.
   setAnchored(active) {
-    const anchor = this.anchor
-    if (anchor) anchor.activeValue = active
+    const anchor = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+    if (anchor) {
+      anchor.activeValue = active
+    } else if (active) {
+      this.warnMissingCompanion("ui--anchor", this.element, "positioning silently does nothing")
+    }
   }
 
   // Stimulus does not warn about an attribute for a value nobody declares any more, so a
@@ -235,62 +220,24 @@ export default class extends Controller {
     items.forEach(item => { if (!item.hasAttribute(ROVING_ITEM)) item.setAttribute(ROVING_ITEM, "item") })
   }
 
-  setupListeners() {
-    // Registered after the current click finishes dispatching, so a click that opened the
-    // menu from outside this element (an outlet, say) doesn't close it straight away.
-    this.clickOutsideHandler = (event) => {
-      if (!this.element.contains(event.target)) {
-        this.close()
-      }
-    }
-    this.listenTimer = setTimeout(() => {
-      document.addEventListener("click", this.clickOutsideHandler)
-    }, 0)
-
-    this.documentKeydownHandler = (event) => {
-      const active = document.activeElement
-      if (event.key === "Escape" && (!active || active === document.body)) this.closeOnEscape(event)
-    }
-    document.addEventListener("keydown", this.documentKeydownHandler)
-  }
-
-  cleanup() {
-    if (this.clickOutsideHandler) {
-      document.removeEventListener("click", this.clickOutsideHandler)
-      this.clickOutsideHandler = null
-    }
-
-    if (this.documentKeydownHandler) {
-      document.removeEventListener("keydown", this.documentKeydownHandler)
-      this.documentKeydownHandler = null
-    }
-  }
-
-  cancelPending() {
-    clearTimeout(this.hideTimer)
-    clearTimeout(this.listenTimer)
-    cancelAnimationFrame(this.frame)
-  }
-
-  // Bound to this element, so it only sees keys pressed while focus is inside the dropdown:
-  // on the trigger or in the content. Escape never pulls focus back from elsewhere. In a menu,
-  // ui--roving-focus on the content sees each key first and cancels the ones it moves on.
+  // Bound to this element, so it only sees keys pressed while focus is inside the dropdown: on the
+  // trigger or in the panel. Escape is ui--overlay's. In a menu, ui--roving-focus on the panel sees
+  // each key first and cancels the ones it moves on.
   handleKeydown(event) {
-    if (event.key === "Escape") return this.closeOnEscape(event)
     if (event.defaultPrevented || event.isComposing) return
 
     if (this.kindValue === "menu" && this.triggerTarget.contains(event.target)) {
       return this.handleTriggerKeydown(event)
     }
 
-    if (!this.shown) return
-    if (this.kindValue === "dialog" || !this.contentTarget.contains(event.target)) return
+    if (!this.isOpen || this.kindValue !== "menu" || !this.contentTarget.contains(event.target)) return
 
     if (event.key === "Tab") {
-      // Move focus to the trigger and hide at once, without animating: the browser's own Tab
-      // then moves on from the trigger, past the hidden items. Shift+Tab stops on the trigger.
+      // Move focus to the trigger and close at once, without animating: the browser's own Tab
+      // then moves on from the trigger, past items that are no longer rendered. Shift+Tab stops
+      // on the trigger.
       this.triggerControl.focus()
-      this.reset()
+      this.overlay?.closeNow()
       if (event.shiftKey) event.preventDefault()
       return
     }
@@ -310,7 +257,7 @@ export default class extends Controller {
 
     event.preventDefault()
 
-    if (this.shown) return this.focusMenuEnd(end)
+    if (this.isOpen) return this.focusMenuEnd(end)
 
     this.initialFocus = end
     this.open()
@@ -358,25 +305,16 @@ export default class extends Controller {
     return item.getAttribute("aria-disabled") !== "true"
   }
 
-  // Escape reaches this from two paths that never overlap: the element listener while focus
-  // is inside, and the document listener while nothing has focus (a click on plain text in the
-  // content leaves focus on <body>). preventDefault() marks it handled for everyone after.
-  closeOnEscape(event) {
-    if (!this.shown || event.defaultPrevented || event.isComposing) return
-
-    event.preventDefault()
-    this.close()
-    this.triggerControl.focus()
-  }
-
+  // A menu button closes as soon as focus leaves it. ui--overlay's light dismiss covers a press
+  // outside, not focus moving away, so this asks it for the same vetoable dismissal.
   handleFocusout(event) {
-    if (!this.shown || !event.relatedTarget) return
-    if (!this.element.contains(event.relatedTarget)) this.close()
+    if (!this.isOpen || !event.relatedTarget) return
+    if (!this.element.contains(event.relatedTarget)) this.overlay?.dismissFor("outside")
   }
 
   handleContentClick(event) {
     const item = event.target.closest('[role="menuitem"]')
-    if (!this.shown || !item || !this.contentTarget.contains(item)) return
+    if (!this.isOpen || !item || !this.contentTarget.contains(item)) return
     // A disabled item is inert: it doesn't close the menu, and a disabled link doesn't navigate.
     if (!this.isEnabled(item)) return event.preventDefault()
 

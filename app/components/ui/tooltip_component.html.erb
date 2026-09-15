@@ -1,9 +1,7 @@
-<div <%= tag.attributes(controller_data) %>>
-  <%= content_tag :div, data: { "ui--tooltip-target": "trigger", "ui--anchor-target": "anchor" } do %>
-    <%= trigger %>
-  <% end %>
-  <div class="<%= tooltip_classes %>" data-ui--tooltip-target="content" data-ui--overlay-target="content" data-ui--anchor-target="floating" hidden>
+<%= tag.div(**root_attributes(**controller_data)) do %>
+  <%= tag.div(trigger, data: { slot: "tooltip-trigger", "ui--tooltip-target": "trigger", "ui--anchor-target": "anchor" }) %>
+  <%= tag.div(class: TOOLTIP_CLASSES, data: { slot: "tooltip-content", "ui--tooltip-target": "content", "ui--overlay-target": "content", "ui--anchor-target": "floating" }, hidden: true) do %>
     <%= text %>
-    <div data-ui--anchor-target="arrow" class="absolute h-2 w-2 rotate-45 bg-neutral-900 dark:bg-white"></div>
-  </div>
-</div>
+    <%= tag.div(data: { slot: "tooltip-arrow", "ui--anchor-target": "arrow" }, class: ARROW_CLASSES) %>
+  <% end %>
+<% end %>

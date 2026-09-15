@@ -56,6 +56,16 @@
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
     --destructive-foreground: oklch(0.985 0.006 27);
 
+    /* Kit extensions — the status colours a toast's glyph and countdown bar read
+       (ui-toast § Assumptions). Each base colour reaches at least 3:1 on --popover, the
+       surface a toast sits on, and each -foreground at least 4.5:1 on its base. */
+    --success: oklch(0.52 0.13 150);
+    --success-foreground: oklch(0.985 0.01 150);
+    --warning: oklch(0.56 0.13 65);
+    --warning-foreground: oklch(0.985 0.01 65);
+    --info: oklch(0.52 0.13 245);
+    --info-foreground: oklch(0.985 0.01 245);
+
     --chart-1: oklch(0.55 0.17 277);
     --chart-2: oklch(0.64 0.115 225);
     --chart-3: oklch(0.72 0.12 165);
@@ -127,6 +137,13 @@
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
     --destructive-foreground: oklch(0.2 0.02 27);
 
+    --success: oklch(0.74 0.14 150);
+    --success-foreground: oklch(0.2 0.03 150);
+    --warning: oklch(0.8 0.14 75);
+    --warning-foreground: oklch(0.22 0.03 75);
+    --info: oklch(0.74 0.11 245);
+    --info-foreground: oklch(0.2 0.03 245);
+
     --chart-1: oklch(0.66 0.16 277);
     --chart-2: oklch(0.72 0.12 225);
     --chart-3: oklch(0.78 0.115 165);
@@ -179,6 +196,12 @@
 
   /* Kit extensions */
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
 
   --color-border: var(--border);
   --color-input: var(--input);

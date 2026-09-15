@@ -11,8 +11,8 @@ export default class extends Controller {
     closeOnBackdrop: { type: Boolean, default: true },
     // Ui::ModalComponent renders these from I18n (rails_ui_kit.modal.*); the literals here are
     // only the fallback for a hand-written modal that never set the data attributes.
-    confirmTitle: { type: String, default: "Unsaved Changes" },
-    confirmMessage: { type: String, default: "You have unsaved changes. Are you sure you want to close?" }
+    unsavedChangesTitle: { type: String, default: "Unsaved Changes" },
+    unsavedChangesMessage: { type: String, default: "You have unsaved changes. Are you sure you want to close?" }
   }
 
   connect() {
@@ -29,9 +29,16 @@ export default class extends Controller {
 
     this.boundBeforeCache = this.remove.bind(this)
     document.addEventListener('turbo:before-cache', this.boundBeforeCache)
+
+    // Checked once the element's other controllers have had their turn: Stimulus connects them in
+    // data-controller order, and ui--overlay comes after ui--modal, so asking now would warn about
+    // every correct modal.
+    this.companionCheck = setTimeout(() => this.overlay)
   }
 
   disconnect() {
+    clearTimeout(this.companionCheck)
+
     if (this.trackChangesValue) {
       this.element.removeEventListener('form:changed', this.boundFormChanged)
       this.element.removeEventListener('form:pristine', this.boundFormPristine)
@@ -85,8 +92,8 @@ export default class extends Controller {
   }
 
   async confirmClose() {
-    const title = this.confirmTitleValue
-    const message = this.confirmMessageValue
+    const title = this.unsavedChangesTitleValue
+    const message = this.unsavedChangesMessageValue
     let confirmed
 
     try {
@@ -135,6 +142,22 @@ export default class extends Controller {
   }
 
   get overlay() {
-    return this.application.getControllerForElementAndIdentifier(this.element, 'ui--overlay')
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, 'ui--overlay')
+    if (!controller) this.warnMissingOverlay()
+    return controller
+  }
+
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so a
+  // hand-written modal missing "ui--overlay" -- 0.2.0 markup, say -- never opens, and nothing in the
+  // console says why. Warned once per instance, like Dropdown, Popover and Tooltip; never thrown.
+  warnMissingOverlay() {
+    if (this.warnedMissingOverlay) return
+    this.warnedMissingOverlay = true
+
+    console.warn(
+      'ui--modal: no "ui--overlay" controller found, so the modal never opens, and nothing closes ' +
+      'or dismisses it. Add "ui--overlay" to this element\'s data-controller.',
+      this.element
+    )
   }
 }

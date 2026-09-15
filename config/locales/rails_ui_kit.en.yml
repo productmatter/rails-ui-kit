@@ -11,6 +11,8 @@ en:
     toast:
       close_label: "Close notification"
       default_title: "Notification"
+      region_label: "Notifications"
+      actions_hint: "Press F8 to reach its actions."
     select:
       show_options_label: "Show options"
       no_results: "No results"

@@ -43,8 +43,8 @@ module Ui
                                            unsaved_changes_message: 'Really discard?'))
 
       root = page.find('div[data-controller]')
-      assert_equal 'Hold on', root['data-ui--modal-confirm-title-value']
-      assert_equal 'Really discard?', root['data-ui--modal-confirm-message-value']
+      assert_equal 'Hold on', root['data-ui--modal-unsaved-changes-title-value']
+      assert_equal 'Really discard?', root['data-ui--modal-unsaved-changes-message-value']
     end
 
     test 'MO2 without a keyword the prompt is the locale file, per render' do
@@ -52,9 +52,9 @@ module Ui
         render_inline(Ui::ModalComponent.new(track_changes: true))
 
         root = page.find('div[data-controller]')
-        assert_equal 'Modifications non enregistrées', root['data-ui--modal-confirm-title-value']
+        assert_equal 'Modifications non enregistrées', root['data-ui--modal-unsaved-changes-title-value']
         assert_equal I18n.t('rails_ui_kit.modal.unsaved_changes_message'),
-                     root['data-ui--modal-confirm-message-value']
+                     root['data-ui--modal-unsaved-changes-message-value']
       end
     end
 
@@ -82,6 +82,19 @@ module Ui
         container = page.find('div[data-controller=ui--toast-container]')
         assert_equal 'Avis', container['data-ui--toast-container-default-title-value']
         assert_equal ['Fermer la notification'] * Ui::ToastComponent::TYPES.size, template_close_labels
+      end
+    end
+
+    test 'TO5 actions_hint and region_label win per instance, and reach the attributes the controllers read' do
+      render_inline(Ui::ToastContainerComponent.new(actions_hint: 'F8 for actions.', region_label: 'Alerts'))
+
+      assert_equal 'F8 for actions.', page.find('[data-slot=toast-container]')['data-ui--toast-container-actions-hint-value']
+      assert_equal 'Alerts', page.find('#ui-toasts', visible: :all)['aria-label']
+
+      I18n.with_locale(:fr) do
+        render_inline(Ui::ToastContainerComponent.new)
+        assert_equal I18n.t('rails_ui_kit.toast.actions_hint'), page.find('[data-slot=toast-container]')['data-ui--toast-container-actions-hint-value']
+        assert_equal 'Notifications', page.find('#ui-toasts', visible: :all)['aria-label']
       end
     end
 
@@ -116,7 +129,8 @@ module Ui
     # <template> content is inert, so its buttons aren't in the document Capybara queries; the
     # rendered HTML is (test/components/ui/toast_container_component_test.rb does the same).
     def template_close_labels
-      rendered_content.scan(%r{<template[^>]*>.*?</template>}m).map do |template|
+      # The per-type toast templates; the container's action templates carry no close button.
+      rendered_content.scan(%r{<template data-ui--toast-container-target="template"[^>]*>.*?</template>}m).map do |template|
         template[/aria-label="([^"]*)"/, 1]
       end
     end

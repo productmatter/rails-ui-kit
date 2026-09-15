@@ -1,91 +1,127 @@
 <% content_for :title, "Toast" %>
+<%
+  code = "text-xs bg-muted px-1 py-0.5 rounded"
+  archived = ToastsController.scenario("archived")
+  js_previews = [
+    ["toast-js-title", "Title only", { type: "success", title: "Changes saved" }],
+    ["toast-js-description", "Description only", { type: "info", description: "Your export is being prepared." }],
+    ["toast-js-both", "Title and description", { type: "error", title: "Couldn't save", description: "The server didn't answer. Your changes are still here." }],
+    ["toast-js-one-action", "One action", { type: "success", title: "Message sent", actions: [{ label: "View", href: "#toast-options" }] }],
+    ["toast-js-archived", "Two actions and a dismiss", archived],
+    ["toast-js-long", "Long description", { type: "warning", title: "Scheduled maintenance",
+      description: "The workspace will be read-only for about fifteen minutes on Saturday while we move it to a faster database. Nothing you do before then is affected, and nothing is lost." }],
+    ["toast-js-no-icon", "No icon", { type: "info", description: "Copied to the clipboard.", icon: false }]
+  ]
+%>
 <div class="mb-8">
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Toast</h1>
-  <p class="text-muted-foreground">
-    Auto-dismissing notification cards. Five type variants with accessible announcements.
-    Triggered from Ruby (Turbo Streams), JavaScript (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.triggerToast</code>),
-    or custom events.
+  <p class="text-muted-foreground mb-3">
+    A toast says what happened, and sometimes offers one thing to do about it. One payload — a title, a
+    description, actions and a duration — renders the same markup whether it comes from a Ruby render,
+    <code class="<%= code %>">flash</code>, a Turbo Stream or JavaScript.
   </p>
+  <ul class="list-disc ps-5 space-y-1 text-sm text-muted-foreground">
+    <li><strong class="font-medium text-foreground">Content on its own is the description</strong>, not the title. Name a title when you want one.</li>
+    <li><strong class="font-medium text-foreground">A toast with an action stays until it's dismissed</strong>, unless you give it a <code class="<%= code %>">duration</code>.</li>
+    <li><strong class="font-medium text-foreground">A toast action must never be the only way to do something.</strong> A toast can be missed, closed, or hidden behind an open Modal, so every action it offers exists somewhere on the page too.</li>
+  </ul>
 </div>
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
-  <% [["success", "Success"], ["error", "Error"], ["info", "Info"], ["notice", "Notice"], ["alert", "Alert"]].each do |type, label| %>
-    <button onclick="window.triggerToast('<%= type %>', '<%= label %> toast message')"
-            class="rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-      <%= label %>
-    </button>
-  <% end %>
+<div class="rounded-lg border border-border bg-background p-8 mb-3">
+  <div class="flex flex-wrap items-center justify-center gap-2">
+    <% js_previews.each do |id, label, payload| %>
+      <%= render Ui::ButtonComponent.new(variant: :outline, size: :sm, id: id, onclick: "window.triggerToast(#{payload.to_json})") do %><%= label %><% end %>
+    <% end %>
+  </div>
+  <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+    <% Ui::ToastComponent::TYPES.each do |type| %>
+      <%= render Ui::ButtonComponent.new(variant: :ghost, size: :sm, id: "toast-type-#{type}",
+            onclick: "window.triggerToast(#{ { type: type, title: type.to_s.capitalize, description: "A #{type} toast." }.to_json })") do %><%= type.to_s.capitalize %><% end %>
+    <% end %>
+  </div>
+  <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+    <%= button_to "The same two actions, from a Turbo Stream", demo_toasts_path(scenario: "archived"), id: "toast-stream-archived",
+          class: "rounded-md border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent" %>
+    <%= link_to "notice: across a redirect", demo_toast_flash_path(notice: "Post was successfully created."), id: "toast-flash-notice",
+          class: "rounded-md border border-input bg-background px-3 h-8 inline-flex items-center text-sm font-medium hover:bg-accent" %>
+  </div>
 </div>
+<p class="text-sm text-muted-foreground mb-8">
+  Press <kbd class="<%= code %> font-mono">F8</kbd> to move focus to the newest toast's first action, and
+  <kbd class="<%= code %> font-mono">Escape</kbd> to close it and go back to where you were.
+</p>
 
-<%# Usage — Ruby %>
+<%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Render once in your layout.</strong>
-  The container renders five <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;template&gt;</code> tags — one per type.
-</p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">Layout — ERB</span>
-    <button data-copy-target="#toast-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<% [
+  ["toast-layout", "Layout — ERB. Render once; flash: turns notice:, alert: and a toast: payload into toasts.", :example_toast_layout],
+  ["toast-flash", "Controller — Ruby. A flash reaches the next page.", :example_toast_flash],
+  ["toast-stream", "Turbo Stream — ERB. Appends to the container's stack.", :example_toast_stream],
+  ["toast-js", "JavaScript", :example_toast_js],
+  ["toast-ruby", "Rendering one directly — ERB", :example_toast_ruby]
+].each do |id, caption, example| %>
+  <div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
+    <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+      <span class="text-xs text-neutral-400"><%= caption %></span>
+      <button data-copy-target="#<%= id %>" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+    </div>
+    <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="<%= id %>" class="text-neutral-200"><%= h(send(example)) %></code></pre>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="toast-layout" class="text-neutral-200"><%= h(example_toast_layout) %></code></pre>
-</div>
+<% end %>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">From a Turbo Stream action:</strong>
+<%# Payload %>
+<h2 id="toast-options" class="text-base font-semibold mt-8 mb-3">The payload</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Plain data, spelled the same in Ruby, JSON, a flash and JavaScript. Keys may be strings or symbols.
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — Turbo Stream</span>
-    <button data-copy-target="#toast-stream" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
-  </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="toast-stream" class="text-neutral-200"><%= h(example_toast_stream) %></code></pre>
-</div>
+<%= render "docs/toast_table", rows: [
+  ["type", "success error notice alert warning info", "The colour, the glyph, and which live region announces it. notice and alert are Rails' flash keys and read as Rails means them: notice in the success colour, alert in the error colour. An unknown type raises in development and renders info in production."],
+  ["title", "String", "Optional. The first line, emphasised."],
+  ["description", "String", "Optional. Below the title, or on its own. A plain message is the description."],
+  ["actions", "Array of actions", "Optional. Rendered in a footer, through Ui::ButtonComponent."],
+  ["duration", "Integer, ms", "Optional. 0 persists. Absent: 3000, 20000 for error, and 0 — no countdown — when there are actions."],
+  ["icon", "false", "Optional. false removes the type's glyph. A replacement glyph is the icon slot, in Ruby only."]
+] %>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">From JavaScript:</strong>
-</p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">JavaScript</span>
-    <button data-copy-target="#toast-js" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
-  </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="toast-js" class="text-neutral-200"><%= h(example_toast_js) %></code></pre>
-</div>
+<h3 class="text-sm font-semibold mb-3">An action</h3>
+<%= render "docs/toast_table", rows: [
+  ["label", "String, required", "The visible text and the accessible name. Content: translate it yourself."],
+  ["href", "URL", "A relative URL or an absolute http(s) one. Anything else — javascript:, data:, mailto: — is rejected."],
+  ["method", "get post patch put delete", "Default get, a link. Any other method is a small form whose button submits it, with the CSRF token Turbo sends."],
+  ["variant", "Button's variants", "Default outline."],
+  ["class", "String", "Merged onto Button's classes. Ruby and Turbo Stream only: JavaScript can't merge classes, so it rejects this key."],
+  ["dismiss", "Boolean", "Default true: activating it closes the toast. An action without an href only dismisses."]
+] %>
 
-<%# Options — ToastComponent %>
-<h2 class="text-base font-semibold mb-3">Ui::ToastComponent options</h2>
-<div class="overflow-x-auto rounded-lg border border-border mb-8">
-  <table class="w-full text-sm">
-    <thead class="bg-muted">
-      <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-border">
-      <% [
-        ["type",    "Symbol",       "Required. :success, :error, :notice, :alert, or :info."],
-        ["message", "String / Hash","A plain string, or a Hash with :title, :body, and :timeout keys."],
-      ].each do |name, type, desc| %>
-        <tr class="hover:bg-muted/50">
-          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
-          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
-          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
-
-<%# Global API %>
-<h2 class="text-base font-semibold mb-3">Global API</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.triggerToast(type, message)</code> — programmatic trigger from anywhere in JavaScript.</li>
-  <li>Custom event: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", { detail: { type, message } }))</code></li>
-  <li>Error toasts default to a 20 second timeout; all others default to 3 seconds.</li>
+<h2 class="text-base font-semibold mb-3">Timing, focus and announcements</h2>
+<ul class="list-disc ps-5 space-y-2 text-sm text-muted-foreground mb-8">
+  <li>Every countdown pauses while the pointer is over the toast, while focus is inside it, and while the tab is hidden, and resumes with the time that was left. With reduced motion the bar steps once a second instead of sliding.</li>
+  <li>A toast with an action has no countdown unless you set <code class="<%= code %>">duration</code>. If you do, that's your accessibility decision to own: a keyboard or screen-reader user needs time to reach it.</li>
+  <li>Each toast is announced once: its title and description, then "Press F8 to reach its actions." when it has any. Errors are announced assertively, everything else politely. Nothing else is announced.</li>
+  <li><kbd class="<%= code %> font-mono">F8</kbd> reaches the newest toast from anywhere; <kbd class="<%= code %> font-mono">Escape</kbd> inside a toast closes it. Closing a toast that holds focus returns focus to where F8 came from, or to the next toast.</li>
+  <li><strong class="font-medium text-foreground">Over an open Modal a toast is hidden, and can't be reached until the Modal closes.</strong> A modal dialog makes the rest of the page inert, and a toast can't escape that in any browser. An action toast waits, because it persists by default.</li>
 </ul>
+
+<h2 class="text-base font-semibold mb-3">Ui::ToastComponent options</h2>
+<%= render "docs/toast_table", rows: [
+  ["type: title: description: actions: duration: icon:", "payload keys", "As above."],
+  ["message:", "String, Hash or Symbol", "A String is the description. A Hash is a payload. A Symbol is an I18n key whose translation is either. A String is never looked up."],
+  ["block", "content", "The description, and it may carry markup, because it's rendered in Ruby."],
+  ["with_icon", "slot", "Replaces the type's glyph inside the same aria-hidden cell, which sets the type's colour as currentColor."],
+  ["class:", "String", "Merged onto the toast's own classes."],
+  ["close_label:", "String", "The close button's accessible name. Default rails_ui_kit.toast.close_label."],
+  ["default_title:", "String", "The title of a toast with neither a title nor a description. Default rails_ui_kit.toast.default_title."],
+  ["actions_hint:", "String", "Announced after a toast with actions. Default rails_ui_kit.toast.actions_hint."]
+] %>
+
+<h2 class="text-base font-semibold mb-3">Ui::ToastContainerComponent options</h2>
+<%= render "docs/toast_table", rows: [
+  ["flash:", "flash", "Maps notice: and alert: to toasts of those types — success-coloured and error-coloured — and a toast: payload (or an array of them) to toasts."],
+  ["toasts:", "Array of payloads", "Rendered in the stack on page load."],
+  ["container_class: / class:", "String", "Merged onto the container's classes."],
+  ["close_label: default_title: actions_hint:", "String", "Passed into every toast it renders, including the templates JavaScript clones."],
+  ["region_label:", "String", "The name of the stack's landmark. Default rails_ui_kit.toast.region_label."]
+] %>

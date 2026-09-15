@@ -293,6 +293,16 @@ export default class extends Controller {
     if (this.requestDismiss(reason)) this.hide()
   }
 
+  // Closed at once, with no exit animation, for a component whose next move needs the content gone
+  // in this task: Dropdown's Tab, which lets the browser move focus on from the trigger past items
+  // that would otherwise still be rendered. A close all the same, so it says so.
+  closeNow() {
+    if (!this.active) return
+
+    this.reset()
+    this.dispatch("closed")
+  }
+
   // The closed resting state, applied at once: no exit animation, no pending timer or frame,
   // nothing left on <body> and no focus stranded on it. Runs on connect, on disconnect and on
   // turbo:before-cache.

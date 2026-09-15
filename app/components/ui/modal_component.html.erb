@@ -1,5 +1,5 @@
 <div <%= tag.attributes(controller_data) %>>
-  <dialog data-ui--overlay-target="content" <%= tag.attributes(dialog_attributes) %>>
+  <%= tag.dialog(**dialog_attributes) do %>
     <%= content %>
-  </dialog>
+  <% end %>
 </div>

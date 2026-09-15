@@ -5,6 +5,9 @@ over `spec.md` — where they disagree, `spec.md` wins. Nothing here is a new
 Business rule or Acceptance check; it's the mechanical breakdown `spec.md`
 deliberately deferred to stay readable in one sitting.
 
+Written before the build. Where it predicts no public API change or no Dropdown test impact,
+the build differs, and `spec.md` § Behavior records what shipped on 2026-09-15.
+
 ## Ui::ModalComponent
 
 - **Tokens.** `bg-white dark:bg-gray-900` in `BASE_CLASSES` → a token utility

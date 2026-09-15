@@ -20,7 +20,7 @@ in a modal.
 3. Inside the modal, a Turbo Frame wraps the content, so show ↔ edit and validation errors swap
    the frame and leave the dialog alone.
 4. On success the **server** closes the modal, with `turbo_stream.ui_close_modal`, in the same
-   response that updates the list row and the flash.
+   response that updates the list row and shows a toast.
 
 Steps 1–4 are the pattern. Everything else in this guide is a detail of one of them.
 
@@ -227,9 +227,7 @@ same response that updates everything else the change touched:
     The row is a plain <li id="project_1">, not a turbo-frame -- a stream targets any id. %>
 <%= turbo_stream.ui_close_modal %>
 <%= turbo_stream.replace @project %>
-<%= turbo_stream.update "flash" do %>
-  <p class="rounded-md bg-muted px-3 py-2 text-sm text-foreground"><%= flash[:notice] %></p>
-<% end %>
+<%= turbo_stream.ui_toast(type: :notice, description: flash[:notice]) %>
 ```
 
 `turbo_stream.ui_close_modal` is the kit's own Turbo Stream action:
@@ -241,6 +239,12 @@ same response that updates everything else the change touched:
 - It does nothing when no modal is open, so a response may safely send it next to a form wired to
   `closeOnSuccess`.
 - It skips the unsaved-changes prompt (§8). The change the prompt protects has just been accepted.
+
+`turbo_stream.ui_toast` is the kit's toast, sent the same way. It appends to the stack
+`Ui::ToastContainerComponent` renders, so render that container once in your layout, as the install
+generator tells you to — without it there is nothing for the toast to land in. It is Turbo's own
+`append`, and the payload is checked in Ruby before it is sent: a `description:` like this one, or
+a `title:`, `actions:` and the rest (see the Toast page).
 
 Do not close a modal with `turbo_stream.remove` or an empty `turbo_stream.update`. The kit cleans
 up either way — scroll lock released, focus restored — but the modal vanishes in a frame instead
@@ -322,9 +326,7 @@ which opens above the modal:
 ```erb title="examples/app/views/projects/destroy.turbo_stream.erb"
 <%= turbo_stream.ui_close_modal %>
 <%= turbo_stream.remove @project %>
-<%= turbo_stream.update "flash" do %>
-  <p class="rounded-md bg-muted px-3 py-2 text-sm text-foreground"><%= flash[:notice] %></p>
-<% end %>
+<%= turbo_stream.ui_toast(type: :notice, description: flash[:notice]) %>
 ```
 
 Cancelling the confirmation leaves the modal open with focus back inside it. Confirming closes

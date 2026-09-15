@@ -13,13 +13,13 @@
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-border bg-background flex items-center justify-center gap-6 p-12 mb-8">
-  <%= render Ui::PopoverComponent.new(placement: "bottom", panel_classes: "w-64 p-4") do |p| %>
+  <%= render Ui::PopoverComponent.new(placement: :bottom) do |p| %>
     <% p.with_trigger do %>
       <button class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
         Open popover
       </button>
     <% end %>
-    <% p.with_panel do %>
+    <% p.with_panel(class: "w-64 p-4") do %>
       <p class="text-sm font-semibold mb-1">Popover title</p>
       <p class="text-sm text-muted-foreground mb-3">Rich HTML content — any markup goes here.</p>
       <div class="flex gap-2">
@@ -54,9 +54,10 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["placement",    "String",  '"bottom"', "Floating UI placement. Supports all 12 positions."],
+        ["placement",    "String or Symbol", '"bottom"', "One of the 12 placements: top, top-start, top-end, bottom, … right-end. :bottom_start works as well as \"bottom-start\"."],
         ["offset",       "Integer", "8",        "Gap in pixels between the trigger and the panel."],
-        ["panel_classes","String",  '""',       "Additional Tailwind classes merged onto the panel wrapper (e.g. w-64 p-4)."],
+        ["class",        "String",  "nil",      "Merged onto the popover's root element, which wraps the trigger. Style the panel through the panel slot's class: instead."],
+        ["panel_classes","String",  "nil",      "Deprecated: pass the classes to with_panel(class:), which merges them the same way. Removed in 0.4.0."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
@@ -86,7 +87,7 @@
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-primary">panel</td>
-        <td class="px-4 py-3 text-muted-foreground">The floating panel content. Any HTML — links, forms, text, actions.</td>
+        <td class="px-4 py-3 text-muted-foreground">The floating panel content. Any HTML — links, forms, text, actions. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_panel(class: "w-64 p-4")</code> merges classes over the panel's own with tailwind_merge, so <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">bg-muted</code> replaces its background rather than racing it.</td>
       </tr>
     </tbody>
   </table>

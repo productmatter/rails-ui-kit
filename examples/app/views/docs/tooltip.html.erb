@@ -46,8 +46,9 @@
     <tbody class="divide-y divide-border">
       <% [
         ["text",      "String",  "required", "The tooltip text content."],
-        ["placement", "String",  '"top"',    "Floating UI placement. One of: top, top-start, top-end, bottom, bottom-start, bottom-end, left, left-start, left-end, right, right-start, right-end."],
+        ["placement", "String or Symbol", '"top"', "One of: top, top-start, top-end, bottom, bottom-start, bottom-end, left, left-start, left-end, right, right-start, right-end. :bottom_start works as well as \"bottom-start\"."],
         ["offset",    "Integer", "6",        "Gap in pixels between the trigger and the tooltip."],
+        ["class",     "String",  "nil",      "Merged onto the tooltip's root element, which wraps the trigger."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>

@@ -76,7 +76,7 @@ module RailsUiKit
         say ''
         say '  Render these once per layout (e.g. app/views/layouts/application.html.erb):', :green
         say '    <%= render Ui::ConfirmDialogComponent.new %>'
-        say '    <%= render Ui::ToastContainerComponent.new %>'
+        say '    <%= render Ui::ToastContainerComponent.new(flash: flash) %>'
         say '    <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>'
         say ''
         say '  Link stylesheets by name, not with `stylesheet_link_tag :app` or `:all`: those also link', :green

@@ -1,8 +1,4 @@
-<div <%= tag.attributes(controller_data) %>>
-  <%= content_tag :div, data: { "ui--popover-target": "trigger", "ui--overlay-target": "trigger", "ui--anchor-target": "anchor" } do %>
-    <%= trigger %>
-  <% end %>
-  <div class="<%= panel_wrapper_classes %>" data-ui--popover-target="content" data-ui--overlay-target="content" data-ui--anchor-target="floating" hidden>
-    <%= panel %>
-  </div>
-</div>
+<%= tag.div(**root_attributes(**controller_data)) do %>
+  <%= tag.div(trigger, data: { slot: "popover-trigger", "ui--popover-target": "trigger", "ui--overlay-target": "trigger", "ui--anchor-target": "anchor" }) %>
+  <%= tag.div(panel, class: panel_wrapper_classes, data: { slot: "popover-panel", "ui--popover-target": "content", "ui--overlay-target": "content", "ui--anchor-target": "floating" }, hidden: true) %>
+<% end %>

@@ -45,10 +45,7 @@ module Ui
           'centres identically in either direction'
       },
       'app/components/ui/toast_component.html.erb' => {
-        %w[left-0 right-0] => 'a symmetric pair: the timer bar spans the card in either direction',
-        %w[origin-left] => 'paired with rtl:origin-right; Tailwind has no logical transform-origin',
-        %w[sm:translate-x-2 sm:translate-x-0] =>
-          'paired with rtl:sm:-translate-x-2; Tailwind has no logical translate'
+        %w[origin-left] => 'paired with rtl:origin-right; Tailwind has no logical transform-origin'
       }
     }.freeze
 
@@ -79,7 +76,6 @@ module Ui
       toast = File.read(File.join(ROOT, 'app/components/ui/toast_component.html.erb'))
 
       assert_includes toast, 'rtl:origin-right'
-      assert_includes toast, 'rtl:sm:-translate-x-2'
     end
 
     private

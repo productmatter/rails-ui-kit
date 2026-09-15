@@ -96,11 +96,11 @@ module CodeExamplesHelper
 
   def example_popover_usage
     <<~'RUBY'
-      <%= render Ui::PopoverComponent.new(placement: "bottom", panel_classes: "w-64 p-4") do |p| %>
+      <%= render Ui::PopoverComponent.new(placement: :bottom) do |p| %>
         <% p.with_trigger do %>
           <button>Open</button>
         <% end %>
-        <% p.with_panel do %>
+        <% p.with_panel(class: "w-64 p-4") do %>
           <p class="font-semibold text-sm mb-2">Title</p>
           <p class="text-sm text-muted-foreground">Any HTML content here.</p>
         <% end %>
@@ -136,9 +136,9 @@ module CodeExamplesHelper
     <<~'RUBY'
       <%= render Ui::DropdownComponent.new(kind: :menu) do |d| %>
         <% d.with_trigger do %>
-          <button data-action="click->ui--dropdown#toggle">Actions</button>
+          <button>Actions</button>
         <% end %>
-        <% d.with_menu do %>
+        <% d.with_panel do %>
           <div class="py-1">
             <a href="#" role="menuitem" class="flex px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Edit</a>
             <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-destructive hover:bg-accent focus:bg-accent">Delete</a>
@@ -149,24 +149,55 @@ module CodeExamplesHelper
   end
 
   def example_toast_layout
-    '<%= render Ui::ToastContainerComponent.new %>'
+    '<%= render Ui::ToastContainerComponent.new(flash: flash) %>'
+  end
+
+  def example_toast_flash
+    <<~'RUBY'
+      # Rails' own notice: and alert: become toasts on the next page, as they are.
+      redirect_to @post, notice: "Post was successfully created."
+
+      # A toast: payload for anything richer. A flash round-trips your session as JSON,
+      # so keep it plain data -- strings, numbers, booleans, arrays and hashes.
+      redirect_to @project, flash: { toast: { type: "success", title: "Project archived",
+        actions: [{ label: "Undo", href: unarchive_project_path(@project), method: "patch" }] } }
+    RUBY
   end
 
   def example_toast_stream
     <<~'RUBY'
-      <%= turbo_stream.append "body" do %>
-        <%= render Ui::ToastComponent.new(type: :success, message: "Record saved.") %>
-      <% end %>
+      <%= turbo_stream.ui_toast(type: :success, description: "Record saved.") %>
+
+      <%= turbo_stream.ui_toast(type: :success, title: "Project archived",
+            actions: [{ label: "Undo", href: unarchive_project_path(@project), method: "patch" }]) %>
     RUBY
   end
 
   def example_toast_js
     <<~'CODE'
-      window.triggerToast("success", "Record saved.")
+      window.triggerToast("success", "Record saved.")   // the description
 
-      // With title + custom timeout (ms):
-      window.triggerToast("error", { title: "Failed", body: "Please try again.", timeout: 10000 })
+      window.triggerToast({
+        type: "success", title: "Project archived",
+        actions: [{ label: "Undo", href: "/projects/7/unarchive", method: "patch" }]
+      })
+
+      document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", {
+        detail: { type: "info", description: "Your export is ready.", duration: 8000 }
+      }))
     CODE
+  end
+
+  def example_toast_ruby
+    <<~'RUBY'
+      <%= render Ui::ToastComponent.new(type: :success, message: "Saved") %>
+
+      <%= render(Ui::ToastComponent.new(type: :success)) { t(".saved") } %>
+
+      <%= render Ui::ToastComponent.new(type: :info, title: "New version") do |toast| %>
+        <% toast.with_icon { render "icons/sparkles" } %>
+      <% end %>
+    RUBY
   end
 
   def example_confirm_layout

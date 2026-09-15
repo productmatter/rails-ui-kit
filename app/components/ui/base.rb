@@ -17,6 +17,9 @@ module Ui
     PREFIXED_ATTRIBUTES = %w[data aria].freeze
     FLAT_PREFIXED_ATTRIBUTE = /\A(data|aria)-(.+)\z/
 
+    # A keyword named like a class hook (`panel_classes:`, `title_class:`), never an HTML attribute.
+    CLASS_KEYWORD = /_class(es)?\z/
+
     # Space-separated token lists a component wires itself through. A caller's value is added
     # to the component's rather than replacing it, so `data: { action: "change->form#save" }`
     # can't detach the component's own controllers, actions or described-by ids.
@@ -92,7 +95,7 @@ module Ui
     # Every keyword a component does not name for itself lands here and is
     # forwarded to the root element; `class:` is pulled out for the merge step.
     def initialize(**html_attributes)
-      @html_attributes = normalize_attributes(html_attributes)
+      @html_attributes = normalize_attributes(reject_class_keywords(html_attributes))
       @caller_class = @html_attributes.delete(:class)
       super()
     end
@@ -154,6 +157,41 @@ module Ui
 
       Rails.logger&.warn("[rails_ui_kit] #{message} Rendering the default instead.")
       nil
+    end
+
+    # A closed-set keyword that isn't a class_variants axis -- Dropdown's kind, a placement -- resolves
+    # the way a variant does: matched by string form, loud on an unknown value in development and
+    # test, the default elsewhere.
+    def resolve_option(name, value, options, default)
+      match = options.find { |option| option.to_s == value.to_s }
+      return match unless match.nil?
+
+      unknown_variant(name, value, options)
+      default
+    end
+
+    # A class keyword a component still accepts for one release, merged rather than replacing.
+    def deprecated_class_keyword(name, value, replacement)
+      return if value.blank?
+
+      RailsUiKit.deprecator.warn("#{self.class.name}'s #{name}: is deprecated; pass #{replacement} instead, which merges the same way.")
+      value
+    end
+
+    # A `*_class:`/`*_classes:` keyword the component didn't declare would otherwise be forwarded to
+    # the root element as an HTML attribute, styling nothing and saying nothing: the fate of a class
+    # keyword removed in a release, or one guessed at. Loud in development and test, dropped elsewhere.
+    def reject_class_keywords(attributes)
+      attributes.reject do |key, _value|
+        next false unless CLASS_KEYWORD.match?(key.to_s)
+
+        message = "#{self.class.name} has no #{key}: keyword. Style its root element with class:, " \
+                  'or a slot with with_<slot>(class: ...).'
+        raise ArgumentError, message if self.class.raise_on_unknown_variant?
+
+        Rails.logger&.warn("[rails_ui_kit] #{message} Ignoring it.")
+        true
+      end
     end
 
     def caller_class

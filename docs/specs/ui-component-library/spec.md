@@ -247,7 +247,7 @@ removed on 2026-09-14 (`ui-positioning-and-navigation` § Corrections).
 | `ui-component-base` | `Ui::Base`: the `class_variants` variant layer and the `tailwind_merge` class-merge layer that makes rule 5 true. | `ui-design-tokens` | ready-for-review |
 | `ui-presence-and-overlay-stack` | Primitives **D** (presence / open-state: `data-state="open\|closed\|closing"`, waiting on `animationend`/`transitionend` so exit animations run) and **B** (overlay stack: portal to a fixed root, focus trap, body scroll lock, Escape and outside-click dismiss, z-index and nesting order). | `ui-component-base`, `ui-test-harness` | ratified |
 | `ui-positioning-and-navigation` | Primitives **A** (one wrapper over `@floating-ui/dom` emitting `data-side`/`data-align`, re-running on scroll and resize), **C** (roving tabindex / group nav: arrows, Home/End, optional first-letter typeahead, `aria-activedescendant` for listbox-style vs. real focus for menu-style), **E** (field binding: `Field`/`FieldLabel`/`FieldError` wiring `data-invalid` and `aria-invalid` from a Rails errors object, server-rendered). **F** (a `matchMedia` watcher) shipped here and was removed on 2026-09-14; media queries live in a component's own CSS. | `ui-presence-and-overlay-stack`, `ui-test-harness` | ratified |
-| `ui-foundation-retrofit` | Moving Modal, Dropdown, Popover and Tooltip onto the token, base and primitive layers, and Confirm Dialog onto the overlay primitives, and deleting the three duplicated `@floating-ui/dom` positioning implementations. Toast, and Confirm Dialog's tokens and API, moved to `ui-toast` and `ui-confirm-dialog` on 2026-09-14. | `ui-positioning-and-navigation` | ratified |
+| `ui-foundation-retrofit` | Moving Modal, Dropdown, Popover and Tooltip onto the token, base and primitive layers, and Confirm Dialog onto the overlay primitives, and deleting the three duplicated `@floating-ui/dom` positioning implementations. Toast, and Confirm Dialog's tokens and API, moved to `ui-toast` and `ui-confirm-dialog` on 2026-09-14. | `ui-positioning-and-navigation` | ready-for-review |
 
 **Alongside Phase A — Turbo patterns.** Additive and non-breaking. It builds on today's
 Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests green.
@@ -267,10 +267,10 @@ Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests gre
 the browser behaviour that goes with it. Select composes several primitives at once;
 Choices composes none, because native radios and checkboxes already carry the
 behaviour, and ships one small controller only where the browser has no native
-constraint. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship;
-the retrofit moved the first four onto the primitives. Toast and Confirm Dialog are still
-on `ViewComponent::Base` with palette literals. Their rework, including the retrofit's half
-for them, is `ui-toast` and `ui-confirm-dialog`.
+constraint. Tooltip, Popover, Dropdown, Modal, Confirm Dialog and Toast already ship. The
+seven component classes behind them, Toast's container included, inherit `Ui::Base` and read colour
+from the tokens: the retrofit moved the first four onto the base and the primitives, and
+`ui-toast` and `ui-confirm-dialog` reworked the other three.
 
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|

@@ -178,7 +178,10 @@ Public API: targets — `content` (required), `trigger`, `backdrop`. Values — 
 (Boolean), `mode` (String: `modal` | `layer` | `hint`, default `layer`), `dismissible`
 (Boolean, default `true`), `scrollLock` (Boolean, default `false`), `restoreFocus`
 (Boolean, default `true`), `initialFocus` (String selector, default `""`), `moveFocus`
-(Boolean, default `true`). Classes —
+(Boolean, default `true`). Methods — `open`, `close`, `toggle`, `dismiss` (the vetoable
+close a gesture gets), and `closeNow`, added by `ui-foundation-retrofit` on 2026-09-15: a
+close with no exit animation that still dispatches `ui--overlay:closed`, for a component
+whose next step needs the content gone in the same task (Dropdown's Tab). Classes —
 none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismiss`
 (cancelable). Both controllers are exported and registered from
 `app/javascript/rails_ui_kit/index.js` under those identifiers, matching the existing

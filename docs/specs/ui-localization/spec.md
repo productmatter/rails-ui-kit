@@ -90,7 +90,7 @@ in § Acceptance checks passes.
   ships English chrome only, because the studio cannot maintain quality in languages
   nobody here reads, and a wrong translation is worse than an obvious gap — a host meets
   a missing translation immediately and fixes it, where a plausible-looking wrong one
-  reaches its users. The 15 strings are listed on one docs page for a host to translate in
+  reaches its users. The strings are listed on one docs page for a host to translate in
   ten minutes, and the host's own locale files already win by load order. The `fr` and
   `ar` files this scope adds live in `test/fixtures/locales/`: they prove the mechanism
   and are never packaged in the gem.
@@ -102,12 +102,12 @@ in § Acceptance checks passes.
   it already owes under WCAG 3.1.1, and picks fonts for its scripts.
 - **Marking language of parts on a fallback.** When a host runs in a locale the kit has
   no translation for, English chrome appears inside a page in another language. The kit
-  does not annotate it with `lang`; the host translates the 15 strings instead.
+  does not annotate it with `lang`; the host translates them instead.
 - **A helper that renders the two host-wired controllers' chrome.** `ui--dark-mode` and
   `ui--turbo-disable-with` are wired onto the host's own markup; the docs page shows the
   one-line `I18n.t` each needs. A generator or helper for that is not worth its API.
 - **An i18n tooling dependency.** `i18n-tasks` earns its place in an app with hundreds of
-  keys and many locales. The kit has 15 keys and one locale; the checks here are twenty
+  keys and many locales. The kit has a handful of keys and one locale; the checks here are twenty
   lines of Minitest against a known inventory, and they cover things `i18n-tasks` does
   not (a JavaScript fallback drifting from its key, a docs row going stale).
 - **Locale-aware text matching in Select's filter and typeahead.** Case folding is

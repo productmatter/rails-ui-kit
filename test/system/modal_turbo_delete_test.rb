@@ -8,7 +8,7 @@ require_relative 'modal_turbo_helpers'
 class ModalTurboDeleteTest < ApplicationSystemTestCase
   include ModalTurboHelpers
 
-  test 'confirming a delete closes the modal, removes the row and writes the flash' do
+  test 'confirming a delete closes the modal, removes the row and shows a toast' do
     open_modal(2)
     record_dialog_states
 
@@ -19,7 +19,7 @@ class ModalTurboDeleteTest < ApplicationSystemTestCase
     no_modal
     assert_no_selector '#project_2'
     assert_selector '#project_1'
-    assert_selector '#flash', text: 'Q3 campaign deleted.'
+    assert_selector '#ui-toasts [data-slot=toast-description]', text: 'Q3 campaign deleted.'
     assert_includes dialog_states, 'closing', 'the modal was removed rather than animated out'
     assert_scroll_unlocked
   end

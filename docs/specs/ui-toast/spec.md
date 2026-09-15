@@ -52,9 +52,11 @@ in-progress `close_label:` work in the tree):
   1. **Ruby render:** `render Ui::ToastComponent.new(type:, message:)`.
   2. **Turbo Stream:** the documented recipe is `turbo_stream.append "body"`, wrapping a
      rendered `Ui::ToastComponent` (`examples/app/helpers/code_examples_helper.rb`,
-     `example_toast_stream`). **That's a defect.** The toast lands at the end of
-     `<body>`, outside `Ui::ToastContainerComponent`'s fixed stack, so it renders in page
-     flow wherever the body ends. The stack has no `id` to target.
+     `example_toast_stream`). **That's a defect, and worse than first written here.** Turbo
+     reads a stream's `target` as an element id, so `append "body"` looks for
+     `id="body"`, finds nothing, and shows nothing at all (corrected 2026-09-15 from a branch
+     review; this line first said the toast rendered in page flow). The stack has no `id`
+     to target.
   3. **JavaScript:** `window.triggerToast(type, message)`, installed by
      `toast_container_controller.js` on connect and restored on disconnect, plus the
      `rails-ui-kit:toast` document event with `detail: { type, message }`. Both clone a
@@ -94,9 +96,9 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
 - **A custom icon from JavaScript or flash.** A replacement glyph is markup, so it comes
   only from a Ruby render's `icon` slot. A payload can keep the type's glyph or remove it,
   nothing else.
-- **A flash component.** The payload is flash-safe and the docs show the three-line
-  layout recipe. A component that maps `flash` automatically is the parent's "flash
-  banner", not planned (`ui-component-library` § Out of scope).
+- **A flash banner.** A separate component that shows `flash` in page flow is the parent's
+  "flash banner", not planned (`ui-component-library` § Out of scope). **Mapping `flash` to
+  toasts is no longer a non-goal** (item 3, reversed 2026-09-15).
 - **Queueing, deduplication, a maximum stack, swipe gestures, promise toasts, positions
   other than the container's.** None has a pulling client need.
 - **Toasts that survive a Turbo Drive visit.** The container lives in the layout body and
@@ -109,7 +111,7 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
 
    | Key | Type | Meaning |
    |---|---|---|
-   | `type` | `success` `error` `notice` `alert` `info` | Colour, glyph, and which live region announces it. Unknown → `info` (unchanged). |
+   | `type` | `success` `error` `notice` `alert` `warning` `info` | Colour, glyph, and which live region announces it. Unknown is invalid (item 15). |
    | `title` | String | Optional. The first line, emphasised. |
    | `description` | String | Optional. Below the title, or on its own. |
    | `actions` | Array of action Hashes (item 6) | Optional. Rendered in a footer. |
@@ -130,11 +132,18 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
      (`render(Ui::ToastComponent.new(type: :success)) { t(".saved") }`).
    - JavaScript: `window.triggerToast("success", "Saved")`, and the event with
      `detail: { type: "success", message: "Saved" }`.
-   - An I18n key given as `message:` whose translation is a String. A Hash translation is
-     still read as a payload, and the lookup itself is unchanged.
+   - An I18n key given as a **Symbol** `message:` whose translation is a String. A Hash
+     translation is still read as a payload.
 
-   `message:` stays as the 0.2.0 keyword. A String is content; a Hash is a payload. **This
-   reverses 0.2.0, where a plain String became the title.** The upgrade note is item 17.
+   `message:` stays as the 0.2.0 keyword. A String is content; a Hash is a payload; a Symbol is
+   an I18n key. **This reverses 0.2.0, where a plain String became the title.** The upgrade note
+   is item 17.
+
+   **A String is never looked up** (ruled by the orchestrator, 2026-09-15, reversing the
+   § Assumptions line that kept 0.2.0's lookup). 0.2.0 translated any String that happened to
+   be a key, so `"date"` rendered blank and `"number.currency.format.unit"` rendered `$`. Only a
+   Symbol is looked up now. A host that passed key names as strings passes Symbols instead,
+   which UPGRADING §7 says in one line.
 
 3. **Entry point 1: Ruby.** `Ui::ToastComponent.new(**payload, close_label:,
    default_title:, actions_hint:, **html_attributes)`. `class:` merges onto the root
@@ -142,11 +151,26 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
    caller's own (`toast.with_icon { render MyIconComponent.new }`), and `icon: false` removes
    it. Passing both is invalid (item 15). `Ui::ToastContainerComponent.new(toasts: [...])`
    takes an Array of payloads, string keys included, and renders them inside its stack on
-   page load. That's the flash path:
+   page load. **`flash:` is the flash path:** it maps Rails' own `notice` and `alert` to toasts
+   of those types, and a `toast` key holding a payload (or an Array of them). Other flash keys
+   are the host's and are left alone.
 
    ```erb
-   <%= render Ui::ToastContainerComponent.new(toasts: [flash[:toast]].compact) %>
+   <%= render Ui::ToastContainerComponent.new(flash: flash) %>
    ```
+
+   **Flash colours, decided 2026-09-15 (the orchestrator's ruling):** `notice` renders in the
+   `success` colour, with the success glyph, and `alert` in the error (`destructive`) colour.
+   Rails' `notice` is the "it worked" message every scaffold and Devise flow uses, so the
+   retrofit's ratified `notice` → `warning` mapping misread it, and `alert` is Rails' failure
+   key. `info` and `warning` stay explicit types for callers who want them. The kit had no
+   `warning` type until this ruling (only `notice` was amber), so `warning` was added to the
+   closed set, with the triangle glyph `notice` used to carry.
+
+   **Reversal, 2026-09-15, the orchestrator's ruling.** As ratified, this scope declined a flash
+   mapping and asked hosts to write `flash[:toast]` payloads. That was overruled: `flash` is named
+   in rule 0's Gate 1 itself, and every Rails app — scaffolds and Devise included — sets
+   `notice:` and `alert:`. A toast that ignores them isn't how a Rails app shows flash.
    ```ruby
    redirect_to @project, flash: { toast: { type: "success", title: "Project archived",
      actions: [{ label: "Undo", href: unarchive_project_path(@project), method: "patch" }] } }
@@ -334,7 +358,15 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
     covers an unknown key, a blank action `label`, an unknown `variant` or `method`, a
     rejected `href`, `dismiss: false` or a `method` without an `href`, a `class` in a
     JavaScript action, a non-integer or negative `duration`, an `icon` value other than
-    `false`, and an `icon` slot together with `icon: false`.
+    `false`, an `icon` slot together with `icon: false`, a Symbol `message:` that isn't an I18n
+    key, and an unknown `type`.
+    - **`type` behaves as every closed-set keyword in the kit does** (the orchestrator's API
+      review, 2026-09-15): a symbol or a string, `Ui::Base::UnknownVariantError` in development
+      and test, and a log line and `info` in production. 0.2.0 fell back to `info` silently.
+    - **`duration` is coerced with `Integer(…, 10)`**, so a String of digits from a JSON flash
+      works and anything else is invalid. 0.2.0 wrote `timeout` unchecked into an inline style,
+      so `timeout: "1; background-image:url(…)"` injected CSS; now no payload value is written
+      into a style at all — the controller sets the bar's style at runtime.
     - **Ruby** raises `ArgumentError` subclasses that name the key and the fix. In
       production it logs the same message through `Rails.logger.warn` and renders safely.
       An invalid action is dropped. An unknown key is ignored. An invalid `duration` uses
@@ -378,7 +410,9 @@ hover, on keyboard focus and while the page is hidden. An `href` that isn't rela
     > **In your tests,** `data-ui--toast-target="body"` is now `description`, and a
     > string toast's text is in `description`, not `title`.
     >
-    > **Also:** an `alert` toast is now the destructive colour, not orange. A toast with an
+    > **Also:** a `notice` toast is now the success colour with a check glyph, not amber, because `notice` is
+    > Rails' "it worked" message in every scaffold and Devise flow; pass `type: :warning` if you want amber.
+    > An `alert` toast is now the destructive colour, not orange. A toast with an
     > action stays until it's dismissed. `container_class:` now adds to the container's
     > classes instead of replacing them. A toast sent by Turbo Stream should use
     > `turbo_stream.ui_toast`, because `turbo_stream.append "body"` puts it outside the
@@ -470,8 +504,9 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
   Firefox weren't probed. Because promotion isn't built, no engine can do better than the
   fallback in § Behavior item 12, which applies to every browser. Don't add a focus
   exception or per-engine branching.
-- **`message:` I18n lookup is 0.2.0 behaviour and kept.** A String that happens to be a key
-  (Rails' default `en.hello`) is translated. It is recorded, not changed.
+- **`message:` I18n lookup is kept for a Symbol only** (reversed 2026-09-15, § Behavior item 2).
+  0.2.0 translated any String that happened to be a key; that turned ordinary words into
+  translations.
 
 ## Critical files
 
@@ -537,6 +572,7 @@ reconfigures or builds.** `ui-confirm-dialog` adopts them and doesn't restate th
   to reach, and its words are already in the live region.
 - **`class` on a JavaScript action** is not planned (decided 2026-09-14, `open-questions.md`).
 - **Toast queueing, a maximum visible count and deduplication** are not planned.
-- **A `flash:` keyword that maps `notice`/`alert` automatically** is not planned (§ Non-goals).
+- ~~A `flash:` keyword that maps `notice`/`alert` automatically is not planned.~~ Built
+  (§ Behavior item 3, reversed 2026-09-15).
 - **`window.triggerToast` called before the container connects** (audit TO5) is not in this
   scope. It's unchanged.

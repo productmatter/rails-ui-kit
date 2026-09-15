@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ui
-  class ModalComponent < ViewComponent::Base
+  class ModalComponent < Ui::Base
     # Enter and exit are keyed off the data-state ui--presence sets, so the dialog and its
     # ::backdrop animate out before ui--overlay closes the dialog.
     BASE_CLASSES = %w[
@@ -20,7 +20,7 @@ module Ui
     POSITION_CLASSES = {
       center: [
         'top-1/2', 'left-1/2', 'modal-center-hidden',
-        :width_wide, MAX_WIDE, 'max-h-[90vh]',
+        DEFAULT_WIDE, MAX_WIDE, 'max-h-[90vh]',
         'rounded-none sm:rounded-lg', 'overflow-y-auto'
       ].freeze,
       full_screen: [
@@ -29,17 +29,17 @@ module Ui
       ].freeze,
       right: [
         'inset-y-0', 'right-0', 'left-auto', 'modal-right-hidden',
-        'h-screen', 'min-h-screen', :width_narrow, MAX_NARROW,
+        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       left: [
         'inset-y-0', 'left-0', 'right-auto', 'modal-left-hidden',
-        'h-screen', 'min-h-screen', :width_narrow, MAX_NARROW,
+        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       top: [
         'top-0', 'left-1/2', 'modal-top-hidden',
-        :width_wide, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE,
         'rounded-none sm:rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       top_full: [
@@ -48,7 +48,7 @@ module Ui
       ].freeze,
       bottom: [
         'bottom-0', 'top-auto', 'left-1/2', 'modal-bottom-hidden',
-        :width_wide, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE,
         'rounded-none sm:rounded-t-lg', 'overflow-y-auto'
       ].freeze,
       bottom_full: [
@@ -59,6 +59,17 @@ module Ui
 
     POSITIONS = POSITION_CLASSES.keys.freeze
 
+    # The <dialog> is the modal's root in Ui::Base's sense: `data-slot`, a caller's `class:` and any
+    # forwarded attribute (aria: { labelledby: 'heading-id' } or { label: 'Command palette' } to name
+    # it) land there. Its controllers sit on the wrapper, which is where ui--overlay's events fire.
+    data_slot 'modal'
+
+    class_variants(
+      base: BASE_CLASSES.join(' '),
+      variants: { position: POSITION_CLASSES.transform_values { |classes| classes.join(' ') } },
+      defaults: { position: :center }
+    )
+
     include Ui::Chrome
 
     # The prompt a dirty modal shows before it discards: chrome, so it falls through to
@@ -66,19 +77,23 @@ module Ui
     chrome_string :unsaved_changes_title, key: 'modal.unsaved_changes_title'
     chrome_string :unsaved_changes_message, key: 'modal.unsaved_changes_message'
 
-    attr_reader :position, :track_changes, :close_on_backdrop, :max_width, :aria
+    attr_reader :position, :track_changes, :close_on_backdrop
 
-    # aria: attributes for the <dialog>, e.g. { labelledby: 'heading-id' } or { label: 'Command palette' } to name it.
-    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil, aria: {},
-                   unsaved_changes_title: nil, unsaved_changes_message: nil)
-      super()
+    # max_width: is kept for one release, merged the way class: is rather than replacing the width.
+    def initialize(position: :center, track_changes: false, close_on_backdrop: true, max_width: nil,
+                   unsaved_changes_title: nil, unsaved_changes_message: nil, **html_attributes)
       @unsaved_changes_title = unsaved_changes_title
       @unsaved_changes_message = unsaved_changes_message
-      @position = POSITIONS.include?(position.to_sym) ? position.to_sym : :center
+      @position = position
       @track_changes = track_changes
       @close_on_backdrop = close_on_backdrop
-      @max_width = max_width
-      @aria = aria
+      # Ahead of the caller's class:, so a class: that contradicts max_width: wins.
+      max_width = deprecated_class_keyword(:max_width, max_width, 'class:')
+      super(**html_attributes, class: [max_width, html_attributes[:class]].compact_blank.presence)
+    end
+
+    def variant_values
+      { position: position }
     end
 
     def controller_data
@@ -87,8 +102,8 @@ module Ui
           controller: 'ui--modal ui--overlay',
           'ui--modal-track-changes-value': track_changes,
           'ui--modal-close-on-backdrop-value': close_on_backdrop,
-          'ui--modal-confirm-title-value': unsaved_changes_title,
-          'ui--modal-confirm-message-value': unsaved_changes_message,
+          'ui--modal-unsaved-changes-title-value': unsaved_changes_title,
+          'ui--modal-unsaved-changes-message-value': unsaved_changes_message,
           'ui--overlay-mode-value': 'modal',
           'ui--overlay-open-value': true,
           'ui--overlay-scroll-lock-value': true,
@@ -99,19 +114,7 @@ module Ui
     end
 
     def dialog_attributes
-      { class: dialog_classes, aria: aria }
-    end
-
-    def dialog_classes
-      width = max_width || (POSITION_CLASSES[position].include?(:width_narrow) ? DEFAULT_NARROW : DEFAULT_WIDE)
-      position_classes = POSITION_CLASSES[position].map do |token|
-        case token
-        when :width_wide, :width_narrow then width
-        else token
-        end
-      end
-
-      (BASE_CLASSES + position_classes).join(' ')
+      root_attributes(data: { 'ui--overlay-target': 'content' })
     end
   end
 end

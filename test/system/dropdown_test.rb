@@ -24,7 +24,7 @@ class DropdownTest < ApplicationSystemTestCase
     assert_selector 'h1', text: 'Dropdown'
 
     trigger = menu_trigger
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
     assert_no_selector "[role='menu']", visible: true
     refute focused?(find("[role='menu']", visible: false))
   end
@@ -43,14 +43,14 @@ class DropdownTest < ApplicationSystemTestCase
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     find("[role='menu'] a[role='menuitem']", text: 'Edit').click
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
 
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     find("[role='menu'] a[role='menuitem']", text: 'Edit').send_keys(:enter)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'DD3: opening one dropdown closes another that was open' do
@@ -63,7 +63,7 @@ class DropdownTest < ApplicationSystemTestCase
 
     trigger_dialog.click
     assert_equal 'true', trigger_dialog['aria-expanded']
-    assert_equal 'false', trigger_menu['aria-expanded']
+    assert_expanded 'false', trigger_menu
   end
 
   test 'DD4: match_width and bottom-end placement measure the trigger control, not a full-width wrapper' do
@@ -106,14 +106,14 @@ class DropdownTest < ApplicationSystemTestCase
     assert_equal 'true', trigger['aria-expanded']
     first_item = find("[role='menu'] a[role='menuitem']", text: 'Edit')
     first_item.send_keys(:tab)
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
     refute focused?(first_item)
 
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     find("[role='menu'] a[role='menuitem']", text: 'Edit').send_keys(%i[shift tab])
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'DD6: the dialog-kind dropdown is named, focuses its input on open, and Escape returns focus to the trigger' do
@@ -125,11 +125,11 @@ class DropdownTest < ApplicationSystemTestCase
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     input = find("[role='dialog'] input")
-    assert focused?(input)
+    assert_focused input
 
     input.send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'DD7: Escape closes when focus is inside or on the trigger, and honours defaultPrevented' do
@@ -137,7 +137,7 @@ class DropdownTest < ApplicationSystemTestCase
     trigger = menu_trigger
 
     # 1. Click on plain text inside the content (not an item): focus lands on <body>,
-    # so the document-level Escape listener closes it and returns focus to the trigger.
+    # and Escape still closes it and returns focus to the trigger.
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     content_wrapper = find("[data-ui--dropdown-target='content'] > div", visible: true)
@@ -145,15 +145,15 @@ class DropdownTest < ApplicationSystemTestCase
     click_at_point(wrapper_rect['left'] + (wrapper_rect['width'] / 2), wrapper_rect['top'] + 2)
     assert page.evaluate_script('document.activeElement === document.body')
     find('body').send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
 
     # 2. Open, focus an item, Escape: closed, focus back on the trigger.
     trigger.click
     assert_equal 'true', trigger['aria-expanded']
     find("[role='menu'] a[role='menuitem']", text: 'Edit').send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
 
     # 3. Dropdown (unlike Popover) also closes as soon as focus leaves it at all -- see
     # DD5 -- so moving focus to an unrelated button already closes it before Escape is
@@ -169,11 +169,11 @@ class DropdownTest < ApplicationSystemTestCase
       btn.focus()
     JS
     outside = find('#dd7-outside')
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(outside)
+    assert_expanded 'false', trigger
+    assert_focused outside
     outside.send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(outside)
+    assert_expanded 'false', trigger
+    assert_focused outside
 
     # 4. A capture-phase listener that preventDefault()s the first Escape blocks it;
     # the second Escape goes through normally.
@@ -189,9 +189,11 @@ class DropdownTest < ApplicationSystemTestCase
       }, true)
     JS
     find("[role='menu'] a[role='menuitem']", text: 'Edit').send_keys(:escape)
+    # Past the frame a dismissal would take, so a close that was only late can't pass as none.
+    sleep 0.3
     assert_equal 'true', trigger['aria-expanded']
     find("[role='menu'] a[role='menuitem']", text: 'Edit').send_keys(:escape)
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
   end
 
   test 'DD8: rapid reopen clicks settle into a fully open, visible state' do
@@ -216,7 +218,7 @@ class DropdownTest < ApplicationSystemTestCase
     trigger = menu_trigger
 
     tab_to(trigger)
-    assert focused?(trigger)
+    assert_focused trigger
 
     press :space
     assert_equal 'true', trigger['aria-expanded']
@@ -258,8 +260,8 @@ class DropdownTest < ApplicationSystemTestCase
     assert_focused_item 'Delete'
 
     press :escape
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
 
     press :arrow_down
     assert_equal 'true', trigger['aria-expanded']
@@ -298,14 +300,14 @@ class DropdownTest < ApplicationSystemTestCase
     assert_focused_item 'Duplicate'
     press :enter
     assert_equal 'Duplicate', last_activated_item
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
 
     open_menu_with_keyboard
     press :space
     assert_equal 'Edit', last_activated_item
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'DD14: an aria-disabled item takes focus but Enter, Space and a click neither activate it nor close the menu' do
@@ -346,7 +348,7 @@ class DropdownTest < ApplicationSystemTestCase
 
     # Opening from the trigger lands on the end item even when that item is disabled.
     press :escape
-    assert focused?(trigger)
+    assert_focused trigger
     delete_item = find("[role='menu'] [role='menuitem']", text: 'Delete', visible: false)
     page.execute_script("arguments[0].setAttribute('aria-disabled', 'true')", delete_item)
     press :arrow_up
@@ -366,7 +368,7 @@ class DropdownTest < ApplicationSystemTestCase
     assert_equal %w[-1 0 -1 -1], menu_tabindexes
 
     press :tab
-    assert_equal 'false', trigger['aria-expanded']
+    assert_expanded 'false', trigger
     refute page.evaluate_script('!!document.activeElement.closest(\'[role="menuitem"]\')')
 
     # Closed, the tabindex="0" item is not rendered, so the trigger is the menu's only tab stop.
@@ -445,8 +447,8 @@ class DropdownTest < ApplicationSystemTestCase
 
     press :enter
     assert_equal 'Update payment method', last_activated_item
-    assert_equal 'false', trigger['aria-expanded']
-    assert focused?(trigger)
+    assert_expanded 'false', trigger
+    assert_focused trigger
   end
 
   test 'DD18: the open menu passes an axe audit' do
@@ -491,7 +493,7 @@ class DropdownTest < ApplicationSystemTestCase
 
     content = container.find("[data-ui--dropdown-target='content']", visible: true)
     assert_selector "#dd19-container [data-ui--dropdown-target='content'][data-side='top'][data-align='end']"
-    assert_selector "#dd19-container [data-ui--dropdown-target='content'].opacity-100.scale-100"
+    assert_selector "#dd19-container [data-ui--dropdown-target='content'][data-state='open']"
 
     trigger_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', trigger)
     content_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', content)
@@ -521,6 +523,9 @@ class DropdownTest < ApplicationSystemTestCase
       var clone = original.cloneNode(true)
       clone.setAttribute('data-ui--anchor-placement-value', 'bottom-start')
       clone.setAttribute('data-ui--dropdown-placement-value', 'top-end')
+      // As in DD19: the panel is positioned against the viewport now, and this clone sits at the
+      // page's foot, so flip would answer how much room is below rather than which value won.
+      clone.setAttribute('data-ui--anchor-flip-value', 'false')
       container.appendChild(clone)
       document.body.appendChild(container)
     JS
@@ -547,14 +552,15 @@ class DropdownTest < ApplicationSystemTestCase
 
     # Markup that dropped ui--anchor from the wrapper and ui--roving-focus from the content --
     # old copy-paste predating 144d104, say. Positioning and roving keyboard nav are gone, but
-    # opening the menu must not error, and each missing companion must say so once.
+    # opening the menu must not error, and each missing companion must say so once. ui--overlay,
+    # which opens it, stays: the wrapper loses only ui--anchor.
     page.execute_script(<<~JS)
       var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
       var container = document.createElement('div')
       container.id = 'dd21-container'
       container.style.cssText = 'width:600px;display:block;margin-left:320px'
       var clone = original.cloneNode(true)
-      clone.setAttribute('data-controller', 'ui--dropdown')
+      clone.setAttribute('data-controller', 'ui--dropdown ui--overlay')
       clone.querySelector("[data-ui--dropdown-target='content']").removeAttribute('data-controller')
       container.appendChild(clone)
       document.body.appendChild(container)
@@ -564,7 +570,7 @@ class DropdownTest < ApplicationSystemTestCase
     trigger = container.find("[data-ui--dropdown-target='trigger'] button")
     trigger.click
 
-    assert_selector "#dd21-container [data-ui--dropdown-target='content'].opacity-100.scale-100"
+    assert_selector "#dd21-container [data-ui--dropdown-target='content'][data-state='open']"
     assert_empty captured_errors
 
     warnings = console_warnings
@@ -574,7 +580,125 @@ class DropdownTest < ApplicationSystemTestCase
            "expected a warning naming the missing ui--roving-focus companion, got: #{warnings}"
   end
 
+  # A correct Dropdown used to warn "no ui--anchor controller found" on every page load: connect
+  # looked the anchor up before ui--anchor had connected.
+  test 'DD22: a complete Dropdown connects without a missing-companion warning' do
+    visit dropdown_path
+    install_console_warning_capture
+
+    clone_menu('dd22')
+    assert_selector '#dd22 [data-ui--dropdown-target="trigger"] button[aria-haspopup="menu"]'
+    find('#dd22 [data-ui--dropdown-target="trigger"] button').click
+    assert_selector "#dd22 [data-ui--dropdown-target='content'][data-state='open']"
+
+    assert_empty console_warnings.grep(/ui--dropdown: no /)
+  end
+
+  test 'DD23: Dropdown binds its own trigger, and a hand-wired toggle beside it still opens once' do
+    visit dropdown_path
+
+    # Markup written before Dropdown bound its trigger carries click->ui--dropdown#toggle too: one
+    # click is one toggle, not two that cancel out.
+    wired = menu_trigger
+    page.execute_script("arguments[0].setAttribute('data-action', 'click->ui--dropdown#toggle')", wired)
+    assert_equal 'click->ui--dropdown#toggle', wired['data-action']
+    wired.click
+    sleep 0.3
+    assert_equal 'true', wired['aria-expanded']
+    press :escape
+    assert_expanded 'false', wired
+
+    clone_menu('dd23')
+    page.execute_script("document.querySelector('#dd23 [data-ui--dropdown-target=\"trigger\"] button').removeAttribute('data-action')")
+    bare = find('#dd23 [data-ui--dropdown-target="trigger"] button')
+    bare.click
+    assert_expanded 'true', bare
+  end
+
+  test "DD24: Dropdown's lifecycle events are ui--overlay's, including a Tab close" do
+    visit dropdown_path
+    page.execute_script(<<~JS)
+      window.__ddEvents = []
+      var dropdown = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      ;['opened', 'dismiss', 'closed'].forEach(function(name) {
+        dropdown.addEventListener('ui--overlay:' + name, function(event) {
+          if (event.target === dropdown) window.__ddEvents.push(name + (event.detail.reason ? ':' + event.detail.reason : ''))
+        })
+      })
+    JS
+    trigger = menu_trigger
+
+    trigger.click
+    assert_focused_item 'Edit'
+    press :escape
+    assert_expanded 'false', trigger
+    assert_selector "[data-ui--dropdown-kind-value='menu'] [data-ui--dropdown-target='content'][data-state='closed']", visible: :all
+    assert_equal %w[opened dismiss:escape closed], page.evaluate_script('window.__ddEvents')
+
+    trigger.click
+    assert_focused_item 'Edit'
+    press :tab
+    assert_expanded 'false', trigger
+    assert_equal %w[opened dismiss:escape closed opened closed], page.evaluate_script('window.__ddEvents')
+  end
+
+  # Nesting is not a special case (ui-component-library rule 7): a menu opened inside a modal is
+  # painted above it and is the first thing Escape closes.
+  test 'DD25: a menu inside a modal is painted above it, and Escape closes the menu before the modal' do
+    visit dropdown_path
+    page.execute_script(<<~JS)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var wrapper = document.createElement('div')
+      Object.entries({
+        'id': 'dd25-modal', 'data-controller': 'ui--modal ui--overlay',
+        'data-ui--overlay-mode-value': 'modal', 'data-ui--overlay-open-value': 'true',
+        'data-action': 'ui--overlay:dismiss->ui--modal#guardDismiss:self ui--overlay:closed->ui--modal#remove:self'
+      }).forEach(function([name, value]) { wrapper.setAttribute(name, value) })
+      var dialog = document.createElement('dialog')
+      dialog.setAttribute('data-ui--overlay-target', 'content')
+      dialog.className = 'fixed top-4 left-4 m-0 p-6 w-80 h-40 overflow-hidden'
+      dialog.appendChild(original.cloneNode(true))
+      wrapper.appendChild(dialog)
+      document.body.appendChild(wrapper)
+    JS
+    assert_selector '#dd25-modal dialog[open]'
+
+    trigger = find('#dd25-modal [data-ui--dropdown-target="trigger"] button')
+    trigger.click
+    assert_expanded 'true', trigger
+    assert_selector "#dd25-modal [role='menuitem']:focus", text: 'Edit'
+
+    content = find("#dd25-modal [data-ui--dropdown-target='content']")
+    assert page.evaluate_script("arguments[0].matches(':popover-open')", content)
+    # The dialog clips its overflow, so a panel that were painted inside it would be cut off here.
+    item = find("#dd25-modal [role='menuitem']", text: 'Delete')
+    assert page.evaluate_script(<<~JS, item)
+      (function(item) {
+        var rect = item.getBoundingClientRect()
+        return item.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2))
+      })(arguments[0])
+    JS
+
+    press :escape
+    assert_expanded 'false', trigger
+    assert_selector '#dd25-modal dialog[open]'
+
+    press :escape
+    assert_no_selector '#dd25-modal'
+  end
+
   private
+
+  def clone_menu(id)
+    page.execute_script(<<~JS, id)
+      var original = document.querySelector("[data-controller~='ui--dropdown'][data-ui--dropdown-kind-value='menu']")
+      var container = document.createElement('div')
+      container.id = arguments[0]
+      container.style.cssText = 'position:fixed;top:40px;left:40px;z-index:1000'
+      container.appendChild(original.cloneNode(true))
+      document.body.appendChild(container)
+    JS
+  end
 
   # Captures uncaught errors from here on, so a claim that a code path "never throws" is
   # checked rather than assumed.
@@ -664,6 +788,21 @@ class DropdownTest < ApplicationSystemTestCase
 
   def focused?(element)
     page.evaluate_script('document.activeElement === arguments[0]', element)
+  end
+
+  # ui--overlay closes an Escaped layer on the next frame and returns focus once its exit animation
+  # has finished, so these wait the way any Capybara assertion does (as popover_test.rb's do).
+  def assert_expanded(expected, trigger)
+    trigger.synchronize do
+      actual = trigger['aria-expanded']
+      raise Capybara::ExpectationNotMet, "aria-expanded is #{actual.inspect}" unless actual == expected
+    end
+    assert_equal expected, trigger['aria-expanded']
+  end
+
+  def assert_focused(element)
+    element.synchronize { raise Capybara::ExpectationNotMet, 'not focused' unless focused?(element) }
+    assert focused?(element)
   end
 
   # A real pointer click at viewport coordinates -- element.click() doesn't shift focus

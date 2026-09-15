@@ -15,15 +15,14 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-border bg-background flex flex-wrap items-start justify-center gap-6 p-12 mb-8">
   <%# Menu %>
-  <%= render Ui::DropdownComponent.new(kind: :menu, placement: "bottom-start", content_classes: "rounded-md border border-border bg-popover text-popover-foreground shadow-lg") do |d| %>
+  <%= render Ui::DropdownComponent.new(kind: :menu, placement: :bottom_start) do |d| %>
     <% d.with_trigger do %>
-      <button data-action="click->ui--dropdown#toggle"
-              class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+      <button class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
         Menu
         <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
       </button>
     <% end %>
-    <% d.with_menu do %>
+    <% d.with_panel do %>
       <div class="py-1 min-w-[10rem]">
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Edit</a>
         <a href="#" role="menuitem" class="flex px-3 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">Duplicate</a>
@@ -34,15 +33,14 @@
   <% end %>
 
   <%# Dialog %>
-  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", placement: "bottom-start", content_classes: "rounded-md border border-border bg-popover text-popover-foreground shadow-lg") do |d| %>
+  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", placement: :bottom_start) do |d| %>
     <% d.with_trigger do %>
-      <button data-action="click->ui--dropdown#toggle"
-              class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+      <button class="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
         Dialog
         <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
       </button>
     <% end %>
-    <% d.with_menu do %>
+    <% d.with_panel do %>
       <label class="block w-56 p-3 text-sm">
         <span class="mb-1.5 block font-medium">Name contains</span>
         <input type="text" class="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm">
@@ -76,11 +74,12 @@
     <tbody class="divide-y divide-border">
       <% [
         ["kind",           "Symbol",  ":menu",         "Interaction mode: :menu (the menu button pattern — see Keyboard below), :dialog (focus moves to the first field on open)."],
-        ["placement",      "String",  '"bottom-start"', "Floating UI placement."],
+        ["placement",      "String or Symbol", '"bottom-start"', "One of the 12 placements: top, top-start, … right-end. :bottom_start works as well as \"bottom-start\"."],
         ["offset",         "Integer", "4",             "Gap between trigger and content in pixels."],
         ["match_width",    "Boolean", "false",          "Makes the dropdown match the trigger's width."],
-        ["content_classes","String",  '""',            "Additional classes on the floating content wrapper."],
         ["label",          "String",  "nil",           "Accessible name for the floating content. Give every :dialog one."],
+        ["class",          "String",  "nil",           "Merged onto the dropdown's root element, which wraps the trigger. Style the panel through the panel slot's class: instead."],
+        ["content_classes","String",  "nil",           "Deprecated: pass the classes to with_panel(class:), which merges them the same way. Removed in 0.4.0."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
@@ -135,7 +134,7 @@
     so Tab moves past the whole menu rather than through its items. Closed, no item is rendered, so the trigger is the only stop.
   </p>
   <p>
-    Items don't have to carry roles. If the menu slot contains no
+    Items don't have to carry roles. If the panel slot contains no
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>,
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemcheckbox</code> or
     <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemradio</code>, its links and enabled buttons
@@ -166,11 +165,11 @@
     <tbody class="divide-y divide-border">
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-primary">trigger</td>
-        <td class="px-4 py-3 text-muted-foreground">The button that opens the dropdown. Wire <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--dropdown#toggle"</code> to your button.</td>
+        <td class="px-4 py-3 text-muted-foreground">The button that opens the dropdown. Dropdown binds it itself; nothing to wire.</td>
       </tr>
       <tr>
-        <td class="px-4 py-3 font-mono text-xs text-primary">menu</td>
-        <td class="px-4 py-3 text-muted-foreground">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard.</td>
+        <td class="px-4 py-3 font-mono text-xs text-primary">panel</td>
+        <td class="px-4 py-3 text-muted-foreground">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_panel(class: "min-w-48")</code> merges classes over the panel's own. The slot was called <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">menu</code> in 0.2.0; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_menu</code> still works, with a deprecation warning, until 0.4.0.</td>
       </tr>
     </tbody>
   </table>

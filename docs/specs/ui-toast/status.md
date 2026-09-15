@@ -3,7 +3,10 @@
 ratified
 
 Ratified 2026-09-14 by the orchestrator, who also decided both open questions. The top-layer
-reachability probe has run and **failed** (below). Nothing else is built.
+probe failed, so the container isn't promoted (spec.md § Behavior item 12). **Built 2026-09-15**,
+with four rulings the orchestrator added from branch reviews: `flash:` on the container
+(reversing a non-goal), Symbol-only I18n lookup, `Integer` coercion of `duration`, and `type`
+behaving as every closed-set keyword does. Each is recorded in spec.md where it applies.
 
 ## Done
 
@@ -51,13 +54,43 @@ reachability probe has run and **failed** (below). Nothing else is built.
   passes the same measurement). spec.md § Behavior item 12, business rule 9,
   § Assumptions and the human gate now describe the occlusion fallback.
 
+- **Built, 2026-09-15:**
+  - Ruby: `Ui::Toast::Payload`, `Ui::Toast::Action`, `Ui::Toast::Href`, `Ui::Toast::Validation`
+    and `Ui::Toast::ActionComponent`; `Ui::ToastComponent` and `Ui::ToastContainerComponent` on
+    `Ui::Base` and the tokens; `turbo_stream.ui_toast`; six status tokens in `engine.css`; two
+    chrome strings.
+  - JavaScript: `toast_controller.js` on Primitive D, with pause on hover, focus and a hidden
+    page, and reduced-motion stepping; `toast_container_controller.js` with the payload rules,
+    template cloning, F8 and focus return, the landmark toggle and the Turbo-cache clear.
+  - Docs app: `ToastsController` (stream, flash and Undo endpoints), the Toast page, the
+    layout's `flash: flash`, and the Modal+Turbo guide's §6 and §8 on `ui_toast`.
+  - Every agent-loopable check has its file: `toast_component_test`, `toast_timing_test`,
+    `toast_href_test` (unit and system, one vector list), `toast_validation_test` (unit and
+    system), `toast_container_component_test`, `turbo_stream_ui_toast_test`,
+    `toast_entry_points_test`, `toast_reach_test`, `toast_countdown_test`, `toast_test` (T3-T5),
+    `toast_accessibility_test`, `toast_turbo_cache_test`, `tokens_test`, `chrome_override_test`
+    (TO5). Each new browser behaviour was proved to fail with its implementation planted out.
+- **How it was built, where the spec left room:**
+  - JavaScript writes ids and the `aria-labelledby`/`aria-describedby` idrefs as well as text,
+    URLs and data attributes, because generated ids have to be generated somewhere (§ Behavior
+    item 7 names them as the only difference). It still writes no class.
+  - The parity check normalises whitespace between tags as well as ids and the bar's inline
+    style: a part a clone removes leaves the template's indentation behind.
+  - An action's dismissal travels as a Stimulus action param (`data-ui--toast-dismiss-param`).
+  - The container's stacking value is still the `z-[70]` utility it had in 0.2.0.
+- **Decided 2026-09-15:** `notice` renders in the success colour and `alert` in the error colour
+  (spec.md § Behavior item 3). `warning` was added as a type so an explicit amber type exists, as
+  the ruling assumed. The Modal+Turbo demos now send `type: :notice` for their flash messages.
+
 ## In progress
 
-Waiting for `spec-localization` to land before touching the toast components.
+None.
 
 ## Last green checkpoint
 
-`test/system/toast_top_layer_probe_test.rb` green: 3 runs, 22 assertions.
+2026-09-15: unit lane green apart from two Floating UI pin failures that belong to another
+worker's in-flight change; every toast browser file green in the normal and SLOW lanes; rubocop
+clean on every toast file.
 
 ## Dead ends
 

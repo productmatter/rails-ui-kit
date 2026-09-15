@@ -9,7 +9,7 @@ require_relative 'modal_turbo_helpers'
 class ModalTurboSuccessTest < ApplicationSystemTestCase
   include ModalTurboHelpers
 
-  test 'the stream response closes the modal with its exit animation and updates row and flash' do
+  test 'the stream response closes the modal with its exit animation, updates the row and shows a toast' do
     open_modal(1, trigger: 'edit')
     record_dialog_states
 
@@ -18,7 +18,7 @@ class ModalTurboSuccessTest < ApplicationSystemTestCase
 
     no_modal
     assert_selector '#project_1', text: 'Acme rebrand v2'
-    assert_selector '#flash', text: 'Acme rebrand v2 saved.'
+    assert_selector '#ui-toasts [data-slot=toast-description]', text: 'Acme rebrand v2 saved.'
     assert_includes dialog_states, 'closing', 'the modal was removed rather than animated out'
     assert_scroll_unlocked
     # The same response replaced the row the trigger sat in, so the element focus came from is

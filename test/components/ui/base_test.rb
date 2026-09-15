@@ -352,6 +352,31 @@ module Ui
       Rails.logger = original_logger
     end
 
+    # An undeclared class keyword would otherwise land on the root as `panel_classes="w-64"`.
+    test 'an undeclared *_class or *_classes keyword raises, pointing at class: and the slot form' do
+      %i[panel_classes title_class].each do |keyword|
+        error = assert_raises(ArgumentError) { ProbeComponent.new(keyword => 'w-64') }
+
+        assert_includes error.message, "has no #{keyword}: keyword"
+        assert_includes error.message, 'class:'
+        assert_includes error.message, 'with_<slot>(class: ...)'
+      end
+    end
+
+    test 'outside development and test an undeclared class keyword is logged and never rendered' do
+      log = StringIO.new
+      original_logger = Rails.logger
+      Rails.logger = ActiveSupport::Logger.new(log)
+
+      render_inline(LenientProbeComponent.new(panel_classes: 'w-64')) { 'x' }
+
+      assert_no_selector '[panel_classes]'
+      refute_includes page.native.to_html, 'w-64'
+      assert_match(/panel_classes: keyword/, log.string)
+    ensure
+      Rails.logger = original_logger
+    end
+
     test 'one merger instance is shared by every component' do
       assert_same Ui::Base::MERGER, Ui::ButtonComponent::MERGER
     end

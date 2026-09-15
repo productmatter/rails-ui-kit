@@ -11,6 +11,8 @@ fr:
     toast:
       close_label: "Fermer la notification"
       default_title: "Avis"
+      region_label: "Notifications"
+      actions_hint: "Appuyez sur F8 pour atteindre ses actions."
     select:
       show_options_label: "Afficher les options"
       no_results: "Aucun résultat"

@@ -84,7 +84,8 @@
         ["unsaved_changes_title",   "String",  "nil",     "Overrides rails_ui_kit.modal.unsaved_changes_title for this modal."],
         ["unsaved_changes_message", "String",  "nil",     "Overrides rails_ui_kit.modal.unsaved_changes_message for this modal."],
         ["aria",                    "Hash",    "{}",      "Name every modal: { labelledby: \"heading-id\" } for a visible title, or { label: \"…\" } when there is none."],
-        ["class",                   "String",  "nil",     "Merged onto the <dialog> with tailwind_merge — a width such as sm:w-[48rem] replaces the position's default."],
+        ["class",                   "String",  "nil",     "Merged onto the <dialog> with tailwind_merge — sm:w-[48rem] sm:max-w-[48rem] replaces the position's default width and its cap."],
+        ["max_width",               "String",  "nil",     "Deprecated: pass the classes as class:, which merges them the same way. Removed in 0.4.0."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>

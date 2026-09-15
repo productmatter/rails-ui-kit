@@ -74,8 +74,37 @@ colours and their `success`/`warning`/`info` kit extensions (Jonathan's 2026-09-
 decision) are `ui-toast`'s. Confirm Dialog's `DEFAULTS` literals are
 `ui-confirm-dialog`'s.
 
+As shipped on 2026-09-15: Popover's and Dropdown's panels wear `bg-popover` with a `border`
+coloured by the `[data-slot]` base rule; Tooltip and its arrow invert the page, `bg-foreground
+text-background`, which is what the old literals did in both modes. Modal's backdrop scrim,
+`backdrop:bg-black/50`, stays a literal by the orchestrator's 2026-09-15 ruling: it is the same
+in both modes by design, no token names a scrim, and hiding it as an arbitrary value would
+only cheat the acceptance check, which allows it by name instead.
+
 **`Ui::Base`.** Modal, Dropdown, Popover and Tooltip inherit from it and use its
-variant/class-merge API instead of string interpolation. The deletion of
+variant/class-merge API instead of string interpolation. As shipped on 2026-09-15:
+
+- `class:` merges onto Modal's `<dialog>`, its only visible element, and onto the root
+  element of Dropdown, Popover and Tooltip, where their controllers sit and
+  `ui--overlay:*` events fire. Forwarded `data:`/`aria:` and `data-slot` land on the same
+  element. A panel is styled through its slot: `with_panel(class:)` on Popover and Dropdown,
+  merged.
+- `max_width:`, `panel_classes:` and `content_classes:` are kept for one release, merged
+  rather than replacing, and warn through `RailsUiKit.deprecator`. Removing them outright
+  would have been silent: `Ui::Base` forwards an unknown keyword as an HTML attribute, so
+  `Ui::Base` now raises on any undeclared `*_class:`/`*_classes:` keyword instead
+  (`ui-component-base` § Behavior).
+- Modal's `position:` is a `class_variants` axis. Dropdown's `kind:` and every `placement:`
+  resolve through `Ui::Base`'s unknown-value handling, so the removed `kind: :listbox` and
+  `placement: :nope` raise in development and test instead of silently rendering a default,
+  and a symbol placement (`:bottom_start`) works.
+- Dropdown's slot was `menu`. It is `panel`, reading beside Popover's, with `with_menu` a
+  deprecated alias for one release. `content` was the first choice and is a name ViewComponent
+  reserves.
+- Modal's prompt values are `unsavedChangesTitle`/`unsavedChangesMessage`, the leaves of their
+  `modal.unsaved_changes_*` locale keys; neither value existed in 0.2.0.
+
+The deletion of
 `ConfirmDialogComponent`'s `DEFAULTS`/`*_class` keywords that this section once
 specified is reversed by the orchestrator's 2026-09-14 ruling in `ui-confirm-dialog`:
 eight keywords stay, merged onto the token defaults, and `icon_class:` goes.
@@ -86,7 +115,17 @@ adopt the positioning primitive in place of their own `computePosition` calls. T
 three duplicated `@floating-ui/dom` imports in `dropdown_controller.js`,
 `popover_controller.js` and `tooltip_controller.js` are deleted — after this scope,
 no file under `app/components/ui/` or its controllers imports `@floating-ui/dom`
-directly (§ Business rules of ui-component-library, rule 4). The hardcoded z-indexes
+directly (§ Business rules of ui-component-library, rule 4).
+
+Dropdown, the last of the four with its own open state, moved onto `ui--overlay` in layer
+mode on 2026-09-15, as Popover had. What it had hand-rolled — open state, outside click,
+Escape, the open/closed animation and the `z-50` — is the overlay's, and the overlay's
+`opened`/`closed`/`dismiss` events are Dropdown's. It binds its own trigger. What stays in
+`dropdown_controller.js` is what no primitive does: the menu button's arrow keys on the
+trigger, role adoption, activation, where focus lands on open (the overlay's `moveFocus` is
+off), closing when focus leaves, and the legacy positioning-attribute forwarding. Tab closes
+at once, without the exit animation, through `ui--overlay#closeNow`. A trigger press during
+the exit animation reopens the menu, where the overlay's own `toggle` would stay closed. The hardcoded z-indexes
 on the overlays (`z-[61]` on Modal, `z-50` on Dropdown/Popover/Tooltip) are deleted
 rather than renumbered: paint order comes from the browser's top layer
 (`showModal()` / `popover`), and the only stacking value the overlay primitives allow
@@ -153,7 +192,8 @@ updated.
 
 1. No component reads a Tailwind palette literal for color; color and radius come
    only from token utility classes (§ Business rules of ui-component-library,
-   rule 1).
+   rule 1). Modal's `backdrop:bg-black/50` scrim is the one named exception, ruled on
+   2026-09-15 (§ Behavior, Tokens).
 2. Toast's status-colour mapping moved to `ui-toast` on 2026-09-14, which inherits it
    unchanged.
 3. Modal, Dropdown, Popover and Tooltip inherit `Ui::Base` and use its
@@ -235,7 +275,8 @@ updated.
 ## Critical files
 
 - `app/components/ui/{modal,dropdown,popover,tooltip}_component.*` — this scope's
-  direct subject. Confirm Dialog and Toast are `ui-confirm-dialog` and `ui-toast`.
+  direct subject. `app/components/ui/placement.rb` holds the twelve placements the three
+  anchored components share. Confirm Dialog and Toast are `ui-confirm-dialog` and `ui-toast`.
 - `app/javascript/rails_ui_kit/controllers/{modal,dropdown,popover,tooltip}_controller.js`
   — the component-paired controllers; `dropdown_controller.js`,
   `popover_controller.js` and `tooltip_controller.js` lose their `@floating-ui/dom`
@@ -258,11 +299,14 @@ updated.
 
 ### agent-loopable
 
-- No hardcoded Tailwind palette literal remains in Modal, Dropdown, Popover or Tooltip — run: `! grep -rEn "(bg|text|border|ring|outline|divide|fill|stroke)-(white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|blue|indigo)-?[0-9]*" app/components/ui/modal_component.* app/components/ui/dropdown_component.* app/components/ui/popover_component.* app/components/ui/tooltip_component.*`
+- No hardcoded Tailwind palette literal remains in Modal, Dropdown, Popover or Tooltip, except Modal's opacity-modified black scrim, which is the same in both modes by design and which no token names (§ Business rules, rule 1) — run: `! grep -rEn "(bg|text|border|ring|outline|divide|fill|stroke)-(white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|blue|indigo)-?[0-9]*" app/components/ui/modal_component.* app/components/ui/dropdown_component.* app/components/ui/popover_component.* app/components/ui/tooltip_component.* | grep -v 'backdrop:bg-black/50'`
 - The three duplicated Floating UI positioning implementations are deleted — run: `! grep -l '@floating-ui/dom' app/javascript/rails_ui_kit/controllers/dropdown_controller.js app/javascript/rails_ui_kit/controllers/popover_controller.js app/javascript/rails_ui_kit/controllers/tooltip_controller.js`
 - The full unit lane, including rewritten component tests, is green — run: `bundle exec rake test`
-- The turbo-confirm/ConfirmDialog global-function contract is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/turbo_confirm_regression_test.rb`
-- The form-change/Modal `trackChanges` contract is pinned by a regression test — run: `bundle exec rake test:system TEST=test/system/modal_form_change_regression_test.rb`
+- The ConfirmDialog global functions `turbo_confirm` depends on are installed and answer (CD9) — run: `bundle exec rake test:system TEST=test/system/confirm_dialog_test.rb`
+- `turbo_confirm` opens ConfirmDialog and honours its answer — run: `bundle exec rake test:system TEST=test/system/turbo_confirm_test.rb`
+- A Modal with `trackChanges` asks before discarding a form `ui--form-change` marked dirty — run: `bundle exec rake test:system TEST=test/system/modal_turbo_cancel_test.rb`
+- Modal's unsaved-changes prompt falls back without a confirm dialog (M4) and carries the text its value attributes name (M8) — run: `bundle exec rake test:system TEST=test/system/modal_test.rb`
+- The four components' rendered structure, wiring, ARIA and non-palette classes survive the move, as pinned before it began — run: `bundle exec ruby -Itest test/components/ui/overlay_render_pin_test.rb`
 - The whole browser lane, including every component-audit regression test, is green after the migration — run: `bundle exec rake test:system`
 
 ### judgeable

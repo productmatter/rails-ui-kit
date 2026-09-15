@@ -104,7 +104,7 @@ repository, pinned to a release tag, so an upgrade is a change you make on purpo
    ```erb
    <body class="bg-background text-foreground">
      <%= render Ui::ConfirmDialogComponent.new %>
-     <%= render Ui::ToastContainerComponent.new %>
+     <%= render Ui::ToastContainerComponent.new(flash: flash) %>
      <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>
      <%# Where Turbo Streams open modals. data-turbo-permanent keeps an open one through a morph. %>
      <div id="modal" data-turbo-permanent></div>
@@ -329,9 +329,9 @@ changes, which needs `data-controller="ui--form-change"` on the `<form>` itself.
 ```erb
 <%= render Ui::DropdownComponent.new(placement: "bottom-end") do |dropdown| %>
   <% dropdown.with_trigger do %>
-    <button type="button" data-action="click->ui--dropdown#toggle">Open menu</button>
+    <button type="button">Open menu</button>
   <% end %>
-  <% dropdown.with_menu do %>
+  <% dropdown.with_panel do %>
     <a href="#" role="menuitem">Option 1</a>
     <a href="#" role="menuitem">Option 2</a>
   <% end %>
@@ -340,18 +340,31 @@ changes, which needs `data-controller="ui--form-change"` on the `<form>` itself.
 
 ### Triggering toasts
 
-The container renders toasts entirely client-side — no network round-trip.
+A toast is one plain-data payload — `type`, `title`, `description`, `actions`, `duration`,
+`icon` — and it renders the same markup from every entry point. **Content on its own is the
+description.** **A toast with an action stays until it's dismissed.** **A toast action must never
+be the only way to do something**: a toast can be missed, closed, or hidden behind an open Modal.
+
+```ruby
+# flash: Rails' own notice: and alert:, or a toast: payload, shown on the next page
+redirect_to @project, flash: { toast: { type: "success", title: "Project archived",
+  actions: [{ label: "Undo", href: unarchive_project_path(@project), method: "patch" }] } }
+```
+
+```erb
+<%# A Turbo Stream response %>
+<%= turbo_stream.ui_toast(type: :success, description: "Record saved.") %>
+```
 
 ```js
-// Direct call
+// JavaScript
 window.triggerToast("success", "Saved!")
-window.triggerToast("error", { title: "Save failed", body: "Please try again." })
-
-// Or decoupled via custom event
-document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", {
-  detail: { type: "success", message: "Saved!" }
-}))
+window.triggerToast({ type: "error", title: "Save failed", description: "Please try again." })
+document.dispatchEvent(new CustomEvent("rails-ui-kit:toast", { detail: { type: "info", description: "Export ready." } }))
 ```
+
+An action's `href` must be relative or `http(s)`; anything else is rejected, loudly in development.
+F8 moves focus to the newest toast, and Escape closes it.
 
 ### Triggering confirm dialogs
 
