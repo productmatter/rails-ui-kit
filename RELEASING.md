@@ -24,12 +24,13 @@ Pre-1.0 caveat: while on `0.x`, treat MINOR as the breaking-change channel and P
 
 ## Single source of truth for the version
 
-Two files carry the version string and **must** be bumped together:
+Three files carry the version string and **must** be bumped together:
 
 1. `lib/rails_ui_kit/version.rb` — `RailsUiKit::VERSION`
 2. `package.json` — `"version"`
+3. `README.md` — the `tag: "vX.Y.Z"` in both Gemfile snippets (the docs app's Installation page renders `RailsUiKit::VERSION` and needs nothing)
 
-If they drift, consumers using importmap (Ruby) and consumers using a JS bundler (npm) will resolve different versions for the same git ref. The release script below enforces this.
+If the first two drift, consumers using importmap (Ruby) and consumers using a JS bundler (npm) will resolve different versions for the same git ref. If the README drifts, a first-time reader copies a stale tag. The release script below covers all three.
 
 ## Pre-release checklist
 
@@ -52,17 +53,20 @@ NEW_VERSION=0.2.0
 sed -i '' "s/VERSION = '.*'/VERSION = '${NEW_VERSION}'/" lib/rails_ui_kit/version.rb
 # Update package.json's "version" field — use jq if available, otherwise edit by hand
 jq ".version = \"${NEW_VERSION}\"" package.json > package.json.tmp && mv package.json.tmp package.json
+# README's Gemfile snippets pin the tag consumers copy
+sed -i '' -E "s/tag: \"v[0-9]+\.[0-9]+\.[0-9]+\"/tag: \"v${NEW_VERSION}\"/g" README.md
 
 # 3. Verify they match
 ruby -r./lib/rails_ui_kit/version -e "puts RailsUiKit::VERSION"
 jq -r .version package.json
-# Both must print ${NEW_VERSION}
+grep -o 'tag: "v[0-9.]*"' README.md | sort -u
+# All must print ${NEW_VERSION}
 
 # 4. Move CHANGELOG's [Unreleased] section to a dated [${NEW_VERSION}] heading
 #    and add a fresh empty [Unreleased] section above it.
 
 # 5. Commit
-git add lib/rails_ui_kit/version.rb package.json CHANGELOG.md
+git add lib/rails_ui_kit/version.rb package.json README.md CHANGELOG.md
 git commit -m "Release v${NEW_VERSION}"
 
 # 6. Tag (annotated, signed if you sign commits)
