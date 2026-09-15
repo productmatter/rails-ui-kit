@@ -96,6 +96,59 @@ module RailsUiKit
       assert_equal first_stimulus, second_stimulus
     end
 
+    # Thor's inject_into_file inserts at every match, which a real host file can have more than one of.
+
+    test 'imports once when application.js has two lines importing from @hotwired/stimulus' do
+      write_host_file('app/javascript/application.js', <<~JS)
+        import { Application } from "@hotwired/stimulus"
+        import { Controller } from "@hotwired/stimulus"
+        const application = Application.start()
+      JS
+
+      run_generator
+
+      result = File.read(host_path('app/javascript/application.js'))
+      assert_equal 1, result.scan('import { registerControllers } from "rails-ui-kit"').size, result
+      assert_equal 1, result.scan('registerControllers(application)').size, result
+      assert_equal 'import { registerControllers } from "rails-ui-kit"', result.lines[1].chomp
+      assert_application_in_scope(result)
+    end
+
+    test 'registers after the real Application.start(), not a commented-out one above it' do
+      write_host_file('app/javascript/application.js', <<~JS)
+        // import { Application } from "@hotwired/stimulus"
+        // const application = Application.start()
+        import { Application } from "@hotwired/stimulus"
+        const application = Application.start()
+      JS
+
+      run_generator
+
+      result = File.read(host_path('app/javascript/application.js'))
+      assert_equal 1, result.scan(/^registerControllers\(application\)$/).size, result
+      assert_equal <<~JS, result
+        // import { Application } from "@hotwired/stimulus"
+        // const application = Application.start()
+        import { Application } from "@hotwired/stimulus"
+        import { registerControllers } from "rails-ui-kit"
+        const application = Application.start()
+        registerControllers(application)
+      JS
+      assert_application_in_scope(result)
+    end
+
+    test 'a commented-out Application.start() alone is not a place to register' do
+      write_host_file('app/javascript/application.js', <<~JS)
+        import "controllers"
+        // const application = Application.start()
+      JS
+
+      output = run_generator
+
+      assert_match(/skip.*Application\.start/i, output)
+      assert_no_match(/registerControllers/, File.read(host_path('app/javascript/application.js')))
+    end
+
     test 'skips with a clear message and writes nothing when Application.start() is nowhere to be found' do
       write_host_file('app/javascript/application.js', DEFAULT_IMPORTMAP_APPLICATION_JS)
 
@@ -191,6 +244,80 @@ module RailsUiKit
       run_generator
 
       assert_not_includes File.read(host_path('app/assets/tailwind/application.css')), '@custom-variant'
+    end
+
+    # --- GEN3: `stylesheet_link_tag :app` links the engine stub the browser can't load ---
+
+    # The <head> `rails new --css=tailwind` writes on Rails 8.1.
+    RAILS_81_LAYOUT = <<~ERB
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title><%= content_for(:title) || "Shop" %></title>
+          <%= csrf_meta_tags %>
+          <%= csp_meta_tag %>
+
+          <%# Includes all stylesheet files in app/assets/stylesheets %>
+          <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+          <%= javascript_importmap_tags %>
+        </head>
+
+        <body>
+          <%= yield %>
+        </body>
+      </html>
+    ERB
+
+    def write_rails_81_host
+      write_host_file('app/assets/tailwind/application.css', SAMPLE_CSS)
+      write_host_file('app/assets/stylesheets/application.css', "/* Application styles */\n")
+      write_host_file('app/assets/builds/tailwind.css', "/* built */\n")
+      write_host_file('app/assets/builds/tailwind/rails_ui_kit.css', "@import \"/gems/rails_ui_kit/app/assets/tailwind/rails_ui_kit/engine.css\";\n")
+      write_host_file('app/views/layouts/application.html.erb', RAILS_81_LAYOUT)
+    end
+
+    test 'replaces stylesheet_link_tag :app with the stylesheets it linked, minus the engine stub' do
+      write_rails_81_host
+
+      output = run_generator
+
+      layout = File.read(host_path('app/views/layouts/application.html.erb'))
+      assert_includes layout, '<%= stylesheet_link_tag "application", "tailwind", "data-turbo-track": "reload" %>'
+      assert_no_match(/:app\b/, layout)
+      assert_no_match(/Includes all stylesheet files/, layout)
+      assert_no_match(%r{tailwind/rails_ui_kit}, layout)
+      assert_equal RAILS_81_LAYOUT.lines.size - 1, layout.lines.size, 'only the :app line and its comment change'
+      assert_match(/notice.*stylesheet_link_tag :app/, output)
+    end
+
+    test 'names a stylesheet that is not built yet, and every stylesheet the host has' do
+      write_rails_81_host
+      File.delete(host_path('app/assets/builds/tailwind.css'))
+      write_host_file('app/assets/stylesheets/admin/tables.css', "table {}\n")
+
+      run_generator
+
+      assert_includes File.read(host_path('app/views/layouts/application.html.erb')),
+                      'stylesheet_link_tag "admin/tables", "application", "tailwind", "data-turbo-track": "reload"'
+    end
+
+    test 'is idempotent on a Rails 8.1 layout and leaves an explicit one alone' do
+      write_rails_81_host
+
+      run_generator
+      first = File.read(host_path('app/views/layouts/application.html.erb'))
+      run_generator
+
+      assert_equal first, File.read(host_path('app/views/layouts/application.html.erb'))
+    end
+
+    test 'the next steps say to link stylesheets by name rather than with :app' do
+      write_host_file('app/assets/tailwind/application.css', SAMPLE_CSS)
+
+      output = run_generator
+
+      assert_match(/stylesheet_link_tag :app/, output)
+      assert_match(/stylesheet_link_tag "tailwind"/, output)
     end
 
     test 'skips with notice when application.js is missing' do

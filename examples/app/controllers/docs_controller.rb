@@ -17,7 +17,7 @@ class DocsController < ApplicationController
   end
 
   def modal_demo
-    @position = (params[:position] || "center").to_sym
+    @position = Ui::ModalComponent::POSITIONS.find { |position| position.to_s == params[:position].to_s } || :center
     respond_to do |format|
       format.turbo_stream
     end

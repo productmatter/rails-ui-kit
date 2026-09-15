@@ -14,7 +14,6 @@ class ApplicationController < ActionController::Base
   end
 
   def requested_locale
-    requested = params[:locale].presence&.to_sym
-    I18n.available_locales.include?(requested) ? requested : I18n.default_locale
+    I18n.available_locales.find { |locale| locale.to_s == params[:locale].to_s } || I18n.default_locale
   end
 end

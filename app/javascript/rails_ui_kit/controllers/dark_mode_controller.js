@@ -1,5 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Namespaced, because "theme" is a key a host app plausibly uses for itself, with values of its own.
+// The unprefixed key is still read when ours is unset, so a preference saved before the rename
+// survives; the <head> no-flash script on the Dark Mode docs page reads both the same way.
+const STORAGE_KEY = "rails_ui_kit:theme"
+const LEGACY_STORAGE_KEY = "theme"
+const THEMES = ["dark", "light"]
+
 export default class extends Controller {
   static targets = ["toggle"]
   // No Ruby component owns this controller -- a host wires it up on its own toggle button -- so
@@ -62,7 +69,7 @@ export default class extends Controller {
   }
 
   handleStorageChange(event) {
-    if (event.key === "theme" && event.newValue) {
+    if (event.key === STORAGE_KEY && THEMES.includes(event.newValue)) {
       this.applyTheme(event.newValue, true)
     }
   }
@@ -71,9 +78,12 @@ export default class extends Controller {
     return document.documentElement.classList.contains("dark") ? "dark" : "light"
   }
 
+  // Anything but "dark" or "light" -- a host's own "system", say -- is no preference at all, and
+  // the OS decides, as the <head> script does.
   readStoredTheme() {
     try {
-      return localStorage.getItem("theme")
+      const theme = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)
+      return THEMES.includes(theme) ? theme : null
     } catch (error) {
       return null
     }
@@ -81,7 +91,7 @@ export default class extends Controller {
 
   writeStoredTheme(theme) {
     try {
-      localStorage.setItem("theme", theme)
+      localStorage.setItem(STORAGE_KEY, theme)
     } catch (error) {
       // Storage can throw in private browsing, embedded/sandboxed contexts,
       // or when disabled by the user — the toggle still works, it just

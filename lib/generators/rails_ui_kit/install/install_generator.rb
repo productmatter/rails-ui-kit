@@ -10,6 +10,7 @@ module RailsUiKit
       # constant is defined and exported here, not in JS_PATH.
       STIMULUS_APPLICATION_JS_PATH = 'app/javascript/controllers/application.js'
       CSS_PATH = 'app/assets/tailwind/application.css'
+      LAYOUT_PATH = 'app/views/layouts/application.html.erb'
 
       JS_IMPORT_LINE = 'import { registerControllers } from "rails-ui-kit"'
       JS_REGISTER_LINE = 'registerControllers(application)'
@@ -25,7 +26,22 @@ module RailsUiKit
       # Any existing definition, including Tailwind 4.0's older top-level `@variant dark (…)`.
       DARK_VARIANT = /^\s*@(custom-variant\s+dark\b|variant\s+dark\s*\()/
 
+      # Rails 8's default layout. Propshaft's `:app` links every CSS file under app/assets, which
+      # includes the entry stub tailwindcss-rails' engines task writes to
+      # app/assets/builds/tailwind/rails_ui_kit.css: a Tailwind input whose `@import` names the
+      # gem's absolute path, so the browser requests that path on every page and gets an error.
+      # tailwindcss-rails' maintainers say not to combine `:app` with it and to link the build
+      # explicitly (rails/tailwindcss-rails#565, rails/propshaft#242).
+      APP_STYLESHEETS = /(stylesheet_link_tag[\s(]+):app\b/
+      APP_STYLESHEETS_COMMENT = %r{^[ \t]*<%# Includes all stylesheet files in app/assets/stylesheets %>\n}
+      # Propshaft's load path is each directory under app/assets; app/assets/tailwind is excluded by
+      # tailwindcss-rails, and builds/tailwind/ holds only engine stubs.
+      UNSERVED_STYLESHEETS = %r{\A(tailwind/|builds/tailwind/)}
+
       APPLICATION_START = /Application\.start\(\).*\n/
+      STIMULUS_IMPORT = %r{^import\s+.*from\s+["']@hotwired/stimulus["'].*\n}
+      # A line a host has commented out is not where anything runs.
+      COMMENT_LINE = %r{\A\s*(//|/\*|\*)}
 
       desc 'Wire rails_ui_kit into application.js (importmap) and tailwind/application.css'
 
@@ -53,6 +69,7 @@ module RailsUiKit
 
         inject_css_import
         inject_dark_variant
+        link_stylesheets_explicitly
       end
 
       def print_next_steps
@@ -61,6 +78,10 @@ module RailsUiKit
         say '    <%= render Ui::ConfirmDialogComponent.new %>'
         say '    <%= render Ui::ToastContainerComponent.new %>'
         say '    <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>'
+        say ''
+        say '  Link stylesheets by name, not with `stylesheet_link_tag :app` or `:all`: those also link', :green
+        say '  the engine stubs tailwindcss-rails writes to app/assets/builds/tailwind/, which the', :green
+        say '  browser cannot load. `stylesheet_link_tag "tailwind"` already contains the kit\'s CSS.', :green
         say ''
       end
 
@@ -88,7 +109,17 @@ module RailsUiKit
 
       def application_start_in?(relative_path)
         full_path = destination_path(relative_path)
-        File.exist?(full_path) && File.read(full_path).match?(APPLICATION_START)
+        File.exist?(full_path) && !first_code_line(File.read(full_path), APPLICATION_START).nil?
+      end
+
+      def first_code_line(contents, pattern)
+        contents.lines.index { |line| !line.match?(COMMENT_LINE) && line.match?(pattern) }
+      end
+
+      # Thor's inject_into_file inserts at every match of `after:`, so the flag is anchored to
+      # the start of the file and spans exactly the lines up to and including the chosen one.
+      def after_line(index)
+        /\A(?:.*\n){#{index + 1}}/
       end
 
       def inject_css_import
@@ -115,6 +146,28 @@ module RailsUiKit
         end
       end
 
+      # `:app` is replaced by exactly the stylesheets it links today, in the order Propshaft links
+      # them (sorted by logical path), minus the stubs.
+      def link_stylesheets_explicitly
+        return unless File.exist?(destination_path(LAYOUT_PATH)) && File.read(destination_path(LAYOUT_PATH)).match?(APP_STYLESHEETS)
+
+        names = served_stylesheets.map { |name| %("#{name}") }.join(', ')
+        gsub_file LAYOUT_PATH, APP_STYLESHEETS_COMMENT, ''
+        gsub_file LAYOUT_PATH, APP_STYLESHEETS, "\\1#{names}"
+        say_status :notice, "#{LAYOUT_PATH}: `stylesheet_link_tag :app` now names #{names}. `:app` also linked the " \
+                            'engine stub in app/assets/builds/tailwind/, which the browser cannot load. Add any ' \
+                            'stylesheet you create later to that line.', :yellow
+      end
+
+      def served_stylesheets
+        assets = destination_path('app/assets')
+        logical_paths = Dir.glob("#{assets}/*/**/*.css").filter_map do |path|
+          relative = path.delete_prefix("#{assets}/")
+          relative.split('/', 2).last.delete_suffix('.css') unless relative.match?(UNSERVED_STYLESHEETS)
+        end
+        (logical_paths | ['tailwind']).sort
+      end
+
       def inject_js_import(path)
         contents = File.read(destination_path(path))
         if contents.include?(JS_IMPORT_LINE)
@@ -122,9 +175,9 @@ module RailsUiKit
           return
         end
 
-        stimulus_import = %r{^import\s+.*from\s+["']@hotwired/stimulus["'].*\n}
-        if contents.match?(stimulus_import)
-          inject_into_file path, "#{JS_IMPORT_LINE}\n", after: stimulus_import
+        stimulus_import = first_code_line(contents, STIMULUS_IMPORT)
+        if stimulus_import
+          inject_into_file path, "#{JS_IMPORT_LINE}\n", after: after_line(stimulus_import)
         else
           prepend_to_file path, "#{JS_IMPORT_LINE}\n"
         end
@@ -137,7 +190,7 @@ module RailsUiKit
           return
         end
 
-        inject_into_file path, "#{JS_REGISTER_LINE}\n", after: APPLICATION_START
+        inject_into_file path, "#{JS_REGISTER_LINE}\n", after: after_line(first_code_line(contents, APPLICATION_START))
       end
     end
   end

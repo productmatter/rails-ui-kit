@@ -121,6 +121,21 @@ focus onto `[role="option"]` elements, which a listbox must never do. Replace it
 `Ui::SelectComponent`, which keeps the value in a real `<select>` and follows the WAI-ARIA
 combobox focus model. Dropdown's `:menu` and `:dialog` are unaffected.
 
+**Dark mode's storage key moved to `rails_ui_kit:theme`.** The generic `theme` key collided
+with hosts that store their own value there (a host storing `"system"` was forced to light).
+The controller still reads the old key when the new one is unset, so a user's saved preference
+survives. But if you copied the no-flash `<head>` script from the Dark Mode docs page, it reads
+the key directly: update it to read `rails_ui_kit:theme` (falling back to `theme`), or users get
+a flash of the wrong theme after their next toggle.
+
+**`stylesheet_link_tag :app` is replaced on install.** tailwindcss-rails' engine convention
+writes a stub into `app/assets/builds/tailwind/` that is a Tailwind *input*, not a stylesheet to
+serve; `:app` links every build file, so the browser requested the stub's absolute `@import`
+path and logged a 500 on every page. `rails_ui_kit:install` now rewrites `:app` to the
+stylesheets it was linking, by name (`"application", "tailwind"` on a fresh 8.1 app). A
+stylesheet you add later has to be added to that line by hand. `:all` has the same problem and
+is not rewritten.
+
 **Your existing Capybara `select` calls are unaffected — until you adopt `Ui::SelectComponent`.**
 An enhanced Select hides its native `<select>` under a custom combobox, so `select "X", from: "Y"`
 no longer picks what a user would. The kit ships a helper for that case: `require

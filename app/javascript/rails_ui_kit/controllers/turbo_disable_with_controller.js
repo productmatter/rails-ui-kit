@@ -1,11 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const SPINNER_MARKUP = `
-  <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-  </svg>
-`
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 export default class extends Controller {
   connect() {
@@ -14,7 +9,8 @@ export default class extends Controller {
       submitEnd: this.handleSubmitEnd.bind(this),
       reset: this.handleReset.bind(this),
       submit: this.handleStandardSubmit.bind(this),
-      beforeCache: this.handleBeforeCache.bind(this)
+      beforeCache: this.handleBeforeCache.bind(this),
+      pageShow: this.handlePageShow.bind(this)
     }
 
     this.elementStates = new WeakMap()
@@ -25,6 +21,7 @@ export default class extends Controller {
     document.addEventListener('submit', this.boundHandlers.submit)
     document.addEventListener('reset', this.boundHandlers.reset)
     document.addEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
+    window.addEventListener('pageshow', this.boundHandlers.pageShow)
   }
 
   disconnect() {
@@ -33,6 +30,7 @@ export default class extends Controller {
     document.removeEventListener('submit', this.boundHandlers.submit)
     document.removeEventListener('reset', this.boundHandlers.reset)
     document.removeEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
+    window.removeEventListener('pageshow', this.boundHandlers.pageShow)
   }
 
   // Turbo snapshots the page into its cache before navigating away. If we
@@ -42,6 +40,12 @@ export default class extends Controller {
   // pre-submit page.
   handleBeforeCache() {
     this.disabledElements.forEach(element => this.enableElement(element))
+  }
+
+  // The same stuck state, for a submission Turbo didn't drive: Back restores that page from the
+  // browser's back/forward cache as it was left, and turbo:before-cache never fired for it.
+  handlePageShow(event) {
+    if (event.persisted) this.handleBeforeCache()
   }
 
   handleSubmitStart(event) {
@@ -67,6 +71,9 @@ export default class extends Controller {
     elements.forEach(element => this.enableElement(element))
   }
 
+  // The browser builds the form data set after the submit event and leaves disabled controls out
+  // of it, so disabling here would drop the clicked button's name and value from the request. A
+  // tick later the data set is built, and any listener that cancels the submission has run.
   handleStandardSubmit(event) {
     const form = event.target
     if (!form || form.tagName !== 'FORM') return
@@ -74,13 +81,23 @@ export default class extends Controller {
     const isTurboForm = form.getAttribute('data-turbo') !== 'false'
     if (isTurboForm) return
 
-    const elements = form.querySelectorAll('[data-turbo-disable-with]')
-    elements.forEach(element => this.disableElement(element))
+    setTimeout(() => {
+      if (event.defaultPrevented) return
+
+      const elements = form.querySelectorAll('[data-turbo-disable-with]')
+      elements.forEach(element => this.disableElement(element))
+    })
   }
 
   disableElement(element, isSubmitter = false) {
+    // Already disabled by this controller: its saved state is the original, and saving again
+    // would save the disable text in its place.
+    if (this.elementStates.has(element)) return
+
     const isInput = element.tagName.toLowerCase() === 'input'
-    const originalText = isInput ? element.value : element.innerHTML
+    // The nodes themselves, not markup: put back, they keep their listeners and any controller
+    // state, where a re-parse would build new ones (and is a Trusted Types sink).
+    const original = isInput ? element.value : Array.from(element.childNodes)
     // Turbo disables the submitter itself before dispatching
     // turbo:submit-start, so element.disabled already reads true there --
     // but a disabled button can't have submitted the form in the first
@@ -95,7 +112,7 @@ export default class extends Controller {
     const originalHeight = !isInput ? element.offsetHeight : null
 
     this.elementStates.set(element, {
-      originalText,
+      original,
       originalDisabled,
       originalAriaLabel,
       originalHeight,
@@ -150,9 +167,9 @@ export default class extends Controller {
     }
 
     if (state.isInput) {
-      element.value = state.originalText
+      element.value = state.original
     } else {
-      element.innerHTML = state.originalText
+      element.replaceChildren(...state.original)
     }
 
     this.elementStates.delete(element)
@@ -207,10 +224,26 @@ export default class extends Controller {
     return wrapper
   }
 
-  // Static markup with nothing interpolated into it, parsed once into a node.
   spinnerSVG() {
-    const template = document.createElement('template')
-    template.innerHTML = SPINNER_MARKUP
-    return template.content.firstElementChild
+    const svg = this.svgElement('svg', {
+      class: 'animate-spin h-4 w-4', fill: 'none', viewBox: '0 0 24 24', 'aria-hidden': 'true'
+    })
+    svg.append(
+      this.svgElement('circle', {
+        class: 'opacity-25', cx: '12', cy: '12', r: '10', stroke: 'currentColor', 'stroke-width': '4'
+      }),
+      this.svgElement('path', {
+        class: 'opacity-75',
+        fill: 'currentColor',
+        d: 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+      })
+    )
+    return svg
+  }
+
+  svgElement(name, attributes) {
+    const element = document.createElementNS(SVG_NAMESPACE, name)
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value))
+    return element
   }
 }
