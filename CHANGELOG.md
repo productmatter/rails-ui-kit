@@ -4,7 +4,7 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-09-14
+## [0.3.0] - 2026-09-15
 
 This release rebuilds the kit on a shared foundation — design tokens, a component base, and four Stimulus primitives — and moves every existing component onto it. It then sets a bar for what the kit ships: a component either owns a Rails or Turbo concept, or solves something genuinely hard in the browser. Sixteen components built during this cycle were deleted against that bar before ever being released; none of them existed in 0.2.0, so nothing you use goes away. `Ui::SelectComponent` is the first component built to it.
 
