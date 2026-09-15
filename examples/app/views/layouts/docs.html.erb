@@ -13,7 +13,7 @@
     (function () {
       var theme = null;
       try {
-        theme = localStorage.getItem("theme");
+        theme = localStorage.getItem("rails_ui_kit:theme") || localStorage.getItem("theme");
       } catch (e) {}
       var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (theme === "dark" || (theme !== "light" && prefersDark)) {
@@ -28,10 +28,9 @@
 </head>
 <body class="h-full bg-background text-foreground antialiased" data-controller="ui--dark-mode">
 
-  <%# Singletons required by toast + confirm demos %>
-  <div data-controller="ui--dialog">
-    <%= render Ui::ConfirmDialogComponent.new %>
-  </div>
+  <%# Singletons required by toast + confirm demos -- rendered exactly as the install generator
+      tells a host to, with no wrapper, so the docs app exercises the path a fresh app gets. %>
+  <%= render Ui::ConfirmDialogComponent.new %>
   <%= render Ui::ToastContainerComponent.new %>
   <div data-controller="ui--turbo-confirm ui--turbo-disable-with" class="hidden"></div>
   <%# The modal container: a plain div, not a turbo-frame, so a stream can render any modal into
@@ -49,7 +48,7 @@
         <%= link_to root_path, class: "mb-8 flex items-center gap-2 px-2" do %>
           <span class="text-sm font-semibold tracking-tight">rails-ui-kit</span>
           <span class="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-secondary-foreground">
-            0.1.0
+            <%= RailsUiKit::VERSION %>
           </span>
         <% end %>
 

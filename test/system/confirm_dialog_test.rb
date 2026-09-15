@@ -1,11 +1,67 @@
 # frozen_string_literal: true
 
 require 'application_system_test_case'
+require_relative 'confirm_dialog_helpers'
 
 class ConfirmDialogTest < ApplicationSystemTestCase
+  include ConfirmDialogHelpers
+
+  # The fresh-install path: the layout renders the component with no wrapper, exactly as the
+  # install generator says, and the JavaScript API is there. Every ui--dialog on the page is a
+  # dialog the component rendered, so nothing the docs app adds is doing the work.
+  test 'CD9: the component alone installs defaultConfirmDialog and customConfirmDialog, and they answer' do
+    visit confirm_dialog_path
+
+    assert page.evaluate_script(<<~JS), 'something other than a rendered <dialog> carries ui--dialog'
+      Array.from(document.querySelectorAll('[data-controller~="ui--dialog"]')).every((element) => element.localName === 'dialog')
+    JS
+    open_default_confirm('Delete this item?')
+    cancel_confirm
+    assert_equal false, wait_for_js_result("window.__answer === 'pending' ? null : window.__answer")
+
+    open_custom_confirm('#archive-confirm')
+    confirm_button.click
+    assert_no_selector 'dialog[open]'
+    assert_equal true, wait_for_js_result("window.__answer === 'pending' ? null : window.__answer")
+  end
+
+  test 'CD10: a dialog id that is not a valid selector still opens, and a confirm whose dialog leaves the page answers false' do
+    visit confirm_dialog_path
+    page.execute_script("document.getElementById('archive-confirm').id = '1-archive'")
+    page.execute_script(<<~JS)
+      window.__answer = 'pending'
+      window.customConfirmDialog('1-archive').then((answer) => { window.__answer = answer })
+    JS
+    assert_selector "dialog[id='1-archive'][open]"
+    page.execute_script("document.getElementById('1-archive').remove()")
+    assert_equal false, wait_for_js_result("window.__answer === 'pending' ? null : window.__answer")
+    assert page.evaluate_script("typeof window.defaultConfirmDialog === 'function'"),
+           'removing one dialog took the API away from the others'
+  end
+
+  # Both confirm variants, with and without an icon, in light and dark, LTR and RTL. The dialog is
+  # the only thing audited: the docs page around it is not the kit.
+  test 'CD8: every variant of the dialog passes an axe audit in both modes and both directions' do
+    visit confirm_dialog_path
+
+    { '#default-confirm' => -> { open_default_confirm('Delete this item?') },
+      '#archive-confirm' => -> { open_custom_confirm('#archive-confirm') },
+      '#icon-confirm' => -> { open_custom_confirm('#icon-confirm') } }.each do |selector, open_it|
+      %w[ltr rtl].product([false, true]).each do |direction, dark|
+        page.execute_script('document.documentElement.dir = arguments[0]', direction)
+        use_dark_mode(dark)
+        open_it.call
+        assert_accessible(within: selector)
+        cancel_confirm
+      end
+    end
+  ensure
+    page.execute_script("document.documentElement.dir = 'ltr'")
+  end
+
   test 'CD2: navigating away and back leaves the dialog closed, and a fresh confirm still works' do
     visit confirm_dialog_path
-    click_on 'Delete item'
+    click_on 'Delete project'
     assert_selector 'dialog[open]#default-confirm'
 
     # The open dialog's native backdrop blocks every click, including a sidebar link, so
@@ -44,7 +100,7 @@ class ConfirmDialogTest < ApplicationSystemTestCase
 
   test 'CD4: tab order and on-screen order both put Cancel before Confirm' do
     visit confirm_dialog_path
-    click_on 'Delete item'
+    click_on 'Delete project'
     assert_selector 'dialog[open]'
 
     cancel_x = page.evaluate_script("document.querySelector(\"button[value='cancel']\").getBoundingClientRect().x")
@@ -60,19 +116,19 @@ class ConfirmDialogTest < ApplicationSystemTestCase
 
   test 'CD5: the dialog is an alertdialog described by its message text' do
     visit confirm_dialog_path
-    click_on 'Publish'
+    click_on 'Publish post'
     dialog = find('dialog[open]')
     assert_equal 'alertdialog', dialog['role']
 
     described_by = dialog['aria-describedby']
-    assert_equal 'This will make the post visible to all users.', find("##{described_by}").text
+    assert_equal 'Readers will see it immediately.', find("##{described_by}").text
 
     find("button[value='cancel']").click
   end
 
   test 'CD6: Cancel shows a 2px focus outline when reached by keyboard' do
     visit confirm_dialog_path
-    click_on 'Delete item'
+    click_on 'Delete project'
     assert_selector 'dialog[open]'
 
     find("button[value='cancel']").send_keys(:tab)

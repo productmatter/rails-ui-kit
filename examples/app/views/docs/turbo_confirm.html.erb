@@ -9,16 +9,30 @@
 
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-4 p-12 mb-8">
+  <%# A plain data-turbo-confirm names no variant, so the dialog's own default applies: destructive. %>
   <%= link_to "Delete item", demo_delete_path,
       data: { turbo_method: :delete, turbo_confirm: "Delete this item? This cannot be undone." },
       class: "rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors" %>
+  <%# Every part of the confirmation travels as data-turbo-confirm- plus the option key. %>
   <%= link_to "Publish post", demo_delete_path,
       data: {
         turbo_method: :delete,
-        turbo_confirm: "This will make the post visible to all users.",
-        turbo_confirm_title: "Publish post?"
+        turbo_confirm: "Readers will see it immediately.",
+        turbo_confirm_title: "Publish this post?",
+        turbo_confirm_confirm_label: "Publish",
+        turbo_confirm_confirm_variant: "default"
       },
       class: "rounded-md bg-neutral-900 dark:bg-white hover:bg-neutral-700 dark:hover:bg-neutral-200 px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 transition-colors" %>
+  <%# The same attributes on a real submit button, which is where Turbo looks first. %>
+  <%= button_to "Archive project", demo_delete_path, method: :delete, id: "archive-submit",
+      form: { data: { turbo_confirm_cancel_label: "Keep it" } },
+      data: {
+        turbo_confirm: "It stays available from a direct link.",
+        turbo_confirm_title: "Archive this project?",
+        turbo_confirm_confirm_label: "Archive",
+        turbo_confirm_confirm_variant: "secondary"
+      },
+      class: "rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 px-4 py-2 text-sm font-medium transition-colors" %>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Setup</h2>
@@ -45,7 +59,9 @@
 <h2 class="text-base font-semibold mb-3">How it works</h2>
 <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
   <li>Patches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Turbo.config.forms.confirm</code> in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>.</li>
-  <li>Reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm-title</code> for a custom title from the submit button, the form, or a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-method</code> link.</li>
+  <li>Reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm-title</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">-confirm-label</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">-cancel-label</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">-confirm-variant</code> from the submit button, the form, or a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-method</code> link.</li>
+  <li>A confirmation that names no variant gets the dialog's rendered default — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:destructive</code>, unless your layout rendered otherwise. Nothing one confirmation sets leaks into the next.</li>
+  <li>An icon or any other markup never travels through an attribute: render a dialog with the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">icon</code> slot and open it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">customConfirmDialog</code>.</li>
   <li>Falls back to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> if present, then to browser <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">confirm()</code>.</li>
   <li>Restores the original handler in <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">disconnect()</code>.</li>
 </ul>

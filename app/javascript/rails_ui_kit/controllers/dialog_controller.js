@@ -1,37 +1,61 @@
 import { Controller } from "@hotwired/stimulus"
 
+// What a confirmation may set, in the one spelling Ruby, JavaScript and a data attribute share
+// (ui-toast § Business rules, rule 1). Everything else, including anything carrying markup, is
+// invalid rather than ignored.
+const OPTION_KEYS = ["title", "message", "confirm_label", "cancel_label", "confirm_variant"]
+const CONFIRM_VARIANT_ATTRIBUTE = "data-ui--dialog-confirm-variant"
+
+// Ui::ConfirmDialogComponent carries this controller on its own <dialog>, so rendering the
+// component is all a host does -- no wrapper element. A page can render several (the shared
+// default and a host's rich ones), so the globals belong to the page, not to one instance:
+// installed when the first connects, delegated to the newest, restored when the last leaves.
+// Pending confirms are shared the same way, keyed by the dialog that shows them.
+const connected = []
+const pendingConfirms = new Map()
+let previousGlobals = null
+
+const newest = () => connected[connected.length - 1]
+
+function installGlobals() {
+  previousGlobals = { custom: window.customConfirmDialog, default: window.defaultConfirmDialog }
+  window.customConfirmDialog = (selector) => newest().showCustomDialog(selector)
+  window.defaultConfirmDialog = (messageOrOptions) => newest().showDefaultDialog(messageOrOptions)
+}
+
+function restoreGlobals() {
+  window.customConfirmDialog = previousGlobals.custom
+  window.defaultConfirmDialog = previousGlobals.default
+  previousGlobals = null
+}
+
 export default class extends Controller {
   static targets = ["dialog"]
 
   connect() {
-    this.boundShowCustomDialog = this.showCustomDialog.bind(this)
-    this.boundShowDefaultDialog = this.showDefaultDialog.bind(this)
+    if (connected.length === 0) installGlobals()
+    connected.push(this)
 
-    this.previousCustomConfirmDialog = window.customConfirmDialog
-    this.previousDefaultConfirmDialog = window.defaultConfirmDialog
-
-    window.customConfirmDialog = this.boundShowCustomDialog
-    window.defaultConfirmDialog = this.boundShowDefaultDialog
-
-    this.pendingConfirms = new Map()
     this.boundBeforeCache = this.closeBeforeCache.bind(this)
     document.addEventListener("turbo:before-cache", this.boundBeforeCache)
   }
 
+  // A dialog leaving the page can't be answered any more, so whoever is awaiting it hears false
+  // rather than waiting forever.
   disconnect() {
-    if (window.customConfirmDialog === this.boundShowCustomDialog) {
-      window.customConfirmDialog = this.previousCustomConfirmDialog
-    }
-    if (window.defaultConfirmDialog === this.boundShowDefaultDialog) {
-      window.defaultConfirmDialog = this.previousDefaultConfirmDialog
+    document.removeEventListener("turbo:before-cache", this.boundBeforeCache)
+
+    for (const dialog of [...pendingConfirms.keys()]) {
+      if (dialog === this.element || this.element.contains(dialog) || !dialog.isConnected) this.settle(dialog, false)
     }
 
-    document.removeEventListener("turbo:before-cache", this.boundBeforeCache)
+    connected.splice(connected.indexOf(this), 1)
+    if (connected.length === 0) restoreGlobals()
   }
 
   // Cancel any open confirm so Turbo never caches, and later restores, a dialog in its open state.
   closeBeforeCache() {
-    for (const dialog of [...this.pendingConfirms.keys()]) {
+    for (const dialog of [...pendingConfirms.keys()]) {
       if (dialog.open) dialog.close("cancel")
       this.settle(dialog)
     }
@@ -56,56 +80,113 @@ export default class extends Controller {
       throw new Error("Default confirm dialog not found")
     }
 
-    const options = this.normalizeOptions(dialog, messageOrOptions)
+    // Reading first: an invalid option rejects before anything opens or is written.
+    const options = this.readOptions(dialog, messageOrOptions)
     this.updateDialogContent(dialog, options)
 
     return this.showDialog(dialog)
   }
 
+  // An id first: "1-delete" is a valid id and an invalid selector, and querySelector throws on it
+  // before any fallback could run.
   findDialog(selector) {
-    if (!selector) {
-      return document.getElementById("default-confirm")
-    }
+    if (!selector) return document.getElementById("default-confirm")
+    if (selector instanceof HTMLElement) return selector
 
-    if (selector instanceof HTMLElement) {
-      return selector
-    }
+    const byId = document.getElementById(selector)
+    if (byId) return byId
 
-    return document.querySelector(selector) || document.getElementById(selector)
+    try {
+      return document.querySelector(selector)
+    } catch {
+      return null
+    }
   }
 
-  // Ui::ConfirmDialogComponent renders its own (I18n-translated) title and message and stamps
-  // them again as data-default-title/data-default-message, so this reads them back off the
-  // dialog rather than keeping a second, English-only copy of the same strings. A hand-written
-  // <dialog> with neither attribute still works, falling back to English.
-  normalizeOptions(dialog, messageOrOptions) {
-    const defaults = {
+  // Every confirmation starts from what the component rendered: the dialog carries its own
+  // title, message, labels and confirm variant as data-default-*, so nothing one confirmation
+  // sets leaks into the next, and this controller keeps no second copy of the kit's strings
+  // (ui-confirm-dialog § Behavior, item 7). A hand-written <dialog> without them still works.
+  renderedDefaults(dialog) {
+    return {
       title: dialog.dataset.defaultTitle || "Confirmation required",
-      message: dialog.dataset.defaultMessage || "Are you sure?"
+      message: dialog.dataset.defaultMessage || "Are you sure?",
+      confirm_label: dialog.dataset.defaultConfirmLabel,
+      cancel_label: dialog.dataset.defaultCancelLabel,
+      confirm_variant: dialog.dataset.defaultConfirmVariant
     }
-
-    if (typeof messageOrOptions === "string") {
-      return { ...defaults, message: messageOrOptions }
-    }
-
-    if (typeof messageOrOptions === "object" && messageOrOptions !== null) {
-      return { ...defaults, ...messageOrOptions }
-    }
-
-    return defaults
   }
 
+  // Loud in development and test, safe in production -- decided in Ruby and rendered as
+  // data-strict, never inferred here (ui-toast § Business rules, rule 4).
+  readOptions(dialog, messageOrOptions) {
+    const given = typeof messageOrOptions === "string"
+      ? { message: messageOrOptions }
+      : (messageOrOptions && typeof messageOrOptions === "object" ? { ...messageOrOptions } : {})
+    const strict = dialog.dataset.strict === "true"
+    const accepted = {}
+
+    for (const [key, value] of Object.entries(given)) {
+      if (value === undefined || value === null) continue
+
+      const problem = this.optionProblem(dialog, key, value)
+      if (!problem) {
+        accepted[key] = value
+      } else if (strict) {
+        throw new Error(`defaultConfirmDialog: ${problem}`)
+      } else {
+        console.warn(`[rails_ui_kit] defaultConfirmDialog: ${problem} Using the dialog's rendered default.`)
+      }
+    }
+
+    return { ...this.renderedDefaults(dialog), ...accepted }
+  }
+
+  optionProblem(dialog, key, value) {
+    if (!OPTION_KEYS.includes(key)) {
+      return `${key} is not an option. Expected one of: ${OPTION_KEYS.join(", ")}. An icon or any other ` +
+        "markup comes from a Ruby-rendered dialog opened with customConfirmDialog, never from here."
+    }
+    if (typeof value !== "string") return `${key} must be a string, got ${typeof value}.`
+    if (key === "confirm_variant" && !this.confirmTemplate(dialog, value)) {
+      return `this dialog renders no confirm button for the variant ${value}.`
+    }
+    if (key === "message" && dialog.querySelector("[data-ui--dialog-body]")) {
+      return "this dialog renders rich content in its body slot, which a message would overwrite."
+    }
+    return null
+  }
+
+  // Text and a server-rendered element, never a class or a markup string (ui-toast
+  // § Business rules, rule 2).
   updateDialogContent(dialog, options) {
-    const titleElement = dialog.querySelector("[data-ui--dialog-title]")
-    const messageElement = dialog.querySelector("[data-ui--dialog-message]")
+    this.writeText(dialog.querySelector("[data-ui--dialog-title]"), options.title)
+    this.writeText(dialog.querySelector("[data-ui--dialog-message]"), options.message)
+    this.writeText(dialog.querySelector("button[value='cancel']"), options.cancel_label)
+    this.updateConfirmButton(dialog, options)
+  }
 
-    if (titleElement) {
-      titleElement.textContent = options.title
+  updateConfirmButton(dialog, options) {
+    let confirm = dialog.querySelector("button[value='confirm']")
+    if (!confirm) return
+
+    const variant = options.confirm_variant
+    const template = variant && this.confirmTemplate(dialog, variant)
+    if (template && confirm.getAttribute(CONFIRM_VARIANT_ATTRIBUTE) !== variant) {
+      const replacement = template.content.firstElementChild.cloneNode(true)
+      confirm.replaceWith(replacement)
+      confirm = replacement
     }
 
-    if (messageElement) {
-      messageElement.textContent = options.message
-    }
+    this.writeText(confirm, options.confirm_label)
+  }
+
+  confirmTemplate(dialog, variant) {
+    return dialog.querySelector(`template[data-ui--dialog-confirm-template="${CSS.escape(variant)}"]`)
+  }
+
+  writeText(element, text) {
+    if (element && text !== undefined) element.textContent = text
   }
 
   showDialog(dialog) {
@@ -145,17 +226,17 @@ export default class extends Controller {
 
       dialog.addEventListener("close", handleClose)
       if (overlay) dialog.addEventListener("submit", handleSubmit)
-      this.pendingConfirms.set(dialog, { resolve, handleClose, handleSubmit })
+      pendingConfirms.set(dialog, { resolve, handleClose, handleSubmit })
     })
   }
 
-  settle(dialog) {
-    const pending = this.pendingConfirms.get(dialog)
+  settle(dialog, answer = dialog.returnValue === "confirm") {
+    const pending = pendingConfirms.get(dialog)
     if (!pending) return
 
-    this.pendingConfirms.delete(dialog)
+    pendingConfirms.delete(dialog)
     dialog.removeEventListener("close", pending.handleClose)
     dialog.removeEventListener("submit", pending.handleSubmit)
-    pending.resolve(dialog.returnValue === "confirm")
+    pending.resolve(answer)
   }
 }

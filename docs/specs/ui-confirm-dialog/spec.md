@@ -102,7 +102,10 @@ established when every agent-loopable check in § Acceptance checks passes.
    Confirm. The warning triangle and its tinted circle are deleted from the template. With
    no icon, the text column starts at the panel's inline-start padding at `sm` and up, and
    stays centred below it, as the text does today. **This is a visible change from 0.2.0**
-   (item 11).
+   (item 11). The panel also now fills the width available on a phone: below `sm` it had no
+   width of its own, so a short confirmation shrink-wrapped to its text (199 px wide for
+   "Delete this item?" at a 375 px viewport). That was a defect, found while measuring the
+   regression check, and it is fixed here with `w-full` (2026-09-14).
 
 2. **The content, all of it the caller's:**
 
@@ -145,6 +148,13 @@ established when every agent-loopable check in § Acceptance checks passes.
    **html_attributes)`, with `renders_one :icon` and `renders_one :body`. `class:` merges
    onto the `<dialog>` root through `Ui::Base`. Everything a render sets is that dialog's
    default for every confirmation it shows.
+   **The `<dialog>` carries `ui--dialog` itself** (`data-controller="ui--overlay ui--dialog"`),
+   so rendering the component is the whole of a host's setup. Until 2026-09-15 it didn't: the
+   controller that installs `window.defaultConfirmDialog` lived on a wrapper only the docs
+   layout had, so on a fresh install the JavaScript API was `undefined` and Turbo and Modal fell
+   back to the browser's `confirm()`. Found by a fresh-install review; fixed, and the docs
+   layout's wrapper removed so the docs app runs the host's path. Several dialogs on one page
+   share one set of globals, and a confirm whose dialog leaves the page resolves `false`.
    - **Icon slot:** rendered in a layout cell (`data-slot="confirm-dialog-icon"`,
      `aria-hidden="true"`) that owns size and placement, `size-12` centred above the text
      below `sm`, and `sm:size-10` at the inline-start. It owns no colour: the glyph and any
@@ -199,8 +209,9 @@ established when every agent-loopable check in § Acceptance checks passes.
    - The layout classes today's buttons carry, full width below `sm` and auto width
      above it with the gap between them, are the dialog's own, merged onto Button's.
    - The dialog renders its confirm button in the default variant, and one `<template>`
-     per other variant, each produced by `Ui::ButtonComponent` with the same merged
-     classes. A confirmation that picks another variant swaps the clone in and writes its
+     per variant — **including the default one, so a confirmation that changed the variant
+     can be changed back without JavaScript keeping a detached element** (built
+     2026-09-14) — each produced by `Ui::ButtonComponent` with the same merged classes. A confirmation that picks another variant swaps the clone in and writes its
      label. The next confirmation restores the rendered default.
 
    JavaScript writes text and swaps server-rendered elements. It writes no class
@@ -238,7 +249,11 @@ established when every agent-loopable check in § Acceptance checks passes.
     `message_class`, `confirm_class`, `cancel_class` and `icon_wrapper_class` **stay, and
     now merge** onto the token defaults with `tailwind_merge`, so a caller still wins
     (parent rule 5). `icon_class:` is **removed**, because the kit no longer renders a
-    glyph for it to style. Passing it is Ruby's own unknown-keyword `ArgumentError`.
+    glyph for it to style. Passing it raises an `ArgumentError` naming it and the slot to use
+    instead. (Not Ruby's own unknown-keyword error, as this first read: the class keywords
+    arrive through the same `**` splat that forwards HTML attributes, so an unnamed
+    `icon_class:` would otherwise be forwarded onto the root element silently — corrected
+    while building, 2026-09-14.)
     **Decided 2026-09-14 by the orchestrator's ruling that ratified this scope**
     (`open-questions.md`). This **reverses `ui-foundation-retrofit`'s ratified deletion of
     all nine**, for two reasons. Deleting them would break every 0.2.0 app that styles its
