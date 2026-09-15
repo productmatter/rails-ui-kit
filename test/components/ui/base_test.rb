@@ -140,9 +140,66 @@ module Ui
     end
 
     test 'a caller data attribute overrides the component own value for the same key' do
-      render_inline(ProbeComponent.new(data: { controller: 'other' })) { 'x' }
+      render_inline(ProbeComponent.new(data: { testid: 'probe' }, 'data-testid': 'other')) { 'x' }
 
-      assert_selector "div[data-controller='other']"
+      assert_selector "div[data-testid='other']"
+    end
+
+    # --- BASE5: a token list joins, so a caller can't unwire the component ---
+
+    # Wires every token-list attribute a component can carry, beside one it doesn't join.
+    class WiredComponent < Ui::Base
+      data_slot 'wired'
+
+      def call
+        content_tag(:div, content, root_attributes(
+                                     data: { controller: 'wired', action: 'click->wired#go', turbo_frame: 'own' },
+                                     aria: { describedby: 'own-hint', labelledby: 'own-label', label: 'Own' }
+                                   ))
+      end
+    end
+
+    def wired
+      page.find('[data-slot=wired]')
+    end
+
+    test 'a caller data-controller joins the component own controllers, component first' do
+      render_inline(WiredComponent.new(data: { controller: 'autosave' })) { 'x' }
+
+      assert_equal 'wired autosave', wired['data-controller']
+    end
+
+    test 'a caller data-action joins the component own actions, component first' do
+      render_inline(WiredComponent.new(data: { action: 'change->form#save' })) { 'x' }
+
+      assert_equal 'click->wired#go change->form#save', wired['data-action']
+    end
+
+    test 'a caller aria-describedby joins the component own ids, component first' do
+      render_inline(WiredComponent.new(aria: { describedby: 'my-hint' })) { 'x' }
+
+      assert_equal 'own-hint my-hint', wired['aria-describedby']
+    end
+
+    test 'a caller aria-labelledby joins the component own ids, component first' do
+      render_inline(WiredComponent.new(aria: { labelledby: 'my-label' })) { 'x' }
+
+      assert_equal 'own-label my-label', wired['aria-labelledby']
+    end
+
+    test 'joined token lists drop duplicates and accept flat keys and arrays' do
+      html = render_inline(WiredComponent.new('data-controller' => 'wired  autosave', 'aria-describedby': %w[own-hint my-hint])) { 'x' }.to_html
+
+      assert_equal 1, html.scan(/\sdata-controller=/).size
+      assert_equal 'wired autosave', wired['data-controller']
+      assert_equal 'own-hint my-hint', wired['aria-describedby']
+    end
+
+    test 'attributes that are not token lists stay caller-wins beside the joined ones' do
+      render_inline(WiredComponent.new(data: { turbo_frame: 'theirs' }, aria: { label: 'Theirs' })) { 'x' }
+
+      assert_equal 'theirs', wired['data-turbo-frame']
+      assert_equal 'Theirs', wired['aria-label']
     end
 
     test 'renders content inside the root element' do
@@ -196,12 +253,12 @@ module Ui
       assert_selector "div[data-slot='custom'][data-controller='probe']"
     end
 
-    test 'string keys inside a data hash override the component own keys without duplicating them' do
+    test 'string keys inside a data hash merge into the component own keys without duplicating them' do
       html = render_inline(ProbeComponent.new(data: { 'slot' => 'custom', 'controller' => 'other' })) { 'x' }.to_html
 
       assert_equal 1, html.scan(/\sdata-slot=/).size
       assert_equal 1, html.scan(/\sdata-controller=/).size
-      assert_selector "div[data-slot='custom'][data-controller='other']"
+      assert_selector "div[data-slot='custom'][data-controller='probe other']"
     end
 
     test 'flat data- and aria- keys fold into the component own hashes' do
@@ -209,7 +266,7 @@ module Ui
 
       assert_equal 1, html.scan(/\sdata-controller=/).size
       assert_equal 1, html.scan(/\saria-live=/).size
-      assert_selector "div[data-slot='probe'][data-controller='other'][data-turbo-frame='modal'][aria-live='off']"
+      assert_selector "div[data-slot='probe'][data-controller='probe other'][data-turbo-frame='modal'][aria-live='off']"
     end
 
     test 'dashed and underscored data keys are the same attribute' do

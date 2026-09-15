@@ -177,6 +177,27 @@ module Ui
       assert_equal 'email', control['id']
     end
 
+    test "a caller's aria-describedby on the control joins the description and error ids rather than replacing them" do
+      render_inline(Ui::FieldComponent.new(name: 'user[email]', errors: ['is invalid'])) do |field|
+        field.with_label { 'Email' }
+        field.with_control(Ui::InputComponent, type: 'email', aria: { describedby: 'my-hint' })
+        field.with_description { 'We only use this for receipts.' }
+      end
+
+      assert_equal 'user_email-description user_email-error my-hint', control['aria-describedby']
+      assert_equal 'true', control['aria-invalid']
+    end
+
+    test 'a flat aria-describedby key on the control joins the field ids too' do
+      render_inline(Ui::FieldComponent.new(name: 'user[email]', errors: ['is invalid'])) do |field|
+        field.with_label { 'Email' }
+        field.with_control(Ui::InputComponent, type: 'email', 'aria-describedby': 'my-hint')
+        field.with_description { 'We only use this for receipts.' }
+      end
+
+      assert_equal 'user_email-description user_email-error my-hint', control['aria-describedby']
+    end
+
     test 'forwards html attributes to the wrapper' do
       render_field(id: 'email-field', data: { testid: 'field' })
 

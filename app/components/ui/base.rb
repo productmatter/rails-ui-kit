@@ -17,6 +17,11 @@ module Ui
     PREFIXED_ATTRIBUTES = %w[data aria].freeze
     FLAT_PREFIXED_ATTRIBUTE = /\A(data|aria)-(.+)\z/
 
+    # Space-separated token lists a component wires itself through. A caller's value is added
+    # to the component's rather than replacing it, so `data: { action: "change->form#save" }`
+    # can't detach the component's own controllers, actions or described-by ids.
+    TOKEN_LIST_ATTRIBUTES = { data: %i[controller action], aria: %i[describedby labelledby] }.freeze
+
     # HTML attributes Rails' tag helpers render present when truthy, absent when
     # false or nil -- Ruby truthiness, so a non-empty string like "false" still
     # renders it, exactly what a form param forwards per rule 1. Limited to the
@@ -58,6 +63,13 @@ module Ui
       # instead: a mis-styled button is better than a page that won't render.
       def raise_on_unknown_variant?
         Rails.env.development? || Rails.env.test?
+      end
+
+      # HTML's own term: whether a <label for> can name this component's element. False
+      # for a control that is a group of inputs rather than one (ui-choices § Assumptions),
+      # which is what Ui::Field::LabelComponent asks before writing `for`.
+      def labelable?
+        true
       end
 
       private
@@ -102,7 +114,7 @@ module Ui
     # Root-element attributes: `data-slot`, whatever the component supplies for its
     # own element, then the caller's forwarded attributes, then the merged class.
     # `data:`/`aria:` hashes merge by key so a component's own data attributes
-    # survive alongside a caller's.
+    # survive alongside a caller's, and the token lists in TOKEN_LIST_ATTRIBUTES join.
     def root_attributes(**component_attributes)
       attributes = merge_attributes(slot_attributes, normalize_attributes(component_attributes))
       attributes = merge_attributes(attributes, html_attributes)
@@ -189,9 +201,22 @@ module Ui
     end
 
     def merge_attributes(own, other)
-      own.merge(other) do |_key, mine, theirs|
-        mine.is_a?(Hash) && theirs.is_a?(Hash) ? mine.merge(theirs) : theirs
+      own.merge(other) do |key, mine, theirs|
+        mine.is_a?(Hash) && theirs.is_a?(Hash) ? merge_nested(key, mine, theirs) : theirs
       end
+    end
+
+    # Caller wins key by key, except on a token list, where replacing the component's value
+    # would silently unwire it: the tokens are joined, the component's first.
+    def merge_nested(prefix, mine, theirs)
+      token_keys = TOKEN_LIST_ATTRIBUTES.fetch(prefix, [])
+      mine.merge(theirs) do |key, own_value, their_value|
+        token_keys.include?(key) ? join_tokens(own_value, their_value) : their_value
+      end
+    end
+
+    def join_tokens(*values)
+      values.flatten.flat_map { |value| value.to_s.split }.uniq.join(' ').presence
     end
   end
 end

@@ -161,6 +161,15 @@ module Ui
       assert_selector "input[type=checkbox][data-ui--choices-target='checkbox']", count: 2, visible: :all
     end
 
+    test 'CH11 a caller data-controller on a required checkbox group keeps ui--choices wired' do
+      render_choices(name: 'user[role_ids]', multiple: true, required: true, data: { controller: 'autosave', action: 'change->form#save' },
+                     **collection_source)
+
+      fieldset = page.find('fieldset', visible: :all)
+      assert_equal 'ui--choices autosave', fieldset['data-controller']
+      assert_equal 'change->ui--choices#derive change->form#save', fieldset['data-action']
+    end
+
     test 'CH12 a required radio group is required on every radio, with no controller and no hint' do
       render_choices(name: 'account[plan]', options: %w[pro free], required: true)
 
@@ -217,12 +226,12 @@ module Ui
       assert_selector "fieldset[aria-label='Plan']:not([aria-labelledby])", visible: :all
     end
 
-    test 'CH17 the caller class merges onto the group, and an unknown size or appearance raises' do
+    test 'CH17 the caller class merges onto the group, and an unknown size or variant raises' do
       render_choices(name: 'a[b]', options: %w[x], class: 'sm:grid-cols-3')
       assert_selector 'fieldset.sm\\:grid-cols-3', visible: :all
 
       assert_raises(Ui::Base::UnknownVariantError) { render_choices(name: 'a[b]', options: %w[x], size: :huge) }
-      assert_raises(Ui::Base::UnknownVariantError) { render_choices(name: 'a[b]', options: %w[x], appearance: :grid) }
+      assert_raises(Ui::Base::UnknownVariantError) { render_choices(name: 'a[b]', options: %w[x], variant: :grid) }
     end
   end
 end

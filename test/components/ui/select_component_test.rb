@@ -217,6 +217,19 @@ module Ui
       assert_no_selector 'select[data-testid]', visible: :all
     end
 
+    test "a caller's data-controller and data-action join the root's own wiring rather than replacing it" do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES,
+                                            data: { controller: 'autosave', action: 'change->form#save' }))
+
+      root = page.find("[data-slot='select']", visible: :all)
+      assert_equal %w[ui--select ui--overlay ui--anchor ui--roving-focus autosave], root['data-controller'].split
+      actions = root['data-action'].split
+      assert_equal 'change->form#save', actions.last
+      assert_includes actions, 'change->ui--select#render'
+      assert_includes actions, 'ui--overlay:opened->ui--select#opened'
+      assert_includes actions, 'ui--overlay:closed->ui--select#closed'
+    end
+
     test "the caller's class merges onto the control, not the wrapper" do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, class: 'h-12'))
 

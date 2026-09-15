@@ -108,7 +108,7 @@ module Ui
       aria = { describedby: described_by, invalid: (true if invalid?) }.compact
       attributes[:aria] = aria if aria.any?
 
-      merge_attributes(attributes, overrides).except(:required).merge(required? ? { required: true } : {})
+      merge_attributes(attributes, normalize_attributes(overrides)).except(:required).merge(required? ? { required: true } : {})
     end
 
     private
@@ -121,11 +121,8 @@ module Ui
       nil
     end
 
-    # ui--field is joined with a caller's own controllers rather than replaced by them.
     def wrapper_attributes
-      attributes = root_attributes(data: { invalid: (true if invalid?), required: (true if required?) })
-      controllers = ['ui--field', *attributes[:data][:controller].to_s.split].uniq.join(' ')
-      attributes.merge(data: attributes[:data].merge(controller: controllers))
+      root_attributes(data: { controller: 'ui--field', invalid: (true if invalid?), required: (true if required?) })
     end
 
     # With a record, a Field the caller gave no label or control still renders both.

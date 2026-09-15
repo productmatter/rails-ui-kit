@@ -79,7 +79,12 @@ variant keywords explicitly and captures everything else through a catch-all
 keyword hash, which `Ui::Base` merges onto the root element's attributes —
 shallow-merging `data:`/`aria:` sub-hashes so a component's own `data-controller`
 survives alongside a caller's `data-testid`, and letting plain attributes (`id`,
-`tabindex`) pass through unchanged. A component author never enumerates every
+`tabindex`) pass through unchanged. Within those sub-hashes the caller wins key by
+key, except on the space-separated token lists a component wires itself through —
+`data-controller`, `data-action`, `aria-describedby`, `aria-labelledby` — where the
+caller's tokens are appended to the component's, deduplicated, so a caller's
+`data: { action: "change->form#save" }` adds a listener without detaching the
+component's own. A component author never enumerates every
 attribute a caller might want to pass.
 
 `Ui::Base` adopts the `data-slot` convention: the root element of every kit
