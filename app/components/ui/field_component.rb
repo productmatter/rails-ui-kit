@@ -99,6 +99,18 @@ module Ui
       @model_binding&.value
     end
 
+    # The bound record's class, for a control that infers model: from an enum: it was given
+    # with no model: (Ui::Field::ControlComponent), or nil without a model-bound Field.
+    def model_class
+      @model_binding&.record&.class
+    end
+
+    # The attribute a model-bound Field edits, or nil without one -- what a control with no
+    # option source at all checks against the record class's enums for silent enum: inference.
+    def bound_attribute
+      @model_binding&.attribute
+    end
+
     # The control's own attributes, resolved at render time and merged with whatever
     # the caller passed to `with_control`, which wins on conflict. `required` is the one
     # exception: it is always the resolved value, so the control can't disagree with

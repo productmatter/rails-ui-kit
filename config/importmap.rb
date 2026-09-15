@@ -4,12 +4,17 @@
 # Consumers using importmap-rails get these automatically via the engine initializer.
 # Override any pin in your application's config/importmap.rb if needed.
 
-# Floating UI reaches importmap consumers as one pin, not four. jsDelivr's +esm build carries
-# @floating-ui/core and @floating-ui/utils inside its own module graph as origin-absolute
-# /npm/... URLs, which resolve without an importmap entry of their own. One pin means the version
-# set moves -- and is overridden by a host app -- as a unit, so the skew that four hand-maintained
-# pins allow (a host overriding dom alone onto the kit's older core) cannot happen.
-pin '@floating-ui/dom', to: 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.1/+esm'
+# Floating UI reaches importmap consumers as one pin, not four, and it is vendored rather than
+# fetched from jsDelivr: the +esm build once at this pin looked like one CDN dependency but
+# wasn't -- its own module graph re-imports @floating-ui/core and @floating-ui/utils from
+# jsDelivr by URL, so jsDelivr being unreachable took Turbo, Stimulus and every anchored
+# component down with it, not just positioning. `vendor/floating-ui.dom.js` bundles all three at
+# the versions this pin named (1.6.1/1.6.0/0.2.1) into one file with no remaining imports; see its
+# header comment for the update procedure.
+pin '@floating-ui/dom', to: 'rails_ui_kit/vendor/floating-ui.dom.js'
+pin_all_from File.expand_path('../app/javascript/rails_ui_kit/vendor', __dir__),
+             under: 'rails_ui_kit/vendor',
+             to: 'rails_ui_kit/vendor'
 
 pin 'rails-ui-kit', to: 'rails_ui_kit/index.js'
 pin_all_from File.expand_path('../app/javascript/rails_ui_kit/controllers', __dir__),

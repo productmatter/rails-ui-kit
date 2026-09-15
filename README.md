@@ -201,7 +201,7 @@ Then in your JS entrypoint (e.g. `app/javascript/application.js`):
 
 ```js
 import { Application } from "@hotwired/stimulus"
-import { registerControllers } from "rails-ui-kit"
+import { registerControllers } from "rails_ui_kit"
 
 const application = Application.start()
 registerControllers(application)
