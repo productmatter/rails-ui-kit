@@ -4,7 +4,7 @@ This covers everything between v0.2.0 and v0.3.0. It reports findings,
 not predictions: this branch was tested against a real consuming app before this was written,
 and the two failures below (§1, §2) are exactly what that test found — one of them silent. §4 and
 §5 are visible changes to the confirm dialog, not failures: nothing errors except a removed
-keyword.
+keyword. §6 and §7 change what a toast shows for the same call.
 
 **Headline: run `bundle update`, then fix five things.** Most of the CHANGELOG's 0.3.0
 section is new components, bug fixes, and internal refactors that need nothing from you. This
@@ -212,3 +212,60 @@ grep -rn 'disabled: .*\.to_s\|disabled: "false"' app/
 Everything else in [CHANGELOG.md](CHANGELOG.md)'s 0.3.0 section — new components, the
 accessibility and focus-handling fixes, the token retune — needs no action; it's additive or
 fixes a bug you'd have hit either way.
+## 6. A toast's plain message is now its description, not its title (visible, not loud)
+
+`Ui::ToastComponent.new(type: :success, message: "Saved")`,
+`window.triggerToast("success", "Saved")` and a `rails-ui-kit:toast` event whose
+`message` is a string used to render "Saved" as the toast's bold title. It is now the
+description: regular weight, and in the main text colour when there's no title. Nothing
+errors, and a screen reader hears the same words.
+
+**To keep the old look,** name it a title: `message: { title: "Saved" }` or
+`triggerToast("success", { title: "Saved" })`.
+
+**Renamed, loud in development:** `body:` is `description:` and `timeout:` is
+`duration:` (`duration: 0` still persists). In development and test the old keys raise,
+or throw in JavaScript, naming the new one. In production they still work and log a
+warning.
+
+**In your tests,** `data-ui--toast-target="body"` is now `description`, and a
+string toast's text is in `description`, not `title`.
+
+**Also:** a `notice` toast is now the success colour with a check glyph, not amber, because `notice` is
+Rails' "it worked" message in every scaffold and Devise flow; pass `type: :warning` if you want amber.
+An `alert` toast is now the destructive colour, not orange. A toast with an
+action stays until it's dismissed. `container_class:` now adds to the container's
+classes instead of replacing them. An unknown `type:` now raises in development and test,
+as an unknown variant does, instead of quietly rendering `info`. A toast sent by Turbo Stream
+should use `turbo_stream.ui_toast`: the old `turbo_stream.append "body"` recipe targets an
+element id, finds none, and shows nothing. And `render Ui::ToastContainerComponent.new(flash: flash)`
+now turns Rails' own `notice:` and `alert:` into toasts, so you can delete a hand-written flash
+partial.
+
+```bash
+grep -rn 'triggerToast\|ToastComponent.new\|rails-ui-kit:toast' app/ | grep -v 'title'
+grep -rn 'body:\|timeout:' app/ | grep -i toast
+grep -rn 'ui--toast-target="\(title\|body\)"' app/ test/ spec/
+grep -rn 'turbo_stream.append "body"' app/
+```
+
+## 7. A toast message that is an I18n key name is no longer translated (visible, not loud)
+
+In 0.2.0 a `message:` String that happened to be an I18n key was looked up, so
+`message: "date"` rendered blank and `message: "number.currency.format.unit"` rendered `$`.
+A String is now always the text it says. **If you passed key names as strings on purpose,
+pass a Symbol:** `message: :"toasts.saved"` instead of `message: "toasts.saved"`. A Symbol's
+translation is used as before: a String translation is the description, a Hash translation a
+whole payload.
+
+```bash
+grep -rn 'ToastComponent.new' app/ | grep 'message: "[a-z_]*\.[a-z_.]*"'
+```
+
+# Toast messages that are now descriptions, renamed toast keys, and the old stream recipe (§6)
+grep -rn 'body:\|timeout:' app/ | grep -i toast
+grep -rn 'ui--toast-target="\(title\|body\)"\|turbo_stream.append "body"' app/ test/ spec/
+
+# Toast messages passed as I18n key strings (§7)
+grep -rn 'ToastComponent.new' app/ | grep 'message: "[a-z_]*\.[a-z_.]*"'
+
