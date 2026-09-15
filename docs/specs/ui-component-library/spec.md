@@ -300,6 +300,18 @@ component's defaults, so it doesn't reopen anything already verified.
 |---|---|---|---|
 | `ui-control-sizing` | Control height as three kit-extension tokens (`--control-height-sm`/`--control-height`/`--control-height-lg`), and Button's `sm`/`default`/`lg` scale extended to Input, Select and Textarea so a row of controls at one step lines up by reading one token. Button's existing sizes, including `icon`, render unchanged. | `ui-design-tokens`, `ui-presentational-components`, `ui-select`, `ui-test-harness` | ready-for-review |
 
+**Across every phase — interaction stress.** This scope is not in a phase, because what it
+tests is the output of all of them colliding. Rule 7 is asserted pair by pair in whichever suite
+thought of a pair, while nearly every real defect on this branch was a collision no
+single-component page could reach. It builds last, against the ratified surfaces of the
+Toast, Confirm Dialog, retrofit and Field builds. Its shared invariant helper can land first, so
+those builds can adopt it. It adds no component, and it changes none except to fix a defect it
+finds.
+
+| Scope | Owns | Depends on | Status |
+|---|---|---|---|
+| `ui-stress-page` | A hidden `/stress` page in a host-shaped layout, holding the whole kit at once, with the overlay cluster rendered on the page and again inside a Turbo Frame Modal. Six condition profiles pair every value of theme, motion, 320 px, RTL (a smoke), pseudo-locale and Turbo-off with every other. A table-driven generator runs overlay nesting, displacement, toast-over-Modal, stream, morph, Back and form sequences. It ends every sequence with `assert_kit_invariants`, a shared helper on `ApplicationSystemTestCase` any suite can adopt: no scroll lock, no stray open element, nothing stuck closing, honest `aria-expanded`, real focus, a clean axe audit, a silent console, connected controllers and no duplicate or dangling ids. | `ui-test-harness`, `ui-presence-and-overlay-stack`, `ui-foundation-retrofit`, `ui-modal-turbo`, `ui-select`, `ui-choices`, `ui-field-model-binding`, `ui-toast`, `ui-confirm-dialog`, `ui-control-sizing`, `ui-localization`, `ui-localization-rtl`, `ui-design-tokens` | draft |
+
 ## Out of scope / deferred
 
 Each of these is a decision, not an oversight. Reopening one is a reshape of this
