@@ -31,7 +31,7 @@
   <%# Singletons required by toast + confirm demos -- rendered exactly as the install generator
       tells a host to, with no wrapper, so the docs app exercises the path a fresh app gets. %>
   <%= render Ui::ConfirmDialogComponent.new %>
-  <%= render Ui::ToastContainerComponent.new %>
+  <%= render Ui::ToastContainerComponent.new(flash: flash) %>
   <div data-controller="ui--turbo-confirm ui--turbo-disable-with" class="hidden"></div>
   <%# The modal container: a plain div, not a turbo-frame, so a stream can render any modal into
       it and a form inside one behaves like a form anywhere else. data-turbo-permanent keeps an
