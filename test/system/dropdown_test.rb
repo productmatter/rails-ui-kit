@@ -3,11 +3,6 @@
 require 'application_system_test_case'
 
 class DropdownTest < ApplicationSystemTestCase
-  # The registered driver's screen_size isn't honoured for the actual browser window on
-  # this machine (observed viewport ~756x413), which is too small for the block-layout
-  # coordinate clicks below to land inside the viewport.
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'DD1: after following a menu item link and pressing Back, the menu stays closed with focus outside it' do
     visit dropdown_path
     edit_item = find("[role='menu'] a[role='menuitem']", text: 'Edit', visible: false)
@@ -142,7 +137,7 @@ class DropdownTest < ApplicationSystemTestCase
     assert_equal 'true', trigger['aria-expanded']
     content_wrapper = find("[data-ui--dropdown-target='content'] > div", visible: true)
     wrapper_rect = page.evaluate_script('arguments[0].getBoundingClientRect()', content_wrapper)
-    click_at_point(wrapper_rect['left'] + (wrapper_rect['width'] / 2), wrapper_rect['top'] + 2)
+    click_at(wrapper_rect['left'] + (wrapper_rect['width'] / 2), wrapper_rect['top'] + 2)
     assert page.evaluate_script('document.activeElement === document.body')
     find('body').send_keys(:escape)
     assert_expanded 'false', trigger
@@ -700,42 +695,6 @@ class DropdownTest < ApplicationSystemTestCase
     JS
   end
 
-  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
-  # checked rather than assumed.
-  def install_error_capture
-    page.execute_script(<<~JS)
-      window.__errors = []
-      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
-    JS
-  end
-
-  def captured_errors
-    page.evaluate_script('window.__errors')
-  end
-
-  # Captures console.warn calls made from here on, without silencing them -- the real warning
-  # still reaches the browser's own console too.
-  def install_console_warning_capture
-    page.execute_script(<<~JS)
-      window.__consoleWarnings = []
-      var originalWarn = console.warn.bind(console)
-      console.warn = function () {
-        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
-        originalWarn.apply(console, arguments)
-      }
-    JS
-  end
-
-  def console_warnings
-    page.evaluate_script('window.__consoleWarnings')
-  end
-
-  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike
-  # Capybara's element.send_keys, which focuses the element it's called on first.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
-  end
-
   def tab_to(element, limit: 80)
     limit.times do
       break if focused?(element)
@@ -786,10 +745,6 @@ class DropdownTest < ApplicationSystemTestCase
     find("[data-ui--dropdown-target='trigger'] button", text: 'Menu')
   end
 
-  def focused?(element)
-    page.evaluate_script('document.activeElement === arguments[0]', element)
-  end
-
   # ui--overlay closes an Escaped layer on the next frame and returns focus once its exit animation
   # has finished, so these wait the way any Capybara assertion does (as popover_test.rb's do).
   def assert_expanded(expected, trigger)
@@ -803,11 +758,5 @@ class DropdownTest < ApplicationSystemTestCase
   def assert_focused(element)
     element.synchronize { raise Capybara::ExpectationNotMet, 'not focused' unless focused?(element) }
     assert focused?(element)
-  end
-
-  # A real pointer click at viewport coordinates -- element.click() doesn't shift focus
-  # the way a genuine mousedown does, and this test depends on focus landing on <body>.
-  def click_at_point(point_x, point_y)
-    page.driver.browser.action.move_to_location(point_x.to_i, point_y.to_i).click.perform
   end
 end

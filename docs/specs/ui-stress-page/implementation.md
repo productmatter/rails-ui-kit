@@ -21,10 +21,14 @@ One `page.evaluate_script` returns a report object, so the whole check is a sing
 plus axe. Ruby turns each non-empty section into a failure message that names the element with
 its first 120 characters of `outerHTML`.
 
-- **Scroll lock.** On arrival, snapshot `document.documentElement.style.cssText`,
-  `document.body.style.cssText`, `scrollX` and `scrollY` into `window.__kitArrival`. Compare
-  against it. Turbo Drive keeps `window`, so after a visit or Back the sequence takes a new
-  snapshot, and the declared document render is what allows it.
+- **Scroll lock.** On arrival, snapshot `document.documentElement.style.cssText` and
+  `document.body.style.cssText` into `window.__kitArrival`, and install (once per document) a
+  `MutationObserver` on `style` that notes where `<body>` went `position: fixed` and records any
+  release that doesn't leave the page scrolled there. Compare styles against the snapshot, and
+  report the recorded releases. Turbo Drive keeps `window`, so after a visit or Back the
+  sequence takes a new snapshot, and the declared document render is what allows it. As built:
+  the first cut compared `scrollX`/`scrollY` with arrival, which the driver's own
+  scroll-into-view on click broke (`status.md`).
 - **Open set.** `document.querySelectorAll('dialog[open], :modal, :popover-open')`, compared by
   id with the declared set. "Claimed" means `Stimulus.getControllerForElementAndIdentifier` finds
   a `ui--overlay` on an ancestor whose `openValue` is true.
@@ -42,9 +46,16 @@ its first 120 characters of `outerHTML`.
   top-layer order, and document order is wrong here: the shared Confirm Dialog comes before the
   Modal's frame in the layout but opens above it. So the sequence declares the topmost modal,
   and the helper checks focus against that.
+- **As built, the helper is five files.** `test/kit_invariants.rb` composes one module per
+  invariant family under `test/kit_invariants/` (`top_layer.rb` for 1 to 4, `focus.rb`,
+  `console.rb`, `connections.rb` for 8 and 9), each one script round trip, with axe between.
+  One nine-invariant module broke `Metrics/ModuleLength`.
 - **Console.** `capture_console` registers a script with `Page.addScriptToEvaluateOnNewDocument`
   that wraps `console.error` and `console.warn` and listens for `error` and
-  `unhandledrejection`. It pushes into `window.__kitConsole` and sets
+  `unhandledrejection`. Register it before any other new-document script: Chrome runs them in
+  registration order. Entries are mirrored to `sessionStorage` under a per-capture key, so a
+  Turbo-off full page load keeps what the previous document logged. It pushes into
+  `window.__kitConsole` and sets
   `window.__kitConsoleInstalled = true`. Remove the registration in teardown by its returned
   identifier. The invariant fails if `__kitConsoleInstalled` is absent.
 - **Controllers.** For each `[data-controller]`, split the tokens and keep `ui--*`. Each needs

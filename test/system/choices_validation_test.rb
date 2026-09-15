@@ -13,7 +13,6 @@ class ChoicesValidationTest < ApplicationSystemTestCase
   HINT = 'Select at least one option.'
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit choices_path
     page.execute_script("document.querySelector('#{FORM}').scrollIntoView({ block: 'center' })")
   end
@@ -98,11 +97,17 @@ class ChoicesValidationTest < ApplicationSystemTestCase
       const wrapper = group.closest('[data-slot=field]')
       wrapper.id = 'choices-stream-target'
       group.querySelectorAll('input[type=checkbox]').forEach((box) => box.removeAttribute('checked'))
+      const markup = wrapper.outerHTML
+      // Tagged after the markup is taken, so only the element being replaced carries it.
+      wrapper.dataset.replaced = 'pending'
       Turbo.renderStreamMessage(
-        `<turbo-stream action="replace" target="choices-stream-target"><template>${wrapper.outerHTML}</template></turbo-stream>`
+        `<turbo-stream action="replace" target="choices-stream-target"><template>${markup}</template></turbo-stream>`
       )
     JS
 
+    # The stream renders on a later frame, and the old group has the same ids: wait for the old
+    # wrapper to leave rather than reading an element that existed before the swap.
+    assert_no_selector '[data-replaced=pending]'
     assert_selector '#choices-stream-target #required_role_ids_1'
     assert_empty checked_values('#required_role_ids')
     assert_equal HINT, validation_message('#required_role_ids_1'),

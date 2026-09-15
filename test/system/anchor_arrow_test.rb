@@ -7,7 +7,6 @@ class AnchorArrowTest < ApplicationSystemTestCase
   include PrimitivesHelpers
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
     assert_selector '[data-ui--anchor-target="floating"][data-side]', minimum: 12, wait: 20
     # The viewport is a clipping ancestor: an anchor below the fold has no room on any side and

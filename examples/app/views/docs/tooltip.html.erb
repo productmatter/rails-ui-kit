@@ -90,6 +90,8 @@
   <li>A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">disabled</code> control never receives focus, so keyboard and screen reader users can't reach its
       tooltip even though a mouse can. If a disabled control needs one, use <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> instead, so it
       stays focusable.</li>
+  <li>Hover is tracked on the trigger wrapper rather than on your control, so a control the page has taken out of pointer events — which is what
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> does to a kit Button — still shows its tooltip on hover. Focus is tracked on the control itself.</li>
 </ul>
 
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>

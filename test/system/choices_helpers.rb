@@ -2,18 +2,9 @@
 
 # Shared probes for the Ui::ChoicesComponent browser tests. Not a test file and not a second
 # harness: ApplicationSystemTestCase stays the base class, and these are the few Choices-specific
-# reads that would otherwise be copied into every file.
+# reads that would otherwise be copied into every file. `press` and `focused_id` come from
+# ApplicationSystemTestCase's BrowserHelpers.
 module ChoicesHelpers
-  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike Capybara's
-  # element.send_keys, which focuses the element it is called on first.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
-  end
-
-  def focused_id
-    page.evaluate_script('document.activeElement && document.activeElement.id')
-  end
-
   def focused_tag
     page.evaluate_script('document.activeElement && document.activeElement.tagName.toLowerCase()')
   end

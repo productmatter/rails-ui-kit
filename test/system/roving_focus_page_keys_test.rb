@@ -12,7 +12,6 @@ class RovingFocusPageKeysTest < ApplicationSystemTestCase
   COUNT = 25
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
   end
 

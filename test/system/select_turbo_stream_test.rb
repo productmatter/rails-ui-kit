@@ -12,7 +12,6 @@ class SelectTurboStreamTest < ApplicationSystemTestCase
   ID = 'demo_timezone'
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
   end
@@ -97,6 +96,31 @@ class SelectTurboStreamTest < ApplicationSystemTestCase
     assert_selector "##{ID}-combobox", text: 'Paris'
     assert_equal 'paris', select_value(ID)
     assert_selector "##{ID}-option-15[data-selected='true']", visible: :all
+  end
+
+  # ST3's source is a clone of the live, enhanced element, so it never rewrites what enhancement
+  # added. A real refresh morphs towards the server's markup, where the combobox is `hidden` and
+  # the root has no data-enhanced -- as a 422 on a page that refreshes with morph does. Found by
+  # the stress page (docs/specs/ui-stress-page/status.md).
+  test "ST5: a morph towards the server's own markup leaves the Select enhanced and working" do
+    page.execute_script(<<~JS, ID)
+      window.__morphed = false
+      fetch(location.href).then((response) => response.text()).then((html) => {
+        const server = new DOMParser().parseFromString(html, 'text/html').getElementById(arguments[0]).closest('[data-slot=select]')
+        Turbo.morphElements(document.getElementById(arguments[0]).closest('[data-slot=select]'), server)
+        window.__morphed = true
+      })
+    JS
+    Timeout.timeout(Capybara.default_max_wait_time) { sleep 0.02 until page.evaluate_script('window.__morphed') }
+
+    assert_selector "##{ID}-combobox", text: 'London'
+    assert_equal 'true', find("##{ID}", visible: :all)['aria-hidden']
+    focus_combobox(ID)
+    press :enter
+    assert_popup ID, 'open'
+    press :end
+    press :enter
+    assert_equal 'tokyo', select_value(ID)
   end
 
   test 'ST4: a Select removed with its frame leaves no listener or observer behind' do

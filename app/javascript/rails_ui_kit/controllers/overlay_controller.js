@@ -42,6 +42,18 @@ import {
 // "outside" or "programmatic", so a listener can refuse one and allow the rest).
 const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
+// What this controller writes into the markup it was given (see prepareContent). A Turbo morph
+// sets every attribute to the server's markup, which has none of it: the content would stop being
+// a popover, so the next open throws, and the trigger would lose its ARIA. What it only adds where
+// the markup has none is kept from removal, and the author's own value still morphs.
+const OWNED = { content: ["popover"], trigger: ["aria-expanded"] }
+// The open state itself, which lives in attributes a morph towards the server's markup would
+// rewrite: the content's own attributes (popover, hidden, data-state, the anchor's inline
+// position) and this element's open value. An open Dropdown, Popover or Select survives a morphing
+// refresh -- a refresh another user's write triggered must not close the menu this user is in
+// (ui-stress-page/open-questions.md, decided 2026-09-15).
+const OPEN_VALUE_ATTRIBUTE = "data-ui--overlay-open-value"
+
 let sequence = 0
 
 export default class extends Controller {
@@ -69,6 +81,9 @@ export default class extends Controller {
     this.onBeforeToggle = this.interceptLightDismiss.bind(this)
     this.onContentKeydown = this.dismissOnEscape.bind(this)
     this.onContentMutated = () => this.keepFocusInside()
+    this.onBeforeMorphAttribute = this.keepOwnAttributes.bind(this)
+    this.onMorphElement = this.resyncAfterMorph.bind(this)
+    this.onBeforeMorphElement = this.keepOpenContent.bind(this)
     this.onHintKeydown = this.dismissHintOnEscape.bind(this)
     this.onFallbackKeydown = this.dismissFallbackOnEscape.bind(this)
     this.onFallbackFocusOut = this.dismissFallbackOnFocusOut.bind(this)
@@ -290,6 +305,9 @@ export default class extends Controller {
   }
 
   dismissFor(reason) {
+    // Remembered for the focus restore below: only a pointer gesture competes with the
+    // browser's own focus, and only that case defers.
+    this.dismissReason = reason
     if (this.requestDismiss(reason)) this.hide()
   }
 
@@ -506,7 +524,12 @@ export default class extends Controller {
     if (!this.hasContentTarget) return
 
     const content = this.contentTarget
-    if (!content.id) content.id = `ui-overlay-${(sequence += 1)}`
+    if (!content.id) {
+      // Remembered, so a morph that strips a generated id gets the same one back and the
+      // trigger's aria-controls keeps resolving.
+      this.generatedId ||= `ui-overlay-${(sequence += 1)}`
+      content.id = this.generatedId
+    }
 
     if (this.modeValue !== "modal") {
       if (supportsTopLayer()) {
@@ -523,9 +546,54 @@ export default class extends Controller {
     if (!trigger || this.modeValue === "hint") return
 
     // An aria-controls the markup already carries is the author's: a combobox names the listbox
-    // inside the content, not the wrapper around it.
-    if (!trigger.hasAttribute("aria-controls")) trigger.setAttribute("aria-controls", content.id)
-    trigger.setAttribute("aria-expanded", "false")
+    // inside the content, not the wrapper around it. One this controller gave is re-pointed, in
+    // case a morph took the id it named away.
+    if (!trigger.hasAttribute("aria-controls") || this.ownsAriaControls) {
+      trigger.setAttribute("aria-controls", content.id)
+      this.ownsAriaControls = true
+    }
+    this.setExpanded(this.shown === true)
+  }
+
+  // A morph rewrites this overlay's markup to the server's, which has none of what the controller
+  // put there. Whatever survived is left alone; whatever went is put back, in the same task as the
+  // morph, so nothing is painted without it.
+  resyncAfterMorph(event) {
+    if (event.target !== this.element && !this.element.contains(event.target)) return
+
+    this.prepareContent()
+  }
+
+  // Markup the server renders without an id -- a Dropdown's panel, a Select's root -- doesn't
+  // match the open one by id, so a morph swaps the element out rather than updating it, which
+  // disconnects the controller and closes the layer the user is in. While it is open, this overlay
+  // and its content are left exactly as they are; both morph normally again as soon as it closes.
+  keepOpenContent(event) {
+    if (!this.guardsOpenState) return
+    if (event.target === this.element || (this.hasContentTarget && event.target === this.contentTarget)) event.preventDefault()
+  }
+
+  // Whether a morph must leave this overlay's open state alone. A modal is excluded: whether one
+  // survives a refresh is the host's own decision, taken by marking its container
+  // `data-turbo-permanent` (ui-modal-turbo), and a modal that isn't marked is morphed away. The
+  // ruling this implements is about the layer a user is choosing from.
+  get guardsOpenState() {
+    return this.active && this.modeValue !== "modal"
+  }
+
+  keepOwnAttributes(event) {
+    const { attributeName } = event.detail
+    // While it is open, the content's attributes are the open state: the server's markup says
+    // closed, and applying it would hide a layer the user is in and strip the position the anchor
+    // computed. The element's own open value goes with them.
+    if (this.guardsOpenState) {
+      if (this.hasContentTarget && event.target === this.contentTarget) return event.preventDefault()
+      if (event.target === this.element && attributeName === OPEN_VALUE_ATTRIBUTE) return event.preventDefault()
+    }
+
+    const part = this.hasContentTarget && event.target === this.contentTarget ? "content"
+      : this.modeValue !== "hint" && event.target === this.triggerControl ? "trigger" : null
+    if (part && OWNED[part].includes(attributeName)) event.preventDefault()
   }
 
   addListeners() {
@@ -533,6 +601,9 @@ export default class extends Controller {
     document.addEventListener("turbo:morph", this.onMorph)
     this.element.addEventListener("pointerdown", this.onPointerDown, true)
     this.element.addEventListener("click", this.onClick)
+    this.element.addEventListener("turbo:before-morph-attribute", this.onBeforeMorphAttribute)
+    this.element.addEventListener("turbo:morph-element", this.onMorphElement)
+    this.element.addEventListener("turbo:before-morph-element", this.onBeforeMorphElement)
 
     if (this.hasContentTarget) {
       this.contentTarget.addEventListener("cancel", this.onCancel)
@@ -552,6 +623,9 @@ export default class extends Controller {
     document.removeEventListener("turbo:morph", this.onMorph)
     this.element.removeEventListener("pointerdown", this.onPointerDown, true)
     this.element.removeEventListener("click", this.onClick)
+    this.element.removeEventListener("turbo:before-morph-attribute", this.onBeforeMorphAttribute)
+    this.element.removeEventListener("turbo:morph-element", this.onMorphElement)
+    this.element.removeEventListener("turbo:before-morph-element", this.onBeforeMorphElement)
     this.element.removeEventListener("keydown", this.onFallbackKeydown)
     this.element.removeEventListener("focusout", this.onFallbackFocusOut)
 
@@ -570,6 +644,13 @@ export default class extends Controller {
   // recording that would return focus to a dead node, so the target the interrupted cycle
   // recorded is kept instead.
   focusReturnTarget() {
+    // The trigger, when there is one: item 12 says focus returns to it, and reading the focused
+    // element instead gets this wrong exactly when two layers change hands in one gesture -- a
+    // click on this trigger that light-dismisses another overlay lets that one's focus return run
+    // first, and its trigger would be recorded here as "where focus came from".
+    const trigger = this.triggerControl
+    if (trigger?.isConnected) return trigger
+
     const active = document.activeElement
     const inside = this.hasContentTarget && this.contentTarget.contains(active)
     if (active && active !== document.body && !inside) return active
@@ -607,15 +688,36 @@ export default class extends Controller {
   // about to stop being rendered. A dismiss that moved focus somewhere else on purpose keeps it.
   restoreFocusIfLost() {
     const target = this.focusRestoreTarget()
+    const deferred = this.dismissReason === "outside"
     this.returnTarget = null
     this.returnTargetId = null
+    this.dismissReason = null
     if (!this.restoreFocusValue || !target) return
 
-    const active = document.activeElement
-    const inside = this.hasContentTarget && this.contentTarget.contains(active)
-    if (active && active !== document.body && !inside) return
+    // An outside gesture is deferred to the next frame; everything else restores in this task. A
+    // click on another control focuses it as the mousedown's default action, which runs after
+    // this listener, and with no exit animation to wait for (reduced motion) the close finishes
+    // first -- so restoring now would take focus off the control the user just pressed, and leave
+    // the browser restoring the wrong element when that control's own overlay closes. A close
+    // with no pointer behind it (Escape, a close button, a Turbo Stream that replaced this
+    // overlay with another) has nothing to wait for, and the overlay opening in its place reads
+    // focus in the same task -- so deferring there would hand it the wrong element instead.
+    const restore = () => {
+      const active = document.activeElement
+      const inside = this.hasContentTarget && this.contentTarget.contains(active)
+      // Focus the browser parked somewhere for us counts as lost, not as a place the user chose:
+      // a click on non-focusable content inside a modal <dialog> leaves focus on the dialog, and
+      // an element that stops being focusable leaves it on <body>. Either way the trigger is
+      // where item 12 says focus goes when the overlay closes.
+      const parked = !active || active === document.body || active === document.documentElement ||
+        (active.tagName === "DIALOG" && active.contains(this.element))
+      if ((!parked && !inside) || !target.isConnected) return
 
-    target.focus({ preventScroll: true })
+      target.focus({ preventScroll: true })
+    }
+
+    if (deferred) requestAnimationFrame(restore)
+    else restore()
   }
 
   // The element focus goes back to. Normally the one that was focused when the overlay opened --

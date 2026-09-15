@@ -12,13 +12,15 @@ module Ui
     # Expected to change: `backdrop:bg-black/50` (the scrim, a literal the token rule is checked
     # against); `max-h-none`/`max-w-none`, which the center position's own max-h/max-w override and
     # a class merge drops; the two `data-ui--modal-confirm-*-value` names, renamed to their locale
-    # keys' leaves.
+    # keys' leaves. Centring is `inset-x-0 mx-auto`, not the `left-1/2` this pin first recorded:
+    # the stress page found `left-1/2` follows the inline start, so a centred 320px dialog sat at
+    # x = -160 in RTL (modal_test M10 pins the fix).
     MODAL_DIALOG_CLASSES = %w[
       fixed p-0 m-0 bg-background text-foreground shadow-2xl
       opacity-0 data-[state=open]:opacity-100 transition-all duration-300 ease-in-out focus-visible:outline-none
       backdrop:backdrop-blur-sm backdrop:opacity-0 data-[state=open]:backdrop:opacity-100
       backdrop:transition-opacity backdrop:duration-300 backdrop:ease-in-out
-      top-1/2 left-1/2 modal-center-hidden w-full sm:w-[42rem] max-w-full sm:max-w-[42rem] max-h-[90vh]
+      top-1/2 inset-x-0 mx-auto modal-center-hidden w-full sm:w-[42rem] max-w-full sm:max-w-[42rem] max-h-[90vh]
       rounded-none sm:rounded-lg overflow-y-auto
     ].freeze
 

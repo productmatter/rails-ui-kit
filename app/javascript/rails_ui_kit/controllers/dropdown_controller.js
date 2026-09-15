@@ -39,6 +39,9 @@ export default class extends Controller {
     this.onClosed = (event) => { if (event.target === this.element) this.handleClosed() }
     // ui--overlay resets itself for the snapshot, without a closed event.
     this.onBeforeCache = () => this.handleClosed()
+    // A morph rewrites the trigger and panel to the server's markup, which carries none of the
+    // ARIA this controller adds.
+    this.onMorph = (event) => { if (this.element.contains(event.target)) this.setupAccessibility() }
   }
 
   connect() {
@@ -50,6 +53,7 @@ export default class extends Controller {
     this.contentTarget.addEventListener("click", this.onContentClick)
     this.element.addEventListener("ui--overlay:opened", this.onOpened)
     this.element.addEventListener("ui--overlay:closed", this.onClosed)
+    this.element.addEventListener("turbo:morph-element", this.onMorph)
     document.addEventListener("turbo:before-cache", this.onBeforeCache)
   }
 
@@ -60,6 +64,7 @@ export default class extends Controller {
     this.contentTarget.removeEventListener("click", this.onContentClick)
     this.element.removeEventListener("ui--overlay:opened", this.onOpened)
     this.element.removeEventListener("ui--overlay:closed", this.onClosed)
+    this.element.removeEventListener("turbo:morph-element", this.onMorph)
     document.removeEventListener("turbo:before-cache", this.onBeforeCache)
     this.initialFocus = null
   }
@@ -309,6 +314,9 @@ export default class extends Controller {
   // outside, not focus moving away, so this asks it for the same vetoable dismissal.
   handleFocusout(event) {
     if (!this.isOpen || !event.relatedTarget) return
+    // Focus the browser parked on an ancestor counts as staying: clicking this panel's own padding
+    // inside a modal <dialog> moves focus to the dialog, and that is not the user leaving the menu.
+    if (event.relatedTarget.contains(this.element)) return
     if (!this.element.contains(event.relatedTarget)) this.overlay?.dismissFor("outside")
   }
 

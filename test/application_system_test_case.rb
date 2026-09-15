@@ -5,6 +5,8 @@ require 'action_dispatch/system_test_case'
 require 'selenium-webdriver'
 require 'axe/core'
 require 'axe/api'
+require 'kit_invariants'
+require_relative 'support/browser_helpers'
 
 Capybara.register_driver :rails_ui_kit_headless_chrome do |app|
   options = Selenium::WebDriver::Chrome::Options.new
@@ -19,7 +21,45 @@ end
 # anything it requires, from test/test_helper.rb -- that would pull Capybara and
 # Selenium into the unit lane. See docs/specs/ui-test-harness/spec.md.
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  driven_by :rails_ui_kit_headless_chrome, screen_size: [1400, 1400]
+  SCREEN_SIZE = [1400, 1400].freeze
+
+  driven_by :rails_ui_kit_headless_chrome, screen_size: SCREEN_SIZE
+
+  # driven_by applies screen_size only to a driver Rails registers itself, and this one is
+  # registered above, so the window came up at Chrome's default (about 756x413). Every test starts
+  # with a viewport of the registered size instead -- including after a test that resized the
+  # shared window.
+  setup { resize_viewport_to(*SCREEN_SIZE) }
+
+  # Sizes the viewport, not the window: the window's own frame is measured and added, so
+  # innerWidth and innerHeight are what was asked for. A driver with no window -- rack_test, which
+  # the no-JavaScript checks run under -- is left alone rather than raised at, the way the CDP
+  # switch above leaves it alone.
+  def resize_viewport_to(width, height)
+    window = browser_window
+    return unless window
+
+    window.resize_to(width, height)
+    # An object, not an array: a driver that hands an array back as a Hash would make the
+    # arithmetic below fail in setup, which is where every test would then die.
+    frame = page.evaluate_script('({ width: outerWidth - innerWidth, height: outerHeight - innerHeight })')
+    extra_width = frame['width'].to_i
+    extra_height = frame['height'].to_i
+    window.resize_to(width + extra_width, height + extra_height) unless extra_width.zero? && extra_height.zero?
+  end
+
+  # The real browser window, or nil where the driver has none.
+  def browser_window
+    browser = page.driver.respond_to?(:browser) ? page.driver.browser : nil
+    browser.manage.window if browser.respond_to?(:manage)
+  end
+
+  # assert_kit_invariants, capture_console and record_arrival (docs/specs/ui-stress-page).
+  include KitInvariants
+
+  # press, focused?, click_at, state_of/rect_of and friends -- shared browser probes every
+  # test/system/*_test.rb file used to copy for itself (test/support/browser_helpers.rb).
+  include BrowserHelpers
 
   # The slow lane, on demand:
   #

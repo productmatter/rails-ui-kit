@@ -215,6 +215,21 @@ none. Events — `ui--overlay:opened`, `ui--overlay:closed`, `ui--overlay:dismis
     - `showModal()` is never called on a `<dialog>` restored with a stale `open`
       attribute. The stale attribute is cleared first.
 
+20. **A morphing refresh leaves an open `layer` or `hint` open.** A refresh another user's
+    write triggered must not close the menu this user is choosing from, which is what morphing
+    exists to preserve (ruled 2026-09-15 in `ui-stress-page/open-questions.md`). `modal` mode is
+    excluded: whether a Modal survives a refresh is the host's own decision, taken by marking its
+    container `data-turbo-permanent`, and one that isn't marked is morphed away
+    (`ui-modal-turbo`). While such an overlay is open, `ui--overlay` keeps the morph off its own element and its content: the
+    server's markup says closed, has no id on a Dropdown's panel or a Select's root -- so the
+    morph would replace those elements and disconnect the controller -- and carries none of the
+    inline position the anchor computed. Both morph normally again as soon as it closes. After
+    any morph, open or closed, it puts back what it writes into markup it was given: the
+    generated content id (the same one, remembered), `popover`, the `aria-controls` it gave a
+    trigger, and `aria-expanded` for the state it is actually in. Pinned in
+    `ui_overlay_morph_test.rb`.
+
+
 ## Business rules
 
 **Must**

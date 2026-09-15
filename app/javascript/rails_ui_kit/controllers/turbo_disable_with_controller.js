@@ -9,16 +9,19 @@ export default class extends Controller {
       submitEnd: this.handleSubmitEnd.bind(this),
       reset: this.handleReset.bind(this),
       submit: this.handleStandardSubmit.bind(this),
+      rememberFocus: this.rememberFocusedSubmitter.bind(this),
       beforeCache: this.handleBeforeCache.bind(this),
       pageShow: this.handlePageShow.bind(this)
     }
 
     this.elementStates = new WeakMap()
     this.disabledElements = new Set()
+    this.focusedSubmitters = new WeakMap()
 
     document.addEventListener('turbo:submit-start', this.boundHandlers.submitStart)
     document.addEventListener('turbo:submit-end', this.boundHandlers.submitEnd)
     document.addEventListener('submit', this.boundHandlers.submit)
+    document.addEventListener('submit', this.boundHandlers.rememberFocus, true)
     document.addEventListener('reset', this.boundHandlers.reset)
     document.addEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
     window.addEventListener('pageshow', this.boundHandlers.pageShow)
@@ -28,6 +31,7 @@ export default class extends Controller {
     document.removeEventListener('turbo:submit-start', this.boundHandlers.submitStart)
     document.removeEventListener('turbo:submit-end', this.boundHandlers.submitEnd)
     document.removeEventListener('submit', this.boundHandlers.submit)
+    document.removeEventListener('submit', this.boundHandlers.rememberFocus, true)
     document.removeEventListener('reset', this.boundHandlers.reset)
     document.removeEventListener('turbo:before-cache', this.boundHandlers.beforeCache)
     window.removeEventListener('pageshow', this.boundHandlers.pageShow)
@@ -63,6 +67,27 @@ export default class extends Controller {
 
     const elements = form.querySelectorAll('[data-turbo-disable-with]')
     elements.forEach(element => this.enableElement(element))
+    this.restoreSubmitterFocus(form)
+  }
+
+  // Turbo disables the submitter while its request runs, and the browser moves focus off a
+  // disabled element to <body>, so a keyboard user who submits a form loses their place. Which
+  // button had focus is noted as the submit event is dispatched, before Turbo disables it.
+  rememberFocusedSubmitter(event) {
+    const submitter = event.submitter
+    if (submitter && document.activeElement === submitter) this.focusedSubmitters.set(event.target, submitter)
+  }
+
+  // Put back once the submission ends -- only if the button is still on the page and focus is
+  // still on <body>. Anything that has taken focus since, such as a response that focused an
+  // error or a stream that moved it, wins.
+  restoreSubmitterFocus(form) {
+    const submitter = this.focusedSubmitters.get(form)
+    this.focusedSubmitters.delete(form)
+    if (!submitter?.isConnected || submitter.disabled) return
+    if (document.activeElement && document.activeElement !== document.body) return
+
+    submitter.focus({ preventScroll: true })
   }
 
   handleReset(event) {

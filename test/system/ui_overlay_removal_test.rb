@@ -6,8 +6,6 @@ require_relative 'ui_overlay_helpers'
 class UiOverlayRemovalTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test "removing an open overlay's content releases the scroll lock and gives focus back" do
     visit primitives_overlay_path
     find('#removable-trigger').click

@@ -46,7 +46,7 @@ class ToastValidationSystemTest < ApplicationSystemTestCase
     visit toast_path
     wait_for_toast_api
     page.execute_script("document.querySelector('[data-controller~=\"ui--toast-container\"]').setAttribute('data-ui--toast-container-strict-value', 'false')")
-    install_console_capture
+    install_console_warning_capture
 
     RULES.each do |name, (payload, names, safely)|
       trigger_toast(payload)

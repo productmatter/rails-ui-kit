@@ -6,10 +6,6 @@ require_relative 'ui_overlay_helpers'
 class UiOverlayNestingTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  # The registered driver's screen_size isn't honoured for the actual window on every machine
-  # (see dropdown_test.rb); the paint-order probe below needs the layer and dialog on screen.
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'a layer opened inside a modal paints above the dialog and is not clipped by its scroll box' do
     visit primitives_overlay_path
     open_modal_with_inner_layer

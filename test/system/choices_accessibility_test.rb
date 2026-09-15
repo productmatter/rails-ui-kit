@@ -13,18 +13,8 @@ class ChoicesAccessibilityTest < ApplicationSystemTestCase
     visit choices_path
   end
 
-  # Chrome's accessibility tree for one element, or nil where it is ignored and so never reaches
-  # a screen reader.
-  def ax_node(selector)
-    browser = page.driver.browser
-    root = browser.execute_cdp('DOM.getDocument', depth: 0)['root']['nodeId']
-    node = browser.execute_cdp('DOM.querySelector', nodeId: root, selector: selector)['nodeId']
-    return nil if node.to_i.zero?
-
-    ax = browser.execute_cdp('Accessibility.getPartialAXTree', nodeId: node, fetchRelatives: false)['nodes'].first
-    ax unless ax.nil? || ax['ignored']
-  end
-
+  # ax_node (Chrome's accessibility tree for one element) comes from ApplicationSystemTestCase's
+  # BrowserHelpers.
   def ax(selector, key)
     ax_node(selector)&.dig(key, 'value')
   end

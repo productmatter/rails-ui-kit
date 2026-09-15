@@ -231,8 +231,18 @@ export default class extends Controller {
     this.resetTimer = setTimeout(() => this.rest())
   }
 
+  // A morph sets every attribute to the server's markup, where the combobox is still hidden and
+  // the select still in the tab order, so enhancement is applied again before the label renders.
+  // An open listbox stays open and re-renders from the select, rather than closing under the user
+  // (ui-stress-page/open-questions.md, decided 2026-09-15); ui--overlay holds the open state
+  // itself through the morph.
   renderFromMorph(event) {
-    if (this.element === event.target || this.element.contains(event.target)) this.rest()
+    if (this.element !== event.target && !this.element.contains(event.target)) return
+
+    this.applyEnhancement()
+    if (this.isOpen) return this.render()
+
+    this.rest()
   }
 
   // The resting state: closed, nothing active, the label showing whatever the select holds. The

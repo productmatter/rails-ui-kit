@@ -10,9 +10,10 @@ class SelectFormSubmissionTest < ApplicationSystemTestCase
   include SelectHelpers
 
   ID = 'trip_city'
+  SUBMIT = '#select-round-trip-submit'
+  RESULT = '#select-round-trip-result'
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
     page.execute_script("document.getElementById('#{ID}-combobox').scrollIntoView({ block: 'center' })")
@@ -21,27 +22,12 @@ class SelectFormSubmissionTest < ApplicationSystemTestCase
   # The result element outlives every response, so reading its text alone would happily match the
   # response before this one. What is waited for instead is an element the previous response did
   # not draw -- each carries its own number -- with the text this one should have. A read that
-  # lands early now fails rather than passing on stale content.
+  # lands early now fails rather than passing on stale content. (submission_token and
+  # submit_and_wait come from ApplicationSystemTestCase's BrowserHelpers.)
   def submit_and_assert_received(value)
-    drawn_by = submission_token
-    find('#select-round-trip-submit').click
-    assert_selector "#select-round-trip-result:not([data-submission='#{drawn_by}'])", text: value
-  end
-
-  def submit_and_wait
-    drawn_by = submission_token
-    find('#select-round-trip-submit').click
-    assert_selector "#select-round-trip-result:not([data-submission='#{drawn_by}'])"
-  end
-
-  # Which response drew what is on screen now; "none" before the first one.
-  def submission_token
-    page.evaluate_script(<<~JS)
-      (() => {
-        const result = document.querySelector('#select-round-trip-result')
-        return result ? result.dataset.submission : 'none'
-      })()
-    JS
+    drawn_by = submission_token(RESULT)
+    find(SUBMIT).click
+    assert_selector "#{RESULT}:not([data-submission='#{drawn_by}'])", text: value
   end
 
   test 'SF1: a value chosen by keyboard is what the server receives' do
@@ -75,7 +61,7 @@ class SelectFormSubmissionTest < ApplicationSystemTestCase
     press :enter
     assert_equal 'tokyo', select_value(ID)
 
-    submit_and_wait
+    submit_and_wait(SUBMIT, RESULT)
 
     assert_selector '[data-slot=field-error]', text: 'is not available this week'
     assert_equal 'tokyo', select_value(ID), 'the 422 re-render lost the submitted value'

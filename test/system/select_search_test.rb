@@ -13,7 +13,6 @@ class SelectSearchTest < ApplicationSystemTestCase
   LONDON = 11 # the blank option is first, so every index is one past the select-only page's
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
     page.execute_script("document.getElementById('#{ID}-combobox').scrollIntoView({ block: 'center' })")

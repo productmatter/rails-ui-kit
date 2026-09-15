@@ -12,7 +12,6 @@ class RovingFocusListboxTest < ApplicationSystemTestCase
   OPTIONS = %w[apricot apple blackberry blueberry cherry damson elderberry].map { |name| "roving-option-#{name}" }
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
     page.execute_script("document.querySelector('#roving-listbox').scrollIntoView({ block: 'center' })")
     @input = find('#roving-listbox-input')

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<%# A host's layout, not the docs layout (docs/specs/ui-stress-page § Behavior, item 2). It holds
+    what rails_ui_kit:install tells a host to render, the head snippet and body controller the
+    Dark Mode page tells a host to add, and a page's own lang, title, main and h1. Nothing else:
+    the docs layout supplying something a host never gets is a defect this page exists to catch. %>
+<html lang="<%= I18n.locale %>">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stress</title>
+  <%= csrf_meta_tags %>
+  <%= javascript_tag nonce: true do %>
+    (function () {
+      var theme = null;
+      try {
+        theme = localStorage.getItem("rails_ui_kit:theme") || localStorage.getItem("theme");
+      } catch (e) {}
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (theme === "dark" || (theme !== "light" && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  <% end %>
+  <%= stylesheet_link_tag "tailwind", data: { turbo_track: "reload" } %>
+  <%= javascript_importmap_tags %>
+  <% turbo_refreshes_with method: :morph %>
+  <%= yield :head %>
+</head>
+<body class="bg-background text-foreground antialiased" data-controller="ui--dark-mode">
+  <%= render Ui::ConfirmDialogComponent.new %>
+  <%= render Ui::ToastContainerComponent.new(flash: flash) %>
+  <div data-controller="ui--turbo-confirm ui--turbo-disable-with"></div>
+
+  <main class="mx-auto grid max-w-4xl gap-10 px-4 py-8">
+    <h1 class="text-2xl font-semibold">Stress</h1>
+    <%= yield %>
+  </main>
+</body>
+</html>

@@ -67,7 +67,6 @@ class AnchorCleanupTest < ApplicationSystemTestCase
   JS
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
     assert_selector '[data-ui--anchor-target="floating"][data-side]', minimum: 12, wait: 20
   end

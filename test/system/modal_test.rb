@@ -19,6 +19,26 @@ class ModalTest < ApplicationSystemTestCase
     assert_selector 'h1', text: 'Turbo Confirm'
   end
 
+  # A fixed element's `left` follows the inline start in a right-to-left document, so `left-1/2`
+  # with a translate put a centred Modal half off-screen -- its controls unreachable at a phone
+  # width. Found by the stress page (docs/specs/ui-stress-page/status.md).
+  test 'M10: a centred modal sits inside the viewport in both directions' do
+    %w[ltr rtl].each do |direction|
+      open_modal(1)
+      page.execute_script('document.documentElement.dir = arguments[0]', direction)
+      box = page.evaluate_script("document.querySelector('#modal dialog').getBoundingClientRect().toJSON()")
+
+      assert_operator box['width'], :>, 0, "the modal is not laid out in #{direction}"
+      assert_operator box['left'], :>=, 0, "the modal starts off-screen in #{direction}"
+      assert_operator box['right'], :<=, page.evaluate_script('innerWidth'), "the modal ends off-screen in #{direction}"
+
+      within('#modal') { click_on 'Close' }
+      no_modal
+    end
+  ensure
+    page.execute_script("document.documentElement.removeAttribute('dir')")
+  end
+
   test 'M6: closing a modal inside a turbo-frame with a sibling only removes the modal, not the sibling' do
     open_activity_modal(1)
 

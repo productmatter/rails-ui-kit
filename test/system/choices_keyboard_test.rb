@@ -11,7 +11,6 @@ class ChoicesKeyboardTest < ApplicationSystemTestCase
   include ChoicesHelpers
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit choices_path
   end
 

@@ -1,7 +1,7 @@
 ---
 slug: ui-stress-page
 type: chore
-status: draft
+status: building
 decider: Jonathan Simmons
 blast_radius: medium
 size: large
@@ -47,7 +47,8 @@ collide. The generator without both is a list of scenarios.
 
 **Appetite.** One hidden page and its layout, one small demo controller and an ActiveModel form
 object, one shared invariant helper with a self-test, and eight test files. No component changes,
-except defects the suite finds (§ Business rules, rule 9).
+except defects the suite finds (§ Business rules, rule 9) and the morph guard in `ui--overlay` the
+second ruling in `open-questions.md` adds.
 
 ## Goal
 
@@ -74,9 +75,10 @@ been seen to fail on a planted fault.
   Randomised order or timing would make a red build unreproducible.
 - **Not cross-browser.** One headless Chrome, as `ui-test-harness` § Out of scope / deferred
   decides.
-- **Not a CI reshape.** The single `test-system` job runs the stress files like any other.
-  Sharding stays deferred, and this scope measures the time it adds (§ Acceptance checks,
-  human-gate).
+- **Not a CI reshape, within budget.** The single `test-system` job runs the stress files like
+  any other, and this scope measures the time it adds. Up to 15 minutes added is accepted
+  (`open-questions.md`, settled 2026-09-15). Only if the measured lane goes over is the system job
+  sharded by directory, and coverage is not trimmed to fit (§ Assumptions).
 
 ## Behavior
 
@@ -191,8 +193,11 @@ been seen to fail on a planted fault.
 
 9. **Checked at the end of every sequence, in this order**, with each failure naming the
    sequence, the profile and the offending element:
-   1. **No scroll lock left.** `<html>`'s and `<body>`'s inline style, and the scroll
-      position, equal the snapshot taken on arrival.
+   1. **No scroll lock left.** `<html>`'s and `<body>`'s inline style equal the snapshot taken
+      on arrival, or, while an overlay the sequence declares open holds the lock, the lock is
+      held. Every release since arrival put the scroll position back where the lock took it.
+      The scroll position isn't compared with arrival, because a driver's click scrolls its
+      target into view (corrected 2026-09-15, `status.md`).
    2. **No stray open element.** The elements matching `dialog[open]`, `:modal` or
       `:popover-open` are exactly the set the sequence declares open, usually none. Each one is
       claimed by a connected kit controller whose open state agrees.
@@ -206,7 +211,8 @@ been seen to fail on a planted fault.
       `<body>`, it is rendered (a non-zero box and `checkVisibility()`), not inside `[inert]`, a
       closed `<dialog>` or a hidden popover, and inside the topmost open modal when there is one.
       It's `<body>` only when the sequence's last step was a document render that the sequence
-      declares. Where the sequence declares a return target (the trigger, for a dismissal), focus
+      declares, or when focus returns to where it was recorded after one (`ui-toast` F8 from a
+      freshly loaded page). Where the sequence declares a return target (the trigger, for a dismissal), focus
       is on that element or on the element that now holds its id.
    6. **The whole page passes `assert_accessible`**, unscoped.
    7. **A silent console.** No `console.error`, no `console.warn` (which includes every kit
@@ -224,9 +230,11 @@ been seen to fail on a planted fault.
     They ship as one helper on `ApplicationSystemTestCase`, `assert_kit_invariants`, which
     takes the declared open set and the declared focus expectation, plus a `capture_console`
     call made before the visit. Any component suite can adopt it. Adopting it in existing
-    suites is not this scope (§ Out of scope / deferred). Four things stay in the stress
-    files: the arrival snapshot, profile application and its proof, the sequence table and the
-    outside-region coverage proof (item 12).
+    suites is not this scope (§ Out of scope / deferred). The helper also ships
+    `record_arrival`, the snapshot invariant 1 compares against, because no caller can use
+    invariant 1 without it. Four things stay in the stress files: when the arrival snapshot is
+    taken, profile application and its proof, the sequence table and the outside-region
+    coverage proof (item 12).
     Invariant 8 needs the Stimulus application reachable from the page, so the examples app
     exposes it as `window.Stimulus`, the Stimulus handbook's convention. A page without it fails
     invariant 8 loudly rather than skipping it.
@@ -242,7 +250,7 @@ been seen to fail on a planted fault.
     | Overlay | Opens by | Own close |
     |---|---|---|
     | Modal (M) | the frame link | its close button |
-    | Confirm Dialog (C) | the `data-turbo-confirm` Button in M | Cancel |
+    | Confirm Dialog (C) | the `data-turbo-confirm` Button in M | Cancel (it has no outside click — see § Assumptions) |
     | Select `search: true` (S2), in M | click on the combobox | committing an option |
     | Select `search: false` (S1), in the dialog Dropdown | click on the combobox | committing an option |
     | Dropdown menu (Dm) | its trigger | activating the closing item |
@@ -267,8 +275,9 @@ been seen to fail on a planted fault.
       once is enough. The conditions are what vary in P1–P5.
     - **The deepest chain.** M > Dd > S1, dismissed uniformly by each of the three ways,
       innermost first.
-    - **Outside both.** With M > Dm open, one click outside both, in the reverse order
-      `open-questions.md` decides.
+    - **Outside both.** With M > Dm open, one click outside both. It follows the browser: both
+      close, innermost first, and Escape still closes one layer at a time (`open-questions.md`,
+      decided 2026-09-15, option (a)).
     - **Displacement.** Po then Dm, Dm then Po, and Dm then T. The first two are the browser
       closing the earlier auto popover. The third is a hint that must *not* close the layer
       (`ui-presence-and-overlay-stack` § Behavior, item 8). Each is followed by dismissing
@@ -288,8 +297,10 @@ been seen to fail on a planted fault.
       page that could start it would itself be an outside click and dismiss the overlay first,
       and the sequence would no longer be the one it names.
     - **A morphing refresh while open.** M open: it's permanent, so it stays open as the same
-      element, the lock is held and focus stays inside it. S1 open, and Dd > S1 open: the
-      outcome `open-questions.md` decides.
+      element, the lock is held and focus stays inside it. S1 open, and Dd > S1 open: each open
+      layer survives the refresh as the same element, still open, with focus inside it
+      (`open-questions.md`, decided 2026-09-15, option (a)). The guard that makes that true lives
+      in `ui--overlay` and is pinned in that primitive's own suite.
     - **Back with something open.** M open, then its link out. Dd open, then its link out. S2
       open with a typed filter, then a Drive visit. Then Back. The page is restored with
       everything closed at rest, focus not pulled in, and S2's selected value kept with its
@@ -308,21 +319,22 @@ been seen to fail on a planted fault.
 
     | | P0 | Each of P1–P5 |
     |---|---|---|
-    | Nesting pairs | 60 (6 × 9, and M > T's 2 × 3 instead of 9; M > C's 9 assumes Confirm Dialog promises backdrop dismissal) | 21 |
+    | Nesting pairs | 57 (5 × 9, and 2 × 3 each for M > T and M > C, neither of which has an outside click) | 21 |
     | Deepest chain, outside both | 3 + 1 | 3 + 1 |
     | Displacement | 9 | 3 |
     | Toast across a Modal | 3 | 3 |
     | Stream, morph, Back | 5 + 3 + 3 | 5 + 3 + 3 |
     | Form | 2 | 2 |
     | Soak | 1 | 0 |
-    | **Tests** | **90** | **44** |
+    | **Tests** | **87** | **44** |
 
-    That's 310 sequence tests. Add the inventory file and the helper's self-test. Each sequence
+    That's 307 sequence tests. Add the inventory file and the helper's self-test. Each sequence
     test is a visit (about 0.6 s on a heavy page with cached assets), two to four settled
     transitions (about 0.8 s, and less under reduced motion) and one invariant pass (about
     0.8 s, most of it axe). At about 2.2 s a test, P0 runs about 3.5 minutes and each other
     profile about 1.6 minutes. **The estimate is 11 to 13 minutes added to the `test-system`
-    job**, which ran the whole lane in about 11 minutes on 2026-09-14.
+    job**, which ran the whole lane in about 11 minutes on 2026-09-14. **The budget is 15
+    minutes added** (`open-questions.md`, settled 2026-09-15), and the build measures against it.
 
 15. **Eight files, each passing on its own.** The one-file-at-a-time convention (every file
     run in its own process, as every scope's status records) holds, and no file depends on
@@ -410,10 +422,11 @@ been seen to fail on a planted fault.
 
 - **The runtime estimate is arithmetic, not a measurement.** No stress test exists yet. The
   per-step figures come from the lane's 2026-09-14 run (51 files, about 11 minutes) and the
-  weight of the page. **At a contradiction**, where the six profile files measure over
-  15 minutes together or any one file over 4 minutes, record the numbers in `status.md` and
-  put the options to the decider: shard the system job (`ui-test-harness`'s deferred item),
-  take P0's cross to the diagonal, or accept the time. Don't pick one quietly.
+  weight of the page. **At a contradiction**, where the stress files measure over 15 minutes
+  added together, record the numbers in `status.md` and shard the CI system job by directory
+  (`ui-test-harness`'s deferred item, pulled by this). P0's cross is not taken to the diagonal
+  to fit. That was decided in advance on 2026-09-15 (`open-questions.md`), so it isn't a
+  question for the decider when it happens.
 - **Headless Chrome honours 320 px and emulated reduced motion through CDP.** The harness
   already emulates `forced-colors` the same way (`emulate_forced_colors`). A 320 px viewport
   through `Emulation.setDeviceMetricsOverride` is unverified here. **At a contradiction**, where
@@ -428,10 +441,11 @@ been seen to fail on a planted fault.
   driver's BiDi or browser-log channel. Don't fall back to installing capture after the visit,
   which would miss every error thrown during load.
 - **Each overlay's dismissal set is read from its component suite, not assumed.** Whether
-  Confirm Dialog dismisses on a backdrop click is the known unknown: `ui-confirm-dialog` pins
-  "the backdrop behaving as today" without saying what that is. If it doesn't, the M > C pair
-  is 3 × 2 and the counts in § Behavior, item 14 shrink to match. That's a table edit, not a
-  question.
+  Confirm Dialog dismisses on a backdrop click was the known unknown: `ui-confirm-dialog` pins
+  "the backdrop behaving as today" without saying what that is. **Measured, 2026-09-15: it
+  doesn't.** Its own full-viewport wrapper takes every click, so the dialog element -- what a
+  backdrop dismissal listens for -- never receives one. The M > C pair is 3 × 2 and the counts in
+  § Behavior, item 14 are 87, not 90. That was a table edit, as this said, not a question.
 - **"Focus restored as if it had closed" (`ui-presence-and-overlay-stack` § Behavior, item 18)
   lands on the replacement when a stream replaced the trigger.** `ui-modal-turbo` § Business
   rules, rule 8 states this for the Modal. Item 18 forbids focus stranded on `<body>`, and a
@@ -483,7 +497,7 @@ been seen to fail on a planted fault.
 - Profile P3 passes, dark, RTL smoke and pseudo-locale — run: `bundle exec rake test:system TEST=test/system/stress_p3_test.rb`
 - Profile P4 passes, reduced motion, 320 px and RTL smoke — run: `bundle exec rake test:system TEST=test/system/stress_p4_test.rb`
 - Profile P5 passes, reduced motion, 320 px, pseudo-locale and Turbo off — run: `bundle exec rake test:system TEST=test/system/stress_p5_test.rb`
-- The eight files pass together in one process, the shape CI runs, so no profile's emulation leaks into the next — run: `bundle exec rake test:system TEST="test/system/{kit_invariants,stress_*}_test.rb"`
+- The eight files pass together in one process, the shape CI runs, so no profile's emulation leaks into the next — run: `bundle exec rake test:system TEST="test/system/kit_invariants_test.rb,test/system/stress_*_test.rb"`
 - The baseline passes with emulated latency — run: `SLOW=1 bundle exec rake test:system TEST=test/system/stress_p0_test.rb`
 - The page is not in the docs registry, the sidebar or the index — run: `! grep -rn "stress" examples/config/initializers/docs_pages.rb examples/app/views/layouts/docs.html.erb examples/app/views/docs/index.html.erb`
 - The rest of the browser lane stays green with the stress files and the `window.Stimulus` change in place — run: `bundle exec rake test:system`
@@ -498,7 +512,7 @@ been seen to fail on a planted fault.
 
 ### human-gate
 
-- Jonathan accepts the measured time the stress files add to the `test-system` job, recorded in `status.md` against the estimate in § Behavior, item 14, or picks one of the options in § Assumptions.
+- Jonathan sees the measured time the stress files add to the `test-system` job, recorded in `status.md` against the estimate in § Behavior, item 14 and the 15-minute budget, and, if it went over, the directory sharding § Assumptions commits to.
 - Jonathan opens `/stress` in each profile once and agrees it reads as the kit colliding with itself, not as a docs page.
 
 ## Out of scope / deferred
@@ -508,8 +522,9 @@ been seen to fail on a planted fault.
   console-capture helpers onto it goes with that work.
 - **The RTL assertions: mirrored placement, reversed arrows, the gutter side.** They belong to
   the support claim `ui-localization-rtl` deferred.
-- **Sharding or parallelising the system job.** It's `ui-test-harness`'s deferred item, and
-  the measured time in the human gate is what would pull it.
+- **Sharding or parallelising the system job, while within budget.** It's `ui-test-harness`'s
+  deferred item. A measured lane over the 15-minute budget pulls it, by directory
+  (§ Assumptions).
 - **Randomised or property-based sequence generation.** Reconsider it only if the fixed table
   stops finding defects the component suites miss.
 - **Firefox and Safari.** The platform-variance questions this suite raises, such as a popover

@@ -3,7 +3,8 @@
 require_relative 'ui_overlay_helpers'
 
 # Shared vocabulary for the toast browser tests. Not a second harness: ApplicationSystemTestCase
-# stays the base class.
+# stays the base class. `install_console_warning_capture` and `console_warnings` come from its
+# BrowserHelpers.
 module ToastHelpers
   include UiOverlayHelpers
 
@@ -38,18 +39,6 @@ module ToastHelpers
       })()
     JS
     all(TOAST).last
-  end
-
-  def install_console_capture
-    page.execute_script(<<~JS)
-      window.__warnings = []
-      window.__consoleWarn ||= console.warn
-      console.warn = (...args) => { window.__warnings.push(args.map(String).join(' ')); window.__consoleWarn(...args) }
-    JS
-  end
-
-  def console_warnings
-    page.evaluate_script('window.__warnings')
   end
 
   def deep_stringify(value)

@@ -8,8 +8,6 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
 
   OUTSIDE = [1340, 1240].freeze
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'modal: focus enters the overlay on open and returns to the trigger on Escape' do
     visit primitives_overlay_path
     find('#modal-trigger').click
@@ -190,10 +188,6 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
   end
 
   private
-
-  def click_at(point_x, point_y)
-    page.driver.browser.action.move_to_location(point_x.to_i, point_y.to_i).click.perform
-  end
 
   # Builds the markup a component would render, so these cases don't need a demo of their own.
   def inject_overlay(name, inner_html, values: {}, trigger_attributes: '')

@@ -47,7 +47,7 @@ class ToastHrefSystemTest < ApplicationSystemTestCase
     assert_equal before, all(TOAST).size, 'a strict rejection still rendered a toast'
 
     relax_strictness
-    install_console_capture
+    install_console_warning_capture
     trigger_toast(title: 'Lenient', actions: [{ label: 'Evil', href: ' JaVaScRiPt:alert(1)' }, { label: 'Fine', href: '/fine' }])
 
     toast = find(TOAST, text: 'Lenient')

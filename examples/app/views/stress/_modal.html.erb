@@ -1,0 +1,24 @@
+<%# The Modal (docs/specs/ui-stress-page § Behavior, item 3): the same overlay cluster, a searchable
+    Select, the shared Confirm Dialog opened over it, a toast fired from it, a link out and a neutral
+    region, all inside the frame-target pattern. %>
+<%= render Ui::ModalComponent.new(aria: { labelledby: "stress-modal-title" }, data: { stress_render: render_token }) do %>
+  <div id="stress-modal-body" class="grid gap-4 p-6">
+    <h2 id="stress-modal-title" class="text-base font-semibold">Modal</h2>
+    <%= render "stress/overlay_cluster", prefix: "modal" %>
+    <%# Half width, for the same reason as the Select in the cluster's dialog Dropdown. %>
+    <div class="w-1/2">
+      <%= render "stress/city_field" %>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= form_with url: stress_toast_path(page_params), id: "stress-modal-confirm-form",
+                    data: { turbo_confirm: "Send the notification?" } do %>
+        <%= render(Ui::ButtonComponent.new(type: "submit", id: "stress-modal-confirm", variant: :outline)) { "Confirm" } %>
+      <% end %>
+      <%= form_with url: stress_toast_path(page_params), id: "stress-modal-toast-form" do %>
+        <%= render(Ui::ButtonComponent.new(type: "submit", id: "stress-modal-toast", variant: :outline)) { "Notify" } %>
+      <% end %>
+      <%= link_to "Leave", stress_bare_path, id: "stress-modal-out", class: "text-sm underline", data: { turbo_frame: "_top" } %>
+      <%= render(Ui::ButtonComponent.new(id: "stress-modal-close", data: { action: "click->ui--modal#close" })) { "Close" } %>
+    </div>
+  </div>
+<% end %>

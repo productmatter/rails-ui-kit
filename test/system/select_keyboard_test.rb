@@ -14,7 +14,6 @@ class SelectKeyboardTest < ApplicationSystemTestCase
   LAST = 19
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
     focus_combobox(ID)

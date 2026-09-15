@@ -11,8 +11,6 @@ class UiOverlayFallbackTest < ApplicationSystemTestCase
 
   OUTSIDE = [1340, 1240].freeze
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'without popover support a layer still opens, takes focus and gives it back on Escape' do
     visit primitives_overlay_path
     drop_popover_support

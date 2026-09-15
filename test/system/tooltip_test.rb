@@ -3,11 +3,6 @@
 require 'application_system_test_case'
 
 class TooltipTest < ApplicationSystemTestCase
-  # The registered driver's screen_size isn't honoured for the actual browser window on
-  # this machine (observed viewport ~756x413), which is too small for the block-layout
-  # hover test below to land inside the viewport.
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'TT1: a pre-existing aria-describedby is merged onto the control, not the wrapper, and restored when the controller disconnects' do
     visit tooltip_path
     page.execute_script(<<~JS)
@@ -177,7 +172,11 @@ class TooltipTest < ApplicationSystemTestCase
 
   test 'TT7: a fast leave-then-enter within the grace period ends with the tooltip visible and staying visible' do
     visit tooltip_path
-    trigger = find('button', text: 'Top')
+    # Hover is tracked on the trigger wrapper, not on the control: a control marked
+    # aria-disabled="true" has `pointer-events: none` and never sees a pointer event, and that is
+    # the pattern the docs send a disabled control to (docs/specs/ui-stress-page/status.md). A real
+    # pointer over the control is over the wrapper too.
+    trigger = find('button', text: 'Top').find(:xpath, '..')
 
     # Dispatched directly rather than via real pointer moves, so the 30ms gap between
     # leave and enter is exact -- travel time for a real move would swamp it.
@@ -191,6 +190,27 @@ class TooltipTest < ApplicationSystemTestCase
     assert_selector "[data-ui--tooltip-target='content']", text: 'Tooltip top', visible: true
     sleep 0.3
     assert_selector "[data-ui--tooltip-target='content']", text: 'Tooltip top', visible: true
+  end
+
+  # The Tooltip page sends a disabled control to aria-disabled="true" so its tooltip stays
+  # reachable, and the kit's own Button gives such a control `pointer-events: none`. Hover was
+  # tracked on the control, so the tooltip never opened at all. Found by the stress page
+  # (docs/specs/ui-stress-page/status.md).
+  test 'TT9: a tooltip on an aria-disabled control still opens on hover' do
+    visit tooltip_path
+    page.execute_script(<<~JS)
+      const clone = document.querySelector("[data-controller~='ui--tooltip']").cloneNode(true)
+      clone.id = 'tt9-wrapper'
+      const control = clone.querySelector('button')
+      control.id = 'tt9-control'
+      control.setAttribute('aria-disabled', 'true')
+      control.style.pointerEvents = 'none'
+      document.querySelector('main').prepend(clone)
+    JS
+
+    find('#tt9-control').hover
+
+    assert_selector "#tt9-wrapper [data-ui--tooltip-target='content']", visible: true
   end
 
   test 'TT8: a tooltip missing its ui--overlay or ui--anchor companion never throws, and warns once naming each' do
@@ -230,41 +250,5 @@ class TooltipTest < ApplicationSystemTestCase
            "expected a warning naming the missing ui--overlay companion, got: #{warnings}"
     assert warnings.any? { |warning| warning.include?('ui--anchor') && warning.include?('positioning') },
            "expected a warning naming the missing ui--anchor companion, got: #{warnings}"
-  end
-
-  private
-
-  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
-  # checked rather than assumed.
-  def install_error_capture
-    page.execute_script(<<~JS)
-      window.__errors = []
-      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
-    JS
-  end
-
-  def captured_errors
-    page.evaluate_script('window.__errors')
-  end
-
-  # Captures console.warn calls made from here on, without silencing them -- the real warning
-  # still reaches the browser's own console too.
-  def install_console_warning_capture
-    page.execute_script(<<~JS)
-      window.__consoleWarnings = []
-      var originalWarn = console.warn.bind(console)
-      console.warn = function () {
-        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
-        originalWarn.apply(console, arguments)
-      }
-    JS
-  end
-
-  def console_warnings
-    page.evaluate_script('window.__consoleWarnings')
-  end
-
-  def focused?(element)
-    page.evaluate_script('document.activeElement === arguments[0]', element)
   end
 end

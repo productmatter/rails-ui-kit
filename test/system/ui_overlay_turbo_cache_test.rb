@@ -6,8 +6,6 @@ require_relative 'ui_overlay_helpers'
 class UiOverlayTurboCacheTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'Back to a page whose modal was open restores it closed, unlocked, with focus left alone' do
     visit primitives_overlay_path
     collect_errors

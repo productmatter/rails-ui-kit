@@ -7,7 +7,6 @@ class RovingFocusTypeaheadTest < ApplicationSystemTestCase
   include PrimitivesHelpers
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
     page.execute_script("document.querySelector('#roving-menu').scrollIntoView({ block: 'center' })")
   end

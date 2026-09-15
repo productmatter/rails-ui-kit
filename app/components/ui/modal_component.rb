@@ -17,9 +17,12 @@ module Ui
     MAX_WIDE = 'max-w-full sm:max-w-[42rem]'
     MAX_NARROW = 'max-w-full sm:max-w-[32rem]'
 
+    # Centred horizontally with auto inline margins, not `left-1/2` and a translate: a fixed
+    # element's `left` follows the inline start in a right-to-left document, which put a centred
+    # Modal half off-screen (docs/specs/ui-stress-page/status.md).
     POSITION_CLASSES = {
       center: [
-        'top-1/2', 'left-1/2', 'modal-center-hidden',
+        'top-1/2', 'inset-x-0', 'mx-auto', 'modal-center-hidden',
         DEFAULT_WIDE, MAX_WIDE, 'max-h-[90vh]',
         'rounded-none sm:rounded-lg', 'overflow-y-auto'
       ].freeze,
@@ -38,7 +41,7 @@ module Ui
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       top: [
-        'top-0', 'left-1/2', 'modal-top-hidden',
+        'top-0', 'inset-x-0', 'mx-auto', 'modal-top-hidden',
         DEFAULT_WIDE, MAX_WIDE,
         'rounded-none sm:rounded-b-lg', 'overflow-y-auto'
       ].freeze,
@@ -47,7 +50,7 @@ module Ui
         'w-full', 'rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       bottom: [
-        'bottom-0', 'top-auto', 'left-1/2', 'modal-bottom-hidden',
+        'bottom-0', 'top-auto', 'inset-x-0', 'mx-auto', 'modal-bottom-hidden',
         DEFAULT_WIDE, MAX_WIDE,
         'rounded-none sm:rounded-t-lg', 'overflow-y-auto'
       ].freeze,

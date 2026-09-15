@@ -10,7 +10,6 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
   include SelectHelpers
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
   end
@@ -75,17 +74,15 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     assert_accessible(within: '#select-round-trip-preview')
   end
 
-  test 'SA6: the control text, option text and the active option meet contrast on every surface' do
+  # The control's own text contrast is control_contrast_test.rb's "Select's control box" test;
+  # this keeps the option and active-option contrast, which are unique to the open listbox.
+  test 'SA6: option text and the active option meet contrast on every surface' do
     preview = find_by_id('select-preview')
     combobox('demo_timezone').click
     assert_popup 'demo_timezone', 'open'
     press :arrow_down
 
     each_token_surface(preview) do |mode, surface|
-      control = find('#demo_timezone-combobox')
-      ratio = contrast_ratio(color_of(:text, control), color_of(:background, control))
-      assert_operator ratio, :>=, 4.5, "the control's text is #{ratio.round(2)}:1 on #{surface} in #{mode} mode"
-
       option = find('#demo_timezone-option-0')
       ratio = contrast_ratio(color_of(:text, option), color_of(:background, option))
       assert_operator ratio, :>=, 4.5, "option text is #{ratio.round(2)}:1 on #{surface} in #{mode} mode"
@@ -118,15 +115,6 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     assert_no_selector "##{id}-combobox[aria-required]"
   end
 
-  test 'SA7: the focus ring on the control reaches 3:1 against every surface' do
-    preview = find_by_id('select-preview')
-
-    each_token_surface(preview) do |mode, surface|
-      control = find('#demo_timezone-combobox')
-      focus_visibly(control)
-      assert_not_equal 'none', outline_of(control)['style'], 'the combobox draws no focus outline'
-      ratio = contrast_ratio(color_of(:outline, control), color_of(:background, preview))
-      assert_operator ratio, :>=, 3, "the focus ring is #{ratio.round(2)}:1 on #{surface} in #{mode} mode"
-    end
-  end
+  # SA7 (the focus ring on the control reaches 3:1 against every surface) moved to
+  # control_contrast_test.rb's "Select's control box" test.
 end

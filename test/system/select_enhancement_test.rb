@@ -12,7 +12,6 @@ class SelectEnhancementTest < ApplicationSystemTestCase
   ID = 'demo_timezone'
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit select_path
     disable_transitions
   end
@@ -188,16 +187,8 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     assert_nil ax_node("select##{id}"), 'the covered select is still in the accessibility tree'
   end
 
-  # Chrome's own accessibility tree: the node for an element, or nil where the element is ignored
-  # (display:none, aria-hidden) and so never reaches a screen reader.
-  def ax_node(selector)
-    browser = page.driver.browser
-    root = browser.execute_cdp('DOM.getDocument', depth: 0)['root']['nodeId']
-    node = browser.execute_cdp('DOM.querySelector', nodeId: root, selector: selector)['nodeId']
-    ax = browser.execute_cdp('Accessibility.getPartialAXTree', nodeId: node, fetchRelatives: false)['nodes'].first
-    ax unless ax.nil? || ax['ignored']
-  end
-
+  # ax_node (Chrome's accessibility tree for one element) comes from ApplicationSystemTestCase's
+  # BrowserHelpers.
   def style_of(selector, property)
     page.evaluate_script('getComputedStyle(document.querySelector(arguments[0]))[arguments[1]]',
                          selector, property)

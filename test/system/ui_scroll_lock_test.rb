@@ -6,8 +6,6 @@ require_relative 'ui_overlay_helpers'
 class UiScrollLockTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'the demo page has a space-taking scrollbar, or none of this proves anything' do
     visit primitives_overlay_path
 

@@ -6,8 +6,6 @@ require_relative 'ui_overlay_helpers'
 class UiOverlayAccessibilityTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'the primitives demo page passes an axe audit as rendered' do
     visit primitives_overlay_path
 

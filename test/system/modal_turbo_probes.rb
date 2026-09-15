@@ -3,7 +3,8 @@
 # The instrumentation half of the Modal + Turbo lifecycle tests: the probes that make a claim
 # checkable rather than plausible -- what the server answered, whether the dialog was re-mounted,
 # whether it animated out, whether anything was requested at all. Separated from
-# ModalTurboHelpers, which is the vocabulary of the demo itself.
+# ModalTurboHelpers, which is the vocabulary of the demo itself. `click_at` comes from
+# ApplicationSystemTestCase's BrowserHelpers.
 module ModalTurboProbes
   # Marks the dialog that is open now, so a later assertion can prove it is the same element
   # rather than a re-mounted one that merely looks the same.
@@ -87,10 +88,6 @@ module ModalTurboProbes
 
   def dialog_states
     page.evaluate_script('window.__states')
-  end
-
-  def click_at(point_x, point_y)
-    page.driver.browser.action.move_to_location(point_x.to_i, point_y.to_i).click.perform
   end
 
   # A point the dialog is provably not covering -- measured, because a dialog that is not laid

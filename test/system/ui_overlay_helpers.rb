@@ -3,27 +3,11 @@
 # Shared probes for the ui--presence / ui--overlay browser tests. Not a test file, and not a
 # second harness: ApplicationSystemTestCase (ui-test-harness) stays the base class, and these
 # are the few primitive-specific reads that would otherwise be copied into eight files.
+# `state_of`, `focused?`, `focused_id`, `press` and `rect_of` come from ApplicationSystemTestCase's
+# BrowserHelpers.
 module UiOverlayHelpers
-  def state_of(selector)
-    page.evaluate_script('document.querySelector(arguments[0]).dataset.state', selector)
-  end
-
   def hidden?(selector)
     page.evaluate_script("document.querySelector(arguments[0]).hasAttribute('hidden')", selector)
-  end
-
-  def focused?(element)
-    page.evaluate_script('document.activeElement === arguments[0]', element)
-  end
-
-  def focused_id
-    page.evaluate_script('document.activeElement && document.activeElement.id')
-  end
-
-  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike Capybara's
-  # element.send_keys, which focuses the element it is called on first.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
   end
 
   # The scroll lock takes <body> out of flow; that, not a class, is the observable state.
@@ -37,10 +21,6 @@ module UiOverlayHelpers
 
   def scroll_position
     page.evaluate_script('[window.scrollX, window.scrollY]')
-  end
-
-  def rect_of(selector)
-    page.evaluate_script('document.querySelector(arguments[0]).getBoundingClientRect().toJSON()', selector)
   end
 
   # Waits, the way any Capybara assertion waits rather than sleeping a duration, for the element

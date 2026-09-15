@@ -70,14 +70,8 @@ class FieldSwapTest < ApplicationSystemTestCase
     page.evaluate_script("document.querySelector('#{FIELD}') === window.__field")
   end
 
-  # The accessibility tree's view of one element, from Chrome itself.
-  def ax_node(selector)
-    browser = page.driver.browser
-    root = browser.execute_cdp('DOM.getDocument', depth: 0)['root']['nodeId']
-    node = browser.execute_cdp('DOM.querySelector', nodeId: root, selector: selector)['nodeId']
-    browser.execute_cdp('Accessibility.getPartialAXTree', nodeId: node, fetchRelatives: false)['nodes'].first
-  end
-
+  # ax_node (Chrome's accessibility tree for one element) comes from ApplicationSystemTestCase's
+  # BrowserHelpers.
   def ax_value(node, key)
     node.dig(key, 'value')
   end

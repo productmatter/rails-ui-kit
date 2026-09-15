@@ -23,6 +23,11 @@ export default class extends Controller {
     // target lookups that can throw once the scope starts tearing down, so disconnect()
     // must not depend on them.
     this.controlElement = this.resolveTriggerControl()
+    // Hover is tracked on the trigger wrapper, not on the control: a control marked
+    // aria-disabled="true" has `pointer-events: none`, so it never sees a pointer event at all --
+    // and the aria-disabled pattern is exactly the one the docs send a disabled control to, so
+    // that its tooltip stays reachable. Focus stays on the control, which is what receives it.
+    this.hoverElement = this.hasTriggerTarget ? this.triggerTarget : this.controlElement
     this.contentElement = this.contentTarget
 
     this.tooltipId = `ui-tooltip-${Math.random().toString(36).slice(2, 9)}`
@@ -49,8 +54,8 @@ export default class extends Controller {
       this.setAnchored(false)
     }
 
-    this.controlElement.addEventListener("mouseenter", this.onControlEnter)
-    this.controlElement.addEventListener("mouseleave", this.onControlLeave)
+    this.hoverElement.addEventListener("mouseenter", this.onControlEnter)
+    this.hoverElement.addEventListener("mouseleave", this.onControlLeave)
     this.controlElement.addEventListener("focusin", this.onControlFocusIn)
     this.controlElement.addEventListener("focusout", this.onControlFocusOut)
     this.contentElement.addEventListener("mouseenter", this.onContentEnter)
@@ -74,8 +79,8 @@ export default class extends Controller {
       }
     }
 
-    this.controlElement.removeEventListener("mouseenter", this.onControlEnter)
-    this.controlElement.removeEventListener("mouseleave", this.onControlLeave)
+    this.hoverElement.removeEventListener("mouseenter", this.onControlEnter)
+    this.hoverElement.removeEventListener("mouseleave", this.onControlLeave)
     this.controlElement.removeEventListener("focusin", this.onControlFocusIn)
     this.controlElement.removeEventListener("focusout", this.onControlFocusOut)
     this.contentElement.removeEventListener("mouseenter", this.onContentEnter)

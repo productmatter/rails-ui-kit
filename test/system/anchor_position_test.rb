@@ -6,17 +6,12 @@ require 'primitives_helpers'
 class AnchorPositionTest < ApplicationSystemTestCase
   include PrimitivesHelpers
 
-  # The registered driver's screen_size isn't honoured for the actual browser window on this
-  # machine, and every assertion here is about geometry inside the viewport.
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit primitives_navigation_path
     # Floating UI is fetched from a CDN pin, so the first computation of the page can land well
     # after load. Everything below assumes the page has positioned at least once.
     assert_selector '[data-ui--anchor-target="floating"][data-side]', minimum: 12, wait: 20
   end
-
-  teardown { page.driver.browser.manage.window.resize_to(1400, 1400) }
 
   test 'AP1: a block-layout anchor positions against the caller\'s control, not the full-width wrapper' do
     control = find('#anchor-block-control')

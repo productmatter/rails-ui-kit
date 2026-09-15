@@ -8,8 +8,6 @@ require_relative 'ui_overlay_helpers'
 class UiOverlayReopenTest < ApplicationSystemTestCase
   include UiOverlayHelpers
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'reopening from the closed event leaves a genuinely open overlay, not an invisible modal' do
     visit primitives_overlay_path
     find('#modal-trigger').click

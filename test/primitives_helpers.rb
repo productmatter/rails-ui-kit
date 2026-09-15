@@ -2,13 +2,8 @@
 
 # Browser helpers shared by the ui--anchor and ui--roving-focus system tests. Required by those
 # test files only, never from test_helper.rb -- it must not pull Capybara into the unit lane.
+# `press` and `focused?` come from ApplicationSystemTestCase's BrowserHelpers.
 module PrimitivesHelpers
-  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike Capybara's
-  # element.send_keys, which focuses the element it is called on first.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
-  end
-
   def tab_to(element, limit: 80)
     limit.times do
       break if focused?(element)
@@ -16,10 +11,6 @@ module PrimitivesHelpers
       press :tab
     end
     element
-  end
-
-  def focused?(element)
-    page.evaluate_script('document.activeElement === arguments[0]', element)
   end
 
   def rect(element)

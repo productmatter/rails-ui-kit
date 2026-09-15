@@ -3,11 +3,6 @@
 require 'application_system_test_case'
 
 class PopoverTest < ApplicationSystemTestCase
-  # The registered driver's screen_size isn't honoured for the actual browser window on
-  # this machine (observed viewport ~756x413), which is too small for the block-layout
-  # coordinate clicks below to land inside the viewport.
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   test 'PO1: ARIA lives on the trigger control, not the wrapper, and Escape from inside returns focus to it' do
     visit popover_path
     wrapper = find("[data-controller~='ui--popover']")
@@ -207,40 +202,6 @@ class PopoverTest < ApplicationSystemTestCase
 
   private
 
-  # Captures uncaught errors from here on, so a claim that a code path "never throws" is
-  # checked rather than assumed.
-  def install_error_capture
-    page.execute_script(<<~JS)
-      window.__errors = []
-      window.addEventListener('error', function (event) { window.__errors.push(event.message) })
-    JS
-  end
-
-  def captured_errors
-    page.evaluate_script('window.__errors')
-  end
-
-  # Captures console.warn calls made from here on, without silencing them -- the real warning
-  # still reaches the browser's own console too.
-  def install_console_warning_capture
-    page.execute_script(<<~JS)
-      window.__consoleWarnings = []
-      var originalWarn = console.warn.bind(console)
-      console.warn = function () {
-        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
-        originalWarn.apply(console, arguments)
-      }
-    JS
-  end
-
-  def console_warnings
-    page.evaluate_script('window.__consoleWarnings')
-  end
-
-  def focused?(element)
-    page.evaluate_script('document.activeElement === arguments[0]', element)
-  end
-
   # ui--overlay closes a light-dismissed or Escaped layer on the next frame and returns focus once
   # its exit animation has finished, so these wait the way any Capybara assertion does.
   def assert_expanded(expected, trigger)
@@ -262,10 +223,5 @@ class PopoverTest < ApplicationSystemTestCase
   def assert_focused(element)
     element.synchronize { raise Capybara::ExpectationNotMet, 'not focused' unless focused?(element) }
     assert focused?(element)
-  end
-
-  # Sends keys to whatever currently has focus, the way a keyboard does.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
   end
 end

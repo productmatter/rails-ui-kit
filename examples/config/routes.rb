@@ -33,4 +33,14 @@ Rails.application.routes.draw do
   post  'demos/toasts',      to: 'toasts#create', as: :demo_toasts
   get   'demos/toasts/flash', to: 'toasts#flash_toast', as: :demo_toast_flash
   patch 'demos/toasts/undo', to: 'toasts#undo', as: :demo_toast_undo
+
+  # The stress page (docs/specs/ui-stress-page): a test fixture in a host's layout, not a docs
+  # page, so it stays outside DocsPages::PAGES and nothing links to it. /stress/bare is the empty
+  # page in the same layout that the kit invariants' self-test plants its faults on.
+  get  'stress',      to: 'stress#show', as: :stress
+  post 'stress',      to: 'stress#create'
+  get  'stress/bare', to: 'stress#bare', as: :stress_bare
+  get  'stress/modal', to: 'stress#modal', as: :stress_modal
+  post 'stress/toast', to: 'stress#toast', as: :stress_toast
+  get  'stress/streams/:target', to: 'stress#stream', as: :stress_stream
 end

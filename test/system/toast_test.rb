@@ -109,21 +109,4 @@ class ToastTest < ApplicationSystemTestCase
   def region_changes(name)
     page.evaluate_script('window.__regionChanges[arguments[0]]', name)
   end
-
-  # Captures console.warn calls made from here on, without silencing them -- the real warning
-  # still reaches the browser's own console too.
-  def install_console_warning_capture
-    page.execute_script(<<~JS)
-      window.__consoleWarnings = []
-      var originalWarn = console.warn.bind(console)
-      console.warn = function () {
-        window.__consoleWarnings.push(Array.from(arguments).map(String).join(' '))
-        originalWarn.apply(console, arguments)
-      }
-    JS
-  end
-
-  def console_warnings
-    page.evaluate_script('window.__consoleWarnings')
-  end
 end

@@ -77,6 +77,14 @@ The driver is Selenium against headless Chrome, registered with the flags a CI c
 needs (`--headless=new`, `--no-sandbox`, `--disable-dev-shm-usage`) and a fixed window
 size so a test that depends on viewport geometry — anchored positioning collision and flip
 behavior, in particular — is deterministic rather than dependent on the runner's default.
+That size is applied by the base class before every test, not by `driven_by`: `driven_by`
+only sizes a driver Rails registers itself, and this one is registered here, so the window
+came up at Chrome's own default (about 756x413) and every geometry test carried a resize of
+its own to make up for it. The base class sizes the *viewport*, measuring and adding the
+window's frame, and leaves a driver with no window — `rack_test`, which the no-JavaScript
+checks run under — alone, the way the `SLOW=1` switch leaves a driver with no CDP session
+alone. A test that needs another size asks for one and the next test starts from the
+registered size again.
 The app under test is `examples/`; Capybara's server is the one Rails' system-testing
 integration already starts, so no bespoke server plumbing is written.
 
@@ -201,7 +209,8 @@ correctly in the first place (§ Out of scope / deferred).
   mentioning no browser.
 - `test/application_system_test_case.rb` (new) — the Capybara base class, the headless
   Chrome driver registration, the `assert_accessible` helper, and the `SLOW=1` switch.
-- `test/system/` (new) — the browser-test lane and its smoke test.
+- `test/system/` (new) — the browser-test lane, smoke-covered by `button_test.rb`
+  (accessibility audit) and `accessibility_assertion_test.rb` (the harness fails loudly).
 - `Rakefile` — the single `test/**/*_test.rb` glob that currently sweeps system tests into
   the default run; splits into the unit and `test:system` lanes here.
 - `.github/workflows/ci.yml` — the four-Ruby matrix; gains the single-Ruby system job.
@@ -215,7 +224,7 @@ correctly in the first place (§ Out of scope / deferred).
 
 ### agent-loopable
 
-- A system test inheriting the new base class boots headless Chrome, drives a real rendered `examples/` page and passes — run: `bundle exec rake test:system TEST=test/system/harness_smoke_test.rb`
+- A system test inheriting the new base class boots headless Chrome, drives a real rendered `examples/` page and passes — run: `bundle exec rake test:system TEST=test/system/button_test.rb`
 - The unit lane stays browserless: loading `test/test_helper.rb` defines no Capybara — run: `bundle exec ruby -Itest -e 'require "test_helper"; abort("browser dependency leaked into the unit lane") if defined?(Capybara)'`
 - The two lanes are separate tasks and the default lane no longer globs `test/system/` — run: `bundle exec rake -T | grep -q "rake test:system" && ! grep -q "test/\*\*/\*_test.rb" Rakefile`
 - `assert_accessible` runs a real axe audit and fails with axe's violation report on a page seeded with a known violation — run: `bundle exec rake test:system TEST=test/system/accessibility_assertion_test.rb`

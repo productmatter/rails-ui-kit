@@ -10,27 +10,16 @@ class ChoicesSubmissionTest < ApplicationSystemTestCase
   include ChoicesHelpers
 
   setup do
-    page.driver.browser.manage.window.resize_to(1400, 1400)
     visit choices_path
     page.execute_script("document.getElementById('choices-round-trip-submit').scrollIntoView({ block: 'center' })")
   end
 
   # The result element outlives every response, so reading its text alone would happily match the
   # response before this one. What is waited for instead is an element the previous response did
-  # not draw -- each carries its own number.
+  # not draw -- each carries its own number. (submit_and_wait comes from
+  # ApplicationSystemTestCase's BrowserHelpers.)
   def submit_and_wait
-    drawn_by = submission_token
-    find('#choices-round-trip-submit').click
-    assert_selector "#choices-round-trip-result:not([data-submission='#{drawn_by}'])"
-  end
-
-  def submission_token
-    page.evaluate_script(<<~JS)
-      (() => {
-        const result = document.querySelector('#choices-round-trip-result')
-        return result ? result.dataset.submission : 'none'
-      })()
-    JS
+    super('#choices-round-trip-submit', '#choices-round-trip-result')
   end
 
   def role(value)

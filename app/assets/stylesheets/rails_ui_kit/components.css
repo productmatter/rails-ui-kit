@@ -1,6 +1,12 @@
 /*
  * rails-ui-kit component styles
  *
+ * Horizontal centring is `inset-inline: 0` plus `margin-inline: auto` on the component's own
+ * classes, never `left: 50%` with a translate: a fixed element's `left` is resolved against the
+ * inline start in a right-to-left document, which put a centred Modal half off-screen at narrow
+ * widths (found by the stress page; see docs/specs/ui-stress-page/status.md). So these transforms
+ * carry the vertical movement only.
+ *
  * Modal transform states used by Ui::ModalComponent. The component renders one
  * modal-<position>-hidden class; ui--presence's data-state="open" selects the visible
  * transform, and the dialog's `transition-all duration-300 ease-in-out` animates between
@@ -8,11 +14,11 @@
  */
 
 .modal-center-hidden {
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
 .modal-center-hidden[data-state="open"] {
-  transform: translate(-50%, -50%) scale(1);
+  transform: translateY(-50%) scale(1);
 }
 
 .modal-full-screen-hidden {
@@ -40,11 +46,11 @@
 }
 
 .modal-top-hidden {
-  transform: translate(-50%, -100%);
+  transform: translateY(-100%);
 }
 
 .modal-top-hidden[data-state="open"] {
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 .modal-top-full-hidden {
@@ -56,11 +62,11 @@
 }
 
 .modal-bottom-hidden {
-  transform: translate(-50%, 100%);
+  transform: translateY(100%);
 }
 
 .modal-bottom-hidden[data-state="open"] {
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 .modal-bottom-full-hidden {

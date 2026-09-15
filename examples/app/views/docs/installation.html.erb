@@ -79,7 +79,7 @@
       </div>
       <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-layout" class="text-neutral-200">&lt;body class="bg-background text-foreground"&gt;
   &lt;%= render Ui::ConfirmDialogComponent.new %&gt;
-  &lt;%= render Ui::ToastContainerComponent.new %&gt;
+  &lt;%= render Ui::ToastContainerComponent.new(flash: flash) %&gt;
   &lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;
   &lt;%# Where Turbo Streams open modals. data-turbo-permanent keeps an open one through a morph. %&gt;
   &lt;div id="modal" data-turbo-permanent&gt;&lt;/div&gt;

@@ -95,6 +95,7 @@
   <li>Announces the loading state via an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-live="polite"</code> region so screen readers are notified.</li>
   <li>Re-enables and restores the original button text on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:submit-end</code>.</li>
   <li>The button is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-busy="true"</code> while it waits, and disabled, so it can't be pressed twice.</li>
+  <li>Turbo disables the button that submitted a form while the request runs, and the browser moves focus off a disabled element, so a keyboard user would land on the page itself. If that button had focus when the form was submitted, focus goes back to it when the submission ends: for every Turbo form on a page that renders this controller, whether or not the button has <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>. It doesn't if the button has gone, or if something else has taken focus in the meantime, such as a response that focused an error.</li>
 </ul>
 
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>

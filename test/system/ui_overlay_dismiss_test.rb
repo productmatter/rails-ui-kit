@@ -9,8 +9,6 @@ class UiOverlayDismissTest < ApplicationSystemTestCase
   # A point on the page well clear of every trigger and panel on the demo page.
   OUTSIDE = [1340, 1240].freeze
 
-  setup { page.driver.browser.manage.window.resize_to(1400, 1400) }
-
   # Guards the geometry every OUTSIDE-coordinate test below assumes: a layer or hint composed
   # with ui--anchor opens at its trigger, not centred in the viewport. Rects are asserted
   # non-zero first, since a hidden element measures 0x0 and would pass silently otherwise.
@@ -272,10 +270,6 @@ class UiOverlayDismissTest < ApplicationSystemTestCase
   def center_of(selector)
     rect = rect_of(selector)
     [rect['left'] + (rect['width'] / 2), rect['top'] + (rect['height'] / 2)]
-  end
-
-  def click_at(point_x, point_y)
-    page.driver.browser.action.move_to_location(point_x.to_i, point_y.to_i).click.perform
   end
 
   # A real pointer drag: press inside, move through a midpoint (some engines ignore a single

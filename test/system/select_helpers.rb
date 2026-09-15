@@ -2,27 +2,16 @@
 
 # Shared probes for the Ui::SelectComponent browser tests. Not a test file and not a second
 # harness: ApplicationSystemTestCase stays the base class, and these are the few Select-specific
-# reads that would otherwise be copied into every file.
+# reads that would otherwise be copied into every file. `press`, `click_at`, `focused_id`,
+# `state_of` and `rect_of` come from ApplicationSystemTestCase's BrowserHelpers.
 module SelectHelpers
   TIMEZONES = ['Auckland', 'Berlin', 'Bogotá', 'Cairo', 'Chicago', 'Delhi', 'Dublin', 'Helsinki', 'Lagos', 'Lisbon', 'London', 'Madrid', 'Nairobi', 'New York', 'Oslo', 'Paris', 'São Paulo',
                'Singapore', 'Sydney', 'Tokyo'].freeze
-
-  # Sends keys to whatever currently has focus, the way a keyboard does -- unlike Capybara's
-  # element.send_keys, which focuses the element it is called on first.
-  def press(*keys)
-    page.driver.browser.action.send_keys(*keys).perform
-  end
 
   # A real chord -- Alt held down while the other key is pressed -- which send_keys(:alt, :x)
   # is not: that presses and releases Alt first.
   def press_with(modifier, key)
     page.driver.browser.action.key_down(modifier).send_keys(key).key_up(modifier).perform
-  end
-
-  # A real pointer press at a point on the page, which is the only way to press something the
-  # page has told the pointer to ignore.
-  def click_at(point_x, point_y)
-    page.driver.browser.action.move_to_location(point_x.to_i, point_y.to_i).click.perform
   end
 
   def option_value(id, index)
@@ -40,10 +29,6 @@ module SelectHelpers
     element
   end
 
-  def focused_id
-    page.evaluate_script('document.activeElement && document.activeElement.id')
-  end
-
   # The value the form would post: the select's, never the label's.
   def select_value(id)
     page.evaluate_script('document.getElementById(arguments[0]).value', id)
@@ -51,10 +36,6 @@ module SelectHelpers
 
   def combobox_label(id)
     combobox(id).text.strip
-  end
-
-  def state_of(selector)
-    page.evaluate_script('document.querySelector(arguments[0]).dataset.state', selector)
   end
 
   # Waits, the way any Capybara assertion waits, for the popup to reach `expected` with its
@@ -109,10 +90,6 @@ module SelectHelpers
 
   def recorded_events
     page.evaluate_script('window.__selectEvents')
-  end
-
-  def rect_of(selector)
-    page.evaluate_script('document.querySelector(arguments[0]).getBoundingClientRect().toJSON()', selector)
   end
 
   # A rect that is actually laid out. Every geometry assertion goes through this, so a hidden or
