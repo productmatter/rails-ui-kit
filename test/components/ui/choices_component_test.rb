@@ -105,6 +105,13 @@ module Ui
       assert_selector "input[value='shipped'][checked]", visible: :all
     end
 
+    test 'CH6a model: takes the record as well as the class' do
+      render_choices(name: 'order[status]', model: TestOrder.new, enum: :status, checked: 'shipped')
+
+      values = rendered_entries.reject { |entry| entry['type'] == 'hidden' }.map { |entry| entry['value'] }
+      assert_equal %w[pending shipped delivered], values
+    end
+
     test 'CH7 form: reaches every input and the hidden field, as in Rails' do
       render_choices(name: 'user[role_ids]', multiple: true, form: 'outside', **collection_source)
 

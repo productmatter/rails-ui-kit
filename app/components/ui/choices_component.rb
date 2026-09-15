@@ -42,10 +42,10 @@ module Ui
       false
     end
 
-    attr_reader :name, :control_id, :option_set, :size, :appearance, :style
+    attr_reader :name, :control_id, :option_set, :size, :variant, :style
 
     def initialize(name:, id: nil, multiple: false, checked: nil, disabled_values: nil, include_hidden: true,
-                   required: false, disabled: false, form: nil, size: :default, appearance: :list,
+                   required: false, disabled: false, form: nil, size: :default, variant: :list,
                    description_method: nil, icon_method: nil, required_message: nil, **attributes)
       @required_message = required_message
       @multiple = boolean_attribute?(multiple)
@@ -54,7 +54,7 @@ module Ui
       assign_option_methods(description_method, icon_method)
       @option_set = Ui::OptionSet.new(component: self.class.name, selected: checked,
                                       disabled_values: disabled_values, **option_keywords(attributes))
-      assign_style(size, appearance)
+      assign_style(size, variant)
       super(**attributes)
       extract_described_by!
       validate_items!
@@ -152,11 +152,11 @@ module Ui
       @icon_method = icon_method
     end
 
-    # An unknown step or appearance fails the way an unknown variant does everywhere else.
-    def assign_style(size, appearance)
-      @size = resolve_key(:size, size, Ui::Choices::Appearance::SIZES)
-      @appearance = resolve_key(:appearance, appearance, Ui::Choices::Appearance::APPEARANCES)
-      @style = Ui::Choices::Appearance.new(appearance: @appearance, size: @size, multiple: multiple?)
+    # An unknown step or variant fails the way an unknown variant does everywhere else.
+    def assign_style(size, variant)
+      @size = resolve_key(:size, size, Ui::Choices::Variant::SIZES)
+      @variant = resolve_key(:variant, variant, Ui::Choices::Variant::VARIANTS)
+      @style = Ui::Choices::Variant.new(variant: @variant, size: @size, multiple: multiple?)
     end
 
     def assign_flags(required:, disabled:, include_hidden:, form:)

@@ -75,7 +75,7 @@ phone and desktop widths.
   context), `choices_submission_test` (an in-memory `has_and_belongs_to_many` round trip from
   the rendered markup), `option_set_test`, `field_choices_test`, and the browser files
   `choices_submission`, `choices_keyboard`, `choices_validation`, `choices_accessibility`,
-  `choices_appearance`, `choices_layout`, `choices_turbo` and `choices_no_javascript`.
+  `choices_variant`, `choices_layout`, `choices_turbo` and `choices_no_javascript`.
   Each new behaviour was proved to fail without its implementation: dropping the CSS swap,
   the accessibility flip, the carriers or the controller's derivation each turns its checks red.
 
@@ -87,7 +87,7 @@ None.
 
 `bundle exec rake test` — 516 runs, 0 failures. Browser lane, one file at a time:
 `choices_submission` 5, `choices_keyboard` 7, `choices_validation` 7, `choices_accessibility` 7
-(axe in light and dark), `choices_appearance` 6, `choices_layout` 4, `choices_turbo` 4,
+(axe in light and dark), `choices_variant` 6, `choices_layout` 4, `choices_turbo` 4,
 `choices_no_javascript` 6 — 0 failures, plus the eight Select files re-run across the
 `Ui::OptionSet` move. `bundle exec rubocop` clean, with no inline disables and no config change.
 
@@ -104,6 +104,7 @@ None.
 ## Corrections
 
 - § Behavior, item 5 said Rails' blank hidden field carries `autocomplete="off"`. It does not: `collection_helpers.rb` renders it through `hidden_field_tag` with `id: nil` and `form:` only (ActionView 8.1.3.1, and identical in 7.2.3.2). `autocomplete="off"` belongs to `checkbox`'s hidden field. Choices renders what the collection helpers render, and `choices_component_test` compares attribute for attribute against the real helper rather than against this spec's prose — provable — implementer
-- § Behavior, item 16 said a `currentColor` stroke becomes `CanvasText` in forced colours, so the mark survives. Measured in Chrome 152 with forced colours emulated: the input's own `background-color` is forced to `Canvas`, but an SVG's `stroke`/`color` is left alone, so the mark stayed `--primary-foreground` and the measured contrast against the forced-white fill was 1.04:1 — invisible. The mark now names the system colour itself (`forced-colors:text-[CanvasText]`), and `choices_appearance_test` measures it rather than trusting the forcing — provable — implementer
+- § Behavior, item 16 said a `currentColor` stroke becomes `CanvasText` in forced colours, so the mark survives. Measured in Chrome 152 with forced colours emulated: the input's own `background-color` is forced to `Canvas`, but an SVG's `stroke`/`color` is left alone, so the mark stayed `--primary-foreground` and the measured contrast against the forced-white fill was 1.04:1 — invisible. The mark now names the system colour itself (`forced-colors:text-[CanvasText]`), and `choices_variant_test` measures it rather than trusting the forcing — provable — implementer
 - § Behavior, item 3 said the option set's error messages "take the calling component's name"; it did not say how. `component:` is a required keyword on `Ui::OptionSet`, so a new caller cannot forget it and inherit Select's name by accident — tasteable — implementer
-- The fieldset's own class list (`group/choices grid min-w-0 gap-2`) is what item 16's invalid rule and item 18's `min-w-0` both hang off. It was missing from the first implementation, and both the appearance check (invalid lost to checked, measured as a real colour) and the layout check caught it. Recorded because the same omission would be invisible in a render test — provable — implementer
+- The fieldset's own class list (`group/choices grid min-w-0 gap-2`) is what item 16's invalid rule and item 18's `min-w-0` both hang off. It was missing from the first implementation, and both the variant check (invalid lost to checked, measured as a real colour) and the layout check caught it. Recorded because the same omission would be invisible in a render test — provable — implementer
+- `appearance:` was renamed to `variant:`, ratified 2026-09-15 by an independent API review, relayed by the orchestrator: `appearance` is a style variant, the same shape Button already names `variant:`, and Choices had zero released consumers to break. `Ui::Choices::Appearance` moved to `Ui::Choices::Variant` (`app/components/ui/choices/variant.rb`), `choices_appearance_test.rb` became `choices_variant_test.rb`, and the docs page and spec were updated to match — provable — implementer

@@ -1,10 +1,10 @@
 ## State
 
-building
+ready-for-review
 
-Ratified 2026-09-13, built 2026-09-14 on `feature/ui-kit-foundation`. Every § Acceptance check
-outside the human gate runs green. What is left is Jonathan's read of the guide and the generated
-skill (§ Acceptance checks, human-gate) and the `CHANGELOG.md` entry, which the decider owns.
+Ratified 2026-09-13, built 2026-09-14 on `feature/ui-kit-foundation`, and shipped in 0.3.0. Every
+§ Acceptance check outside the human gate runs green. What is left is Jonathan's read of the guide
+and the generated skill (§ Acceptance checks, human-gate).
 
 ## Done
 
@@ -77,3 +77,4 @@ All 2026-09-14, against the shipped code, and folded into `spec.md` where they c
 - § Behavior, item 13, `data-turbo-action="advance"`: not a pattern to document positively, since the advance visit caches a snapshot as soon as the response lands and the teardown removes the modal ~15ms after it opened; the guide documents it as a thing not to do — provable — implementer
 - § Critical files, the docs layout: the frame-target demo cannot keep its own separate `<turbo-frame id="modal">`, which would be two elements with one id on a page, so it has `id="project_activity_modal"` — provable — implementer
 - § Acceptance checks, the packaging one-liner: replaced by `test/modal_and_turbo_guide_test.rb`, which packages and pins every sample to its source file, because drift between guide and demo was the risk worth a test — provable — implementer
+- This file's State stayed `building` after the CHANGELOG.md entry landed and 0.3.0 shipped this scope; corrected to `ready-for-review`, matching the parent table (`ui-component-library` § Scopes) and the one open item, Jonathan's human gate. The parent table also still named the action `turbo_stream.close_modal`; it is `turbo_stream.ui_close_modal`, the namespaced name it shipped under — provable — implementer

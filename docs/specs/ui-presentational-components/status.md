@@ -1,11 +1,13 @@
 ## State
 
-building
+ready-for-review
 
-Ratified 2026-09-13 and not started. Button and Card shipped under this scope's name
-before the spec existed and are its precedents. Three open questions gate the first
-batch. Input-first build order and the `--input` and dark `--destructive` contrast
-fixes each have a default, so work can start on the defaults.
+Ratified 2026-09-13. Button shipped under this scope's name before the spec existed and
+is its precedent; Card also shipped before the spec existed but was cut from scope
+(§ Corrections) and is no longer part of it. Input, Label and Textarea, the batch the
+three open questions gated, are built (§ Corrections): the agent-loopable checks are
+green, and what remains is Jonathan's human gate — every rendered docs page in light
+and dark mode, on both surfaces (§ Acceptance checks, human-gate).
 
 ## Done
 
@@ -35,7 +37,11 @@ with rule 7(a)'s dark fill moved off `--input` onto `dark:bg-muted/50`.
 
 ## Last green checkpoint
 
-none — no component in this scope has been built
+Re-verified 2026-09-15 against `feature/ui-kit-foundation`, superseding this file's earlier "no
+component in this scope has been built": `bundle exec rake test` green, the palette-literal grep
+(§ Acceptance checks, agent-loopable) finds nothing outside the `ui-foundation-retrofit`
+exclusion, and `bundle exec rake test TEST=test/docs_pages_test.rb` green. `bundle exec rake
+test:system` (the accessibility audits) was not re-run in this pass — unverified here.
 
 ## Dead ends
 
@@ -51,3 +57,4 @@ None yet.
 - Rule 6 didn't say how a usage snippet reaches the docs page; an inline ERB snippet containing its own `%>` breaks ERB's scanner, which matches the first `%>` and cuts the snippet from the surrounding template. Three workers hit this independently; rule 6 now requires every snippet go through `examples/app/helpers/code_examples_helper.rb` — provable — implementer
 - Sixteen components were dropped from scope after being built, cut against the parent spec's rule 0 (admission gate): Native Select, Input Group, Badge, Alert, Avatar, Separator, Skeleton, Spinner, Progress, Table, Breadcrumb, Pagination, Button Group, Empty, Item and Card — none owned a Rails/Turbo concept or a genuinely hard browser behaviour; they were built only because they're in shadcn's catalogue, which is not a reason (ui-component-library § Business rules, rule 0; decided 2026-09-13, Jonathan Simmons). Removed everywhere: components, tests, docs pages, the registry, the CHANGELOG's Unreleased section, README's component table, and this spec's § Behavior table, § Business rules (the compound-component rule and every cut-component example), § Critical files and § Acceptance checks. Card was this spec's compound precedent; with it gone, the scope's surviving components (Input, Label, Textarea, plus Button) are all single-element, so the compound-component rule and its tests were removed rather than kept unused. Component counts: eighteen § Behavior rows → three; the parent spec's twenty → four. None of the sixteen had shipped on `main`, so nothing downstream depended on them — judgeable — decider
 - Kbd and Aspect Ratio were dropped from scope after being built: both fail the bar of owning a Rails/Turbo concept or being hard to get right in a browser (Kbd is a `<kbd>` with two classes, Aspect Ratio is one class) — they were built only because they're in shadcn's catalogue, which is not a reason. Removed everywhere: components, tests, docs pages, the registry, the CHANGELOG's Unreleased section, and this spec's § Behavior table and component counts (twenty → eighteen presentational components; the parent spec's 22 → 20). Neither had shipped, so nothing downstream depended on them — judgeable — decider
+- This file's `State` and `Last green checkpoint` still read "not started" / "no component in this scope has been built" after Input, Label, Textarea and the cut-and-kept Button had already landed (`f4d4170`, `c38167f`, `5f8cd2f`, all 2026-09-13) — contradicted by the two entries directly above this one, which record the same build. Corrected to `ready-for-review`, matching the parent table once that was also fixed (§ Corrections was already current; the summary fields at the top of this file were not) — provable — implementer

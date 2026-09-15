@@ -1,0 +1,32 @@
+# frozen_string_literal: true
+
+# Pins the unit lane to Rails 8.0, alongside the 7.2 floor, so the matrix covers the range the
+# kit claims to support. Mirrors the root Gemfile; see it for what each group is for.
+source 'https://rubygems.org'
+
+gemspec path: '../'
+
+gem 'rails', '~> 8.0.0'
+
+# Rails 7.2 and 8.0 raise `unknown keyword: quirks_mode` from their own JSON encoder when paired
+# with json 3 -- fixed in Rails 8.1 (UPGRADING.md). Pinned here, not in the gemspec, because it's
+# a Rails 7.2/8.0 bug, not a rails_ui_kit constraint.
+gem 'json', '< 3'
+
+group :development, :test do
+  gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
+  gem 'importmap-rails'
+  gem 'propshaft'
+  gem 'puma'
+  gem 'rubocop', '~> 1.88', require: false
+  gem 'sqlite3'
+  gem 'tailwindcss-rails'
+  gem 'turbo-rails'
+end
+
+group :test do
+  gem 'axe-core-api', require: false
+  gem 'axe-core-capybara', require: false
+  gem 'capybara', require: false
+  gem 'selenium-webdriver', require: false
+end

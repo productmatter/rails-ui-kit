@@ -6,7 +6,7 @@ module Ui
     # input, and the input that draws the indicator (ui-choices § Behavior, items 15–17). Held
     # apart from the component the way Ui::Select::Primitives is, so the component stays about
     # names, values and wiring, and every state here is CSS reading a real input.
-    class Appearance
+    class Variant
       # The step's own token, as a minimum: a one-line choice lines up with the Input or Select
       # beside it, and content is free to make it taller (ui-control-sizing).
       SIZES = {
@@ -29,7 +29,7 @@ module Ui
 
       LIST = 'has-disabled:opacity-50'
 
-      APPEARANCES = { list: LIST, card: CARD }.freeze
+      VARIANTS = { list: LIST, card: CARD }.freeze
 
       # The indicator is the control, so it takes the control boundary and the control fill
       # (ui-presentational-components, rule 6(a)) and never a transparent background. `checked:`
@@ -49,19 +49,19 @@ module Ui
       # turn them into CanvasText instead of losing them with the fill.
       MARKS = { checkbox: { path: 'm4 12 5 5L20 6', width: 3 }, radio: { path: 'M12 12h.01', width: 9 } }.freeze
 
-      def initialize(appearance:, size:, multiple:)
-        @appearance = appearance
+      def initialize(variant:, size:, multiple:)
+        @variant = variant
         @size = size
         @multiple = multiple
       end
 
       def choice_class
-        [CHOICE, SIZES[@size], APPEARANCES[@appearance]].join(' ')
+        [CHOICE, SIZES[@size], VARIANTS[@variant]].join(' ')
       end
 
       def input_class
         [INPUT, @multiple ? 'rounded-sm' : 'rounded-full',
-         @appearance == :card ? CARD_INPUT : LIST_INPUT].join(' ')
+         @variant == :card ? CARD_INPUT : LIST_INPUT].join(' ')
       end
 
       def mark

@@ -21,8 +21,7 @@ module Ui
 
     # The keywords that describe options rather than markup, so a component can split its
     # own keyword arguments from the ones that belong here.
-    KEYS = %i[collection options model enum value_method text_method group_method
-              group_label_method selected include_blank prompt disabled_values required].freeze
+    KEYS = %i[collection options model enum value_method text_method group_method group_label_method selected include_blank prompt disabled_values required].freeze
 
     attr_reader :collection, :options, :model, :enum, :value_method, :text_method,
                 :group_method, :group_label_method, :include_blank, :prompt
@@ -35,7 +34,7 @@ module Ui
       @component = component
       @collection = collection
       @options = options
-      @model = model
+      @model = coerce_model(model, enum)
       @enum = enum
       @value_method = value_method
       @text_method = text_method
@@ -64,6 +63,13 @@ module Ui
     private
 
     attr_reader :component, :selected_values, :disabled_values, :required
+
+    # A record given as model: has the enum mapping on its class, not on itself -- true of an
+    # ActiveRecord enum's generated reader -- so `model: @order` can be passed straight through
+    # without the caller writing `model: @order.class` themselves.
+    def coerce_model(model, enum)
+      model.nil? || enum.nil? || model.respond_to?(enum.to_s.pluralize) || !model.class.respond_to?(enum.to_s.pluralize) ? model : model.class
+    end
 
     def validate!
       given = { collection: collection, options: options, enum: enum }.compact.keys
@@ -131,8 +137,7 @@ module Ui
 
     def item(text, value, group: nil, object: nil)
       value = value.to_s
-      Item.new(text: text.to_s, value: value, group: group, object: object,
-               disabled: disabled_values.include?(value), selected: selected_values.include?(value))
+      Item.new(text: text.to_s, value: value, group: group, object: object, disabled: disabled_values.include?(value), selected: selected_values.include?(value))
     end
 
     def pair_from(element)
@@ -185,8 +190,7 @@ module Ui
     def collection_options(view)
       return view.options_from_collection_for_select(collection, value_method, text_method, select_and_disable) unless group_method
 
-      view.option_groups_from_collection_for_select(collection, group_method, group_label_method,
-                                                    value_method, text_method, select_and_disable)
+      view.option_groups_from_collection_for_select(collection, group_method, group_label_method, value_method, text_method, select_and_disable)
     end
 
     def container_options(view)

@@ -13,8 +13,8 @@ loop_budget: 8
 ## Intent
 
 The kit is being cut to components that own a Rails or Turbo concept, or that solve a
-genuinely hard browser behaviour. The generic `Ui::NativeSelectComponent` passes
-neither test and is being deleted. What replaces it is **an intelligent select built
+genuinely hard browser behaviour. The generic `Ui::NativeSelectComponent` passed
+neither test and was deleted. What replaces it is **an intelligent select built
 from a collection, with search, using a dropdown with keyboard support.** It passes
 both tests. It owns what `collection_select`, model enums and form submission mean in
 Rails. And the WAI-ARIA combobox keyboard model is among the hardest browser

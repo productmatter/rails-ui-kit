@@ -121,7 +121,7 @@ mode.
    # The wrapped card, with a description line and a decorative icon
    Ui::ChoicesComponent.new(name: "account[plan_id]", collection: plans, value_method: :id, text_method: :name,
                             description_method: :tagline, icon_method: ->(plan) { plan_icon(plan) },
-                            appearance: :card, class: "sm:grid-cols-3")
+                            variant: :card, class: "sm:grid-cols-3")
    ```
 
    Inside a Field, which is the normal case:
@@ -154,7 +154,7 @@ mode.
      array, hash or enum source that passes them raises `ArgumentError`, because
      there's no object to call them on.
    - **`size:`** is `sm`, `default` or `lg` (item 17).
-   - **`appearance:`** is `:list`, the default, or `:card` (items 15 and 16).
+   - **`variant:`** is `:list`, the default, or `:card` (items 15 and 16).
    - **`required_message:`** is the per-instance override for the one chrome string
      (item 14).
    - **`required:`, `disabled:` and `form:`** follow items 11–13.
@@ -390,14 +390,14 @@ mode.
 
 ### Appearance
 
-15. **`appearance: :list`** puts each choice on a row: the indicator at the
+15. **`variant: :list`** puts each choice on a row: the indicator at the
     inline-start, then the text column. The whole row is the label, so the text is a
     target too. The indicator draws the control boundary: `border-input`, with the
     control fill rule `bg-background` in light and `dark:bg-muted/50` in dark, never
     transparent (`ui-presentational-components` § Business rules, rule 6(a), amended
     2026-09-14). The focus ring is the input's own `focus-visible` outline, the same
     as Input's.
-16. **`appearance: :card`** makes each choice a bordered box: the indicator, then the
+16. **`variant: :card`** makes each choice a bordered box: the indicator, then the
     optional icon, then the text column with its optional description line in
     `text-muted-foreground`. The card takes the control fill and a `border-input`
     boundary, since a card is a control.
@@ -625,7 +625,7 @@ Inherits `ui-component-library` § Assumptions, and `ui-select`'s and
 - A required radio group and a required checkbox group each block an empty submission with no request sent and focus on their first enabled input; the checkbox group's validation message is the chrome string; checking one box clears it; a group whose only checked box is locked submits; form reset and a Turbo Stream replace both re-derive it — run: `bundle exec rake test:system TEST=test/system/choices_validation_test.rb`
 - With JavaScript disabled, both variants post their choices, the unchecked-all entry clears the attribute, and an empty required checkbox group posts and returns Field's error — run: `bundle exec rake test:system TEST=test/system/choices_no_javascript_test.rb`
 - Chrome's accessibility tree (CDP) shows `radiogroup`/`group` named by the Field label and described by description, error and hint; each input named by its choice text only and described by its description line; no icon in the tree; and both variants in both appearances pass `assert_accessible` resting, checked, disabled and invalid in light and dark mode — run: `bundle exec rake test:system TEST=test/system/choices_accessibility_test.rb`
-- Measured computed styles: a card rings with `--ring` on keyboard focus and not after a click; a checked card's border is `--primary` and an invalid group's checked card is `--destructive`; indicator boundary, checked border and ring reach 3:1 on every token surface; the focus outline and the check mark stay visible under forced colours — run: `bundle exec rake test:system TEST=test/system/choices_appearance_test.rb`
+- Measured computed styles: a card rings with `--ring` on keyboard focus and not after a click; a checked card's border is `--primary` and an invalid group's checked card is `--destructive`; indicator boundary, checked border and ring reach 3:1 on every token surface; the focus outline and the check mark stay visible under forced colours — run: `bundle exec rake test:system TEST=test/system/choices_variant_test.rb`
 - At a 320px viewport, a 200-character choice and a 60-character unbreakable token wrap inside their card with no horizontal overflow of the fieldset; the indicator neither shrinks nor leaves the first line; every choice measures at least its step's `--control-height*` and 24px — run: `bundle exec rake test:system TEST=test/system/choices_layout_test.rb`
 - `ui--form-change` turns dirty when a choice changes and pristine when it changes back, and Back from a cached page restores the choices the user left — run: `bundle exec rake test:system TEST=test/system/choices_turbo_test.rb`
 - `registerControllers` registers `ui--choices` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`

@@ -6,7 +6,7 @@ require_relative 'choices_helpers'
 # Measured colour, not class names (ui-choices § Behavior, items 15 and 16). The invalid-beats-
 # checked rule in particular cannot be read off a class list: the two selectors compile to equal
 # specificity, so what settles it is which colour the browser actually paints.
-class ChoicesAppearanceTest < ApplicationSystemTestCase
+class ChoicesVariantTest < ApplicationSystemTestCase
   include ChoicesHelpers
 
   setup do
@@ -70,10 +70,10 @@ class ChoicesAppearanceTest < ApplicationSystemTestCase
     assert_equal 2, outline['width'].to_f
     assert_equal token('--ring'), outline['color']
     assert_equal 'none', page.evaluate_script('getComputedStyle(arguments[0]).outlineStyle', input),
-                 "the input's own outline is suppressed in the card appearance"
+                 "the input's own outline is suppressed in the card variant"
   end
 
-  test 'CP4 the list appearance rings the input itself' do
+  test 'CP4 the list variant rings the input itself' do
     page.execute_script("document.getElementById('choices-preview').scrollIntoView({ block: 'center' })")
     input = find('#demo_plan_starter')
 

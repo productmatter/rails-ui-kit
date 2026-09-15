@@ -47,6 +47,13 @@ module Ui
       assert_equal %w[Ada Grace], items.map(&:text)
     end
 
+    test 'model: takes a record as well as a class, coerced to the class that answers the enum mapping' do
+      by_class = option_set(model: TestOrder, enum: :status).items
+      by_record = option_set(model: TestOrder.new, enum: :status).items
+
+      assert_equal by_class.map(&:value), by_record.map(&:value)
+    end
+
     test 'a grouped collection carries the element, not the group' do
       continent = Struct.new(:name, :countries)
       country = Struct.new(:id, :name)

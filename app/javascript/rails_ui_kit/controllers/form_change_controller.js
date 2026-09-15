@@ -42,16 +42,22 @@ export default class extends Controller {
 
   dirtyValueChanged() {
     if (this.dirtyValue) {
-      this.element.dispatchEvent(new CustomEvent('form:changed', {
-        bubbles: true,
-        detail: { form: this.element }
-      }))
+      this.dispatchChangeEvent('form:changed')
+      this.dispatchChangeEvent('ui--form-change:changed')
     } else {
-      this.element.dispatchEvent(new CustomEvent('form:pristine', {
-        bubbles: true,
-        detail: { form: this.element }
-      }))
+      this.dispatchChangeEvent('form:pristine')
+      this.dispatchChangeEvent('ui--form-change:pristine')
     }
+  }
+
+  // form:changed / form:pristine collide with anything a host names form:*; every other kit
+  // event is namespaced ui--<identifier>:<event>. The unnamespaced pair shipped in 0.2.0, so
+  // both fire together until it's removed in 0.4.0 (docs/rails_ui_kit § Form Change).
+  dispatchChangeEvent(name) {
+    this.element.dispatchEvent(new CustomEvent(name, {
+      bubbles: true,
+      detail: { form: this.element }
+    }))
   }
 
   markPristine() {
