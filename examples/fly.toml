@@ -1,0 +1,36 @@
+# The public docs site (examples/DEPLOY.md). Deploy from the REPO ROOT, which is the build context:
+#
+#   fly deploy . --config examples/fly.toml --dockerfile examples/Dockerfile --remote-only
+#
+# SECRET_KEY_BASE is a Fly secret, never set here.
+
+app = "rails-ui-kit-docs"
+primary_region = "ord"
+
+[build]
+  # The deploy command also passes --dockerfile examples/Dockerfile, so the build doesn't depend
+  # on which directory flyctl resolves this against. The context is the working directory: `.`.
+  dockerfile = "Dockerfile"
+
+[env]
+  RAILS_ENV = "production"
+  # Extra hosts beyond <app>.fly.dev (comma-separated), e.g. a custom domain once it has a cert.
+  RAILS_HOSTS = ""
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/up"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

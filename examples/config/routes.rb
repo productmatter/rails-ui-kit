@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  # Fly's health check (examples/fly.toml): 200 once the app has booted.
+  get 'up', to: 'rails/health#show', as: :rails_health_check
+
   DocsPages::PAGES.each do |page|
     action = DocsPages.action_for(page)
 

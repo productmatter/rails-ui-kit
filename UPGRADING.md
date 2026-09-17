@@ -431,10 +431,12 @@ no changes), and Tailwind 3 / Sprockets support is dropped — Tailwind CSS 4 vi
 `tailwindcss-rails` is now the only supported path. If your app is on Ruby 3.1, Rails 7.0/7.1,
 or Tailwind 3, `bundle update` will tell you before anything subtler does.
 
-One thing that looks like a kit bug and isn't: **Rails 7.2 and 8.0 raise `unknown keyword:
-quirks_mode` with version 3 of the `json` gem**, from inside Rails' own JSON encoder. It breaks
-any Rails app on those versions, not only the kit's components, and Rails fixed it in 8.1. If you
-see it, keep `json` below 3 or move to Rails 8.1. Rails 7.2 is also past its security-maintenance
+One thing that looks like a kit bug and isn't: **version 3 of the `json` gem breaks Rails through
+8.1.3.1.** Rails 7.2 and 8.0 raise `unknown keyword: quirks_mode` from their own JSON encoder;
+Rails 8.1 fixed the encoder, but 8.1.3.1's `ActiveSupport::JSON.decode` still raises
+`wrong number of arguments (given 2, expected 1)`, which fails any request carrying a signed or
+encrypted cookie, the session included. It breaks any Rails app, not only the kit's components.
+If you see either error, keep `json` below 3. Rails 7.2 is also past its security-maintenance
 window, which is reason enough to plan the move regardless.
 
 ## Grep checklist

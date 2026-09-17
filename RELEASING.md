@@ -79,6 +79,8 @@ git push origin "v${NEW_VERSION}"
 
 The tag must be prefixed with `v` (e.g. `v0.2.0`), matching the format consumers reference in their Gemfile.
 
+Pushing the tag also deploys the docs site from that commit (`.github/workflows/deploy-docs.yml`; see `examples/DEPLOY.md`). Check the workflow went green.
+
 ## CHANGELOG format
 
 Follow [Keep a Changelog](https://keepachangelog.com/) loosely:
