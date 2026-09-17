@@ -1,11 +1,11 @@
 @import "tailwindcss";
-@import "../../../../app/assets/stylesheets/rails_ui_kit/components.css";
+
+/* The gem's Tailwind entry point: design tokens, component CSS, and the @source
+   directives that scan the gem's templates. Same file a consuming app reaches
+   through the tailwindcss:engines build artifact. */
+@import "../../../../app/assets/tailwind/rails_ui_kit/engine.css";
 
 @variant dark (&:where(.dark, .dark *));
-
-/* Gem component templates + JS (for Tailwind class detection) */
-@source "../../../../app/components/**/*.{rb,html.erb}";
-@source "../../../../app/javascript/**/*.js";
 
 /* Docs app views */
 @source "../../**/*.{rb,erb}";

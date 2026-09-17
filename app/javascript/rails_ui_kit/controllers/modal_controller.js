@@ -1,12 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Ui::ModalComponent. ui--overlay, on the same element, owns everything a modal overlay needs:
+// the top layer, Escape, the backdrop click, the scroll lock, focus in, back and kept inside, and
+// the exit animation. What is left here is what makes it this component: it removes itself once
+// closed, it never survives into Turbo's page cache, and it asks before discarding unsaved
+// changes -- both of the last two through ui--overlay's own events.
 export default class extends Controller {
-  static targets = ["dialog", "backdrop"]
-
   static values = {
-    position: { type: String, default: "center" },
     trackChanges: { type: Boolean, default: false },
-    closeOnBackdrop: { type: Boolean, default: true }
+    closeOnBackdrop: { type: Boolean, default: true },
+    // Ui::ModalComponent renders these from I18n (rails_ui_kit.modal.*); the literals here are
+    // only the fallback for a hand-written modal that never set the data attributes.
+    unsavedChangesTitle: { type: String, default: "Unsaved Changes" },
+    unsavedChangesMessage: { type: String, default: "You have unsaved changes. Are you sure you want to close?" }
   }
 
   connect() {
@@ -18,119 +24,96 @@ export default class extends Controller {
 
       this.element.addEventListener('form:changed', this.boundFormChanged)
       this.element.addEventListener('form:pristine', this.boundFormPristine)
+      this.setupBeforeUnloadHandler()
     }
+
+    this.boundBeforeCache = this.remove.bind(this)
+    document.addEventListener('turbo:before-cache', this.boundBeforeCache)
+
+    // Checked once the element's other controllers have had their turn: Stimulus connects them in
+    // data-controller order, and ui--overlay comes after ui--modal, so asking now would warn about
+    // every correct modal.
+    this.companionCheck = setTimeout(() => this.overlay)
   }
 
   disconnect() {
+    clearTimeout(this.companionCheck)
+
     if (this.trackChangesValue) {
       this.element.removeEventListener('form:changed', this.boundFormChanged)
       this.element.removeEventListener('form:pristine', this.boundFormPristine)
     }
 
+    document.removeEventListener('turbo:before-cache', this.boundBeforeCache)
     this.removeBeforeUnloadHandler()
   }
 
-  dialogTargetConnected() {
-    this.open()
-  }
-
-  dialogTargetDisconnected() {
-    this.removeBeforeUnloadHandler()
-  }
-
-  open() {
-    this.dialogTarget.showModal()
-    document.body.style.overflow = 'hidden'
-
-    if (this.hasBackdropTarget) {
-      requestAnimationFrame(() => {
-        this.backdropTarget.classList.remove('opacity-0')
-        this.backdropTarget.classList.add('opacity-100')
-      })
-    }
-
-    requestAnimationFrame(() => {
-      this.dialogTarget.classList.remove('opacity-0', ...this.translateOutClasses())
-      this.dialogTarget.classList.add('opacity-100', ...this.translateInClasses())
-    })
-
-    if (this.trackChangesValue) {
-      this.setupBeforeUnloadHandler()
-    }
-  }
-
+  // Public action for buttons inside the modal. A person closing it, so it asks first, the same
+  // as Escape and the backdrop do.
   close(event) {
     if (event) {
       event.preventDefault()
     }
 
-    if (this.formDirty && this.trackChangesValue) {
-      this.confirmClose()
-      return
-    }
+    this.overlay?.dismiss()
+  }
 
-    this.performClose()
+  // A form inside the modal, wired as
+  //
+  //   data-action="turbo:submit-end->ui--modal#closeOnSuccess"
+  //
+  // The convenience path for a success response that carries no stream: the server accepted the
+  // submission and has nothing to render, so nothing else will close the modal. It closes only
+  // on Turbo's own detail.success, which is true for any 2xx -- safe only because an invalid
+  // submission answers 422 in every format, never a 2xx. Where the response is a Turbo Stream,
+  // turbo_stream.ui_close_modal is the close, and this is a harmless no-op beside it.
+  closeOnSuccess(event) {
+    if (!event.detail?.success) return
+
+    this.closeFromServer()
+  }
+
+  // The server closing the modal it opened -- turbo_stream.ui_close_modal, or closeOnSuccess.
+  // The same animated close as every other path, minus the unsaved-changes guard: the change
+  // the guard exists to protect has already been accepted.
+  closeFromServer() {
+    this.formDirty = false
+    this.overlay?.close()
+  }
+
+  // ui--overlay:dismiss, cancelable, before any Escape, backdrop or close-button dismissal, and
+  // named: close_on_backdrop refuses one gesture without refusing the rest.
+  guardDismiss(event) {
+    if (!this.closeOnBackdropValue && event.detail.reason === 'outside') return event.preventDefault()
+    if (!this.trackChangesValue || !this.formDirty) return
+
+    event.preventDefault()
+    this.confirmClose()
   }
 
   async confirmClose() {
-    if (typeof window.defaultConfirmDialog === 'function') {
-      const confirmed = await window.defaultConfirmDialog({
-        title: "Unsaved Changes",
-        message: "You have unsaved changes. Are you sure you want to close?"
-      })
+    const title = this.unsavedChangesTitleValue
+    const message = this.unsavedChangesMessageValue
+    let confirmed
 
-      if (confirmed) {
-        this.formDirty = false
-        this.performClose()
-      }
-    } else {
-      if (confirm("You have unsaved changes. Are you sure you want to close?")) {
-        this.formDirty = false
-        this.performClose()
-      }
+    try {
+      if (typeof window.defaultConfirmDialog !== 'function') throw new Error("Confirm dialog not available")
+      confirmed = await window.defaultConfirmDialog({ title, message })
+    } catch (error) {
+      console.error("ui--modal: falling back to browser confirm()", error)
+      confirmed = confirm(message)
+    }
+
+    if (confirmed) {
+      this.formDirty = false
+      this.overlay?.close()
     }
   }
 
-  performClose() {
-    this.removeBeforeUnloadHandler()
-
-    if (this.hasBackdropTarget) {
-      this.backdropTarget.classList.remove('opacity-100')
-      this.backdropTarget.classList.add('opacity-0')
-    }
-
-    this.dialogTarget.classList.remove('opacity-100', ...this.translateInClasses())
-    this.dialogTarget.classList.add('opacity-0', ...this.translateOutClasses())
-
-    setTimeout(() => {
-      this.dialogTarget.close()
-      document.body.style.overflow = ''
-
-      setTimeout(() => {
-        const frame = this.element.closest('turbo-frame')
-        if (frame) {
-          frame.innerHTML = ''
-        }
-      }, 50)
-    }, 300)
-  }
-
-  closeOnBackdropClick(event) {
-    if (!this.closeOnBackdropValue) return
-    if (event.target === this.dialogTarget) {
-      this.close(event)
-    }
-  }
-
-  closeOnEscape(event) {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      if (this.formDirty && this.trackChangesValue) {
-        this.confirmClose()
-      } else {
-        this.performClose()
-      }
-    }
+  // Closed is the resting state: the modal's own element leaves the page, its container stays
+  // reusable. Also runs on turbo:before-cache, so Back never restores a modal.
+  remove() {
+    this.element.remove()
   }
 
   handleFormChanged(event) {
@@ -158,31 +141,23 @@ export default class extends Controller {
     }
   }
 
-  translateInClasses() {
-    switch(this.positionValue) {
-      case 'center': return ['modal-center-visible']
-      case 'full_screen': return ['modal-full-screen-visible']
-      case 'right': return ['modal-right-visible']
-      case 'left': return ['modal-left-visible']
-      case 'top': return ['modal-top-visible']
-      case 'top_full': return ['modal-top-full-visible']
-      case 'bottom': return ['modal-bottom-visible']
-      case 'bottom_full': return ['modal-bottom-full-visible']
-      default: return ['modal-center-visible']
-    }
+  get overlay() {
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, 'ui--overlay')
+    if (!controller) this.warnMissingOverlay()
+    return controller
   }
 
-  translateOutClasses() {
-    switch(this.positionValue) {
-      case 'center': return ['modal-center-hidden']
-      case 'full_screen': return ['modal-full-screen-hidden']
-      case 'right': return ['modal-right-hidden']
-      case 'left': return ['modal-left-hidden']
-      case 'top': return ['modal-top-hidden']
-      case 'top_full': return ['modal-top-full-hidden']
-      case 'bottom': return ['modal-bottom-hidden']
-      case 'bottom_full': return ['modal-bottom-full-hidden']
-      default: return ['modal-center-hidden']
-    }
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so a
+  // hand-written modal missing "ui--overlay" -- 0.2.0 markup, say -- never opens, and nothing in the
+  // console says why. Warned once per instance, like Dropdown, Popover and Tooltip; never thrown.
+  warnMissingOverlay() {
+    if (this.warnedMissingOverlay) return
+    this.warnedMissingOverlay = true
+
+    console.warn(
+      'ui--modal: no "ui--overlay" controller found, so the modal never opens, and nothing closes ' +
+      'or dismisses it. Add "ui--overlay" to this element\'s data-controller.',
+      this.element
+    )
   }
 }

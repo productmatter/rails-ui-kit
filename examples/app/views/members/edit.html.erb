@@ -1,0 +1,16 @@
+<% content_for :title, "Edit member" %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guides</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Edit member</h1>
+  <p class="text-muted-foreground">
+    The form <%= link_to "Building a form", forms_guide_path, class: "text-primary underline" %> is built from.
+    Clear the team and save to see the 422.
+  </p>
+</div>
+
+<% if notice %>
+  <p id="flash" class="mb-6 rounded-md bg-muted px-3 py-2 text-sm text-foreground"><%= notice %></p>
+<% end %>
+
+<%= render "form", member: @member %>

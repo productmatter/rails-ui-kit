@@ -1,0 +1,136 @@
+<% content_for :title, "Theming" %>
+<%
+  code = "text-xs bg-muted px-1 py-0.5 rounded font-mono"
+  light = kit_token_values(:light)
+  dark = kit_token_values(:dark)
+%>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Theming</h1>
+  <p class="text-muted-foreground">
+    One story in three layers. <strong>Tokens</strong> decide how every component looks, in light and dark.
+    <strong>Chrome strings</strong> decide what the kit says on its own. <strong>Class merging</strong> changes one
+    component on one page. Reach for them in that order: a token changes everything that reads it, a class changes one
+    instance.
+  </p>
+</div>
+
+<%# Tokens %>
+<h2 class="text-base font-semibold mb-3">Tokens</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Every component reads colour, radius and control height from CSS variables. The names are shadcn/ui's, verbatim, so a
+  shadcn theme — a tweakcn export, for instance — drops in unchanged. Redefine a name under
+  <code class="<%= code %>">:root</code> and <code class="<%= code %>">.dark</code> in your own Tailwind entry point; the kit
+  ships its values in the lowest-priority layer there is, so yours win wherever they sit in the file.
+</p>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-6">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">app/assets/tailwind/application.css</span>
+    <button data-copy-target="#theming-tokens" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="theming-tokens" class="text-neutral-200"><%= h(example_theming_tokens) %></code></pre>
+</div>
+<p class="text-sm text-muted-foreground mb-3">
+  The kit's own values, read from the stylesheet it ships. Each foreground token is the text colour for the surface it's
+  paired with; <code class="<%= code %>">--input</code> is a control's boundary, and <code class="<%= code %>">--ring</code> its
+  focus ring.
+</p>
+<div id="theming-swatches" class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Token</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Light</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dark</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% kit_colour_tokens.each do |name| %>
+        <tr>
+          <td class="px-4 py-2 font-mono text-xs text-foreground">--<%= name %></td>
+          <% [light[name], dark[name]].each do |value| %>
+            <td class="px-4 py-2">
+              <span class="flex items-center gap-3">
+                <span class="size-6 shrink-0 rounded-md border border-border" style="background: <%= value %>" aria-hidden="true"></span>
+                <span class="font-mono text-xs text-muted-foreground"><%= value %></span>
+              </span>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+      <tr>
+        <td class="px-4 py-2 font-mono text-xs text-foreground">--radius</td>
+        <td class="px-4 py-2 font-mono text-xs text-muted-foreground" colspan="2">
+          <%= light["radius"] %> — drives every <code class="<%= code %>">rounded-*</code> step, in both modes
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p class="text-sm text-muted-foreground mb-8">
+  <code class="<%= code %>">--destructive-foreground</code> and the <code class="<%= code %>">--control-height*</code> scale are
+  kit extensions rather than shadcn names: a shadcn theme that doesn't mention them leaves the kit's values in place.
+</p>
+
+<%# Dark mode %>
+<h2 class="text-base font-semibold mb-3">Dark mode</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  Dark mode is the same names redefined under <code class="<%= code %>">.dark</code>, the class
+  <code class="<%= code %>">ui--dark-mode</code> toggles on <code class="<%= code %>">&lt;html&gt;</code>. The install generator
+  adds <code class="<%= code %>">@custom-variant dark (&amp;:where(.dark, .dark *));</code> to your stylesheet, so Tailwind's own
+  <code class="<%= code %>">dark:</code> utilities switch on that class too rather than on the OS preference. The
+  <%= link_to "Dark Mode", dark_mode_path, class: "text-primary underline" %> page has the toggle and the script that avoids a flash
+  of the wrong theme.
+</p>
+
+<%# Control heights %>
+<h2 class="text-base font-semibold mb-3">Control heights</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Button, Input, Select, Textarea and Choices share one <code class="<%= code %>">size:</code> scale, and every control at a step
+  reads its height from the same token: <code class="<%= code %>">--control-height-sm</code>,
+  <code class="<%= code %>">--control-height</code> and <code class="<%= code %>">--control-height-lg</code> — 32, 36 and 40px at
+  Tailwind's default spacing. Redefine them to make an app denser or roomier, on the whole page or on one part of it, and a row
+  of controls at one step still lines up.
+</p>
+<div id="theming-heights-preview" class="rounded-lg border border-border bg-background grid gap-4 p-8 mb-4">
+  <% %i[sm default lg].each do |step| %>
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="w-16 text-xs font-mono text-muted-foreground"><%= step %></span>
+      <%= render Ui::InputComponent.new(size: step, name: "theming_#{step}", placeholder: "Search", class: "w-48",
+                                        aria: { label: "Search (#{step})" }) %>
+      <%= render(Ui::ButtonComponent.new(size: step, variant: :outline)) { "Filter" } %>
+      <%= render(Ui::ButtonComponent.new(size: step)) { "Apply" } %>
+    </div>
+  <% end %>
+</div>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-3">
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200"><%= h(example_theming_control_heights) %></code></pre>
+</div>
+<p class="text-sm text-muted-foreground mb-8">
+  <strong>Don't set a control height below 24px.</strong> A smaller control fails WCAG 2.5.8, Target Size (Minimum). The kit
+  won't stop you, the same way it won't stop you choosing an unreadable colour pair.
+</p>
+
+<%# Class merging %>
+<h2 class="text-base font-semibold mb-3">Class merging</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Every component merges the <code class="<%= code %>">class:</code> you pass through <code class="<%= code %>">tailwind_merge</code>,
+  so your utility replaces the default it conflicts with instead of racing it in stylesheet order, and the defaults you didn't
+  contradict stay. A default carrying a modifier is replaced only by a class with the same modifier.
+</p>
+<div id="theming-merge-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-center gap-4 p-8 mb-4">
+  <%= render(Ui::ButtonComponent.new) { "Default" } %>
+  <%= render(Ui::ButtonComponent.new(class: "rounded-full")) { "Follow" } %>
+</div>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200"><%= h(example_theming_class_merge) %></code></pre>
+</div>
+
+<%# Chrome strings %>
+<h2 class="text-base font-semibold mb-3">Chrome strings</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  Your content — labels, button text, options, titles — is yours to translate, and the kit ships no translation for it. The kit's
+  own words — a toast's close button name, Select's "No results", the unsaved-changes prompt — live under
+  <code class="<%= code %>">rails_ui_kit.*</code> in a locale file your app overrides key by key, and each takes a per-instance
+  keyword too. <%= link_to "Internationalization", i18n_path, class: "text-primary underline" %> lists every key.
+</p>

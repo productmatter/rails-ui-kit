@@ -6,12 +6,28 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - run: bundle exec rubocop
+
   test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.1", "3.2", "3.3", "3.4", "4.0"]
+        ruby: ["3.2", "3.3", "3.4", "4.0"]
+        # Gemfile (unpinned Rails) plus the declared floor and the release before the
+        # json/quirks_mode fix (gemfiles/*.gemfile), so the Rails 7.2 claim in CHANGELOG.md and
+        # UPGRADING.md is proven, not just asserted.
+        gemfile: [Gemfile, gemfiles/rails_7.2.gemfile, gemfiles/rails_8.0.gemfile]
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -20,3 +36,13 @@ jobs:
           bundler-cache: true
           allow-prereleases: true
       - run: bundle exec rake test
+
+  test-system:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - run: bundle exec rake test:system

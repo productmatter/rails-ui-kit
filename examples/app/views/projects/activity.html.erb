@@ -1,0 +1,18 @@
+<%# The frame-target pattern, and the only place the guide shows it: read-only content, rendered
+    into a turbo-frame of its own. Never a form -- a redirect after a successful submission
+    renders "Content missing" inside a frame. %>
+<%= turbo_frame_tag "project_activity_modal" do %>
+  <%= render Ui::ModalComponent.new(position: :right, aria: { labelledby: "project_activity_title" }) do %>
+    <div class="p-6">
+      <h2 id="project_activity_title" class="text-base font-semibold text-foreground">Activity · <%= @project.name %></h2>
+      <ul class="mt-4 grid gap-2">
+        <% @project.activity.each do |entry| %>
+          <li class="text-sm text-muted-foreground"><%= entry %></li>
+        <% end %>
+      </ul>
+      <div class="mt-6 flex justify-end">
+        <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Close" } %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

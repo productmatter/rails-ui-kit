@@ -1,0 +1,63 @@
+<% content_for :title, "Modal & Turbo" %>
+<%# The morphing-refresh demo: this page opts into morph refreshes, which is what makes
+    data-turbo-permanent on the layout's modal container matter. %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guides</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Modal &amp; Turbo</h1>
+  <p class="text-muted-foreground">
+    The full lifecycle of a modal driven by Turbo: opened by a stream, navigated and re-rendered
+    inside a content frame, closed by the server. Everything below runs against real routes and
+    real controller actions — it is the code the guide quotes, and the code its browser tests drive.
+  </p>
+</div>
+
+<div class="rounded-lg border border-border bg-background px-5 py-4 mb-8">
+  <p class="text-sm text-foreground font-medium mb-1">The guide ships inside the gem</p>
+  <p class="text-sm text-muted-foreground">
+    Read it at <code class="font-mono text-xs">docs/guides/modal-and-turbo.md</code> in the installed
+    gem (<code class="font-mono text-xs">bundle info --path rails_ui_kit</code>). To point your coding
+    agents at that copy — never a stale one copied into your app — run
+    <code class="font-mono text-xs">bin/rails g rails_ui_kit:agent_skill</code>.
+  </p>
+</div>
+
+<%# Demo %>
+<h2 class="text-base font-semibold mb-3">The demo</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <strong>Open</strong> and <strong>Edit</strong> request a Turbo Stream that renders the modal into
+  the layout's <code class="font-mono text-xs">&lt;div id="modal"&gt;</code>. Inside it, links swap
+  only the content frame; saving answers with a stream that closes the modal, updates the row and
+  shows a toast; an invalid save answers 422 and re-renders the error in place.
+  <strong>Activity</strong> is the read-only frame-target pattern.
+</p>
+
+<div class="rounded-lg border border-border bg-background mb-4">
+  <ul id="projects" class="list-none">
+    <%= render @projects %>
+  </ul>
+</div>
+
+<div class="mb-4 flex justify-end">
+  <%# The same modal the project modal replaces itself with, opened from the page instead. %>
+  <%= render(Ui::ButtonComponent.new(href: new_invitation_path, id: "invite", variant: :outline, size: :sm,
+                                     data: { turbo_stream: true })) { "Invite a teammate" } %>
+</div>
+
+<%# The frame-target pattern's own container, separate from the layout's shared modal div. %>
+<%= turbo_frame_tag "project_activity_modal" %>
+
+<p class="text-sm text-muted-foreground mb-8">
+  The demo data lives in memory: edits and deletes last until the server restarts.
+</p>
+
+<%# What each step is %>
+<h2 class="text-base font-semibold mb-3">What the guide covers</h2>
+<ul class="mb-8 space-y-2 text-sm text-muted-foreground list-disc list-inside">
+  <li>The two blessed patterns — a stream into a layout container, and a frame target for read-only modals — and when each one is wrong.</li>
+  <li>An inner content frame, so show ↔ edit and validation errors never re-mount the dialog.</li>
+  <li><code class="font-mono text-xs">turbo_stream.ui_close_modal</code>, the server closing the modal it opened, with its exit animation.</li>
+  <li><code class="font-mono text-xs">ui--modal#closeOnSuccess</code>, for a success response with nothing to render.</li>
+  <li>Focus, naming, the Back button, morphing refreshes and format negotiation — each one a gotcha that has bitten a real app.</li>
+</ul>

@@ -1,0 +1,36 @@
+en:
+  rails_ui_kit:
+    modal:
+      unsaved_changes_title: "Unsaved Changes"
+      unsaved_changes_message: "You have unsaved changes. Are you sure you want to close?"
+    confirm_dialog:
+      title: "Confirmation required"
+      message: "Are you sure?"
+      confirm_label: "Confirm"
+      cancel_label: "Cancel"
+    toast:
+      close_label: "Close notification"
+      default_title: "Notification"
+      region_label: "Notifications"
+      actions_hint: "Press F8 to reach its actions."
+    select:
+      show_options_label: "Show options"
+      no_results: "No results"
+      # Interpolated in the browser as the filter narrows, so the count itself is not known when
+      # this is rendered: the whole plural map is handed to ui--select, which picks with
+      # Intl.PluralRules. Every form carries %{count}: `one` is a CLDR category, not the number
+      # one -- French `one` covers 0, Russian `one` covers 21 -- so a literal numeral here would
+      # be wrong the moment this file is translated.
+      results:
+        one: "%{count} result"
+        other: "%{count} results"
+    choices:
+      # A checkbox group the browser has no "at least one checked" constraint for: this is both
+      # the screen-reader hint beside the visual `*` and the message ui--choices hands
+      # setCustomValidity, so a translation moves both at once.
+      required_message: "Select at least one option."
+    turbo_disable_with:
+      processing: "Processing..."
+    dark_mode:
+      switch_to_light: "Switch to light mode"
+      switch_to_dark: "Switch to dark mode"

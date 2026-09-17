@@ -1,0 +1,230 @@
+<% content_for :title, "Choices (radio & checkbox groups)" %>
+<%
+  roles = DocsController.roles
+  plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
+  plan_icon = ->(plan) { tag.svg(tag.path(d: "M12 2 2 7l10 5 10-5-10-5Z"), class: "size-5", viewBox: "0 0 24 24",
+                                 fill: "none", stroke: "currentColor", "stroke-width": 2,
+                                 "stroke-linecap": "round", "stroke-linejoin": "round") }
+  card_plans = [Struct.new(:id, :name, :tagline).new("starter", "Starter", "One project, one seat."),
+                Struct.new(:id, :name, :tagline).new("growth", "Growth", "Ten projects, unlimited seats."),
+                Struct.new(:id, :name, :tagline).new("scale", "Scale", "Everything, plus priority support.")]
+%>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Choices <span class="text-muted-foreground font-semibold">(radio &amp; checkbox groups)</span></h1>
+  <p class="text-muted-foreground">
+    A radio group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: false</code>)
+    or a checkbox group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: true</code>)
+    over real inputs, with the names, ids and hidden field
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_radio_buttons</code> and
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_check_boxes</code> render.
+    Unchecking every box clears the association instead of silently keeping the old value. Arrow keys, Space,
+    single selection and reset are the browser's own — the kit adds JavaScript for one thing only, below.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="choices-preview" class="rounded-lg border border-border bg-background grid gap-8 p-12 mb-8 sm:grid-cols-2">
+  <%= render Ui::FieldComponent.new(name: "demo[plan]") do |field| %>
+    <% field.with_label { "Plan" } %>
+    <% field.with_control(Ui::ChoicesComponent, options: plans, checked: "growth",
+                          disabled_values: ["enterprise"]) %>
+    <% field.with_description { "One choice. Enterprise is on request." } %>
+  <% end %>
+
+  <%= render Ui::FieldComponent.new(name: "demo[role_ids]") do |field| %>
+    <% field.with_label { "Roles" } %>
+    <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: roles, value_method: :id,
+                          text_method: :name, description_method: :tagline, checked: [1]) %>
+    <% field.with_description { "Several choices, each with its own description line." } %>
+  <% end %>
+</div>
+
+<%# Card variant %>
+<h2 class="text-base font-semibold mb-3">The card variant</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">variant: :card</code> makes the
+  whole card the target — text, description, icon and padding all check the input, and focus still lands on the input
+  itself. Columns are your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>,
+  so cards stack at phone widths unless you say otherwise.
+</p>
+<div id="choices-card-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <%= render Ui::FieldComponent.new(name: "card[plan]") do |field| %>
+    <% field.with_label { "Billing plan" } %>
+    <% field.with_control(Ui::ChoicesComponent, variant: :card, collection: card_plans, value_method: :id,
+                          text_method: :name, description_method: :tagline, icon_method: plan_icon,
+                          checked: "growth", class: "sm:grid-cols-3") %>
+  <% end %>
+</div>
+
+<%# Required %>
+<h2 class="text-base font-semibold mb-3">Required</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  A required radio group is native: every radio gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>,
+  and the browser blocks the submission. A required checkbox group has no native equivalent —
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code> on a checkbox
+  means <em>that</em> box — so the kit's one controller, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">ui--choices</code>,
+  makes it mean "at least one", and a visually hidden hint tells a screen reader user what the
+  <span aria-hidden="true">*</span> means. With JavaScript off, the server's validation is what catches it.
+</p>
+<div id="choices-required-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <form id="choices-required-form" class="grid gap-6 sm:grid-cols-2">
+    <%= render Ui::FieldComponent.new(name: "required[plan]", required: true) do |field| %>
+      <% field.with_label { "Plan" } %>
+      <% field.with_control(Ui::ChoicesComponent, options: plans) %>
+    <% end %>
+    <%= render Ui::FieldComponent.new(name: "required[role_ids]", required: true) do |field| %>
+      <% field.with_label { "Roles" } %>
+      <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: roles, value_method: :id,
+                            text_method: :name) %>
+    <% end %>
+    <div class="sm:col-span-2">
+      <%= render(Ui::ButtonComponent.new(type: "submit", id: "choices-required-submit")) { "Try to submit" } %>
+    </div>
+  </form>
+</div>
+
+<%# Locked values %>
+<h2 class="text-base font-semibold mb-3">Locked values</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">disabled_values:</code> renders a
+  choice the user can't change. A disabled input never submits, so Rails' own markup deletes a locked value on every
+  save; the kit carries a checked locked value in a hidden input instead, and the save keeps what the form showed.
+</p>
+<p class="text-sm mb-3 rounded-md border border-border bg-muted/50 p-4">
+  <strong>A locked checkbox is not authorization.</strong> A hidden input can be removed or edited in the browser, and a
+  disabled one re-enabled. The server still decides what a user may change: filter or merge locked values there.
+</p>
+<p class="text-sm text-muted-foreground mb-3">
+  This group is required too, and a locked checked value counts: the group is satisfied because that value is
+  carried, so the browser doesn't block a submission the server would have accepted.
+</p>
+<div id="choices-locked-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <form id="choices-locked-form">
+  <%= render Ui::FieldComponent.new(name: "locked[role_ids]", required: true) do |field| %>
+    <% field.with_label { "Roles" } %>
+    <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: roles, value_method: :id,
+                          text_method: :name, checked: [1, 2], disabled_values: [1]) %>
+    <% field.with_description { "Admin is checked and locked — it posts through a hidden input beside the group." } %>
+  <% end %>
+  </form>
+</div>
+
+<%# Round trip %>
+<h2 class="text-base font-semibold mb-3">A server round trip</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  A real form, posted to a real action. Clear both groups and save: the checkbox group still posts
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role_ids[]=""</code> — the entry that
+  empties an association — and the 422 comes back with the model's errors on both Fields and the submitted choices checked.
+</p>
+<div id="choices-round-trip-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <%= render "docs/choices_round_trip", membership: DemoMembership.new(role_ids: [1], plan: "starter"), roles: DocsController.roles, submission: 0 %>
+</div>
+
+<%# include_hidden %>
+<h2 class="text-base font-semibold mb-3">include_hidden: false</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Rails' option, with Rails' default of <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">true</code>.
+  Turn it off and a group with nothing checked posts no key at all: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role_ids=</code>
+  is never called, the old association survives, and a form whose only field is this one raises
+  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">ParameterMissing</code>. Pass it only
+  when "no key means no change" is what you want.
+</p>
+
+<%# Sizes %>
+<h2 class="text-base font-semibold mb-3">Sizes</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Each choice is at least the step's own control height, so a one-line choice lines up with the Input or Select
+  beside it. Content makes a choice taller; a step never makes it shorter.
+</p>
+<div id="choices-sizes-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-8 p-12 mb-8">
+  <% %i[sm default lg].each do |step| %>
+    <div>
+      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= step %></p>
+      <%= render Ui::ChoicesComponent.new(name: "size_#{step}[plan]", options: plans, size: step, checked: "growth",
+                                          aria: { label: "Plan (#{step})" }) %>
+    </div>
+  <% end %>
+</div>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs font-mono text-neutral-400">ERB</span>
+    <button data-copy-target="#choices-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="choices-usage" class="text-neutral-200"><%= h(example_choices_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["name",                "String",        "required", "The control's HTML name, e.g. \"user[role_ids]\". With multiple: true, [] is appended unless it's already there."],
+        ["multiple",            "Boolean",       "false",    "false renders radios, true renders checkboxes — the same keyword select(multiple: true) uses for the same submission change."],
+        ["collection",          "Enumerable",    "nil",      "With value_method: and text_method:, exactly as collection_check_boxes takes them. Each accepts a symbol or a proc."],
+        ["options",             "Array or Hash", "nil",      "What options_for_select takes: [\"S\", \"M\"], [[\"Draft\", \"draft\"]] or { \"Draft\" => \"draft\" }. Grouped shapes raise — a radiogroup can't own groups."],
+        ["model / enum",        "Class, Symbol", "nil",      "A model and one of its enums. Labels come from human_attribute_name; the submitted value is the enum key."],
+        ["checked",             "Object/Array",  "nil",      "Rails' own checked: — the value or values that start checked, compared as strings. Inside a model-bound Field it comes from the record."],
+        ["disabled_values",     "Array",         "nil",      "Values rendered disabled. A checked one is carried by a hidden input, so saving doesn't delete it."],
+        ["include_hidden",      "Boolean",       "true",     "Rails' option with Rails' default: the blank entry that lets unchecking everything clear the attribute."],
+        ["required",            "Boolean",       "false",    "Radios: required on every radio. Checkboxes: the marker, the screen-reader hint and ui--choices' \"at least one\"."],
+        ["disabled",            "Boolean",       "false",    "Renders <fieldset disabled>, so every input and hidden field is disabled and the attribute is left untouched."],
+        ["form",                "String",        "nil",      "The id of a form elsewhere on the page; goes on every input and the hidden fields, as in Rails."],
+        ["variant",             "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
+        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg — each choice's minimum height, from the same tokens Input and Select read."],
+        ["description_method",  "Symbol/Proc",   "nil",      "A second line per choice. Needs collection:, since there is no object to call it on otherwise."],
+        ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. Needs collection: too."],
+        ["required_message",    "String",        "nil",      "Overrides rails_ui_kit.choices.required_message for this instance."],
+        ["class",               "String",        "nil",      "Merged onto the fieldset — the caller always wins. This is where grid columns go."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The group is a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;fieldset&gt;</code>:
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="radiogroup"</code> for radios,
+      a plain group for checkboxes. Inside a Field it's named by the field's label, which renders without
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">for</code> — pointing that at the
+      first input would make clicking "Roles" toggle Admin. Outside a Field, name it yourself with
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>.</li>
+  <li>Each input is named by its own text and described by its own description line, so a wrapping label never reads
+      as "Pro Unlimited projects". The icon is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
+  <li>Focus is always on a real input — no card, label or fieldset is focusable, and nothing adds a
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tabindex</code>. In the card
+      variant the ring is drawn on the card, and only for the keyboard.</li>
+  <li>A checkbox never carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
+      or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-required</code>: both would
+      say every box is required. The group says it once, in the hint.</li>
+  <li>A choice holds no interactive content. A link inside a card isn't supported — it would be a target inside a target.</li>
+</ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  A collection too long to show as a list is a <%= link_to "Select", select_path, class: "text-primary underline" %>, not a
+  group of inputs. A searchable "pick several" is a multi-select combobox, which is Select's territory and isn't built yet.
+  An on/off setting that takes effect immediately is a switch, which the kit doesn't ship.
+</p>

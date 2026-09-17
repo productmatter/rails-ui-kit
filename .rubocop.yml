@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.2
   NewCops: enable
   SuggestExtensions: false
   Exclude:
@@ -16,7 +16,19 @@ Style/Documentation:
 Metrics/MethodLength:
   Max: 15
 
+# Components are configured through keyword options; counting them pushes APIs
+# toward catch-all hashes or inline disables.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
 Metrics/BlockLength:
   Exclude:
     - rails_ui_kit.gemspec
+    - test/**/*
+
+Metrics/ClassLength:
+  # Ui::Base carries the whole kit's variant, class-merge and attribute-forwarding
+  # layers so components don't each repeat them; concentrating that is the point.
+  Max: 150
+  Exclude:
     - test/**/*

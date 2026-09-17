@@ -1,0 +1,5 @@
+<%# S1, the Select inside the dialog Dropdown: its own partial so a stream can replace its Field. %>
+<%= render Ui::FieldComponent.new(name: "#{prefix}[status]", id: "#{prefix}-status-field", data: { stress_render: render_token }) do |field| %>
+  <% field.with_label { "Status" } %>
+  <% field.with_control(Ui::SelectComponent, options: StressRecord::FREQUENCIES) %>
+<% end %>

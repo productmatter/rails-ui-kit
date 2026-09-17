@@ -1,16 +1,18 @@
 <% content_for :title, "Modal" %>
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Overlays</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Modal</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
-    A full-featured modal with 8 position variants. Opens automatically when rendered — control visibility
-    via Turbo Frames or conditional rendering. Optionally tracks unsaved form changes.
+  <p class="text-muted-foreground">
+    A modal a Rails app drives with Turbo: a link asks for a Turbo Stream, the response renders the modal into a container in
+    your layout, a frame inside it swaps between show, edit and a 422, and the server closes it with
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">turbo_stream.ui_close_modal</code>. It opens as soon as it is rendered, traps focus, locks scroll, asks before
+    discarding unsaved form changes, and animates out. Eight positions, from a centred dialog to a side panel or a sheet.
   </p>
 </div>
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
+<div id="modal-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-3 p-12 mb-8">
   <% [
     [:center,      "Confirm dialog"],
     [:right,       "Edit panel"],
@@ -21,72 +23,107 @@
     [:bottom_full, "Action sheet"],
     [:full_screen, "Full screen"],
   ].each do |pos, label| %>
-    <%= link_to label, modal_demo_path(position: pos),
-        data: { turbo_stream: true },
-        class: "rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors" %>
+    <%= render(Ui::ButtonComponent.new(href: modal_demo_path(position: pos), variant: :outline, size: :sm,
+                                       data: { turbo_stream: true })) { label } %>
   <% end %>
 </div>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  The modal opens as soon as it is rendered. The typical Rails pattern is to render it
-  on demand via a Turbo Frame:
+<p class="text-sm text-muted-foreground mb-3">
+  The modal opens as soon as it is rendered. The blessed pattern is a Turbo Stream that renders it
+  into a plain container in your layout:
 </p>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
   <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — trigger</span>
+    <span class="text-xs text-neutral-400">ERB — layout and trigger</span>
     <button data-copy-target="#modal-trigger" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-trigger" class="text-neutral-200"><%= h(example_modal_trigger) %></code></pre>
 </div>
 <div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
   <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — response view</span>
+    <span class="text-xs text-neutral-400">ERB — edit.turbo_stream.erb</span>
     <button data-copy-target="#modal-response" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
   </div>
   <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-neutral-200"><%= h(example_modal_response) %></code></pre>
 </div>
 
+<%# Turbo %>
+<h2 class="text-base font-semibold mb-3">Driving it with Turbo</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Opening from a stream, swapping an inner content frame, answering an invalid form with a 422,
+  closing from the server with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">turbo_stream.ui_close_modal</code>
+  — the whole lifecycle has its own page, with live demos backed by real routes and controller
+  actions: <%= link_to "Modal & Turbo", modal_turbo_path, class: "text-primary underline underline-offset-4" %>.
+</p>
+<p class="text-sm text-muted-foreground mb-8">
+  The same guide ships inside the gem at
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">docs/guides/modal-and-turbo.md</code>,
+  which is where <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">bin/rails g rails_ui_kit:agent_skill</code>
+  points this app's coding agents.
+</p>
+
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Options</h2>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Name</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Default</th>
-        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
-        ["position",         "Symbol",   ":center",  "One of: :center, :full_screen, :right, :left, :top, :top_full, :bottom, :bottom_full."],
-        ["track_changes",    "Boolean",  "false",    "When true, warns before closing if a form inside is dirty."],
-        ["close_on_backdrop","Boolean",  "true",     "Close the modal when clicking the backdrop."],
-        ["max_width",        "String",   "nil",      "Override the default max-width Tailwind class."],
+        ["position",                "Symbol",  ":center", "One of :center, :full_screen, :right, :left, :top, :top_full, :bottom, :bottom_full."],
+        ["track_changes",           "Boolean", "false",   "Asks before closing when a form inside is dirty. The form needs data-controller=\"ui--form-change\"."],
+        ["close_on_backdrop",       "Boolean", "true",    "Close when the backdrop is clicked. Escape always closes (and asks first when tracking changes)."],
+        ["unsaved_changes_title",   "String",  "nil",     "Overrides rails_ui_kit.modal.unsaved_changes_title for this modal."],
+        ["unsaved_changes_message", "String",  "nil",     "Overrides rails_ui_kit.modal.unsaved_changes_message for this modal."],
+        ["aria",                    "Hash",    "{}",      "Name every modal: { labelledby: \"heading-id\" } for a visible title, or { label: \"…\" } when there is none."],
+        ["class",                   "String",  "nil",     "Merged onto the <dialog> with tailwind_merge — sm:w-[48rem] sm:max-w-[48rem] replaces the position's default width and its cap."],
+        ["max_width",               "String",  "nil",     "Deprecated: pass the classes as class:, which merges them the same way. Removed in 0.4.0."],
       ].each do |name, type, default, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-500"><%= type %></td>
-          <td class="px-4 py-3 font-mono text-xs text-neutral-400"><%= default %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 </div>
 
-<%# Controller %>
-<h2 class="text-base font-semibold mb-3">Stimulus Controller</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">ui--modal</code>
-</p>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>Calls <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">open()</code> automatically via <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dialogTargetConnected()</code>.</li>
-  <li>When <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes: true</code>, listens for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:changed</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:pristine</code> events from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>.</li>
-  <li>Closes on backdrop click (if enabled) and Escape key.</li>
-  <li>Locks <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.body</code> scroll while open.</li>
-  <li>Public action: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">close()</code> — add <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-action="click->ui--modal#close"</code> to any button inside the modal.</li>
+<%# Closing %>
+<h2 class="text-base font-semibold mb-3">Closing it</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>From the server, after a successful save: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;%= turbo_stream.ui_close_modal %&gt;</code> in the stream response.
+      It animates the modal out and leaves the container for the next one.</li>
+  <li>From a form whose success renders nothing: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-action="turbo:submit-end->ui--modal#closeOnSuccess"</code>
+      on the form. An invalid save must answer 422, or this closes on a failure.</li>
+  <li>From a button inside it: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-action="click->ui--modal#close"</code>. Escape and the backdrop close it too.</li>
+  <li>Before Turbo caches the page, an open modal is removed, so Back never restores one.</li>
 </ul>
+
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>A native modal <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;dialog&gt;</code> in the top layer: the rest of the page is inert while it's open.</li>
+  <li>Focus moves into the modal when it opens and returns to the trigger when it closes — to a trigger with the same id if the
+      response that closed it re-rendered the original.</li>
+  <li>It has no name of its own. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { labelledby: }</code> pointing at its heading, or <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>.</li>
+  <li>The unsaved-changes prompt is the kit's confirm dialog, so it is keyboard-operable and announced like any dialog.</li>
+</ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  Don't render it inline in a page: it opens on every page load. A yes/no question before an action is a
+  <%= link_to "Confirm Dialog", confirm_dialog_path, class: "text-primary underline" %>, usually through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-confirm</code>.
+  Content anchored to a control that doesn't block the page is a <%= link_to "Popover", popover_path, class: "text-primary underline" %>.
+  And a task long enough to deserve its own URL — something people bookmark, share or return to — is a page.
+</p>

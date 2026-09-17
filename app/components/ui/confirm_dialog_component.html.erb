@@ -1,34 +1,33 @@
-<dialog
-  id="<%= id %>"
-  aria-labelledby="<%= id %>-title"
-  class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-gray-900/50"
-  data-ui--dialog-target="dialog"
->
-  <div class="flex min-h-full items-end justify-center p-4 text-center focus:outline-none sm:items-center sm:p-0">
-    <div class="<%= wrapper_class %>">
-      <div class="<%= body_class %>">
+<%= tag.dialog(**root_attributes(id: id, **dialog_attributes)) do %>
+  <div class="<%= VIEWPORT_CLASSES %>">
+    <div class="<%= classes_for(:wrapper) %>">
+      <div class="<%= classes_for(:body) %>">
         <div class="sm:flex sm:items-start">
-          <div class="<%= icon_wrapper_class %>">
-            <svg class="<%= icon_class %>" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-            </svg>
-          </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 id="<%= id %>-title" data-ui--dialog-title class="<%= title_class %>">Confirmation required</h3>
+          <% if icon? %>
+            <div data-slot="confirm-dialog-icon" aria-hidden="true" class="<%= classes_for(:icon_wrapper) %>"><%= icon %></div>
+          <% end %>
+          <div class="<%= text_column_classes %>">
+            <h3 id="<%= id %>-title" data-ui--dialog-title class="<%= classes_for(:title) %>"><%= title %></h3>
             <div class="mt-2">
-              <p id="<%= id %>-message" data-ui--dialog-message class="<%= message_class %>">Are you sure?</p>
+              <% if body? %>
+                <div id="<%= id %>-message" data-ui--dialog-body class="<%= classes_for(:message) %>"><%= body %></div>
+              <% else %>
+                <p id="<%= id %>-message" data-ui--dialog-message class="<%= classes_for(:message) %>"><%= message %></p>
+              <% end %>
             </div>
           </div>
         </div>
       </div>
-      <div class="<%= footer_class %>">
-        <button type="button" value="confirm" onclick="this.closest('dialog').close('confirm')" class="<%= confirm_class %>">
-          <%= confirm_label %>
-        </button>
-        <button type="button" value="cancel" onclick="this.closest('dialog').close('cancel')" class="<%= cancel_class %>">
-          <%= cancel_label %>
-        </button>
-      </div>
+      <form method="dialog" class="<%= classes_for(:footer) %>">
+        <%= render cancel_button %>
+        <%= render confirm_button(confirm_variant) %>
+      </form>
     </div>
   </div>
-</dialog>
+  <%# One server-rendered confirm button per variant. A confirmation that asks for another variant
+      clones the matching template, so the button it gets carries Ui::ButtonComponent's own classes
+      and JavaScript writes only its label (ui-toast § Business rules, rules 2 and 3). %>
+  <% Ui::ConfirmDialogComponent::CONFIRM_VARIANTS.each do |variant| %>
+    <template data-ui--dialog-confirm-template="<%= variant %>"><%= render confirm_button(variant) %></template>
+  <% end %>
+<% end %>

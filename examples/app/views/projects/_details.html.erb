@@ -1,0 +1,20 @@
+<div class="p-6 sm:p-8">
+  <%# The id the modal is named by. It has to exist in every state this content frame renders. %>
+  <h2 id="project_modal_title" class="text-base font-semibold text-foreground"><%= project.name %></h2>
+  <p class="mt-1.5 text-sm text-muted-foreground"><%= project.summary %></p>
+
+  <div class="mt-6 flex flex-wrap items-center justify-end gap-2">
+    <%# Destructive, so it asks first -- through the kit's ConfirmDialog, which opens above the
+        modal and leaves it open when the answer is no. %>
+    <%= form_with url: project_path(project), method: :delete, data: { turbo_confirm: "Delete #{project.name}? This cannot be undone." } do %>
+      <%= render(Ui::ButtonComponent.new(type: "submit", variant: :ghost, size: :sm, class: "text-destructive hover:bg-destructive/10")) { "Delete" } %>
+    <% end %>
+
+    <%# A stream link inside an open modal: its response updates "modal", which replaces this
+        modal with the next one. %>
+    <%= render(Ui::ButtonComponent.new(href: new_invitation_path, variant: :ghost, size: :sm, data: { turbo_stream: true })) { "Invite a teammate" } %>
+
+    <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Close" } %>
+    <%= render(Ui::ButtonComponent.new(href: edit_project_path(project), size: :sm)) { "Edit" } %>
+  </div>
+</div>

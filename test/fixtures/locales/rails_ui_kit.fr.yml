@@ -1,0 +1,28 @@
+fr:
+  rails_ui_kit:
+    modal:
+      unsaved_changes_title: "Modifications non enregistrées"
+      unsaved_changes_message: "Vous avez des modifications non enregistrées. Voulez-vous vraiment fermer ?"
+    confirm_dialog:
+      title: "Confirmation requise"
+      message: "Êtes-vous sûr ?"
+      confirm_label: "Confirmer"
+      cancel_label: "Annuler"
+    toast:
+      close_label: "Fermer la notification"
+      default_title: "Avis"
+      region_label: "Notifications"
+      actions_hint: "Appuyez sur F8 pour atteindre ses actions."
+    select:
+      show_options_label: "Afficher les options"
+      no_results: "Aucun résultat"
+      results:
+        one: "%{count} résultat"
+        other: "%{count} résultats"
+    choices:
+      required_message: "Sélectionnez au moins une option."
+    turbo_disable_with:
+      processing: "Traitement en cours..."
+    dark_mode:
+      switch_to_light: "Passer au mode clair"
+      switch_to_dark: "Passer au mode sombre"

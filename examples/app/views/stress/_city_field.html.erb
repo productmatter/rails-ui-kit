@@ -1,0 +1,5 @@
+<%# S2, the searchable Select inside the Modal: its own partial so a stream can replace its Field. %>
+<%= render Ui::FieldComponent.new(name: "modal[city]", id: "modal-city-field", data: { stress_render: render_token }) do |field| %>
+  <% field.with_label { "City" } %>
+  <% field.with_control(Ui::SelectComponent, collection: StressRecord::CITIES, value_method: :id, text_method: :name, search: true) %>
+<% end %>

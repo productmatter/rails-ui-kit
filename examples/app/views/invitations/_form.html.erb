@@ -1,0 +1,21 @@
+<div class="p-6 sm:p-8">
+  <h2 id="invitation_modal_title" class="text-base font-semibold text-foreground">Invite a teammate</h2>
+  <p class="mt-1.5 text-sm text-muted-foreground">
+    Sending changes nothing on the page behind this modal, so the success response has nothing to
+    render — which is exactly when <code>closeOnSuccess</code> is the right tool.
+  </p>
+
+  <%# The convenience close: Turbo reports the outcome of the submission, and a 2xx is the server
+      having accepted it. It is safe only because the invalid case answers 422, never a 2xx. %>
+  <%= form_with model: invitation, class: "mt-5 grid gap-4",
+        data: { action: "turbo:submit-end->ui--modal#closeOnSuccess" } do |form| %>
+    <%= render Ui::FieldComponent.new(model: invitation, attribute: :email) do |field| %>
+      <% field.with_control(Ui::InputComponent, type: "email") %>
+    <% end %>
+
+    <div class="mt-2 flex items-center justify-end gap-2">
+      <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Cancel" } %>
+      <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Send invite" } %>
+    </div>
+  <% end %>
+</div>

@@ -2,3 +2,242 @@
 
 @source "../../../components/**/*.{rb,erb}";
 @source "../../../javascript/**/*.js";
+
+/*
+ * Design tokens — shadcn/ui's variable names verbatim, Product Matter's values.
+ *
+ * Names are the contract: an external shadcn theme (tweakcn output and friends)
+ * redefines these same names under its own :root/.dark and reskins the kit
+ * without touching this file. Values are ours: a warm neutral ramp (hue 75,
+ * chroma <= 0.013) carrying every surface, with one saturated indigo (hue 277)
+ * as the only chromatic voice in the UI.
+ *
+ * Light and dark are the same names redefined under .dark, which is the class
+ * ui--dark-mode toggles on <html>.
+ *
+ * The values sit in a sub-layer of Tailwind's `theme` layer, the lowest-priority
+ * layer there is, so the host's theme always wins whatever the import order: an
+ * unlayered :root/.dark beats every layer, @layer base comes after theme, and a
+ * host @theme block is emitted into `theme` itself, which beats its sub-layers.
+ */
+
+@layer theme.rails-ui-kit {
+  :root {
+    --background: oklch(0.994 0.002 75);
+    --foreground: oklch(0.21 0.008 75);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.21 0.008 75);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.21 0.008 75);
+
+    --primary: oklch(0.52 0.17 277);
+    --primary-foreground: oklch(0.985 0.006 277);
+
+    --secondary: oklch(0.962 0.005 75);
+    --secondary-foreground: oklch(0.28 0.008 75);
+
+    --muted: oklch(0.962 0.005 75);
+    --muted-foreground: oklch(0.532 0.013 75);
+
+    --accent: oklch(0.945 0.012 277);
+    --accent-foreground: oklch(0.35 0.06 277);
+
+    --destructive: oklch(0.49 0.196 27);
+
+    --border: oklch(0.915 0.005 75);
+    /* A control's boundary, so it must reach 3:1 on every surface it sits on and on
+       every fill it takes, including hover's --accent (WCAG 1.4.11). --border stays
+       subtle because it is decoration, which is exempt. */
+    --input: oklch(0.62 0.012 75);
+    --ring: oklch(0.52 0.17 277);
+
+    /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
+    --destructive-foreground: oklch(0.985 0.006 27);
+
+    /* Kit extensions — the status colours a toast's glyph and countdown bar read
+       (ui-toast § Assumptions). Each base colour reaches at least 3:1 on --popover, the
+       surface a toast sits on, and each -foreground at least 4.5:1 on its base. */
+    --success: oklch(0.52 0.13 150);
+    --success-foreground: oklch(0.985 0.01 150);
+    --warning: oklch(0.56 0.13 65);
+    --warning-foreground: oklch(0.985 0.01 65);
+    --info: oklch(0.52 0.13 245);
+    --info-foreground: oklch(0.985 0.01 245);
+
+    --chart-1: oklch(0.55 0.17 277);
+    --chart-2: oklch(0.64 0.115 225);
+    --chart-3: oklch(0.72 0.12 165);
+    --chart-4: oklch(0.8 0.13 90);
+    --chart-5: oklch(0.63 0.18 25);
+
+    --sidebar: oklch(0.975 0.004 75);
+    --sidebar-foreground: oklch(0.21 0.008 75);
+    --sidebar-primary: oklch(0.52 0.17 277);
+    --sidebar-primary-foreground: oklch(0.985 0.006 277);
+    --sidebar-accent: oklch(0.945 0.012 277);
+    --sidebar-accent-foreground: oklch(0.35 0.06 277);
+    --sidebar-border: oklch(0.915 0.005 75);
+    --sidebar-ring: oklch(0.52 0.17 277);
+
+    --radius: 0.5rem;
+
+    /* Kit extensions — a control's height at each step of the shared size scale, so Button,
+       Input, Select and Textarea at one step line up by reading one token instead of four
+       literals. Written in Tailwind's own spacing unit, which is exactly what h-8, h-9 and
+       h-10 computed to before these existed, so a host that has already retuned --spacing
+       keeps the sizes it had. Three independent values, not a scale derived from one: each is
+       honoured wherever it is redefined, including below :root, where a derived scale would
+       move one step and leave the others at the root's value. Metrics don't change between
+       light and dark, so they are defined here only. A value under 24px puts a control under
+       WCAG 2.5.8's target minimum. */
+    --control-height-sm: calc(var(--spacing) * 8);
+    --control-height: calc(var(--spacing) * 9);
+    --control-height-lg: calc(var(--spacing) * 10);
+  }
+
+  .dark {
+    --background: oklch(0.175 0.008 75);
+    --foreground: oklch(0.965 0.004 75);
+
+    --card: oklch(0.215 0.009 75);
+    --card-foreground: oklch(0.965 0.004 75);
+
+    --popover: oklch(0.235 0.009 75);
+    --popover-foreground: oklch(0.965 0.004 75);
+
+    /* Primary is also link text (Button's link variant), so it must reach 4.5:1 on
+       every dark surface. No indigo dark enough to carry a white label is light
+       enough for that, so dark mode lightens it and gives it a dark label. */
+    --primary: oklch(0.7 0.12 277);
+    --primary-foreground: oklch(0.2 0.02 277);
+
+    --secondary: oklch(0.275 0.01 75);
+    --secondary-foreground: oklch(0.965 0.004 75);
+
+    --muted: oklch(0.275 0.01 75);
+    --muted-foreground: oklch(0.715 0.011 75);
+
+    --accent: oklch(0.315 0.025 277);
+    --accent-foreground: oklch(0.93 0.03 277);
+
+    /* Destructive is also text (a destructive menu item or alert), so like primary it
+       must reach 4.5:1 on every dark surface: dark mode lightens it and gives it a
+       dark label. */
+    --destructive: oklch(0.71 0.14 27);
+
+    --border: oklch(0.305 0.01 75);
+    /* Light enough to reach 3:1 against the surface and against the translucent
+       fill a control paints on it. Boundaries only: a control's fill comes from a
+       surface token, never from --input. */
+    --input: oklch(0.69 0.011 75);
+    --ring: oklch(0.7 0.12 277);
+
+    /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
+    --destructive-foreground: oklch(0.2 0.02 27);
+
+    --success: oklch(0.74 0.14 150);
+    --success-foreground: oklch(0.2 0.03 150);
+    --warning: oklch(0.8 0.14 75);
+    --warning-foreground: oklch(0.22 0.03 75);
+    --info: oklch(0.74 0.11 245);
+    --info-foreground: oklch(0.2 0.03 245);
+
+    --chart-1: oklch(0.66 0.16 277);
+    --chart-2: oklch(0.72 0.12 225);
+    --chart-3: oklch(0.78 0.115 165);
+    --chart-4: oklch(0.85 0.125 90);
+    --chart-5: oklch(0.7 0.17 25);
+
+    --sidebar: oklch(0.205 0.009 75);
+    --sidebar-foreground: oklch(0.965 0.004 75);
+    --sidebar-primary: oklch(0.7 0.12 277);
+    --sidebar-primary-foreground: oklch(0.2 0.02 277);
+    --sidebar-accent: oklch(0.315 0.025 277);
+    --sidebar-accent-foreground: oklch(0.93 0.03 277);
+    --sidebar-border: oklch(0.305 0.01 75);
+    --sidebar-ring: oklch(0.7 0.12 277);
+  }
+}
+
+/*
+ * `inline` keeps the utilities pointing at --background rather than at a copy of
+ * its :root value, so redefining a token under .dark (or in a host app's own
+ * cascade) reaches the utility.
+ *
+ * The four --radius-* steps resolve to Tailwind's own defaults at --radius: 0.5rem,
+ * so mapping them retunes every rounded-* utility from one variable without
+ * changing what any component renders today.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+
+  /* Kit extensions */
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/*
+ * Tailwind v4 draws a border that has no color utility in currentColor, so a bare
+ * border-t on a kit part renders as a near-black rule. shadcn hides this with a
+ * reset on every element, which would recolor bare borders across a host app. This
+ * default is scoped to kit parts (anything carrying data-slot), which covers the
+ * borders the kit's own API invites and leaves host markup alone. It sits in the
+ * base layer, so any border color utility still wins.
+ */
+@layer base {
+  [data-slot] {
+    border-color: var(--border);
+  }
+}

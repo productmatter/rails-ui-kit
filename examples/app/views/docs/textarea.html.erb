@@ -1,0 +1,104 @@
+<% content_for :title, "Textarea" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Textarea</h1>
+  <p class="text-muted-foreground">
+    Longer text in a form. Give a <%= link_to "Field", field_path, class: "text-primary underline" %>
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_control(Ui::TextareaComponent)</code> and the record's value, errors and label come with it. On its own
+    it is a native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code> with the same control styling as Input and the same
+    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code> scale.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="textarea-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "default-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "default" } %>
+    <%= render Ui::TextareaComponent.new(id: "default-textarea", name: "default") do %>Ship the release notes with the changelog.<% end %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "placeholder-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "placeholder" } %>
+    <%= render Ui::TextareaComponent.new(id: "placeholder-textarea", name: "placeholder", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "focused-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "focus (tab to me)" } %>
+    <%= render Ui::TextareaComponent.new(id: "focused-textarea", name: "focused") do %>Tab to me<% end %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "invalid-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "invalid" } %>
+    <%= render Ui::TextareaComponent.new(id: "invalid-textarea", name: "invalid", aria: { invalid: true }) do %>Too short<% end %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "disabled-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "disabled" } %>
+    <%= render Ui::TextareaComponent.new(id: "disabled-textarea", name: "disabled", disabled: true) do %>Locked<% end %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "sm-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :sm" } %>
+    <%= render Ui::TextareaComponent.new(size: :sm, id: "sm-textarea", name: "sm", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "lg-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :lg" } %>
+    <%= render Ui::TextareaComponent.new(size: :lg, id: "lg-textarea", name: "lg", placeholder: "Add a note…") %>
+  </div>
+</div>
+<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+  Tab to the "focused" field to see the focus ring — the same offset-outline idiom as Button and Input.
+</p>
+
+<%# Usage %>
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
+  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
+    <span class="text-xs text-neutral-400">ERB</span>
+    <button data-copy-target="#textarea-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  </div>
+  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="textarea-usage" class="text-neutral-200"><%= h(example_textarea_usage) %></code></pre>
+</div>
+
+<%# Options %>
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
+        ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
+        ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
+        ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],
+        ["…",            "Any",     "—",   "Every other keyword (id:, name:, placeholder:, data:, aria:, …) is forwarded to the root element."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%# Accessibility %>
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The same boundary, focus ring and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> treatment as Input; in a Field, the Field sets
+      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code>.</li>
+  <li>There is no <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">value:</code> keyword: a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>'s text is its content, so pass it as the
+      block. Inside a Field bound to a record, the Field does that for you.</li>
+</ul>
+
+<%# Not this %>
+<h2 class="text-base font-semibold mb-3">When not to use it</h2>
+<p class="text-sm text-muted-foreground mb-8">
+  A single line is an <%= link_to "Input", input_path, class: "text-primary underline" %>. Rich text needs an editor, which the kit
+  doesn't ship. And this textarea doesn't grow with its content: that would need a controller, and the kit doesn't add one.
+</p>

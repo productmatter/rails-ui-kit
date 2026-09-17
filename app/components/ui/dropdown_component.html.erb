@@ -1,12 +1,4 @@
-<div <%= tag.attributes(controller_data) %>>
-  <%= content_tag :div, data: { "ui--dropdown-target": "trigger" } do %>
-    <%= trigger %>
-  <% end %>
-
-  <%= content_tag :div,
-      class: content_wrapper_classes,
-      data: { "ui--dropdown-target": "content" },
-      role: kind do %>
-    <%= menu %>
-  <% end %>
-</div>
+<%= tag.div(**root_attributes(**controller_data)) do %>
+  <%= tag.div(trigger, data: { slot: "dropdown-trigger", "ui--dropdown-target": "trigger", "ui--overlay-target": "trigger", "ui--anchor-target": "anchor" }) %>
+  <%= tag.div(panel, class: panel_wrapper_classes, data: panel_data, role: kind, aria: { label: label }, hidden: true) %>
+<% end %>

@@ -1,0 +1,91 @@
+<%# A test fixture: every region is here for a named collision (docs/specs/ui-stress-page § Behavior,
+    item 3). No prose, samples or links into the docs. %>
+<% sizes = %i[sm default lg] %>
+
+<section aria-labelledby="stress-form-heading" class="grid gap-4">
+  <h2 id="stress-form-heading" class="text-lg font-semibold">Form</h2>
+
+  <%= form_with model: @record, url: stress_path(page_params), id: "stress-form", class: "grid max-w-lg gap-6",
+                data: { turbo: (false if turbo_off?), stress_render: render_token } do %>
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :name) %>
+
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :notes) do |field| %>
+      <% field.with_control(Ui::TextareaComponent) %>
+    <% end %>
+
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :plan) do |field| %>
+      <% field.with_control(Ui::SelectComponent, enum: :plan) %>
+    <% end %>
+
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :city) do |field| %>
+      <% field.with_control(Ui::SelectComponent, collection: StressRecord::CITIES, value_method: :id, text_method: :name,
+                            search: true, include_blank: "No city") %>
+    <% end %>
+
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :frequency) do |field| %>
+      <% field.with_control(Ui::ChoicesComponent, options: StressRecord::FREQUENCIES, variant: :list) %>
+    <% end %>
+
+    <%= render Ui::FieldComponent.new(model: @record, attribute: :channel_ids) do |field| %>
+      <% field.with_label { "Channels" } %>
+      <% field.with_control(Ui::ChoicesComponent, multiple: true, variant: :card, collection: StressRecord::CHANNELS,
+                            value_method: :id, text_method: :name, description_method: :tagline) %>
+    <% end %>
+
+    <div>
+      <%= render(Ui::ButtonComponent.new(type: "submit")) { "Save" } %>
+    </div>
+  <% end %>
+</section>
+
+<section aria-labelledby="stress-sizes-heading" class="grid gap-4">
+  <h2 id="stress-sizes-heading" class="text-lg font-semibold">Sizes</h2>
+
+  <div id="stress-sizes-buttons" class="flex flex-wrap items-center gap-3">
+    <% sizes.each do |size| %>
+      <%= render(Ui::ButtonComponent.new(size: size, variant: :outline)) { "Button #{size}" } %>
+    <% end %>
+    <%= render Ui::ButtonComponent.new(size: :icon, variant: :outline, aria: { label: "Button icon" }) do %>
+      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    <% end %>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <% sizes.each do |size| %>
+      <%= render Ui::FieldComponent.new(name: "sizes[input_#{size}]") do |field| %>
+        <% field.with_label { "Input #{size}" } %>
+        <% field.with_control(Ui::InputComponent, size: size) %>
+      <% end %>
+    <% end %>
+    <% sizes.each do |size| %>
+      <%= render Ui::FieldComponent.new(name: "sizes[select_#{size}]") do |field| %>
+        <% field.with_label { "Select #{size}" } %>
+        <% field.with_control(Ui::SelectComponent, options: StressRecord::FREQUENCIES, size: size) %>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+
+<section aria-labelledby="stress-overlays-heading" class="grid gap-4">
+  <h2 id="stress-overlays-heading" class="text-lg font-semibold">Overlays</h2>
+  <%= render "stress/overlay_cluster", prefix: "page" %>
+</section>
+
+<section aria-labelledby="stress-modal-heading" class="grid gap-4">
+  <h2 id="stress-modal-heading" class="text-lg font-semibold">Modal</h2>
+  <div>
+    <%= link_to "Open modal", stress_modal_path(page_params), id: "stress-modal-link", class: "text-sm underline",
+                                                               data: { turbo_frame: "stress-modal" } %>
+  </div>
+  <%= turbo_frame_tag "stress-modal", data: { turbo_permanent: true } %>
+</section>
+
+<section aria-labelledby="stress-theme-heading" class="grid gap-4">
+  <h2 id="stress-theme-heading" class="text-lg font-semibold">Theme</h2>
+  <div>
+    <button type="button" id="stress-theme-toggle" class="rounded-md border border-border px-3 py-1.5 text-sm"
+            data-ui--dark-mode-target="toggle" data-action="click->ui--dark-mode#toggle">
+      Toggle theme
+    </button>
+  </div>
+</section>

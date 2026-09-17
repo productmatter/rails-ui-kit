@@ -14,22 +14,28 @@ Gem::Specification.new do |spec|
                      'form-change tracking, Turbo confirm/disable-with, and dark mode.'
   spec.license     = 'MIT'
 
-  spec.required_ruby_version = '>= 3.1'
+  spec.required_ruby_version = '>= 3.2'
 
   spec.metadata['homepage_uri']    = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['rubygems_mfa_required'] = 'true'
 
+  # docs/guides/**/* and not docs/**/*: the guides are part of what the gem ships (the agent skill
+  # points a host's agents at them in the installed gem), while docs/specs and docs/audits are the
+  # product record and stay out of it.
   spec.files = Dir[
     '{app,config,lib}/**/*',
+    'docs/guides/**/*',
     'MIT-LICENSE',
     'Rakefile',
     'README.md',
     'package.json'
   ]
 
-  spec.add_dependency 'rails', '>= 7.0'
+  spec.add_dependency 'class_variants', '~> 1.1'
+  spec.add_dependency 'rails', '>= 7.2'
   spec.add_dependency 'stimulus-rails'
+  spec.add_dependency 'tailwind_merge', '~> 1.5'
   spec.add_dependency 'turbo-rails'
   spec.add_dependency 'view_component', '>= 3.0', '< 5.0'
 end

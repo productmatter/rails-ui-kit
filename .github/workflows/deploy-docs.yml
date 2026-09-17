@@ -1,0 +1,29 @@
+# Deploys the docs site (examples/) to Fly.io. See examples/DEPLOY.md.
+#
+# Runs on a pushed release tag (v*) and on demand. The build runs on Fly's remote builder with the
+# repo root as the build context.
+#
+# FLY_API_TOKEN (a repository secret) must be a DEPLOY token scoped to this one app, not a personal
+# token, so a leak can deploy the docs and nothing else:
+#
+#   fly tokens create deploy -a rails-ui-kit-docs
+name: Deploy docs
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@1.6
+      - run: fly deploy . --config examples/fly.toml --dockerfile examples/Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

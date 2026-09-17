@@ -1,65 +1,171 @@
 import { Controller } from "@hotwired/stimulus"
-import { computePosition, flip, shift, offset, arrow } from "@floating-ui/dom"
 
+const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+// Grace period after the pointer/focus leaves the control before the tooltip actually
+// hides. Lets the pointer travel from the control onto the tooltip content itself, and
+// absorbs a fast leave-then-enter without ever fully hiding.
+const HIDE_GRACE_DELAY = 150
+
+// ui--overlay on this element, in hint mode, owns showing and hiding (a popover="manual" in the
+// top layer, animated through presence) and the capture-phase Escape that WCAG 1.4.13 asks for;
+// ui--anchor owns geometry and the arrow. What stays here is when to show: hover and focus
+// tracked separately, with a grace period, plus aria-describedby on the caller's control.
 export default class extends Controller {
-  static targets = ["trigger", "content", "arrow"]
-
-  static values = {
-    placement: { type: String, default: "top" },
-    offset: { type: Number, default: 6 }
-  }
+  static targets = ["trigger", "content"]
 
   connect() {
+    this.isHovered = false
+    this.isFocused = false
+    this.hideTimeout = null
+
+    // Resolved once and cached: this.triggerTarget/this.contentTarget are live Stimulus
+    // target lookups that can throw once the scope starts tearing down, so disconnect()
+    // must not depend on them.
+    this.controlElement = this.resolveTriggerControl()
+    // Hover is tracked on the trigger wrapper, not on the control: a control marked
+    // aria-disabled="true" has `pointer-events: none`, so it never sees a pointer event at all --
+    // and the aria-disabled pattern is exactly the one the docs send a disabled control to, so
+    // that its tooltip stays reachable. Focus stays on the control, which is what receives it.
+    this.hoverElement = this.hasTriggerTarget ? this.triggerTarget : this.controlElement
+    this.contentElement = this.contentTarget
+
     this.tooltipId = `ui-tooltip-${Math.random().toString(36).slice(2, 9)}`
-    this.contentTarget.id = this.tooltipId
-    this.contentTarget.setAttribute("role", "tooltip")
-    this.triggerTarget.setAttribute("aria-describedby", this.tooltipId)
+    this.contentElement.id = this.tooltipId
+    this.contentElement.setAttribute("role", "tooltip")
+
+    const existingDescribedBy = this.controlElement.getAttribute("aria-describedby")
+    this.controlElement.setAttribute(
+      "aria-describedby",
+      existingDescribedBy ? `${existingDescribedBy} ${this.tooltipId}` : this.tooltipId
+    )
+
+    this.onControlEnter = () => this.handleShow("hover")
+    this.onControlLeave = () => this.handleHide("hover")
+    this.onControlFocusIn = () => this.handleShow("focus")
+    this.onControlFocusOut = () => this.handleHide("focus")
+    this.onContentEnter = () => this.handleShow("hover")
+    this.onContentLeave = () => this.handleHide("hover")
+    this.onOpened = (event) => { if (event.target === this.element) this.setAnchored(true) }
+    this.onClosed = (event) => { if (event.target === this.element) this.setAnchored(false) }
+    this.onDismiss = (event) => { if (event.target === this.element) this.forget() }
+    this.onBeforeCache = () => {
+      this.forget()
+      this.setAnchored(false)
+    }
+
+    this.hoverElement.addEventListener("mouseenter", this.onControlEnter)
+    this.hoverElement.addEventListener("mouseleave", this.onControlLeave)
+    this.controlElement.addEventListener("focusin", this.onControlFocusIn)
+    this.controlElement.addEventListener("focusout", this.onControlFocusOut)
+    this.contentElement.addEventListener("mouseenter", this.onContentEnter)
+    this.contentElement.addEventListener("mouseleave", this.onContentLeave)
+    this.element.addEventListener("ui--overlay:opened", this.onOpened)
+    this.element.addEventListener("ui--overlay:closed", this.onClosed)
+    this.element.addEventListener("ui--overlay:dismiss", this.onDismiss)
+    document.addEventListener("turbo:before-cache", this.onBeforeCache)
   }
 
-  show() {
-    this.position()
-    this.contentTarget.classList.remove("hidden")
-    requestAnimationFrame(() => {
-      this.contentTarget.classList.remove("opacity-0")
-      this.contentTarget.classList.add("opacity-100")
-    })
+  disconnect() {
+    this.cancelHide()
+
+    const existingDescribedBy = this.controlElement.getAttribute("aria-describedby")
+    if (existingDescribedBy) {
+      const remaining = existingDescribedBy.split(" ").filter((id) => id && id !== this.tooltipId).join(" ")
+      if (remaining) {
+        this.controlElement.setAttribute("aria-describedby", remaining)
+      } else {
+        this.controlElement.removeAttribute("aria-describedby")
+      }
+    }
+
+    this.hoverElement.removeEventListener("mouseenter", this.onControlEnter)
+    this.hoverElement.removeEventListener("mouseleave", this.onControlLeave)
+    this.controlElement.removeEventListener("focusin", this.onControlFocusIn)
+    this.controlElement.removeEventListener("focusout", this.onControlFocusOut)
+    this.contentElement.removeEventListener("mouseenter", this.onContentEnter)
+    this.contentElement.removeEventListener("mouseleave", this.onContentLeave)
+    this.element.removeEventListener("ui--overlay:opened", this.onOpened)
+    this.element.removeEventListener("ui--overlay:closed", this.onClosed)
+    this.element.removeEventListener("ui--overlay:dismiss", this.onDismiss)
+    document.removeEventListener("turbo:before-cache", this.onBeforeCache)
   }
 
-  hide() {
-    this.contentTarget.classList.remove("opacity-100")
-    this.contentTarget.classList.add("opacity-0")
-    setTimeout(() => {
-      this.contentTarget.classList.add("hidden")
-    }, 100)
+  // The trigger target wraps the caller's control, normally a <button>. Positioning,
+  // hover/focus binding and aria-describedby all belong on that control: a wrapping
+  // <div> in a block layout is full-width and isn't the thing being pointed at or
+  // focused. Falls back to the wrapper when it holds nothing focusable.
+  resolveTriggerControl() {
+    if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
+    return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
-  position() {
-    const arrowEl = this.arrowTarget
+  handleShow(source) {
+    if (source === "hover") this.isHovered = true
+    if (source === "focus") this.isFocused = true
 
-    computePosition(this.triggerTarget, this.contentTarget, {
-      placement: this.placementValue,
-      middleware: [
-        offset(this.offsetValue),
-        flip(),
-        shift({ padding: 8 }),
-        arrow({ element: arrowEl })
-      ]
-    }).then(({ x, y, placement, middlewareData }) => {
-      Object.assign(this.contentTarget.style, {
-        left: `${x}px`,
-        top: `${y}px`
-      })
+    this.cancelHide()
+    this.overlay?.open()
+  }
 
-      const { x: arrowX, y: arrowY } = middlewareData.arrow
-      const staticSide = { top: 'bottom', right: 'left', bottom: 'top', left: 'right' }[placement.split('-')[0]]
+  handleHide(source) {
+    if (source === "hover") this.isHovered = false
+    if (source === "focus") this.isFocused = false
 
-      Object.assign(arrowEl.style, {
-        left: arrowX != null ? `${arrowX}px` : '',
-        top: arrowY != null ? `${arrowY}px` : '',
-        right: '',
-        bottom: '',
-        [staticSide]: '-4px'
-      })
-    })
+    this.scheduleHide()
+  }
+
+  scheduleHide() {
+    this.cancelHide()
+    this.hideTimeout = setTimeout(() => {
+      this.hideTimeout = null
+      if (!this.isHovered && !this.isFocused) this.overlay?.close()
+    }, HIDE_GRACE_DELAY)
+  }
+
+  cancelHide() {
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout)
+      this.hideTimeout = null
+    }
+  }
+
+  // Escape, or a snapshot about to be cached: whatever was holding the tooltip open no longer is.
+  forget() {
+    this.isHovered = false
+    this.isFocused = false
+    this.cancelHide()
+  }
+
+  get overlay() {
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    if (!controller) this.warnMissingCompanion("ui--overlay", "showing and hiding do nothing")
+    return controller
+  }
+
+  // Active from opened until the exit animation has finished, however the tooltip was hidden.
+  setAnchored(active) {
+    const anchor = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+    if (!anchor) return this.warnMissingCompanion("ui--anchor", "positioning silently does nothing")
+    anchor.activeValue = active
+  }
+
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so
+  // markup missing "ui--overlay" or "ui--anchor" -- old copy-pasted markup predating the move
+  // onto the shared primitives in 144d104, say -- still hovers and focuses: it just never shows
+  // anything, or shows it wherever it last happened to sit, with nothing in the console saying
+  // why. Warned once per identifier per instance -- this getter runs on every hover and focus
+  // event, so without that it would flood the console rather than name the problem once; never
+  // thrown, since a missing companion has to fail soft, not break Tooltip outright.
+  warnMissingCompanion(identifier, consequence) {
+    this.warnedMissingCompanions ||= new Set()
+    if (this.warnedMissingCompanions.has(identifier)) return
+    this.warnedMissingCompanions.add(identifier)
+
+    console.warn(
+      `ui--tooltip: no "${identifier}" controller found, so ${consequence}. ` +
+      `Add "${identifier}" to this element's data-controller.`,
+      this.element
+    )
   }
 }

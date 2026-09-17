@@ -1,127 +1,95 @@
 import { Controller } from "@hotwired/stimulus"
-import { computePosition, flip, shift, offset } from "@floating-ui/dom"
 
+const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+// A click can reach toggle() twice when the caller also wires click->ui--popover#toggle
+// on their own control; the second call must not undo the first.
+const toggledEvents = new WeakSet()
+
+// ui--overlay on this element, in layer mode, owns showing, hiding, light dismiss, Escape,
+// aria-expanded / aria-controls and focus return; ui--anchor owns geometry. What stays here is
+// binding the click to the caller's control rather than the slot, and positioning only while
+// the panel is rendered.
 export default class extends Controller {
-  static targets = ["trigger", "content"]
+  static targets = ["trigger"]
 
-  static values = {
-    placement: { type: String, default: "bottom" },
-    offset: { type: Number, default: 8 },
-    open: Boolean
+  initialize() {
+    this.onTriggerClick = (event) => {
+      if (this.triggerControl.contains(event.target)) this.toggle(event)
+    }
+    this.onOpened = (event) => { if (event.target === this.element) this.setAnchored(true) }
+    this.onClosed = (event) => { if (event.target === this.element) this.setAnchored(false) }
+    this.onBeforeCache = () => this.setAnchored(false)
   }
 
   connect() {
-    this.openValue = false
-    this.triggerTarget.setAttribute("aria-expanded", "false")
-    this.triggerTarget.setAttribute("aria-haspopup", "true")
+    this.triggerControl.setAttribute("aria-haspopup", "dialog")
+
+    this.triggerTarget.addEventListener("click", this.onTriggerClick)
+    this.element.addEventListener("ui--overlay:opened", this.onOpened)
+    this.element.addEventListener("ui--overlay:closed", this.onClosed)
+    document.addEventListener("turbo:before-cache", this.onBeforeCache)
   }
 
   disconnect() {
-    this.cleanup()
+    this.triggerTarget.removeEventListener("click", this.onTriggerClick)
+    this.element.removeEventListener("ui--overlay:opened", this.onOpened)
+    this.element.removeEventListener("ui--overlay:closed", this.onClosed)
+    document.removeEventListener("turbo:before-cache", this.onBeforeCache)
   }
 
   toggle(event) {
-    event.preventDefault()
-    event.stopPropagation()
-    this.openValue = !this.openValue
+    if (event) {
+      if (toggledEvents.has(event)) return
+      toggledEvents.add(event)
+    }
+    this.overlay?.toggle(event)
   }
 
   open() {
-    this.openValue = true
+    this.overlay?.open()
   }
 
   close() {
-    this.openValue = false
+    this.overlay?.close()
   }
 
-  openValueChanged() {
-    if (this.openValue) {
-      this.show()
-    } else {
-      this.hide()
-    }
+  // The trigger target wraps the caller's control, normally a <button>. Clicks and ARIA belong
+  // on that control: the wrapping <div> is neither focusable nor announced, and in a block
+  // layout it spans the full width. Falls back to the wrapper when it holds nothing focusable.
+  get triggerControl() {
+    if (this.triggerTarget.matches(FOCUSABLE)) return this.triggerTarget
+    return this.triggerTarget.querySelector(FOCUSABLE) || this.triggerTarget
   }
 
-  show() {
-    this.position()
-
-    this.contentTarget.classList.remove("hidden")
-    requestAnimationFrame(() => {
-      this.contentTarget.classList.remove("opacity-0", "scale-95")
-      this.contentTarget.classList.add("opacity-100", "scale-100")
-    })
-
-    this.triggerTarget.setAttribute("aria-expanded", "true")
-
-    this.setupListeners()
-
-    this.scrollHandler = () => this.position()
-    window.addEventListener("scroll", this.scrollHandler, true)
-    window.addEventListener("resize", this.scrollHandler)
+  get overlay() {
+    const controller = this.application.getControllerForElementAndIdentifier(this.element, "ui--overlay")
+    if (!controller) this.warnMissingCompanion("ui--overlay", "opening, closing and dismissal do nothing")
+    return controller
   }
 
-  hide() {
-    this.contentTarget.classList.remove("opacity-100", "scale-100")
-    this.contentTarget.classList.add("opacity-0", "scale-95")
-
-    setTimeout(() => {
-      this.contentTarget.classList.add("hidden")
-    }, 100)
-
-    this.triggerTarget.setAttribute("aria-expanded", "false")
-    this.cleanup()
+  // Active from opened until the exit animation has finished, however the panel was closed.
+  setAnchored(active) {
+    const anchor = this.application.getControllerForElementAndIdentifier(this.element, "ui--anchor")
+    if (!anchor) return this.warnMissingCompanion("ui--anchor", "positioning silently does nothing")
+    anchor.activeValue = active
   }
 
-  position() {
-    computePosition(this.triggerTarget, this.contentTarget, {
-      placement: this.placementValue,
-      middleware: [
-        offset(this.offsetValue),
-        flip(),
-        shift({ padding: 8 })
-      ]
-    }).then(({ x, y }) => {
-      Object.assign(this.contentTarget.style, {
-        left: `${x}px`,
-        top: `${y}px`
-      })
-    })
-  }
+  // Stimulus does not warn about a data-controller identifier that simply isn't present, so
+  // markup missing "ui--overlay" or "ui--anchor" -- old copy-pasted markup predating the move
+  // onto the shared primitives in 144d104, say -- still opens: it just silently keeps whatever
+  // position it already had, or the trigger click does nothing at all, with nothing in the
+  // console saying why. Warned once per identifier per instance; never thrown, since a missing
+  // companion has to fail soft, not break Popover outright.
+  warnMissingCompanion(identifier, consequence) {
+    this.warnedMissingCompanions ||= new Set()
+    if (this.warnedMissingCompanions.has(identifier)) return
+    this.warnedMissingCompanions.add(identifier)
 
-  setupListeners() {
-    this.clickOutsideHandler = (event) => {
-      if (!this.element.contains(event.target)) {
-        this.close()
-      }
-    }
-    setTimeout(() => {
-      document.addEventListener("click", this.clickOutsideHandler)
-    }, 10)
-
-    this.escapeHandler = (event) => {
-      if (event.key === "Escape") {
-        this.close()
-        this.triggerTarget.focus()
-      }
-    }
-    document.addEventListener("keydown", this.escapeHandler)
-  }
-
-  cleanup() {
-    if (this.clickOutsideHandler) {
-      document.removeEventListener("click", this.clickOutsideHandler)
-      this.clickOutsideHandler = null
-    }
-
-    if (this.escapeHandler) {
-      document.removeEventListener("keydown", this.escapeHandler)
-      this.escapeHandler = null
-    }
-
-    if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler, true)
-      window.removeEventListener("resize", this.scrollHandler)
-      this.scrollHandler = null
-    }
+    console.warn(
+      `ui--popover: no "${identifier}" controller found, so ${consequence}. ` +
+      `Add "${identifier}" to this element's data-controller.`,
+      this.element
+    )
   }
 }

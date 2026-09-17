@@ -1,0 +1,15 @@
+<%= tag.div(**root_attributes(id: listbox_id, role: 'listbox', aria: { labelledby: labelledby })) do %>
+  <% groups.each do |label, entries| %>
+    <% options = capture do %>
+      <% entries.each do |item, index| %>
+        <%= tag.div(**option_attributes(item, index)) do %>
+          <span class="min-w-0 wrap-break-word"><%= item.text %></span>
+          <svg aria-hidden="true" class="absolute inset-e-2 size-4 opacity-0 group-data-[selected=true]:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"></path>
+          </svg>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= label.present? ? group_tag(label, entries.first.last, options) : options %>
+  <% end %>
+<% end %>

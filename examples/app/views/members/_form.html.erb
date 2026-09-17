@@ -1,0 +1,36 @@
+<%= form_with model: member, class: "grid max-w-lg gap-6" do |form| %>
+  <%# The record supplies the name, id, label, value, errors and required. %>
+  <%= render Ui::FieldComponent.new(model: member, attribute: :name) %>
+
+  <%# An enum: the options come from Member.statuses, their labels from human_attribute_name. %>
+  <%= render Ui::FieldComponent.new(model: member, attribute: :status) do |field| %>
+    <% field.with_control(Ui::SelectComponent, model: Member, enum: :status) %>
+  <% end %>
+
+  <%# belongs_to validates the association, so its error is on :team, not the :team_id this edits. %>
+  <%= render Ui::FieldComponent.new(model: member, attribute: :team_id,
+                                    errors: member.errors[:team_id] + member.errors[:team]) do |field| %>
+    <% field.with_control(Ui::SelectComponent, collection: Team.all, value_method: :id, text_method: :name,
+                          include_blank: "No team") %>
+  <% end %>
+
+  <%# has_many is validated as :roles and edited as :role_ids, so the Field is told which errors are its own. %>
+  <%= render Ui::FieldComponent.new(model: member, attribute: :role_ids, required: true,
+                                    errors: member.errors[:roles]) do |field| %>
+    <% field.with_label { "Roles" } %>
+    <% field.with_control(Ui::ChoicesComponent, multiple: true, collection: Role.all,
+                          value_method: :id, text_method: :name, disabled_values: Role.locked_ids) %>
+    <% field.with_description { "Owner is managed by billing and can't be changed here." } %>
+  <% end %>
+
+  <%# Nested attributes: the nested record is the model, and fields_for supplies its full name. %>
+  <%= form.fields_for :address do |address_form| %>
+    <%= render Ui::FieldComponent.new(model: address_form.object, attribute: :city,
+                                      name: address_form.field_name(:city)) %>
+  <% end %>
+
+  <div>
+    <%= render(Ui::ButtonComponent.new(type: "submit", data: { turbo_disable_with: "Saving…",
+                                                               turbo_disable_style: "spinner" })) { "Save" } %>
+  </div>
+<% end %>

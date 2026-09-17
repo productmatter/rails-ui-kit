@@ -1,0 +1,49 @@
+<%# The overlay cluster (docs/specs/ui-stress-page § Behavior, item 3). Rendered on the page and again
+    inside the Modal, so every id carries `prefix`, and the duplicate-id invariant proves it does. %>
+<div id="<%= prefix %>-cluster" class="flex flex-wrap items-start gap-3" data-stress-render="<%= render_token %>">
+  <%# The neutral region sits above the triggers: a panel opens below the control it is anchored to,
+      so an outside click here lands on the region rather than on a layer covering it. %>
+  <div id="<%= prefix %>-outside" data-stress-outside class="h-24 w-full rounded-md border border-dashed border-border"></div>
+  <%= render Ui::DropdownComponent.new(kind: :menu, id: "#{prefix}-dm") do |d| %>
+    <% d.with_trigger do %>
+      <%= render(Ui::ButtonComponent.new(id: "#{prefix}-dm-trigger", variant: :outline)) { "Menu" } %>
+    <% end %>
+    <% d.with_panel(class: "min-w-40 py-1") do %>
+      <button type="button" id="<%= prefix %>-dm-close" class="flex w-full px-3 py-2 text-sm hover:bg-accent focus:bg-accent">Close menu</button>
+      <%= link_to "Leave", stress_bare_path, id: "#{prefix}-dm-out", class: "flex px-3 py-2 text-sm hover:bg-accent focus:bg-accent",
+                                             data: { turbo_frame: "_top" } %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::PopoverComponent.new(id: "#{prefix}-po") do |p| %>
+    <% p.with_trigger do %>
+      <%= render(Ui::ButtonComponent.new(id: "#{prefix}-po-trigger", variant: :outline)) { "Popover" } %>
+    <% end %>
+    <% p.with_panel(class: "w-56 p-3 text-sm") do %>
+      <p id="<%= prefix %>-po-text">A popover.</p>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::DropdownComponent.new(kind: :dialog, label: "Filter", id: "#{prefix}-dd") do |d| %>
+    <% d.with_trigger do %>
+      <%= render(Ui::ButtonComponent.new(id: "#{prefix}-dd-trigger", variant: :outline)) { "Filter" } %>
+    <% end %>
+    <% d.with_panel(class: "grid w-64 gap-3 p-3") do %>
+      <%# Above the Select for the same reason: its listbox opens downwards. %>
+      <div id="<%= prefix %>-dd-outside" data-stress-outside class="h-12 rounded-md border border-dashed border-border"></div>
+      <%# Narrower than the region above it: a listbox matches its control's width, so however the
+          panel scrolls or the listbox flips, part of the region stays clear to click. %>
+      <div class="w-40">
+        <%= render "stress/status_field", prefix: prefix %>
+      </div>
+      <%= link_to "Leave", stress_bare_path, id: "#{prefix}-dd-out", class: "text-sm underline", data: { turbo_frame: "_top" } %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::TooltipComponent.new(text: "Not available yet", id: "#{prefix}-t") do |t| %>
+    <% t.with_trigger do %>
+      <%= render(Ui::ButtonComponent.new(id: "#{prefix}-t-trigger", variant: :outline, aria: { disabled: true })) { "Unavailable" } %>
+    <% end %>
+  <% end %>
+
+</div>

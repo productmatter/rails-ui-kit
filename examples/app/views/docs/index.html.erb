@@ -1,62 +1,42 @@
 <% content_for :title, "Introduction" %>
 
 <div class="mb-10">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Getting Started</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">rails-ui-kit</h1>
-  <p class="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
-    A private ViewComponent + Stimulus kit for Rails apps. Production-quality interactive components
-    wired with Tailwind 4, Floating UI, and Hotwire — with zero JavaScript framework overhead.
+  <p class="text-lg text-muted-foreground leading-relaxed">
+    A private ViewComponent + Stimulus kit for Rails apps. Every component here either plugs into
+    Rails and Turbo — form errors, Streams, the page cache — or handles browser behaviour that is
+    hard to get right: focus, anchored positioning, keyboard models and exit animations. Anything
+    that is just markup with classes is deliberately not here.
   </p>
 </div>
 
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-12">
-  <div class="px-5 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-t-lg">
-    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Components</p>
-  </div>
-  <% [
-    ["Confirm Dialog", confirm_dialog_path, "Native <dialog>-based confirmation prompt with a Promise API."],
-    ["Dropdown",       dropdown_path,       "Floating-positioned menu, listbox, or dialog triggered from any element."],
-    ["Modal",          modal_path,          "Full-featured modal with 8 position variants and optional form-change tracking."],
-    ["Popover",        popover_path,        "Click-triggered floating panel for rich HTML content."],
-    ["Toast",          toast_path,          "Auto-dismissing notification cards with 5 type variants."],
-    ["Tooltip",        tooltip_path,        "Hover/focus text tooltip anchored to any trigger element."],
-  ].each do |name, path, desc| %>
-    <div class="flex items-start gap-4 px-5 py-4">
-      <div class="flex-1">
-        <%= link_to name, path, class: "font-medium text-sm hover:text-violet-600 dark:hover:text-violet-400 transition-colors" %>
-        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5"><%= desc %></p>
-      </div>
-      <%= link_to "→", path, class: "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 text-sm mt-0.5" %>
+<%# Every list comes from DocsPages::PAGES, the same registry the sidebar and routes use, so a
+    new page (or section) appears here automatically and can't be forgotten. %>
+<% (DocsPages::SECTIONS - ["Getting Started"]).each do |section| %>
+  <div class="rounded-lg border border-border divide-y divide-border mb-12">
+    <div class="px-5 py-3 bg-muted rounded-t-lg">
+      <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= section %></p>
     </div>
-  <% end %>
-</div>
-
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800 mb-12">
-  <div class="px-5 py-3 bg-neutral-50 dark:bg-neutral-900 rounded-t-lg">
-    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Utility Controllers</p>
-  </div>
-  <% [
-    ["Dark Mode",          dark_mode_path,          "Persisted light/dark toggle synced across tabs."],
-    ["Form Change",        form_change_path,         "Tracks dirty form state and dispatches change events."],
-    ["Turbo Confirm",      turbo_confirm_path,        "Replaces Turbo's native confirm dialog with the kit's version."],
-    ["Turbo Disable With", turbo_disable_with_path,   "Disables form buttons during Turbo submissions with loading states."],
-  ].each do |name, path, desc| %>
-    <div class="flex items-start gap-4 px-5 py-4">
-      <div class="flex-1">
-        <%= link_to name, path, class: "font-medium text-sm hover:text-violet-600 dark:hover:text-violet-400 transition-colors" %>
-        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5"><%= desc %></p>
+    <% DocsPages.in_section(section).each do |page| %>
+      <% path = send("#{page[:slug]}_path") %>
+      <div class="flex items-start gap-4 px-5 py-4">
+        <div class="flex-1">
+          <%= link_to page[:title], path, class: "font-medium text-sm hover:text-primary transition-colors" %>
+          <p class="text-sm text-muted-foreground mt-0.5"><%= page[:summary] %></p>
+        </div>
+        <%= link_to "→", path, class: "text-muted-foreground hover:text-foreground text-sm mt-0.5", "aria-hidden": true, tabindex: -1 %>
       </div>
-      <%= link_to "→", path, class: "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 text-sm mt-0.5" %>
-    </div>
-  <% end %>
-</div>
+    <% end %>
+  </div>
+<% end %>
 
 <div class="flex gap-3">
-  <%= link_to "Get started →", installation_path,
-      class: "inline-flex items-center rounded-lg bg-neutral-900 dark:bg-white px-4 py-2 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors" %>
-  <a href="https://github.com/productmatter/rails-ui-kit"
-     target="_blank"
-     class="inline-flex items-center rounded-lg border border-neutral-200 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
+  <%= render Ui::ButtonComponent.new(href: installation_path) do %>
+    Get started →
+  <% end %>
+  <%= render Ui::ButtonComponent.new(href: "https://github.com/productmatter/rails-ui-kit",
+                                     variant: :outline, target: "_blank", rel: "noopener") do %>
     View on GitHub
-  </a>
+  <% end %>
 </div>

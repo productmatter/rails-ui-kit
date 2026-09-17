@@ -1,8 +1,24 @@
-<div data-controller="ui--toast-container" class="<%= container_class %>">
-  <div data-ui--toast-container-target="stack" class="pointer-events-auto"></div>
+<%= tag.div(**root_attributes(**container_attributes)) do %>
+  <%# The stack is a landmark only while it holds a toast, and F8 reaches it from anywhere
+      (ui-toast § Behavior, item 12). Empty, it is hidden, so a landmark list carries no empty
+      region. A Turbo Stream appends here by id. %>
+  <div id="<%= STACK_ID %>" data-ui--toast-container-target="stack" role="region" aria-label="<%= region_label %>" aria-keyshortcuts="F8" class="flex flex-col gap-3"<%= ' hidden' if @payloads.empty? %>>
+    <% toasts.each do |toast| %>
+      <%= render toast %>
+    <% end %>
+  </div>
+
+  <%# Persistent live regions: present on the page before any toast arrives, so
+      assistive tech has already registered them by the time a toast writes its
+      announcement text in. The visible toast cards carry no live-region role of
+      their own -- this is the only thing that gets announced. %>
+  <div data-ui--toast-container-target="politeRegion" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <div data-ui--toast-container-target="assertiveRegion" role="alert" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
   <% template_types.each do |type| %>
-    <template data-ui--toast-container-target="template" data-toast-type="<%= type %>">
-      <%= render template_toast(type) %>
-    </template>
+    <template data-ui--toast-container-target="template" data-toast-type="<%= type %>"><%= render Ui::ToastComponent.template(type, **chrome) %></template>
   <% end %>
-</div>
+  <% action_templates.each do |kind, variant, action| %>
+    <template data-ui--toast-container-target="actionTemplate" data-action-kind="<%= kind %>" data-action-variant="<%= variant %>"><%= render action %></template>
+  <% end %>
+<% end %>

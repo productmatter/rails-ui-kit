@@ -1,0 +1,126 @@
+# frozen_string_literal: true
+
+module RailsUiKit
+  # Capybara helpers for host application test suites.
+  #
+  #   require "rails_ui_kit/test_helpers"
+  #
+  #   class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  #     include RailsUiKit::TestHelpers
+  #   end
+  #
+  #   ui_select "Pending", from: "Status"
+  #
+  # Enhanced, Ui::SelectComponent lays its native <select> over the combobox at `opacity: 0`, so a
+  # host's `select "Pending", from: "Status"` no longer picks what the user would. This drives the
+  # widget the way a person does -- open it, then choose the option -- and falls back to the
+  # native select where the component was never enhanced, so one call covers every state.
+  #
+  # Not required by the engine: it loads nothing at runtime, and a host that writes no system
+  # test never loads it.
+  module TestHelpers
+    class OptionNotFound < Capybara::ElementNotFound; end
+
+    SELECT_ROOT = "[data-slot='select']"
+    COMBOBOX = '[role=combobox]'
+    SHOW_OPTIONS = '[data-ui--select-target="showOptions"]'
+
+    # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
+    # id or name of the select inside it.
+    def ui_select(text, from:)
+      root = ui_select_root(from)
+      combobox = root.first(COMBOBOX, minimum: 0, wait: 0)
+      return ui_select_natively(root, text, from) unless combobox&.visible?
+
+      ui_select_open(root, combobox, from)
+      ui_select_option(root, combobox, text, from).click
+      ui_select_expanded?(combobox, 'false') ||
+        raise(OptionNotFound, "the Select for #{from.inspect} stayed open after choosing #{text.inspect}")
+      combobox
+    end
+
+    private
+
+    # Exactly one Select may answer to a name: two that do is the same mistake Capybara's own
+    # Ambiguous error exists to catch, and silently taking the first would write the value into a
+    # control the test never meant.
+    def ui_select_root(from)
+      roots = all(SELECT_ROOT, visible: :all, wait: 0).select { |root| ui_select_named?(root, from) }
+      return roots.first if roots.one?
+
+      raise Capybara::Ambiguous, "found #{roots.size} Selects for #{from.inspect}" if roots.size > 1
+
+      raise OptionNotFound, "found no Ui::SelectComponent for #{from.inspect}"
+    end
+
+    # A Select answers to the Field label that names it, to its own aria-label, and to the id or
+    # name of the select inside it -- whichever the host's test already says.
+    def ui_select_named?(root, from)
+      native = ui_select_native(root)
+      return false unless native
+      return true if [native[:id], native[:name]].include?(from.to_s)
+
+      ui_select_names(root, native).any? { |name| name.strip == from.to_s.strip }
+    end
+
+    def ui_select_names(root, native)
+      label = page.first("label[for='#{native[:id]}']", minimum: 0, wait: 0)
+      combobox = root.first(COMBOBOX, visible: :all, minimum: 0, wait: 0)
+
+      [label&.text, native[:'aria-label'], combobox&.[](:'aria-label')].compact
+    end
+
+    def ui_select_native(root)
+      root.first('select', visible: :all, minimum: 0, wait: 0)
+    end
+
+    # Select-only mode opens on a click of the control itself. Search mode's control is a text
+    # field, where a click only places the caret, so it opens the way a pointer user does: with
+    # the chevron button beside it.
+    def ui_select_open(root, combobox, from)
+      return if combobox[:'aria-expanded'] == 'true'
+
+      (root.first(SHOW_OPTIONS, minimum: 0, wait: 0) || combobox).click
+      return if ui_select_expanded?(combobox, 'true')
+
+      raise OptionNotFound, "the Select for #{from.inspect} did not open"
+    end
+
+    # Named after what the caller asked for, not after an internal id: a host debugging its own
+    # suite should be told which Select and what it offers, not handed a selector.
+    def ui_select_option(root, combobox, text, from)
+      listbox = find("##{combobox[:'aria-controls']}", visible: :all)
+      option = listbox.all('[role=option]').find { |candidate| candidate.text.strip == text.to_s.strip }
+      return option if option
+
+      offered = ui_select_option_texts(root)
+      raise OptionNotFound,
+            "the Select for #{from.inspect} has no option #{text.inspect}. It offers: #{offered.inspect}"
+    end
+
+    # Not enhanced -- JavaScript never ran, or select-only mode kept the platform picker on a
+    # touch screen. The native select is the control, and it is chosen the way any select is.
+    def ui_select_natively(root, text, from)
+      native = ui_select_native(root)
+      option = native.all('option', text: text, exact_text: true, visible: :all, minimum: 0).first
+      unless option
+        raise OptionNotFound,
+              "the Select for #{from.inspect} has no option #{text.inspect}. " \
+              "It offers: #{ui_select_option_texts(root).inspect}"
+      end
+
+      option.select_option
+      native
+    end
+
+    def ui_select_option_texts(root)
+      ui_select_native(root).all('option', visible: :all).map { |option| option.text.strip }
+    end
+
+    # Capybara's own waiting matcher rather than a polled loop under Timeout: interrupting a
+    # request that is already in flight to the browser can leave the session wedged.
+    def ui_select_expanded?(combobox, expanded)
+      combobox.matches_css?("[aria-expanded='#{expanded}']", wait: Capybara.default_max_wait_time)
+    end
+  end
+end

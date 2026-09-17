@@ -1,0 +1,38 @@
+<%= tag.fieldset(**fieldset_attributes) do %>
+  <%# Rails' blank entry first, then the carriers for checked-and-locked values, then the real
+      inputs: the order that makes a radio the user chooses the later — and winning — value. %>
+  <%= tag.input(**hidden_field_attributes) if include_hidden? %>
+  <% carriers.each do |carrier| %>
+    <%= tag.input(**carrier) %>
+  <% end %>
+  <% items.each do |item| %>
+    <%# The whole label is the target, and the input is the only thing focus ever lands on. Its
+        name is the text element alone, so a wrapping label's full text never becomes the name. %>
+    <%= tag.label(class: style.choice_class) do %>
+      <span class="relative flex h-5 shrink-0 items-center justify-center">
+        <%= tag.input(**input_attributes(item)) %>
+        <%# The checked mark is stroked in currentColor rather than drawn as a background: a
+            background-drawn tick goes with the fill in forced colours. Chrome forces the input's
+            fill to Canvas there but leaves an SVG's stroke alone (measured), so the mark names the
+            system colour itself rather than trusting the forcing to reach it. %>
+        <svg class="pointer-events-none absolute size-4 text-primary-foreground forced-colors:text-[CanvasText] opacity-0 peer-checked:opacity-100"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= style.mark[:width] %>"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<%= style.mark[:path] %>"/></svg>
+      </span>
+      <% if (icon = icon_for(item)) %>
+        <span class="flex h-5 shrink-0 items-center text-muted-foreground" aria-hidden="true"><%= icon %></span>
+      <% end %>
+      <span class="grid min-w-0 content-center gap-1">
+        <%= tag.span(item.text, id: text_id(item), class: 'font-medium wrap-break-word') %>
+        <% if (description = description_for(item)) %>
+          <%= tag.span(description, id: description_id(item), class: 'text-muted-foreground wrap-break-word') %>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+  <%# What the visual `*` means, for a group the browser has no required state for. Read by
+      ui--choices as its validation message, so the string has one source. %>
+  <% if required_hint? %>
+    <%= tag.span(required_message, id: required_id, class: 'sr-only', data: { 'ui--choices-target': 'hint' }) %>
+  <% end %>
+<% end %>
