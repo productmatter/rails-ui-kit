@@ -25,6 +25,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   driven_by :rails_ui_kit_headless_chrome, screen_size: SCREEN_SIZE
 
+  # One forked worker per core, each with its own Puma and Chrome; PARALLEL_WORKERS=n caps it.
+  parallelize(workers: :number_of_processors)
+
   # driven_by applies screen_size only to a driver Rails registers itself, and this one is
   # registered above, so the window came up at Chrome's default (about 756x413). Every test starts
   # with a viewport of the registered size instead -- including after a test that resized the

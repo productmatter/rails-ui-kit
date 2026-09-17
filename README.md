@@ -547,8 +547,8 @@ that reads it, in both modes.
   coding agents alike.
 - Two test lanes. `bundle exec rake test` is browser-free: components, generators, the guides'
   drift checks. `bundle exec rake test:system` builds the docs app's CSS and drives the `examples/`
-  app in headless Chrome, with axe accessibility checks. Run one file with
-  `TEST=test/system/<file>_test.rb`.
+  app in headless Chrome, with axe accessibility checks, in one forked worker per core
+  (`PARALLEL_WORKERS=n` caps it). Run one file with `TEST=test/system/<file>_test.rb`.
 - System-test helpers: `test/support/browser_helpers.rb` holds the browser probes shared by every
   `test/system/*_test.rb` file (`press`, `click_at`, `ax_node`, console/error capture, and the
   like), included once from `ApplicationSystemTestCase`. A `test/system/<component>_helpers.rb`
