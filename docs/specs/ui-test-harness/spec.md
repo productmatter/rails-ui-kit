@@ -96,6 +96,13 @@ existing matrix job keeps running `bundle exec rake test` across all four Rubies
 new job runs `bundle exec rake test:system` once, on a single stable Ruby, on a runner
 with Chrome available. Fast signal stays on every Ruby; the browser cost is paid once.
 
+Inside that one run the lane forks a worker per core (`parallelize` in the base class),
+each with its own Puma and its own Chrome, so the wall-clock is the suite divided by the
+runner's cores rather than the suite. Nothing in the lane is shared between workers: the
+docs app has no database, and the only file a test writes goes in its own temporary
+directory. `PARALLEL_WORKERS=n` caps the fork; a run below Rails' threshold (one file
+under `TEST=`) stays in-process.
+
 Accessibility assertion is part of the harness, not a later addition. `axe-core-capybara`
 and `axe-core-api` (both 4.13.0 at authoring time; both resolve on rubygems) join the
 `Gemfile`'s test group, and the base class exposes an `assert_accessible`-shaped helper
@@ -208,7 +215,8 @@ correctly in the first place (§ Out of scope / deferred).
 - `test/test_helper.rb` — the unit-lane entry point; gains nothing, and must keep
   mentioning no browser.
 - `test/application_system_test_case.rb` (new) — the Capybara base class, the headless
-  Chrome driver registration, the `assert_accessible` helper, and the `SLOW=1` switch.
+  Chrome driver registration, the per-core worker fork, the `assert_accessible` helper, and
+  the `SLOW=1` switch.
 - `test/system/` (new) — the browser-test lane, smoke-covered by `button_test.rb`
   (accessibility audit) and `accessibility_assertion_test.rb` (the harness fails loudly).
 - `Rakefile` — the single `test/**/*_test.rb` glob that currently sweeps system tests into
@@ -250,7 +258,8 @@ correctly in the first place (§ Out of scope / deferred).
 - Cross-browser system runs (Firefox, Safari). One headless Chrome is the lane;
   `ui-presence-and-overlay-stack`'s `popover`-unsupported fallback is exercised at its own
   human-gate, in a real non-supporting browser, not here.
-- Parallel or sharded system-test execution — premature at one smoke test.
+- Sharding the system lane across runner jobs. It runs in forked workers inside its one job
+  (§ Behavior); shards would pay a setup and Chrome install per shard for the same minutes.
 - Making `SLOW=1` part of CI, on a schedule or otherwise. What it finds is a test to fix;
   once fixed, the fix is what CI runs. A nightly slow job is worth revisiting only if the
   suite starts finding races faster than it fixes them.
