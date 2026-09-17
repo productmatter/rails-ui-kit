@@ -24,6 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@1.6
-      - run: fly deploy . --config examples/fly.toml --dockerfile examples/Dockerfile --remote-only
+      - run: flyctl deploy . --config examples/fly.toml --dockerfile examples/Dockerfile --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
