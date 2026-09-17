@@ -427,9 +427,11 @@ what it says.
 already cleared.** Minimum Ruby moves from 3.1 to 3.2 (`tailwind_merge` requires it), minimum
 Rails moves from 7.0 to 7.2 (`turbo-rails` and `view_component` already required 7.1, so 7.0
 never actually worked; 7.2 is the oldest release the suite was run against, and it passed with
-no changes), and Tailwind 3 / Sprockets support is dropped — Tailwind CSS 4 via
-`tailwindcss-rails` is now the only supported path. If your app is on Ruby 3.1, Rails 7.0/7.1,
-or Tailwind 3, `bundle update` will tell you before anything subtler does.
+no changes), and Tailwind 3 / Sprockets support is dropped — Tailwind CSS 4.2 or newer via
+`tailwindcss-rails` is now the only supported path (the kit uses logical utilities added in 4.2).
+If your app is on Ruby 3.1, Rails 7.0/7.1, or Tailwind 3, `bundle update` will tell you before
+anything subtler does; a Tailwind 4.0/4.1 build won't complain, but the kit's `inset-s-*` /
+`inset-e-*` classes silently won't compile, so check your Tailwind version is 4.2+.
 
 One thing that looks like a kit bug and isn't: **version 3 of the `json` gem breaks Rails through
 8.1.3.1.** Rails 7.2 and 8.0 raise `unknown keyword: quirks_mode` from their own JSON encoder;

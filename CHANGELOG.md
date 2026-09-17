@@ -4,6 +4,9 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Fixed
+- **The documented Tailwind floor now matches what the kit compiles: Tailwind CSS 4.2.** The directional retrofit in 0.3.0 moved several components onto logical utilities — `inset-s-*` / `inset-e-*` (Toast container and Select), added in Tailwind 4.2, and `wrap-break-word` (Toast, Choices, Select), added in 4.1 — but the README and 0.3.0 notes still stated a Tailwind 4.0 floor. On a Tailwind 4.0 or 4.1 build those classes never compile, so a toast lost its inline-end positioning and drifted to the corner. No component markup changed; the requirement is corrected to Tailwind CSS >= 4.2.
+
 ### Changed
 - The browser lane (`rake test:system`) forks one worker per core, each with its own Puma and Chrome, instead of running its 859 tests in a single process; `PARALLEL_WORKERS=n` caps it. The spec had deferred this "at one smoke test".
 

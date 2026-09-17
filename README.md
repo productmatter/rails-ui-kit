@@ -62,12 +62,13 @@ The docs app's Primitives pages document each value and event.
 ## Requirements
 
 The kit's colour, radius and control heights come from CSS design tokens that only a Tailwind CSS 4
-build can compile, so **Tailwind CSS 4 via `tailwindcss-rails` 4.x is required**. There is no
+build can compile, and its components use logical utilities — `inset-s-*` / `inset-e-*`, added in
+Tailwind 4.2 — so **Tailwind CSS 4.2 or newer via `tailwindcss-rails` is required**. There is no
 Tailwind 3, PostCSS or Sprockets path for the tokens: `rails_ui_kit/components.css` carries a
 handful of modal animation classes and nothing else.
 
 - Rails >= 7.2, Ruby >= 3.2
-- Tailwind CSS 4 via tailwindcss-rails >= 4.0
+- Tailwind CSS >= 4.2 via tailwindcss-rails (its bundled `tailwindcss-ruby` must be >= 4.2)
 - view_component >= 3.0, stimulus-rails, turbo-rails
 - class_variants (the variant layer) and tailwind_merge (the class-merge layer)
 - `@floating-ui/dom` >= 1.6. Dropdown, Popover, Tooltip and Select position with it, and the kit's
