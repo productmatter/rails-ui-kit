@@ -21,6 +21,8 @@ fr:
         other: "%{count} résultats"
     choices:
       required_message: "Sélectionnez au moins une option."
+    field:
+      required_label: "obligatoire"
     turbo_disable_with:
       processing: "Traitement en cours..."
     dark_mode:

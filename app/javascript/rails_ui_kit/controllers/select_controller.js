@@ -116,15 +116,30 @@ export default class extends Controller {
   // control, its listbox and the search field point aria-labelledby at -- so a screen reader in
   // the popup hears the field's name, then "combobox". A caller's own aria-label or
   // aria-labelledby is already on all three, and wins.
+  //
+  // The trigger is the one exception: ARIA bars aria-required on a <button>, so a required search
+  // Select has the label carry "required" into the trigger's name too, through the hidden
+  // #<label id>-required span Ui::Field::LabelComponent renders beside the label's own text
+  // (ui-select § Behavior, item 17, "Required is the label's to say"). The listbox and the search
+  // field -- which does carry aria-required itself -- keep the label id alone.
   nameCombobox() {
     if (this.control.hasAttribute("aria-label") || this.control.hasAttribute("aria-labelledby")) return
 
     const label = document.getElementById(`${this.selectTarget.id}-label`)
     if (!label) return
 
-    this.control.setAttribute("aria-labelledby", label.id)
+    this.control.setAttribute("aria-labelledby", this.triggerLabelledby(label))
     this.listbox?.setAttribute("aria-labelledby", label.id)
     if (this.hasSearchTarget) this.searchTarget.setAttribute("aria-labelledby", label.id)
+  }
+
+  // The trigger's own aria-labelledby: the label alone, or the label plus its required span
+  // when this is search mode's trigger, the select is required, and that span actually exists.
+  triggerLabelledby(label) {
+    if (!this.hasTriggerTarget || !this.selectTarget.required) return label.id
+
+    const requiredId = `${label.id}-required`
+    return document.getElementById(requiredId) ? `${label.id} ${requiredId}` : label.id
   }
 
   get listbox() {

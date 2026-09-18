@@ -31,6 +31,12 @@ en:
       # the screen-reader hint beside the visual `*` and the message ui--choices hands
       # setCustomValidity, so a translation moves both at once.
       required_message: "Select at least one option."
+    field:
+      # Search mode's Select trigger is a <button>: ARIA bars aria-required on it, so this is
+      # the one control that can't say "required" itself. The label carries it into the
+      # trigger's accessible name instead (a hidden span named directly by aria-labelledby);
+      # every other control states it on its own, and never renders this text.
+      required_label: "required"
     turbo_disable_with:
       processing: "Processing..."
     dark_mode:

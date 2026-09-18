@@ -18,12 +18,18 @@ module Ui
   # build it during render, by which time every part is known whatever order the caller
   # used.
   class FieldComponent < Ui::Base
+    include Ui::Chrome
+
     # Distinguishes `model: nil`, which is a bug worth raising on, from no model at all.
     NO_MODEL = Object.new.freeze
 
     data_slot 'field'
 
     class_variants(base: 'grid gap-2')
+
+    # Said only inside the hidden span search mode's Select trigger names itself with
+    # (Ui::Field::LabelComponent); every other required control states "required" itself.
+    chrome_string :required_label, key: 'field.required_label'
 
     renders_one :label, ->(**attributes) { Ui::Field::LabelComponent.new(field: self, **attributes) }
 
@@ -45,12 +51,14 @@ module Ui
     # `errors` takes a plain array of messages — `@user.errors[:email]` from an
     # ActiveModel object, or any array — so nothing here depends on an ORM. The
     # HTML `name` (`user[email]`) is not the model attribute (`email`).
-    def initialize(name: nil, errors: nil, control_id: nil, model: NO_MODEL, attribute: nil, required: nil, **html_attributes)
+    def initialize(name: nil, errors: nil, control_id: nil, model: NO_MODEL, attribute: nil, required: nil,
+                   required_label: nil, **html_attributes)
       @model_binding = bind(model, attribute, name)
       @name = (name || field_name(@model_binding.param_key, @model_binding.attribute)).to_s
       @errors = Array(errors.nil? ? @model_binding&.errors : errors).map(&:to_s).reject(&:empty?)
       @control_id = (control_id || derive_control_id).to_s
       @required = required
+      @required_label = required_label
       super(**html_attributes)
     end
 

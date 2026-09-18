@@ -188,6 +188,7 @@
         ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in. Hidden while the field is invalid, and still named, so screen readers keep the instruction."],
         ["(errors)",         "field-error",       "Rendered automatically when the field has errors -- from errors:, or the model's -- in the description's place. There is no with_error slot to call."],
         ["(required)",       "field-required-indicator", "An aria-hidden * at the end of the label, whenever the field resolves to required."],
+        ["(required)",       "field-required-text", "A second, hidden span beside the *. Unused by every control that states \"required\" itself; search mode's Select trigger, which can't, is named through it via aria-labelledby."],
       ].each do |slot, data_slot, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
@@ -219,6 +220,7 @@
         ["errors",     "Array",   "nil",      "A plain array of message strings, e.g. @user.errors[:email]. Any non-empty array marks the field invalid. With model:, replaces the model's errors; [] shows none."],
         ["required",   "Boolean", "nil",      "Marks the control, the label and the wrapper required, or not. With model:, replaces what the validators say. A required: passed to with_control wins over this."],
         ["control_id", "String",  "nil",      "Overrides the derived id when the caller needs a specific one, e.g. under form_with(namespace:)."],
+        ["required_label", "String", "chrome", "\"required\", read into the hidden field-required-text span. Only search mode's Select trigger ever uses it (see Internationalization)."],
         ["class",      "String",  "nil",      "Merged over the wrapper's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">

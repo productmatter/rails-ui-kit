@@ -143,7 +143,8 @@ module Ui
         Ui::ModalComponent => %w[unsaved_changes_title unsaved_changes_message],
         Ui::ToastComponent => %w[close_label default_title],
         Ui::ToastContainerComponent => %w[close_label default_title],
-        Ui::SelectComponent => %w[search_placeholder no_results]
+        Ui::SelectComponent => %w[search_placeholder no_results],
+        Ui::FieldComponent => %w[required_label]
       }.each do |component, keywords|
         accepted = component.instance_method(:initialize).parameters
                             .filter_map { |kind, name| name.to_s if %i[key keyreq].include?(kind) }

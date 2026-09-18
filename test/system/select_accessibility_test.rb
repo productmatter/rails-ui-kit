@@ -165,4 +165,25 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
 
   # SA7 (the focus ring on the control reaches 3:1 against every surface) moved to
   # control_contrast_test.rb's "Select's control box" test.
+
+  # "Required is the label's to say" (ui-select § Behavior, item 17): only search mode's
+  # trigger -- a <button> ARIA bars aria-required on -- has the label carry "required" into its
+  # computed name. Every other control still states it itself, so its name is unchanged.
+  test 'SA10: a required search Select names its trigger with "required"; nothing else does' do
+    required_word = I18n.t('rails_ui_kit.field.required_label')
+    page.execute_script("document.getElementById('booking_city-trigger').scrollIntoView({ block: 'center' })")
+
+    assert_includes accessible_name('#booking_city-trigger'), required_word
+    assert_not_includes accessible_name('#demo_favourite-trigger'), required_word
+    assert_equal 'Destination', accessible_name('#trip_city-combobox')
+    assert_equal 'Plan (required)', accessible_name('#booking_plan-combobox')
+
+    assert_accessible(within: '#select-form-preview')
+  end
+
+  # ax_node (Chrome's accessibility tree for one element) comes from ApplicationSystemTestCase's
+  # BrowserHelpers.
+  def accessible_name(selector)
+    ax_node(selector)&.dig('name', 'value')
+  end
 end
