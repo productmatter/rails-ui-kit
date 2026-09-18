@@ -106,7 +106,9 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    because a line pressed against its own colour would disappear. Either way the line
    reaches 3:1 against what it touches: the surface outside it and, for the fused form,
    the control's fill inside it. An invalid control's fused line is `--destructive`,
-   border and outline both. Pointer
+   border and outline both. One field has no border of its own to fuse with, the search
+   field inside Select's popup: its row draws the line instead, inset so the popup cannot
+   clip it (ui-select § Behavior, item 17). Pointer
    targets meet WCAG 2.2's 24×24 CSS px minimum, except inline text links. Where a
    token value makes a rule unmeetable, the worker stops and escalates. Never paint
    around it with a literal (§ Assumptions).

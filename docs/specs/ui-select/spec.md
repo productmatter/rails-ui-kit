@@ -219,6 +219,16 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       does. A disabled Select shows none, and neither does select-only mode where the
       native picker is showing on a coarse pointer (item 2): that picker lists the prompt
       itself.
+    - **What the build settled, where this item was silent** (2026-09-18). Which
+      empty-valued option is the prompt, when `include_blank:` is given too: the first,
+      because Rails renders the prompt before the blank, and the button only exists when
+      a prompt was rendered. For the same reason the press selects that option by its
+      index and not by setting the value to `""`, which a blank shares. The control gets
+      its extra inline-end room only while the button shows, through `data-clearable` on
+      the root, so its text never runs under the button. A Select used outside a Field has
+      no label element to borrow a name from, so the button's name is the chrome string
+      followed by the caller's own `aria-label`. And `ui_select "<the prompt's text>",
+      from: …` presses the button, so a host's test clears a Select the way a person does.
 11. **One option model, rendered twice, proven equal.** The native `<option>`s and
     `<optgroup>`s are rendered with Rails' public helpers (`options_for_select`,
     `options_from_collection_for_select`, `option_groups_from_collection_for_select`,
@@ -320,7 +330,12 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       field `<id>-search`; `<id>-combobox` exists in select-only mode only. The search
       field carries `aria-expanded`, which `role="combobox"` requires, rendered `false`
       and kept honest by `ui--select`, since the field is not the overlay's trigger. The
-      search row is a flat `h-8`, the option rows' own height, at every `size:` step (`ui-control-sizing`). A pointer
+      search row is a flat `h-8`, the option rows' own height, at every `size:` step (`ui-control-sizing`). While its field is focused the row draws
+      the focus line, an inset 2px `--ring` outline, so the glyph and the field read as one
+      focused thing: the field has no border of its own to fuse with, and an inset line is
+      one the popup cannot clip (`ui-presentational-components` § Business rules, rule 3;
+      built 2026-09-18, after the first build left the field with no focus cue but its
+      caret). A pointer
       press on the trigger opens with no active option, as `Enter` and `Space` do.
     - **The text is a query, never the value.** It is empty when the popup opens and
       discarded when it closes. The trigger shows the truth from the native select at

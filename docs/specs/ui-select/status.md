@@ -1,6 +1,6 @@
 ## State
 
-building
+ready-for-review
 
 Reshaped 2026-09-18 (Jonathan Simmons): search mode moves from the APG editable combobox
 to a trigger button with the search field in its popup — § Behavior, items 13, 17, 18 and
@@ -10,8 +10,10 @@ as built on 2026-09-14 stands for select-only mode, the Rails option API, Field,
 the submission model. Search mode was rebuilt to the amended contract on 2026-09-18
 (`2f9bc7a`), with `select_search_test.rb` rewritten to item 17's new table: unit 634 runs,
 browser 874 runs, every amended acceptance check green on its own run line, and no
-select-only test file changed. What keeps this at `building` is one line of item 17 not yet
-built: the label carrying "required" into the trigger's accessible name. Jonathan's three human gates
+select-only test file changed. The rest of the 2026-09-18 amendments were built the same day: the
+label carrying "required" into the trigger's accessible name (`848b014`), the search row's
+focus line and its 32px height (`21daa49`), and the prompt leaving the listbox with a clear
+button to return to it (`b907afe`), each green on its own acceptance run line. Jonathan's three human gates
 remain, and the VoiceOver gate now also judges the new shape. Remote search stays designed
 in § Behavior, items 27–31 and deliberately unbuilt. The corrections are recorded below.
 
@@ -57,7 +59,9 @@ in § Behavior, items 27–31 and deliberately unbuilt. The corrections are reco
 
 ## In progress
 
-Two things, in order. First, item 17's "Required is the label's to say": the Field label
+Nothing now. The two things this section listed were both built on 2026-09-18
+(`848b014`, then `b907afe`), and the list is kept as the record of what they were. First,
+item 17's "Required is the label's to say": the Field label
 carries "required" into the search trigger's accessible name, because a button has no state
 to announce it with, without a native control hearing it twice. Second, the prompt unit,
 specced in § Behavior, item 10 on 2026-09-18 from Jonathan's decisions and ratified by him
