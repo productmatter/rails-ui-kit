@@ -13,11 +13,11 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Choices <span class="text-muted-foreground font-semibold">(radio &amp; checkbox groups)</span></h1>
   <p class="text-muted-foreground">
-    A radio group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: false</code>)
-    or a checkbox group (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">multiple: true</code>)
+    A radio group (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multiple: false</code>)
+    or a checkbox group (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multiple: true</code>)
     over real inputs, with the names, ids and hidden field
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_radio_buttons</code> and
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_check_boxes</code> render.
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">collection_radio_buttons</code> and
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">collection_check_boxes</code> render.
     Unchecking every box clears the association instead of silently keeping the old value. Arrow keys, Space,
     single selection and reset are the browser's own — the kit adds JavaScript for one thing only, below.
   </p>
@@ -44,9 +44,9 @@
 <%# Card variant %>
 <h2 class="text-base font-semibold mb-3">The card variant</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">variant: :card</code> makes the
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">variant: :card</code> makes the
   whole card the target — text, description, icon and padding all check the input, and focus still lands on the input
-  itself. Columns are your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code>,
+  itself. Columns are your <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class:</code>,
   so cards stack at phone widths unless you say otherwise.
 </p>
 <div id="choices-card-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
@@ -61,10 +61,10 @@
 <%# Required %>
 <h2 class="text-base font-semibold mb-3">Required</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  A required radio group is native: every radio gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>,
+  A required radio group is native: every radio gets <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>,
   and the browser blocks the submission. A required checkbox group has no native equivalent —
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code> on a checkbox
-  means <em>that</em> box — so the kit's one controller, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">ui--choices</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> on a checkbox
+  means <em>that</em> box — so the kit's one controller, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">ui--choices</code>,
   makes it mean "at least one", and a visually hidden hint tells a screen reader user what the
   <span aria-hidden="true">*</span> means. With JavaScript off, the server's validation is what catches it.
 </p>
@@ -88,7 +88,7 @@
 <%# Locked values %>
 <h2 class="text-base font-semibold mb-3">Locked values</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">disabled_values:</code> renders a
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">disabled_values:</code> renders a
   choice the user can't change. A disabled input never submits, so Rails' own markup deletes a locked value on every
   save; the kit carries a checked locked value in a hidden input instead, and the save keeps what the form showed.
 </p>
@@ -115,7 +115,7 @@
 <h2 class="text-base font-semibold mb-3">A server round trip</h2>
 <p class="text-sm text-muted-foreground mb-3">
   A real form, posted to a real action. Clear both groups and save: the checkbox group still posts
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role_ids[]=""</code> — the entry that
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role_ids[]=""</code> — the entry that
   empties an association — and the 422 comes back with the model's errors on both Fields and the submitted choices checked.
 </p>
 <div id="choices-round-trip-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
@@ -125,37 +125,41 @@
 <%# include_hidden %>
 <h2 class="text-base font-semibold mb-3">include_hidden: false</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  Rails' option, with Rails' default of <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">true</code>.
-  Turn it off and a group with nothing checked posts no key at all: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role_ids=</code>
+  Rails' option, with Rails' default of <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">true</code>.
+  Turn it off and a group with nothing checked posts no key at all: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role_ids=</code>
   is never called, the old association survives, and a form whose only field is this one raises
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">ParameterMissing</code>. Pass it only
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">ParameterMissing</code>. Pass it only
   when "no key means no change" is what you want.
 </p>
 
 <%# Sizes %>
 <h2 class="text-base font-semibold mb-3">Sizes</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  Each choice is at least the step's own control height, so a one-line choice lines up with the Input or Select
-  beside it. Content makes a choice taller; a step never makes it shorter.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code> moves the card, not the list. A card is a
+  control, so each one is at least the step's own control height and a one-line card lines up with the Input or Select
+  beside it. A list row isn't a control of its own: it takes a flat 24px floor (WCAG 2.5.8) at every step, so the
+  three lists below are the same height. Content makes a choice taller; a step never makes it shorter.
 </p>
 <div id="choices-sizes-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-8 p-12 mb-8">
   <% %i[sm default lg].each do |step| %>
-    <div>
-      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= step %></p>
+    <div class="grid gap-4">
+      <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= step %></p>
       <%= render Ui::ChoicesComponent.new(name: "size_#{step}[plan]", options: plans, size: step, checked: "growth",
                                           aria: { label: "Plan (#{step})" }) %>
+      <%= render Ui::ChoicesComponent.new(name: "card_size_#{step}[plan]", options: plans, size: step, variant: :card,
+                                          checked: "growth", aria: { label: "Plan card (#{step})" }) %>
     </div>
   <% end %>
 </div>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs font-mono text-neutral-400">ERB</span>
-    <button data-copy-target="#choices-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs font-mono text-muted-foreground">ERB</span>
+    <button data-copy-target="#choices-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="choices-usage" class="text-neutral-200"><%= h(example_choices_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="choices-usage" class="text-card-foreground"><%= h(example_choices_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -184,7 +188,7 @@
         ["disabled",            "Boolean",       "false",    "Renders <fieldset disabled>, so every input and hidden field is disabled and the attribute is left untouched."],
         ["form",                "String",        "nil",      "The id of a form elsewhere on the page; goes on every input and the hidden fields, as in Rails."],
         ["variant",             "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
-        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg — each choice's minimum height, from the same tokens Input and Select read."],
+        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg — a card's minimum height, from the same tokens Input and Select read. No visible effect on the list variant, whose rows take a flat 24px floor."],
         ["description_method",  "Symbol/Proc",   "nil",      "A second line per choice. Needs collection:, since there is no object to call it on otherwise."],
         ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. Needs collection: too."],
         ["required_message",    "String",        "nil",      "Overrides rails_ui_kit.choices.required_message for this instance."],
@@ -204,19 +208,19 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The group is a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;fieldset&gt;</code>:
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="radiogroup"</code> for radios,
+  <li>The group is a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;fieldset&gt;</code>:
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="radiogroup"</code> for radios,
       a plain group for checkboxes. Inside a Field it's named by the field's label, which renders without
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">for</code> — pointing that at the
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">for</code> — pointing that at the
       first input would make clicking "Roles" toggle Admin. Outside a Field, name it yourself with
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>.</li>
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>.</li>
   <li>Each input is named by its own text and described by its own description line, so a wrapping label never reads
-      as "Pro Unlimited projects". The icon is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
+      as "Pro Unlimited projects". The icon is <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
   <li>Focus is always on a real input — no card, label or fieldset is focusable, and nothing adds a
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tabindex</code>. In the card
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">tabindex</code>. In the card
       variant the ring is drawn on the card, and only for the keyboard.</li>
-  <li>A checkbox never carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
-      or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-required</code>: both would
+  <li>A checkbox never carries <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>
+      or <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-required</code>: both would
       say every box is required. The group says it once, in the hint.</li>
   <li>A choice holds no interactive content. A link inside a card isn't supported — it would be a target inside a target.</li>
 </ul>

@@ -3,10 +3,10 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Overlays</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dropdown</h1>
   <p class="text-muted-foreground">
-    The actions for a record, behind one button: Edit, Duplicate, a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">button_to</code> Delete with its
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-confirm</code>. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">kind: :menu</code> follows the WAI-ARIA menu button pattern — arrow keys,
+    The actions for a record, behind one button: Edit, Duplicate, a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">button_to</code> Delete with its
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-confirm</code>. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">kind: :menu</code> follows the WAI-ARIA menu button pattern — arrow keys,
     Home/End, typeahead, Escape — and works on the links and buttons Rails renders, including content Turbo swaps in later.
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">kind: :dialog</code> holds a small form instead, such as a filter. Both are anchored to their trigger and stay on
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">kind: :dialog</code> holds a small form instead, such as a filter. Both are anchored to their trigger and stay on
     screen.
   </p>
 </div>
@@ -51,12 +51,12 @@
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#dropdown-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#dropdown-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dropdown-usage" class="text-neutral-200"><%= h(example_dropdown_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="dropdown-usage" class="text-card-foreground"><%= h(example_dropdown_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -95,7 +95,7 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">kind: :menu</code>
+  <code class="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">kind: :menu</code>
   implements the <a class="text-primary underline" href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">WAI-ARIA menu button pattern</a>.
 </p>
 <div class="overflow-x-auto rounded-lg border border-border mb-4">
@@ -128,26 +128,26 @@
 </div>
 <div class="rounded-lg border border-border p-4 mb-8 text-sm text-muted-foreground space-y-3">
   <p>
-    The menu is a single tab stop, navigated by <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>:
-    the focused item carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="0"</code>
-    and every other item <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tabindex="-1"</code>,
+    The menu is a single tab stop, navigated by <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--roving-focus</code>:
+    the focused item carries <code class="text-xs bg-muted px-1 py-0.5 rounded">tabindex="0"</code>
+    and every other item <code class="text-xs bg-muted px-1 py-0.5 rounded">tabindex="-1"</code>,
     so Tab moves past the whole menu rather than through its items. Closed, no item is rendered, so the trigger is the only stop.
   </p>
   <p>
     Items don't have to carry roles. If the panel slot contains no
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>,
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemcheckbox</code> or
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitemradio</code>, its links and enabled buttons
-    become the items and are given <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">role="menuitem"</code> —
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">menuitem</code>,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">menuitemcheckbox</code> or
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">menuitemradio</code>, its links and enabled buttons
+    become the items and are given <code class="text-xs bg-muted px-1 py-0.5 rounded">role="menuitem"</code> —
     so ordinary markup, including content swapped in later by Turbo, navigates like a menu. Writing the roles yourself stays the clearer option.
   </p>
   <p>
-    Mark an unavailable item <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-disabled="true"</code>
+    Mark an unavailable item <code class="text-xs bg-muted px-1 py-0.5 rounded">aria-disabled="true"</code>
     (as Archive is above) rather than hiding it. It still takes focus from the arrows and typeahead, so users can
     discover it, but Enter, Space and clicks don't choose it and a disabled link doesn't navigate.
   </p>
   <p>
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">:dialog</code> doesn't follow this pattern:
+    <code class="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">:dialog</code> doesn't follow this pattern:
     it moves focus to its first field and leaves Tab to the browser.
   </p>
 </div>
@@ -169,7 +169,7 @@
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-primary">panel</td>
-        <td class="px-4 py-3 text-muted-foreground">The floating content. Render items with the appropriate role (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_panel(class: "min-w-48")</code> merges classes over the panel's own. The slot was called <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">menu</code> in 0.2.0; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_menu</code> still works, with a deprecation warning, until 0.4.0.</td>
+        <td class="px-4 py-3 text-muted-foreground">The floating content. Render items with the appropriate role (<code class="text-xs bg-muted px-1 py-0.5 rounded">menuitem</code>). A <code class="text-xs bg-muted px-1 py-0.5 rounded">:menu</code> written as plain links and buttons works too — see Keyboard. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_panel(class: "min-w-48")</code> merges classes over the panel's own. The slot was called <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">menu</code> in 0.2.0; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_menu</code> still works, with a deprecation warning, until 0.4.0.</td>
       </tr>
     </tbody>
   </table>
@@ -179,7 +179,7 @@
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>
 <p class="text-sm text-muted-foreground mb-8">
   Picking a value for a form is a <%= link_to "Select", select_path, class: "text-primary underline" %>, not a menu: a menu runs
-  actions, a select posts a value. Site navigation is a list of links, not <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="menu"</code>, which changes how screen
+  actions, a select posts a value. Site navigation is a list of links, not <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="menu"</code>, which changes how screen
   readers and the keyboard treat every item. Rich content that isn't a list of actions is a
   <%= link_to "Popover", popover_path, class: "text-primary underline" %>.
 </p>

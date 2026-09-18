@@ -18,11 +18,11 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Select</h1>
   <p class="text-muted-foreground">
-    One choice from a list Rails already has: a model's enum (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">model: Order, enum: :status</code>, labelled through
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">human_attribute_name</code>), a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">belongs_to</code> collection read the way <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">collection_select</code> reads
+    One choice from a list Rails already has: a model's enum (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">model: Order, enum: :status</code>, labelled through
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">human_attribute_name</code>), a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">belongs_to</code> collection read the way <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">collection_select</code> reads
     it, or an options array or hash. Inside a model-bound <%= link_to "Field", field_path, class: "text-primary underline" %> the
-    record's value is selected and its errors shown. It renders a real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, mirrored into a WAI-ARIA
-    combobox; the select is the only place the value lives, so it submits, validates <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>, resets with its
+    record's value is selected and its errors shown. It renders a real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, mirrored into a WAI-ARIA
+    combobox; the select is the only place the value lives, so it submits, validates <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>, resets with its
     form and still works with JavaScript off.
   </p>
 </div>
@@ -91,7 +91,7 @@
 <%# Search %>
 <h2 class="text-base font-semibold mb-3">With search</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">search: true</code> switches the
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">search: true</code> switches the
   combobox to its editable mode: the WAI-ARIA combobox with list autocomplete. Typing filters the list, ignoring case and
   accents; nothing else in the API changes, and the value still lives in the same native select.
 </p>
@@ -125,7 +125,7 @@
 <%# Inside a form %>
 <h2 class="text-base font-semibold mb-3">In a form</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  The select submits, blocks submission while <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code>
+  The select submits, blocks submission while <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>
   and blank, and resets with its form — none of which this component implements, because none of it is its to implement.
 </p>
 <div id="select-form-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
@@ -167,7 +167,7 @@
 <p class="text-sm text-muted-foreground mb-3">
   A real form in a Turbo Frame. Submit it empty and the server answers 422 with the error on the Field; choose a city and
   the value comes back selected. Nothing here is Select's doing — the value is in a native
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, so the
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, so the
   round trip is the one Rails always had.
 </p>
 <div id="select-round-trip-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
@@ -209,7 +209,7 @@
 <%# Standalone %>
 <h2 class="text-base font-semibold mb-3">Without a Field</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  Outside a Field, name it yourself with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>
+  Outside a Field, name it yourself with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>
   — it reaches both the select and the combobox.
 </p>
 <div id="select-standalone-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
@@ -223,30 +223,30 @@
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#select-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#select-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-usage" class="text-neutral-200"><%= h(example_select_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-usage" class="text-card-foreground"><%= h(example_select_usage) %></code></pre>
 </div>
 
 <%# Testing %>
 <h2 class="text-base font-semibold mb-3">Testing host applications</h2>
 <p class="text-sm text-muted-foreground mb-3">
   Enhanced, the native select is laid under the combobox at
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">opacity: 0</code>, so Capybara's
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">select "Pending", from: "Status"</code>
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">opacity: 0</code>, so Capybara's
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">select "Pending", from: "Status"</code>
   no longer picks what a person would. The kit ships a helper that drives the widget instead —
   include it once and your existing tests read the same. It fails with the Select's name and the options it does offer,
   and raises on an ambiguous name rather than writing to the wrong control.
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">Ruby</span>
-    <button data-copy-target="#select-helper-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Ruby</span>
+    <button data-copy-target="#select-helper-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-helper-usage" class="text-neutral-200"><%= h(example_ui_select_helper) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="select-helper-usage" class="text-card-foreground"><%= h(example_ui_select_helper) %></code></pre>
 </div>
 
 <%# Options %>
@@ -294,7 +294,7 @@
 <h2 class="text-base font-semibold mb-3">Keyboard</h2>
 <p class="text-sm text-muted-foreground mb-3">
   The WAI-ARIA select-only combobox pattern, key for key. DOM focus never leaves the combobox: the active option is
-  announced through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-activedescendant</code>.
+  announced through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-activedescendant</code>.
 </p>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
@@ -331,7 +331,7 @@
 <h3 class="text-sm font-semibold mb-3">Search mode</h3>
 <p class="text-sm text-muted-foreground mb-3">
   The editable combobox with list autocomplete. The text field never submits — it has no
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name</code> — and what you type is
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name</code> — and what you type is
   never turned into a value: only a real option can be chosen.
 </p>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
@@ -369,21 +369,21 @@
 <%# Behaviour %>
 <h2 class="text-base font-semibold mb-3">Behaviour</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;select&gt;</code> is the only value store. To change the value from your own code, set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">select.value</code> and dispatch <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> — there is no second API.</li>
-  <li>Choosing an option dispatches <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
-  <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
-  <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
+  <li>The native <code class="text-xs bg-muted px-1 py-0.5 rounded">&lt;select&gt;</code> is the only value store. To change the value from your own code, set <code class="text-xs bg-muted px-1 py-0.5 rounded">select.value</code> and dispatch <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> — there is no second API.</li>
+  <li>Choosing an option dispatches <code class="text-xs bg-muted px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-muted px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
+  <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-muted px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
+  <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
   <li>In search mode a click on the text field places the caret; the chevron button beside it opens the list, which is also what a touch screen-reader user reaches for. Typing opens it too.</li>
   <li>Escape is the cancel key in both modes: with the list open it closes it, and on a closed search field it puts the text back to the selected option's label. It never changes the value, so a dependent select or an auto-save never sees a change the user meant as "never mind". This is a deliberate deviation from the APG key table, where the text field <em>is</em> the value.</li>
-  <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
+  <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-muted px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
 </ul>
 
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The combobox is named by the Field's label, and described by its description and error; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> and
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on.</li>
-  <li>Focus never leaves the combobox. The active option is announced through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
+  <li>The combobox is named by the Field's label, and described by its description and error; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code> and
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on.</li>
+  <li>Focus never leaves the combobox. The active option is announced through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
       search mode the number of results is announced once typing settles.</li>
   <li>Where it isn't enhanced — JavaScript off, or select-only mode on a phone — the user has the platform's own select,
       which is fully accessible on its own.</li>

@@ -3,7 +3,7 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Getting Started</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Dark Mode</h1>
   <p class="text-muted-foreground">
-    Toggles the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">document.documentElement</code>. Persists preference to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage</code> and syncs across tabs.
+    Toggles the <code class="text-xs bg-muted px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-muted px-1 py-0.5 rounded">document.documentElement</code>. Persists preference to <code class="text-xs bg-muted px-1 py-0.5 rounded">localStorage</code> and syncs across tabs.
   </p>
 </div>
 
@@ -12,7 +12,7 @@
   <div class="flex items-center gap-4">
     <button data-ui--dark-mode-target="toggle"
             data-action="click->ui--dark-mode#toggle"
-            class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-xs font-medium text-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-100 transition-colors">
+            class="rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground/90 transition-colors">
       Toggle dark mode
     </button>
     <span class="text-sm text-muted-foreground">
@@ -20,31 +20,31 @@
       <span class="hidden dark:inline">Currently: dark</span>
     </span>
   </div>
-  <div class="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 shadow-sm">
-    <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Sample card</p>
-    <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">This card adapts to the current theme.</p>
+  <div class="w-full rounded-lg border border-border bg-card p-4 shadow-sm">
+    <p class="text-sm font-medium text-foreground">Sample card</p>
+    <p class="mt-1 text-xs text-muted-foreground">This card adapts to the current theme.</p>
   </div>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#dark-mode-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-4">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#dark-mode-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-usage" class="text-neutral-200"><%= h(example_dark_mode_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-usage" class="text-card-foreground"><%= h(example_dark_mode_usage) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Avoiding the flash of the wrong theme</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  The controller only applies <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">.dark</code> once Stimulus connects, which is after the stylesheet has already painted. Add this inline, before any stylesheet, in your own layout's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;head&gt;</code> — it mirrors the controller's own resolution order and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage</code> guarding, so the two never disagree:
+<p class="text-sm text-muted-foreground mb-3">
+  The controller only applies <code class="text-xs bg-muted px-1 py-0.5 rounded">.dark</code> once Stimulus connects, which is after the stylesheet has already painted. Add this inline, before any stylesheet, in your own layout's <code class="text-xs bg-muted px-1 py-0.5 rounded">&lt;head&gt;</code> — it mirrors the controller's own resolution order and <code class="text-xs bg-muted px-1 py-0.5 rounded">localStorage</code> guarding, so the two never disagree:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">Layout &lt;head&gt; — ERB, before any stylesheet</span>
-    <button data-copy-target="#dark-mode-head-snippet" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Layout &lt;head&gt; — ERB, before any stylesheet</span>
+    <button data-copy-target="#dark-mode-head-snippet" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-head-snippet" class="text-neutral-200">&lt;%= javascript_tag nonce: true do %&gt;
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-head-snippet" class="text-card-foreground">&lt;%= javascript_tag nonce: true do %&gt;
   (function () {
     var theme = null;
     try {
@@ -57,32 +57,32 @@
   })();
 &lt;% end %&gt;</code></pre>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">nonce: true</code> keeps this working under a nonce-based Content-Security-Policy; it's a no-op if your app doesn't set one.
+<p class="text-sm text-muted-foreground mb-8">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">nonce: true</code> keeps this working under a nonce-based Content-Security-Policy; it's a no-op if your app doesn't set one.
 </p>
 
 <h2 class="text-base font-semibold mb-3">Behaviour</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li>On <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">connect()</code>, reads <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage["rails_ui_kit:theme"]</code> (or, when that is unset, the older <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">localStorage.theme</code>); falls back to the OS <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">prefers-color-scheme</code> media query.</li>
-  <li>Adds or removes the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">html</code>.</li>
-  <li>Listens to the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">storage</code> event to sync across tabs.</li>
-  <li>Getter: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">this.currentTheme</code> returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"dark"</code> or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"light"</code>.</li>
-  <li>Tag the toggle button with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-ui--dark-mode-target="toggle"</code> to get a synced <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-pressed</code> and label on connect, toggle, and cross-tab sync.</li>
-  <li>That label defaults to English ("Switch to light/dark mode"). No component renders this button — you write it — so translate it by setting <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-ui--dark-mode-light-label-value</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">-dark-label-value</code> yourself; see <%= link_to "Internationalization", i18n_path, class: "underline" %>.</li>
+<ul class="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+  <li>On <code class="text-xs bg-muted px-1 py-0.5 rounded">connect()</code>, reads <code class="text-xs bg-muted px-1 py-0.5 rounded">localStorage["rails_ui_kit:theme"]</code> (or, when that is unset, the older <code class="text-xs bg-muted px-1 py-0.5 rounded">localStorage.theme</code>); falls back to the OS <code class="text-xs bg-muted px-1 py-0.5 rounded">prefers-color-scheme</code> media query.</li>
+  <li>Adds or removes the <code class="text-xs bg-muted px-1 py-0.5 rounded">dark</code> class on <code class="text-xs bg-muted px-1 py-0.5 rounded">html</code>.</li>
+  <li>Listens to the <code class="text-xs bg-muted px-1 py-0.5 rounded">storage</code> event to sync across tabs.</li>
+  <li>Getter: <code class="text-xs bg-muted px-1 py-0.5 rounded">this.currentTheme</code> returns <code class="text-xs bg-muted px-1 py-0.5 rounded">"dark"</code> or <code class="text-xs bg-muted px-1 py-0.5 rounded">"light"</code>.</li>
+  <li>Tag the toggle button with <code class="text-xs bg-muted px-1 py-0.5 rounded">data-ui--dark-mode-target="toggle"</code> to get a synced <code class="text-xs bg-muted px-1 py-0.5 rounded">aria-pressed</code> and label on connect, toggle, and cross-tab sync.</li>
+  <li>That label defaults to English ("Switch to light/dark mode"). No component renders this button — you write it — so translate it by setting <code class="text-xs bg-muted px-1 py-0.5 rounded">data-ui--dark-mode-light-label-value</code>/<code class="text-xs bg-muted px-1 py-0.5 rounded">-dark-label-value</code> yourself; see <%= link_to "Internationalization", i18n_path, class: "underline" %>.</li>
 </ul>
 
 <h2 class="text-base font-semibold mt-8 mb-3">Tailwind setup</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  The kit's tokens switch on the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">.dark</code> class, but
-  Tailwind 4's own <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">dark:</code> utilities follow the OS
-  preference unless you redefine the variant. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">bin/rails generate rails_ui_kit:install</code>
+<p class="text-sm text-muted-foreground mb-3">
+  The kit's tokens switch on the <code class="text-xs bg-muted px-1 py-0.5 rounded">.dark</code> class, but
+  Tailwind 4's own <code class="text-xs bg-muted px-1 py-0.5 rounded">dark:</code> utilities follow the OS
+  preference unless you redefine the variant. <code class="text-xs bg-muted px-1 py-0.5 rounded">bin/rails generate rails_ui_kit:install</code>
   writes this line for you; if your stylesheet already defines a dark variant, the generator leaves it alone, so make sure yours matches
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">.dark</code>:
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">.dark</code>:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">app/assets/tailwind/application.css</span>
-    <button data-copy-target="#dark-mode-css" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">app/assets/tailwind/application.css</span>
+    <button data-copy-target="#dark-mode-css" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-css" class="text-neutral-200"><%= h(example_dark_mode_css) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="dark-mode-css" class="text-card-foreground"><%= h(example_dark_mode_css) %></code></pre>
 </div>

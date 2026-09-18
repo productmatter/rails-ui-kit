@@ -7,7 +7,7 @@
     ["toast-js-description", "Description only", { type: "info", description: "Your export is being prepared." }],
     ["toast-js-both", "Title and description", { type: "error", title: "Couldn't save", description: "The server didn't answer. Your changes are still here." }],
     ["toast-js-one-action", "One action", { type: "success", title: "Message sent", actions: [{ label: "View", href: "#toast-options" }] }],
-    ["toast-js-archived", "Two actions and a dismiss", archived],
+    ["toast-js-archived", "Two actions", archived],
     ["toast-js-long", "Long description", { type: "warning", title: "Scheduled maintenance",
       description: "The workspace will be read-only for about fifteen minutes on Saturday while we move it to a faster database. Nothing you do before then is affected, and nothing is lost." }],
     ["toast-js-no-icon", "No icon", { type: "info", description: "Copied to the clipboard.", icon: false }]
@@ -25,6 +25,7 @@
     <li><strong class="font-medium text-foreground">Content on its own is the description</strong>, not the title. Name a title when you want one.</li>
     <li><strong class="font-medium text-foreground">A toast with an action stays until it's dismissed</strong>, unless you give it a <code class="<%= code %>">duration</code>.</li>
     <li><strong class="font-medium text-foreground">A toast action must never be the only way to do something.</strong> A toast can be missed, closed, or hidden behind an open Modal, so every action it offers exists somewhere on the page too.</li>
+    <li><strong class="font-medium text-foreground">Offer at most two actions.</strong> The dismiss <span aria-hidden="true">&times;</span> is always there, so a "dismiss" button is a third thing that only crowds the footer. More is possible, but a toast is a glance, not a menu.</li>
   </ul>
 </div>
 
@@ -63,12 +64,12 @@
   ["toast-js", "JavaScript", :example_toast_js],
   ["toast-ruby", "Rendering one directly — ERB", :example_toast_ruby]
 ].each do |id, caption, example| %>
-  <div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-    <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-      <span class="text-xs text-neutral-400"><%= caption %></span>
-      <button data-copy-target="#<%= id %>" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+  <div class="rounded-lg overflow-hidden border border-border mb-4">
+    <div class="flex items-center justify-between bg-muted px-4 py-2">
+      <span class="text-xs text-muted-foreground"><%= caption %></span>
+      <button data-copy-target="#<%= id %>" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
     </div>
-    <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="<%= id %>" class="text-neutral-200"><%= h(send(example)) %></code></pre>
+    <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="<%= id %>" class="text-card-foreground"><%= h(send(example)) %></code></pre>
   </div>
 <% end %>
 

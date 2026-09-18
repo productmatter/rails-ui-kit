@@ -32,12 +32,12 @@
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#popover-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#popover-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="popover-usage" class="text-neutral-200"><%= h(example_popover_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="popover-usage" class="text-card-foreground"><%= h(example_popover_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -96,8 +96,8 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The button in the trigger slot gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-expanded</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-haspopup="dialog"</code> and
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-controls</code>, kept in step as the panel opens and closes.</li>
+  <li>The button in the trigger slot gets <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-expanded</code>, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-haspopup="dialog"</code> and
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-controls</code>, kept in step as the panel opens and closes.</li>
   <li>Focus moves into the panel when it opens and returns to the button when it closes — unless the click that dismissed
       it moved focus somewhere else on purpose.</li>
   <li>Escape closes the topmost popover, whatever has focus inside it.</li>

@@ -34,19 +34,19 @@
   The modal opens as soon as it is rendered. The blessed pattern is a Turbo Stream that renders it
   into a plain container in your layout:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — layout and trigger</span>
-    <button data-copy-target="#modal-trigger" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-4">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB — layout and trigger</span>
+    <button data-copy-target="#modal-trigger" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-trigger" class="text-neutral-200"><%= h(example_modal_trigger) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-trigger" class="text-card-foreground"><%= h(example_modal_trigger) %></code></pre>
 </div>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — edit.turbo_stream.erb</span>
-    <button data-copy-target="#modal-response" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB — edit.turbo_stream.erb</span>
+    <button data-copy-target="#modal-response" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-neutral-200"><%= h(example_modal_response) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-card-foreground"><%= h(example_modal_response) %></code></pre>
 </div>
 
 <%# Turbo %>

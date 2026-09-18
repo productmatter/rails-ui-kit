@@ -19,7 +19,7 @@ class RovingFocusListboxTest < ApplicationSystemTestCase
 
   test 'RL1: no option is active until one is chosen' do
     assert_nil @input['aria-activedescendant']
-    assert_empty(all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-neutral-900') })
+    assert_empty(all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-foreground') })
   end
 
   test 'RL2: arrows move aria-activedescendant while DOM focus stays in the input' do
@@ -44,7 +44,7 @@ class RovingFocusListboxTest < ApplicationSystemTestCase
     press :arrow_down
     press :arrow_down
 
-    active = all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-neutral-900') }
+    active = all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-foreground') }
     assert_equal([OPTIONS[1]], active.map { |option| option[:id] })
   end
 

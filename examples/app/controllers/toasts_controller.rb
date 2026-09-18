@@ -10,8 +10,7 @@ class ToastsController < ApplicationController
       type: 'success', title: 'Project archived', description: 'It no longer appears in your project list.',
       actions: [
         { label: 'View', href: '/demos/projects/1' },
-        { label: 'Undo', href: '/demos/toasts/undo', method: 'patch' },
-        { label: 'Got it', variant: 'ghost' }
+        { label: 'Undo', href: '/demos/toasts/undo', method: 'patch' }
       ]
     },
     'timed' => { type: 'info', description: 'Your export is ready.', duration: 4000, icon: false },

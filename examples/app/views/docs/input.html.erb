@@ -4,9 +4,9 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Input</h1>
   <p class="text-muted-foreground">
     The control a <%= link_to "Field", field_path, class: "text-primary underline" %> renders by default. In a form,
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Ui::FieldComponent.new(model: @user, attribute: :email)</code> gives you this input already named, valued,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::FieldComponent.new(model: @user, attribute: :email)</code> gives you this input already named, valued,
     labelled and marked invalid from the record, so you rarely render it yourself. On its own it is a native
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;input&gt;</code> drawn from the design tokens, with one option of its own, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code>, the control
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;input&gt;</code> drawn from the design tokens, with one option of its own, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code>, the control
     scale it shares with Button, Select and Textarea.
   </p>
 </div>
@@ -15,51 +15,51 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div id="input-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "default-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "default" } %>
+    <%= render(Ui::LabelComponent.new(for: "default-input", class: "text-xs font-mono text-muted-foreground")) { "default" } %>
     <%= render Ui::InputComponent.new(id: "default-input", name: "default", value: "Jane Cooper") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "placeholder-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "placeholder" } %>
+    <%= render(Ui::LabelComponent.new(for: "placeholder-input", class: "text-xs font-mono text-muted-foreground")) { "placeholder" } %>
     <%= render Ui::InputComponent.new(id: "placeholder-input", name: "placeholder", placeholder: "you@example.com") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "focused-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "focus (tab to me)" } %>
+    <%= render(Ui::LabelComponent.new(for: "focused-input", class: "text-xs font-mono text-muted-foreground")) { "focus (tab to me)" } %>
     <%= render Ui::InputComponent.new(id: "focused-input", name: "focused", value: "Tab to me") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "invalid-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "invalid" } %>
+    <%= render(Ui::LabelComponent.new(for: "invalid-input", class: "text-xs font-mono text-muted-foreground")) { "invalid" } %>
     <%= render Ui::InputComponent.new(id: "invalid-input", name: "invalid", value: "not-an-email", aria: { invalid: true }) %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "disabled-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "disabled" } %>
+    <%= render(Ui::LabelComponent.new(for: "disabled-input", class: "text-xs font-mono text-muted-foreground")) { "disabled" } %>
     <%= render Ui::InputComponent.new(id: "disabled-input", name: "disabled", value: "Can't touch this", disabled: true) %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "password-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "type: password" } %>
+    <%= render(Ui::LabelComponent.new(for: "password-input", class: "text-xs font-mono text-muted-foreground")) { "type: password" } %>
     <%= render Ui::InputComponent.new(type: "password", id: "password-input", name: "password", value: "hunter2") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "sm-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :sm" } %>
+    <%= render(Ui::LabelComponent.new(for: "sm-input", class: "text-xs font-mono text-muted-foreground")) { "size: :sm" } %>
     <%= render Ui::InputComponent.new(size: :sm, id: "sm-input", name: "sm", value: "Jane Cooper") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "lg-input", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :lg" } %>
+    <%= render(Ui::LabelComponent.new(for: "lg-input", class: "text-xs font-mono text-muted-foreground")) { "size: :lg" } %>
     <%= render Ui::InputComponent.new(size: :lg, id: "lg-input", name: "lg", value: "Jane Cooper") %>
   </div>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+<p class="text-sm text-muted-foreground mb-8">
   Tab to the "focused" field to see the focus ring — an offset outline drawn from the
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code> token, the same idiom Button uses.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--ring</code> token, the same idiom Button uses.
 </p>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#input-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#input-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="input-usage" class="text-neutral-200"><%= h(example_input_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="input-usage" class="text-card-foreground"><%= h(example_input_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -97,12 +97,12 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>Invalid is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code>, not a class: a screen reader hears it, and the red boundary is drawn from it.
-      A Field sets it, and points <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code> at the error.</li>
-  <li>The boundary comes from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--input</code>, never the fill, so it keeps 3:1 against whatever surface the input
-      sits on — transparent in light mode, a translucent <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--muted</code> tint in dark.</li>
-  <li>The focus ring is an offset outline from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code>, visible in forced-colors mode.</li>
-  <li>An input needs a name a screen reader can read: a Field's label, or <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code> when there's
+  <li>Invalid is <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code>, not a class: a screen reader hears it, and the red boundary is drawn from it.
+      A Field sets it, and points <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-describedby</code> at the error.</li>
+  <li>The boundary comes from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--input</code>, never the fill, so it keeps 3:1 against whatever surface the input
+      sits on — transparent in light mode, a translucent <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--muted</code> tint in dark.</li>
+  <li>The focus ring is an offset outline from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--ring</code>, visible in forced-colors mode.</li>
+  <li>An input needs a name a screen reader can read: a Field's label, or <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code> when there's
       no visible one.</li>
 </ul>
 

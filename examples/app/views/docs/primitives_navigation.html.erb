@@ -27,7 +27,7 @@
     <!-- activedescendant: focus stays in the input, the option is announced -->
     <div data-controller="ui--roving-focus"
          data-ui--roving-focus-focus-model-value="activedescendant"
-         data-ui--roving-focus-active-class="bg-neutral-900 text-white">
+         data-ui--roving-focus-active-class="bg-foreground text-background">
       <input type="text" role="combobox" aria-expanded="true" aria-controls="fruit-options"
              data-ui--roving-focus-target="input">
       <ul id="fruit-options" role="listbox" aria-label="Fruit">
@@ -48,15 +48,15 @@
 
   fruits = %w[Apricot Apple Blackberry Blueberry Cherry Damson Elderberry]
 
-  floating_classes = 'absolute z-10 whitespace-nowrap rounded-md bg-neutral-900 dark:bg-white ' \
-                     'px-2 py-1 text-xs font-medium text-white dark:text-neutral-900 shadow-sm'
-  control_classes = 'rounded-md bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm font-medium ' \
-                    'border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 ' \
-                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500'
+  floating_classes = 'absolute z-10 whitespace-nowrap rounded-md bg-foreground ' \
+                     'px-2 py-1 text-xs font-medium text-background shadow-sm'
+  control_classes = 'rounded-md bg-background px-3 py-1.5 text-sm font-medium ' \
+                    'border border-border hover:bg-accent ' \
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
   item_classes = 'block w-full text-start rounded px-3 py-1.5 text-sm ' \
-                 'hover:bg-neutral-100 dark:hover:bg-neutral-800 ' \
-                 'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-violet-500 ' \
-                 'aria-disabled:text-neutral-400 dark:aria-disabled:text-neutral-600'
+                 'hover:bg-accent ' \
+                 'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring ' \
+                 'aria-disabled:text-muted-foreground'
   panel_classes = 'rounded-lg border border-border bg-background p-6 mb-8'
 %>
 
@@ -66,20 +66,20 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Positioning &amp; Navigation</h1>
   <p class="text-muted-foreground">
     Two behavior primitives components consume rather than reimplement:
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--anchor</code>,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--anchor</code>,
     the kit's only importer of Floating UI, and
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--roving-focus</code>,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--roving-focus</code>,
     group keyboard navigation in both of its focus models. Neither renders markup and neither
     shows or hides anything — every floating element on this page is simply always visible.
   </p>
 </div>
 
 <h2 class="text-xl font-semibold tracking-tight mb-2" id="anchor">ui--anchor</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-6">
+<p class="text-sm text-muted-foreground mb-6">
   Places a floating element against an anchor with flip, shift and offset, publishes the
-  <em>resolved</em> side and alignment as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-side</code>
-  and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-align</code>,
-  and keeps the position current through Floating UI's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">autoUpdate</code>
+  <em>resolved</em> side and alignment as <code class="text-xs bg-muted px-1 py-0.5 rounded">data-side</code>
+  and <code class="text-xs bg-muted px-1 py-0.5 rounded">data-align</code>,
+  and keeps the position current through Floating UI's <code class="text-xs bg-muted px-1 py-0.5 rounded">autoUpdate</code>
   until the element disconnects.
 </p>
 
@@ -96,7 +96,7 @@
       bottom-end, aligned to the control
     </div>
   </div>
-  <p class="mt-12 text-xs text-neutral-600 dark:text-neutral-400">
+  <p class="mt-12 text-xs text-muted-foreground">
     The anchor target is a full-width block wrapper; the floating element still lines up with the
     button inside it.
   </p>
@@ -115,7 +115,7 @@
       same width as the control
     </div>
   </div>
-  <p class="mt-12 text-xs text-neutral-600 dark:text-neutral-400">The select/combobox case.</p>
+  <p class="mt-12 text-xs text-muted-foreground">The select/combobox case.</p>
 </div>
 
 <h3 class="text-base font-semibold mb-3">Flex layout</h3>
@@ -139,18 +139,18 @@
            data-ui--anchor-offset-value="6"
            data-ui--anchor-flip-value="false"
            data-ui--anchor-active-value="true">
-        <span data-ui--anchor-target="anchor" class="inline-block rounded bg-neutral-200 dark:bg-neutral-700 px-2 py-1 text-[11px] text-neutral-700 dark:text-neutral-200">anchor</span>
+        <span data-ui--anchor-target="anchor" class="inline-block rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">anchor</span>
         <span data-ui--anchor-target="floating"
               data-requested-placement="<%= placement %>"
-              class="absolute z-10 whitespace-nowrap rounded bg-neutral-900 dark:bg-white px-1.5 py-0.5 text-[10px] font-medium text-white dark:text-neutral-900"><%= placement %></span>
+              class="absolute z-10 whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[10px] font-medium text-background"><%= placement %></span>
       </div>
     </div>
   <% end %>
 </div>
-<p class="text-xs text-neutral-600 dark:text-neutral-400 mb-8">
+<p class="text-xs text-muted-foreground mb-8">
   Flip is off in this grid so each cell shows the placement it asked for. With flip on — the
   default — the side you get is the side that fit, which is why components style from
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-side</code>.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">data-side</code>.
 </p>
 
 <h3 class="text-base font-semibold mb-3">Flipping, and repositioning on scroll</h3>
@@ -159,7 +159,7 @@
      role="group"
      aria-label="Scrollable region containing an anchored element"
      class="relative h-48 overflow-y-auto rounded-lg border border-border bg-background px-6 mb-8">
-  <div class="h-96 pt-4 text-xs text-neutral-600 dark:text-neutral-400">
+  <div class="h-96 pt-4 text-xs text-muted-foreground">
     Keep scrolling inside this box: the label below sits under its control until the room runs
     out, then flips above it.
   </div>
@@ -185,18 +185,18 @@
     <button type="button" data-ui--anchor-target="anchor" id="anchor-arrow-control" class="<%= control_classes %>">Anchor with an arrow</button>
     <div data-ui--anchor-target="floating" id="anchor-arrow-floating" class="<%= floating_classes %>">
       the arrow tracks the control
-      <div data-ui--anchor-target="arrow" id="anchor-arrow-arrow" class="absolute h-2 w-2 rotate-45 bg-neutral-900 dark:bg-white"></div>
+      <div data-ui--anchor-target="arrow" id="anchor-arrow-arrow" class="absolute h-2 w-2 rotate-45 bg-foreground"></div>
     </div>
   </div>
 </div>
 
 <h3 class="text-base font-semibold mb-3">Usage</h3>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">HTML</span>
-    <button data-copy-target="#anchor-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">HTML</span>
+    <button data-copy-target="#anchor-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre tabindex="0" class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="anchor-usage" class="text-neutral-200"><%= h(anchor_usage) %></code></pre>
+  <pre tabindex="0" class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="anchor-usage" class="text-card-foreground"><%= h(anchor_usage) %></code></pre>
 </div>
 
 <h3 class="text-base font-semibold mb-3">Values</h3>
@@ -234,13 +234,13 @@
 </div>
 
 <h2 class="text-xl font-semibold tracking-tight mb-2" id="roving-focus">ui--roving-focus</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-6">
+<p class="text-sm text-muted-foreground mb-6">
   Arrow keys, <kbd class="text-xs">Home</kbd>, <kbd class="text-xs">End</kbd> and typeahead over a
   group of items, in one of two focus models. A group declares its model and the controller never
-  blends them: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">roving</code>
-  moves real DOM focus and never sets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-activedescendant</code>;
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">activedescendant</code>
-  keeps DOM focus in an input and never calls <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">.focus()</code> on an item.
+  blends them: <code class="text-xs bg-muted px-1 py-0.5 rounded">roving</code>
+  moves real DOM focus and never sets <code class="text-xs bg-muted px-1 py-0.5 rounded">aria-activedescendant</code>;
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">activedescendant</code>
+  keeps DOM focus in an input and never calls <code class="text-xs bg-muted px-1 py-0.5 rounded">.focus()</code> on an item.
 </p>
 
 <h3 class="text-base font-semibold mb-3">roving — menu style</h3>
@@ -254,7 +254,7 @@
       Tab here, then press ↓ or ↑
     </button>
 
-    <div role="menu" aria-label="Document actions" id="roving-menu-items" class="w-56 rounded-md border border-border bg-white dark:bg-neutral-950 p-1">
+    <div role="menu" aria-label="Document actions" id="roving-menu-items" class="w-56 rounded-md border border-border bg-popover p-1">
       <% menu_items.each do |item| %>
         <button type="button"
                 role="menuitem"
@@ -266,7 +266,7 @@
       <% end %>
     </div>
   </div>
-  <p class="mt-4 text-xs text-neutral-600 dark:text-neutral-400">
+  <p class="mt-4 text-xs text-muted-foreground">
     Wrapping arrows, Home and End, typeahead over a 500&thinsp;ms buffer, and one Tab stop: only
     the active item is <code>tabindex="0"</code>. Disabled items follow the APG's menu behaviour,
     which is the default — Archive takes focus so it can be discovered, and is never activated.
@@ -277,7 +277,7 @@
 <div class="<%= panel_classes %>" id="roving-toolbar">
   <div role="toolbar"
        aria-label="Text formatting"
-       class="inline-flex gap-1 rounded-md border border-border bg-white dark:bg-neutral-950 p-1"
+       class="inline-flex gap-1 rounded-md border border-border bg-popover p-1"
        data-controller="ui--roving-focus"
        data-ui--roving-focus-orientation-value="horizontal"
        data-ui--roving-focus-loop-value="false"
@@ -285,12 +285,12 @@
     <% [%w[Bold bold], %w[Italic italic], %w[Underline underline], %w[Strike strike]].each_with_index do |(label, id), index| %>
       <button type="button"
               id="roving-toolbar-<%= id %>"
-              class="rounded px-3 py-1.5 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 aria-disabled:text-neutral-400 dark:aria-disabled:text-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-violet-500"
+              class="rounded px-3 py-1.5 text-sm hover:bg-accent aria-disabled:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring"
               <%= 'aria-disabled="true"'.html_safe if index == 2 %>
               data-ui--roving-focus-target="item"><%= label %></button>
     <% end %>
   </div>
-  <p class="mt-4 text-xs text-neutral-600 dark:text-neutral-400">
+  <p class="mt-4 text-xs text-muted-foreground">
     ← and → only; ↑ and ↓ are left alone. This group sets <code>skipDisabled: true</code>, so
     Underline is disabled and skipped entirely, and the ends clamp rather than wrap.
   </p>
@@ -300,7 +300,7 @@
 <div class="<%= panel_classes %>" id="roving-listbox">
   <div data-controller="ui--roving-focus"
        data-ui--roving-focus-focus-model-value="activedescendant"
-       data-ui--roving-focus-active-class="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">
+       data-ui--roving-focus-active-class="bg-foreground text-background">
     <label for="roving-listbox-input" class="block text-sm font-medium mb-1">Fruit</label>
     <input type="text"
            id="roving-listbox-input"
@@ -310,13 +310,13 @@
            aria-autocomplete="list"
            autocomplete="off"
            placeholder="Type, then press ↓"
-           class="w-56 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-950 px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
+           class="w-56 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
            data-ui--roving-focus-target="input">
 
     <ul id="roving-listbox-options"
         role="listbox"
         aria-label="Fruit"
-        class="mt-2 w-56 max-h-40 overflow-y-auto rounded-md border border-border bg-white dark:bg-neutral-950 p-1">
+        class="mt-2 w-56 max-h-40 overflow-y-auto rounded-md border border-border bg-popover p-1">
       <% fruits.each do |fruit| %>
         <li role="option"
             aria-selected="false"
@@ -327,7 +327,7 @@
       <% end %>
     </ul>
   </div>
-  <p class="mt-4 text-xs text-neutral-600 dark:text-neutral-400">
+  <p class="mt-4 text-xs text-muted-foreground">
     DOM focus never leaves the text input — typing keeps working while ↑ and ↓ move
     <code>aria-activedescendant</code> and the active class. Home, End and typeahead stay with the
     input, because it is editable and those are its own keys.
@@ -335,12 +335,12 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Usage</h3>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">HTML</span>
-    <button data-copy-target="#roving-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">HTML</span>
+    <button data-copy-target="#roving-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre tabindex="0" class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="roving-usage" class="text-neutral-200"><%= h(roving_usage) %></code></pre>
+  <pre tabindex="0" class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="roving-usage" class="text-card-foreground"><%= h(roving_usage) %></code></pre>
 </div>
 
 <h3 class="text-base font-semibold mb-3">Values</h3>
@@ -377,7 +377,7 @@
 </div>
 
 <h3 class="text-base font-semibold mb-3">Targets, classes and events</h3>
-<ul class="text-sm text-neutral-600 dark:text-neutral-400 space-y-2 mb-8 list-disc ps-5">
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
   <li><strong>Targets.</strong> <code>anchor</code>, <code>floating</code> and an optional <code>arrow</code> for <code>ui--anchor</code>; <code>item</code>, and <code>input</code> in activedescendant mode, for <code>ui--roving-focus</code>.</li>
   <li><strong>Classes.</strong> <code>ui--roving-focus</code> declares one, <code>active</code>, applied to the active item in activedescendant mode — where no item has DOM focus, so <code>:focus-visible</code> cannot style it.</li>
   <li><strong>Events.</strong> <code>ui--anchor:positioned</code> with <code>{ x, y, placement, side, align }</code>, and <code>ui--roving-focus:activated</code> with <code>{ item, id, index }</code>.</li>

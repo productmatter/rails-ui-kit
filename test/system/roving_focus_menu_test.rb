@@ -195,7 +195,7 @@ class RovingFocusMenuTest < ApplicationSystemTestCase
     # The listbox's attribute and class agree with each other, not with a stale snapshot.
     restored = find('#roving-listbox-input')
     assert_equal 'roving-option-apple', restored['aria-activedescendant']
-    active = all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-neutral-900') }
+    active = all('#roving-listbox [role="option"]').select { |option| option[:class].include?('bg-foreground') }
     assert_equal(['roving-option-apple'], active.map { |option| option[:id] })
 
     # And the controllers are live: the keyboard still works from where it left off.

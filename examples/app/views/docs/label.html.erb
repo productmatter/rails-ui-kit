@@ -4,8 +4,8 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Label</h1>
   <p class="text-muted-foreground">
     A <%= link_to "Field", field_path, class: "text-primary underline" %> renders this for you, with the text
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">form.label</code> would show for the record and a required marker when the model validates presence. On its own
-    it is a native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label&gt;</code>, dimmed when the control it names — or the group it sits in — is disabled.
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">form.label</code> would show for the record and a required marker when the model validates presence. On its own
+    it is a native <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;label&gt;</code>, dimmed when the control it names — or the group it sits in — is disabled.
   </p>
 </div>
 
@@ -13,7 +13,7 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div id="label-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="grid gap-2 w-56">
-    <p class="text-xs font-mono text-neutral-600 dark:text-neutral-400">default</p>
+    <p class="text-xs font-mono text-muted-foreground">default</p>
     <%= render(Ui::LabelComponent.new(for: "label-email")) { "Email" } %>
     <%= render Ui::InputComponent.new(id: "label-email", name: "email", class: "peer") %>
   </div>
@@ -22,26 +22,26 @@
     <%= render(Ui::LabelComponent.new(for: "label-terms-disabled")) { "Accept the terms" } %>
   </div>
   <div class="grid gap-2 w-56 group" data-disabled="true">
-    <p class="text-xs font-mono text-neutral-600 dark:text-neutral-400">dimmed (group disabled)</p>
+    <p class="text-xs font-mono text-muted-foreground">dimmed (group disabled)</p>
     <%= render(Ui::LabelComponent.new(for: "label-notes-group")) { "Notes" } %>
     <%= render Ui::InputComponent.new(id: "label-notes-group", name: "notes_group", disabled: true) %>
   </div>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  The second example's checkbox carries <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "peer"</code> and is disabled, so
+<p class="text-sm text-muted-foreground mb-8">
+  The second example's checkbox carries <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class: "peer"</code> and is disabled, so
   the label after it dims automatically — no Ruby keyword on the label itself, and the control has to precede the label in markup for the
-  CSS sibling selector to reach it. The third wraps both in a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">group</code>
-  carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, which works whichever order they're in.
+  CSS sibling selector to reach it. The third wraps both in a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">group</code>
+  carrying <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, which works whichever order they're in.
 </p>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#label-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#label-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="label-usage" class="text-neutral-200"><%= h(example_label_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="label-usage" class="text-card-foreground"><%= h(example_label_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -76,10 +76,10 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>A real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;label for&gt;</code>: clicking it focuses the control, and it is the control's accessible name.</li>
-  <li>Dimming is CSS only. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">peer-disabled:*</code> tracks a sibling control carrying <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "peer"</code>, which
-      has to come before the label in markup; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">group-data-[disabled=true]:*</code> tracks an ancestor with
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class: "group"</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, in any order.</li>
+  <li>A real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;label for&gt;</code>: clicking it focuses the control, and it is the control's accessible name.</li>
+  <li>Dimming is CSS only. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">peer-disabled:*</code> tracks a sibling control carrying <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class: "peer"</code>, which
+      has to come before the label in markup; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">group-data-[disabled=true]:*</code> tracks an ancestor with
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class: "group"</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-disabled="true"</code>, in any order.</li>
   <li>A dimmed label is still read: disabled is announced by the control, not by the label's colour.</li>
 </ul>
 
