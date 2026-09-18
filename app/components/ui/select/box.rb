@@ -23,10 +23,11 @@ module Ui
       # a different token, so the open list never blends into the box it hangs from.
       CONTROL = 'flex w-full min-w-0 appearance-none items-center rounded-md border border-input ' \
                 'bg-background dark:bg-muted/50 ps-3 pe-8 text-sm shadow-xs transition-colors ' \
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
+                'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
                 'disabled:pointer-events-none disabled:opacity-50 ' \
                 'aria-disabled:pointer-events-none aria-disabled:opacity-50 ' \
-                'aria-invalid:border-destructive aria-invalid:focus-visible:outline-destructive'
+                'aria-invalid:border-destructive aria-invalid:focus-visible:border-destructive ' \
+                'aria-invalid:focus-visible:outline-destructive'
 
       # Search mode's control is a <button>, whose text the user agent centres; the label it shows
       # reads from the start of the box, like the select's and the combobox's.
