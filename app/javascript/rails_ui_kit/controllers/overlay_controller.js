@@ -249,7 +249,13 @@ export default class extends Controller {
   // --- Closing -----------------------------------------------------------------------------
 
   async hide() {
-    if (!this.shown || !this.hasContentTarget) return
+    // Nothing here ever reaches finish(): already hidden, or nothing to hide. A one-shot
+    // closeWithoutFocusReturn() set for this close has no restore left to be spent by, so it is
+    // cleared here instead of outliving a close that never happened.
+    if (!this.shown || !this.hasContentTarget) {
+      this.skipFocusReturn = false
+      return
+    }
 
     this.shown = false
     this.setExpanded(false)
@@ -267,7 +273,12 @@ export default class extends Controller {
     // out at all: closing it first takes it out of the top layer and nothing renders.
     const closed = presence.exit(this.contentTarget)
     if (this.hasBackdropTarget) presence.exit(this.backdropTarget)
-    if (!(await closed)) return // a re-open overtook this close; the overlay stays open
+    if (!(await closed)) {
+      // A re-open overtook this close; the overlay stays open and finish() never runs, so a flag
+      // set for this close is cleared here rather than left for whatever closes it next.
+      this.skipFocusReturn = false
+      return
+    }
 
     this.unplace()
     this.finish()

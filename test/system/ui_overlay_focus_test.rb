@@ -148,6 +148,34 @@ class UiOverlayFocusTest < ApplicationSystemTestCase
     assert_equal 'menu-trigger', focused_id
   end
 
+  # closeWithoutFocusReturn() sets a one-shot flag and asks for a close, but that close can be
+  # overtaken before it ever reaches finish() -- here, by a reopen while the exit animation is
+  # still running. The flag must not survive to strand focus on the next, unrelated close.
+  test 'closeWithoutFocusReturn cancelled by a reopen does not strand the flag on a later close' do
+    visit primitives_overlay_path
+    find('#menu-trigger').click
+    assert_state '#menu-content', 'open'
+
+    page.execute_script(<<~JS)
+      const overlay = document.querySelector('#menu-overlay')
+      const controller = window.Stimulus.getControllerForElementAndIdentifier(overlay, 'ui--overlay')
+      controller.closeWithoutFocusReturn()
+    JS
+    assert_equal 'closing', page.evaluate_script("document.querySelector('#menu-content').dataset.state"),
+                 'the close never started, so reopening it would not exercise the cancelled path'
+
+    page.execute_script(<<~JS)
+      const overlay = document.querySelector('#menu-overlay')
+      window.Stimulus.getControllerForElementAndIdentifier(overlay, 'ui--overlay').open()
+    JS
+    assert_state '#menu-content', 'open'
+
+    press :escape
+    assert_state '#menu-content', 'closed'
+    assert_equal 'menu-trigger', focused_id,
+                 'a closeWithoutFocusReturn() close that was cancelled by the reopen stranded its flag here'
+  end
+
   # A trigger a component reveals when it connects is not focusable in the task that removed the
   # overlay, so the restore has to check its own work rather than no-op silently.
   test 'focus return reaches a trigger that only becomes focusable a frame later' do
