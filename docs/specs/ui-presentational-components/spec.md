@@ -92,9 +92,23 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    snippet with caller-supplied icon-only content shows the `aria-label`. Text reaches
    4.5:1 and a non-text indicator that carries meaning (a control's boundary, a focus
    indicator) reaches 3:1, on every token surface, in light and in dark. Focus is
-   drawn as Button draws it,
+   drawn with an outline, never a box-shadow ring, because forced-colors mode drops
+   box-shadows, and in one of two forms (decided 2026-09-18, Jonathan Simmons; before
+   then every control drew the second). **A control with a border and a plain fill** —
+   Input, Textarea, Select's control, the outline Button, a Choices card — draws one
+   fused line: its border takes `--ring` and a 2px `--ring` outline sits flush against
+   it, `focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring`
+   with no offset, so the eye sees a single solid line and nothing in the layout moves.
+   A border, a gap and a ring read as two lines where one would do. **A control that
+   can be filled with the focus colour** — a filled Button, a Choices indicator, which
+   is `--primary` when checked — keeps the stand-off form,
    `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`,
-   never a box-shadow ring, because forced-colors mode drops box-shadows. Pointer
+   because a line pressed against its own colour would disappear. Either way the line
+   reaches 3:1 against what it touches: the surface outside it and, for the fused form,
+   the control's fill inside it. An invalid control's fused line is `--destructive`,
+   border and outline both. One field has no border of its own to fuse with, the search
+   field inside Select's popup: its row draws the line instead, inset so the popup cannot
+   clip it (ui-select § Behavior, item 17). Pointer
    targets meet WCAG 2.2's 24×24 CSS px minimum, except inline text links. Where a
    token value makes a rule unmeetable, the worker stops and escalates. Never paint
    around it with a literal (§ Assumptions).
@@ -171,6 +185,22 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
   `--muted-foreground` itself is unchanged: weakening "muted" for every component in the
   kit to fix one control's fill treats the symptom. The fill moved to `dark:bg-muted/50`
   instead, which restores 5.86–6.70:1 for that pair.
+- **The palette is Tailwind's slate and indigo** (decided 2026-09-17, Jonathan Simmons;
+  values in `ui-design-tokens`). Every token is a verbatim Tailwind v4 step, so the
+  2026-09-13 values above are superseded. `--input` is slate-500
+  `oklch(0.554 0.046 257.417)` light and slate-400 `oklch(0.704 0.04 256.788)` dark:
+  Tailwind's own slate-300 input border is about 2.6:1, under rule 3, so the kit steps
+  darker, to 4.35–4.77:1 light and 5.58–7.68:1 dark against every surface and the
+  `dark:bg-muted/50` fill. Light `--destructive` is red-700 `oklch(0.505 0.213 27.518)`,
+  not Tailwind's red-600 button step: red-600 is 4.35:1 as text on `--muted`, which
+  `field_test.rb` caught in the browser; red-700 is 5.86–6.42:1 on every light surface
+  and carries a white label at 6.42:1. Dark `--destructive` is red-400 with a slate-950
+  label (5.07–6.97:1 as text) and dark `--primary` is indigo-400 with the same dark
+  label (indigo-500 is 3.2–4.4:1 as link text), both by the 2026-09-13 precedent.
+  `--border` is still decoration, slate-200 and slate-800. The ratios are computed
+  (oklch to sRGB), then held in the browser by `field_test.rb`, `tokens_test.rb` and the
+  per-component contrast checks. The rule stands: token names, never a literal or an
+  alpha tweak, to pass the check.
 - **The docs registry lands first.** Another in-flight unit on this branch replaces
   per-page controller actions and routes with a registry. Rule 6 assumes it. Until it
   exists, no docs page in this scope is added.

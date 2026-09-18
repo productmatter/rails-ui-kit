@@ -23,12 +23,12 @@
   <code class="<%= code %>">:root</code> and <code class="<%= code %>">.dark</code> in your own Tailwind entry point; the kit
   ships its values in the lowest-priority layer there is, so yours win wherever they sit in the file.
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-6">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">app/assets/tailwind/application.css</span>
-    <button data-copy-target="#theming-tokens" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-6">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">app/assets/tailwind/application.css</span>
+    <button data-copy-target="#theming-tokens" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="theming-tokens" class="text-neutral-200"><%= h(example_theming_tokens) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="theming-tokens" class="text-card-foreground"><%= h(example_theming_tokens) %></code></pre>
 </div>
 <p class="text-sm text-muted-foreground mb-3">
   The kit's own values, read from the stylesheet it ships. Each foreground token is the text colour for the surface it's
@@ -103,8 +103,8 @@
     </div>
   <% end %>
 </div>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-3">
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200"><%= h(example_theming_control_heights) %></code></pre>
+<div class="rounded-lg overflow-hidden border border-border mb-3">
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-card-foreground"><%= h(example_theming_control_heights) %></code></pre>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
   <strong>Don't set a control height below 24px.</strong> A smaller control fails WCAG 2.5.8, Target Size (Minimum). The kit
@@ -122,8 +122,8 @@
   <%= render(Ui::ButtonComponent.new) { "Default" } %>
   <%= render(Ui::ButtonComponent.new(class: "rounded-full")) { "Follow" } %>
 </div>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200"><%= h(example_theming_class_merge) %></code></pre>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-card-foreground"><%= h(example_theming_class_merge) %></code></pre>
 </div>
 
 <%# Chrome strings %>

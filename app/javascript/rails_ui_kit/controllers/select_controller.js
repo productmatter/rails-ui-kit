@@ -1,24 +1,28 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Select. The real <select> is the only place the value lives: this controller mirrors it into
-// a combobox and a listbox, and writes it back when the user chooses. It owns nothing a
-// primitive already does -- ui--overlay places and dismisses the popup, ui--anchor positions it,
+// the control and the listbox, and writes it back when the user chooses. It owns nothing a
+// primitive already does -- ui--overlay places, dismisses and moves focus, ui--anchor positions,
 // ui--roving-focus moves the active option -- so what is left here is the mirror, the key table
 // for each mode, and the commit.
 //
 //   <div data-controller="ui--select ui--overlay ui--anchor ui--roving-focus">
 //     <select data-ui--select-target="select">…</select>
-//     <div role="combobox" data-ui--select-target="combobox">…</div>
-//     <div data-ui--select-target="popup">…</div>
+//     <div role="combobox" data-ui--select-target="combobox">…</div>   select-only: the control
+//     <button data-ui--select-target="trigger">…</button>              search: the control
+//     <button data-ui--select-target="clear">…</button>                back to the prompt
+//     <div data-ui--select-target="popup">
+//       <input role="combobox" data-ui--select-target="search">        search: the query
+//     </div>
 //   </div>
 //
 // Events: none of its own. Choosing dispatches `input` and `change` from the select, which is
 // what a host's change-> action, ui--form-change and an auto-submitting form already listen for.
 const OPTION = '[role="option"]'
 const GROUP = '[role="group"]'
-// Keys that move the caret rather than the list: in search mode they hand visual focus back to
-// the text field, which is APG's rule for an editable combobox.
-const CARET_KEYS = ["ArrowLeft", "ArrowRight", "Home", "End"]
+// Keys that edit the search field rather than move the list. They hand visual focus back to the
+// field, because what they change is the query (§ Behavior, item 17).
+const EDIT_KEYS = ["ArrowLeft", "ArrowRight", "Home", "End", "Backspace", "Delete"]
 // How long typing has to settle before the result count is announced, so a screen reader isn't
 // interrupted on every keystroke.
 const ANNOUNCE_DELAY = 250
@@ -29,7 +33,7 @@ function normalise(text) {
 }
 
 export default class extends Controller {
-  static targets = ["select", "combobox", "label", "popup", "showOptions", "empty", "status"]
+  static targets = ["select", "combobox", "trigger", "search", "label", "clear", "popup", "empty", "status"]
 
   static values = {
     search: { type: Boolean, default: false },
@@ -87,12 +91,12 @@ export default class extends Controller {
     const enhance = !this.nativeOnly
     this.element.dataset.enhanced = "true"
 
-    this.comboboxTarget.hidden = false
-    if (this.hasShowOptionsTarget) this.showOptionsTarget.hidden = false
+    this.control.hidden = false
     this.selectTarget.setAttribute("aria-hidden", enhance ? "true" : "false")
     if (enhance) {
       this.selectTarget.setAttribute("tabindex", "-1")
       this.nameCombobox()
+      this.nameClear()
     } else {
       this.selectTarget.removeAttribute("tabindex")
       this.close()
@@ -108,22 +112,64 @@ export default class extends Controller {
     this.coarsePointer.addEventListener("change", this.onPointerChange)
   }
 
-  // A <div role="combobox"> is not a labelable element, so a <label for> cannot name it. Inside
-  // a Field the label names the select and carries an id derived the same way, which is what
-  // the combobox and its listbox point aria-labelledby at. A caller's own aria-label or
-  // aria-labelledby is already on both, and wins.
+  // Neither a <div role="combobox"> nor search mode's trigger button is named by a <label for>:
+  // one is not a labelable element, and the other's label belongs to the select behind it. Inside
+  // a Field the label names the select and carries an id derived the same way, which is what the
+  // control, its listbox and the search field point aria-labelledby at -- so a screen reader in
+  // the popup hears the field's name, then "combobox". A caller's own aria-label or
+  // aria-labelledby is already on all three, and wins.
+  //
+  // The trigger is the one exception: ARIA bars aria-required on a <button>, so a required search
+  // Select has the label carry "required" into the trigger's name too, through the hidden
+  // #<label id>-required span Ui::Field::LabelComponent renders beside the label's own text
+  // (ui-select § Behavior, item 17, "Required is the label's to say"). The listbox and the search
+  // field -- which does carry aria-required itself -- keep the label id alone.
   nameCombobox() {
-    if (this.comboboxTarget.hasAttribute("aria-label") || this.comboboxTarget.hasAttribute("aria-labelledby")) return
+    if (this.control.hasAttribute("aria-label") || this.control.hasAttribute("aria-labelledby")) return
 
     const label = document.getElementById(`${this.selectTarget.id}-label`)
     if (!label) return
 
-    this.comboboxTarget.setAttribute("aria-labelledby", label.id)
+    this.control.setAttribute("aria-labelledby", this.triggerLabelledby(label))
     this.listbox?.setAttribute("aria-labelledby", label.id)
+    if (this.hasSearchTarget) this.searchTarget.setAttribute("aria-labelledby", label.id)
+  }
+
+  // The trigger's own aria-labelledby: the label alone, or the label plus its required span
+  // when this is search mode's trigger, the select is required, and that span actually exists.
+  triggerLabelledby(label) {
+    if (!this.hasTriggerTarget || !this.selectTarget.required) return label.id
+
+    const requiredId = `${label.id}-required`
+    return document.getElementById(requiredId) ? `${label.id} ${requiredId}` : label.id
+  }
+
+  // The clear button says what it does and which field it does it to: its own hidden word, then
+  // the field's name. Named from the same label element the control is, so a screen reader hears
+  // one field name and not two spellings of it, and from the caller's aria-label where a Select
+  // is used outside a Field and there is no label element to point at.
+  nameClear() {
+    if (!this.hasClearTarget) return
+
+    const own = document.getElementById(`${this.clearTarget.id}-label`)
+    if (!own) return
+
+    const label = document.getElementById(`${this.selectTarget.id}-label`)
+    if (label) return this.clearTarget.setAttribute("aria-labelledby", `${own.id} ${label.id}`)
+
+    const given = this.control.getAttribute("aria-label")
+    if (given) this.clearTarget.setAttribute("aria-label", `${own.textContent} ${given}`)
   }
 
   get listbox() {
     return this.popupTarget.querySelector('[role="listbox"]')
+  }
+
+  // The element that owns the listbox: the combobox in select-only mode, the trigger button in
+  // search mode. It is ui--overlay's trigger and ui--anchor's anchor either way, it carries the
+  // aria that describes the control, and DOM focus is on it whenever the popup is closed.
+  get control() {
+    return this.hasTriggerTarget ? this.triggerTarget : this.comboboxTarget
   }
 
   // Whether the combobox is the control: connected, and not on a touch screen that keeps the
@@ -142,8 +188,8 @@ export default class extends Controller {
   // the value, the disabled state, and the aria the control carries. Bound to the select's own
   // change event, so a choice made here and one made by host code look identical.
   render(event) {
-    // Only the select's own change is the mirror's: a text field fires change of its own when it
-    // loses focus after an edit, and that is not a new value.
+    // Only the select's own change is the mirror's: the search field fires change of its own when
+    // it loses focus after an edit, and that is a query, not a new value.
     if (event && event.target !== this.selectTarget) return
 
     const chosen = this.selectTarget.selectedOptions[0]
@@ -161,66 +207,123 @@ export default class extends Controller {
     })
 
     this.renderDisabled()
+    this.renderClear()
     this.mirrorAria("aria-invalid")
     this.mirrorAria("aria-describedby")
     this.mirrorRequired()
   }
 
-  // What the control shows: the text field's value when searching, the label element otherwise.
+  // What the control shows, in both modes: the selected option's label, or the prompt as a
+  // placeholder. The search field is never part of this -- it holds a query, not the value.
   renderLabel(chosen, value) {
-    const text = chosen ? chosen.textContent : ""
-    if (this.searchValue) {
-      this.comboboxTarget.value = text
-      return
-    }
     if (!this.hasLabelTarget) return
 
-    this.labelTarget.textContent = text
+    this.labelTarget.textContent = chosen ? chosen.textContent : ""
     this.labelTarget.dataset.placeholder = value === "" ? "true" : "false"
+  }
+
+  // The clear button, and the room the control gives it, are the same state: the select holds the
+  // prompt option Rails rendered and something else is chosen. That is the one state there is a
+  // placeholder to go back to (§ Behavior, item 10). A disabled Select shows none, and neither
+  // does a Select whose picker is the platform's -- that one lists the prompt itself, and the
+  // component's own media query is what hides the button there, as it hides the control.
+  renderClear() {
+    if (!this.hasClearTarget) return
+
+    const show = !this.selectTarget.disabled && this.selectTarget.value !== "" && !!this.promptOption
+    this.clearTarget.hidden = !show
+    this.element.dataset.clearable = show ? "true" : "false"
+  }
+
+  // The prompt option, or null. Rails renders it first -- before the blank and the options -- and
+  // only while nothing is chosen, and the component renders the button only when it is there, so
+  // the select's first option is it. An include_blank option is a listed choice rather than a
+  // prompt, and never answers here: without a prompt there is no button to press.
+  get promptOption() {
+    const first = this.selectTarget.options[0]
+
+    return first && first.value === "" ? first : null
+  }
+
+  // The only way to clear, and a user choice like any other (§ Behavior, item 3): it selects the
+  // prompt option, which dispatches input and change, shows the prompt, and puts a required select
+  // back to blocking its form. The button goes with the state that justified it, so focus moves to
+  // the control rather than being left on an element that is no longer there.
+  clear(event) {
+    event.preventDefault()
+    const prompt = this.promptOption
+    if (!prompt || this.selectTarget.disabled) return
+
+    // A press anywhere outside the popup closes it, and this button is outside it.
+    this.close()
+    this.commitOption(prompt.value, prompt.index)
+    this.control.focus()
   }
 
   // A disabled Select doesn't open and isn't in the tab order, which is what disabling a native
   // select does; it stays announced, so a screen reader user still meets the control.
   renderDisabled() {
     const disabled = this.selectTarget.disabled
-    this.comboboxTarget.setAttribute("aria-disabled", disabled ? "true" : "false")
+    this.control.setAttribute("aria-disabled", disabled ? "true" : "false")
+    this.renderTabStop(disabled)
 
-    if (disabled) {
-      this.comboboxTarget.removeAttribute("tabindex")
-      this.close()
-    } else {
-      this.comboboxTarget.setAttribute("tabindex", "0")
+    if (disabled) this.close()
+  }
+
+  // Same outcome, opposite attribute: a <div role="combobox"> is in the tab order only while it
+  // carries tabindex="0", and a <button> is in it unless something takes it out.
+  renderTabStop(disabled) {
+    if (this.hasTriggerTarget) {
+      if (disabled) this.control.setAttribute("tabindex", "-1")
+      else this.control.removeAttribute("tabindex")
+      return
     }
+
+    if (disabled) this.control.removeAttribute("tabindex")
+    else this.control.setAttribute("tabindex", "0")
   }
 
   mirrorAria(name) {
     const value = this.selectTarget.getAttribute(name)
-    if (value === null) return this.comboboxTarget.removeAttribute(name)
+    if (value === null) return this.control.removeAttribute(name)
 
-    this.comboboxTarget.setAttribute(name, value)
+    this.control.setAttribute(name, value)
   }
 
   // `required` is a plain attribute on the select, not an aria one, so it is translated rather
   // than copied byte for byte the way mirrorAria copies aria-invalid and aria-describedby.
   // Removed rather than set to "false" when absent, matching how the server never renders it.
+  //
+  // It lands on whichever element ARIA allows it on: select-only mode's combobox, or search mode's
+  // search field. Not on search mode's trigger -- `button` has no aria-required, so a browser
+  // would drop it, and axe reports it as an unsupported attribute.
   mirrorRequired() {
+    const element = this.hasSearchTarget ? this.searchTarget : this.control
     if (this.selectTarget.required) {
-      this.comboboxTarget.setAttribute("aria-required", "true")
+      element.setAttribute("aria-required", "true")
     } else {
-      this.comboboxTarget.removeAttribute("aria-required")
+      element.removeAttribute("aria-required")
     }
+  }
+
+  // Choosing a listbox option. Its value is the select's, because the two renderings hold the
+  // same options.
+  commit(option) {
+    if (!option || this.isDisabled(option)) return
+
+    this.commitOption(option.dataset.value)
   }
 
   // Writing the select is what choosing means; the events are what make it observable, and
   // re-rendering from them is what keeps one render path. Choosing what is already chosen
-  // dispatches nothing, exactly as a native select does.
-  commit(option) {
-    if (!option || this.isDisabled(option)) return
-
-    const value = option.dataset.value
+  // dispatches nothing, exactly as a native select does. `index` names the option where the value
+  // alone would not: a prompt and an include_blank option are both "", and the clear button means
+  // the prompt.
+  commitOption(value, index = null) {
     if (value === this.selectTarget.value) return
 
-    this.selectTarget.value = value
+    if (index === null) this.selectTarget.value = value
+    else this.selectTarget.selectedIndex = index
     this.selectTarget.dispatchEvent(new Event("input", { bubbles: true }))
     this.selectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
@@ -250,28 +353,35 @@ export default class extends Controller {
   // selectedness, so Back restores a closed Select still showing the value the user left.
   rest() {
     this.close()
+    this.renderSearchExpanded(false)
     this.clearFilter()
     this.clearActive()
     this.render()
   }
 
-  // Focus belongs on the combobox while the widget is enhanced: the Field label's `for` names
+  // The search field is a combobox in its own right, so it carries aria-expanded for the same
+  // listbox the trigger does. ui--overlay owns the trigger's, because the trigger is its trigger;
+  // this one is Select's, and it has to stay honest -- an aria-expanded="true" over a closed
+  // listbox is a claim a screen reader acts on.
+  renderSearchExpanded(open) {
+    if (this.hasSearchTarget) this.searchTarget.setAttribute("aria-expanded", open ? "true" : "false")
+  }
+
+  // Focus belongs on the control while the widget is enhanced: the Field label's `for` names
   // the select, and so does the browser when it reports a required select invalid.
   forwardFocus() {
     if (!this.enhanced || this.selectTarget.disabled) return
 
-    this.comboboxTarget.focus()
+    this.control.focus()
   }
 
   // --- filtering -----------------------------------------------------------------------------
 
   // Typing filters the listbox, never the select: the value that can submit is never hidden away
-  // (§ Behavior, item 21). Bound to the text field's own input event, so every way of editing it
-  // -- typing, pasting, cutting -- runs the same path.
+  // (§ Behavior, item 21). Bound to the search field's own input event, so every way of editing
+  // it -- typing, pasting, cutting -- runs the same path.
   filter() {
-    this.open({ activate: "none" })
-
-    const query = normalise(this.comboboxTarget.value)
+    const query = normalise(this.searchTarget.value)
     const matches = this.options.filter((option) => {
       const hidden = query !== "" && !normalise(option.textContent).includes(query)
       option.hidden = hidden
@@ -284,7 +394,8 @@ export default class extends Controller {
     })
 
     if (this.hasEmptyTarget) this.emptyTarget.hidden = matches.length > 0
-    // APG: after a filter, visual focus is back on the text field.
+    // After a filter, visual focus is back on the search field: the list under it has changed,
+    // so an option that was active is no longer the one the user was looking at.
     this.clearActive()
     this.announce(matches.length)
   }
@@ -329,8 +440,11 @@ export default class extends Controller {
     }
   }
 
+  // The query and everything derived from it. The field goes with them: the text is discarded
+  // when the popup closes, so the next open starts from the whole list (§ Behavior, item 17).
   clearFilter() {
     clearTimeout(this.announceTimer)
+    if (this.hasSearchTarget) this.searchTarget.value = ""
     this.options.forEach((option) => { option.hidden = false })
     this.groups.forEach((group) => { group.hidden = false })
     if (this.hasEmptyTarget) this.emptyTarget.hidden = true
@@ -340,16 +454,6 @@ export default class extends Controller {
   clearActive() {
     if (this.rovingFocus?.activeIdValue) this.rovingFocus.activeIdValue = ""
     this.markActive()
-  }
-
-  // The text field only ever shows a real option's label once the list closes: what was chosen,
-  // blank where the field was emptied and the select has a blank option, and otherwise whatever
-  // the select still holds. What the user typed is never silently turned into a choice.
-  commitOnClose() {
-    const blank = this.options.find((option) => option.dataset.value === "")
-    if (this.comboboxTarget.value.trim() === "" && blank) this.commit(blank)
-
-    this.render()
   }
 
   // --- opening and closing -----------------------------------------------------------------
@@ -372,6 +476,10 @@ export default class extends Controller {
     if (event.target !== this.element) return
 
     this.setAnchored(true)
+    this.renderSearchExpanded(true)
+    // Every open starts from an empty field and the whole list: the text is a query, and the
+    // previous one ended when the popup last closed.
+    if (this.hasSearchTarget) this.clearFilter()
     this.activateOnOpen(this.pendingActivate)
     this.flushTyped()
   }
@@ -382,20 +490,20 @@ export default class extends Controller {
     if (event.target !== this.element) return
 
     this.setAnchored(false)
+    this.renderSearchExpanded(false)
     this.opening = false
     this.typed = []
     // A closed list ends the search that was running in it: reopening and typing starts a fresh
     // one rather than continuing a buffer the user has already finished with.
     this.rovingFocus?.resetTypeahead()
     this.clearActive()
-    if (this.searchValue) {
-      this.clearFilter()
-      this.commitOnClose()
-    }
+    // The query is discarded with the popup. Nothing is committed on the way out: the trigger has
+    // been showing the select's own label all along, so there is nothing to put back.
+    if (this.hasSearchTarget) this.clearFilter()
   }
 
   get expanded() {
-    return this.comboboxTarget.getAttribute("aria-expanded") === "true"
+    return this.control.getAttribute("aria-expanded") === "true"
   }
 
   activateOnOpen(activate) {
@@ -422,13 +530,21 @@ export default class extends Controller {
   }
 
   // Characters typed at a closed Select belong to a list that isn't rendered yet, and a second
-  // character can arrive before it is. They are held until the popup opens and replayed in order,
-  // so typeahead stays ui--roving-focus's single implementation rather than being partly rebuilt
-  // here, and "ne" still reaches New York.
+  // character can arrive before it is. They are held until the popup opens and delivered in
+  // order: select-only mode replays them as keypresses, so typeahead stays ui--roving-focus's
+  // single implementation and "ne" still reaches New York, while search mode seeds the field it
+  // has just moved focus into and filters from there (§ Behavior, item 17).
   flushTyped() {
     const keys = this.typed
     this.typed = []
     this.opening = false
+    if (keys.length === 0) return
+
+    if (this.hasSearchTarget) {
+      this.searchTarget.value = keys.join("")
+      return this.filter()
+    }
+
     keys.forEach((key) => {
       this.comboboxTarget.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }))
     })
@@ -458,8 +574,9 @@ export default class extends Controller {
 
   // --- keys and pointer --------------------------------------------------------------------
 
-  // Bound to the combobox, so it sees a key before ui--roving-focus on the root does. Every key
-  // this table claims is marked handled, which is how the group knows to leave it alone.
+  // Bound to the control and, in search mode, to the search field, so it sees a key before
+  // ui--roving-focus on the root does. Every key this table claims is marked handled, which is
+  // how the group knows to leave it alone.
   keydown(event) {
     if (event.defaultPrevented || event.isComposing) return
     if (!this.enhanced || this.selectTarget.disabled) return
@@ -489,31 +606,25 @@ export default class extends Controller {
     return false
   }
 
-  // Search mode, closed. Enter is deliberately missing: it is not handled, so implicit form
-  // submission proceeds exactly as it does for any other text field.
+  // Search mode, closed: DOM focus is on the trigger. Every key here opens the popup, and the
+  // overlay moves focus into the search field as it does; what differs is where visual focus
+  // lands and whether the field starts with what was typed. Escape and Tab are deliberately
+  // missing -- Escape is a surrounding Modal's, and Tab moves on (§ Behavior, item 17).
   closedSearchKeydown(key, altKey) {
     if (altKey) return key === "ArrowDown" ? this.openWith("none") : false
+    if (key === "Enter" || key === " ") return this.openWith("none")
     if (key === "ArrowDown") return this.openWith("first")
     if (key === "ArrowUp") return this.openWith("last")
-    if (key === "Escape") return this.restoreText()
+    // Typing on a closed select keeps working: the character opens the popup and starts the
+    // query, rather than being swallowed by a button that has no text of its own.
+    if (key.length === 1) {
+      this.opening = true
+      this.typed = [key]
+      this.open({ activate: "none" })
+      return true
+    }
 
     return false
-  }
-
-  // Escape on a closed field is the cancel key: it puts the text back to what the select holds
-  // and changes nothing else. A faithful transcription of the APG table would clear the field,
-  // but in that example the text *is* the value; here the value lives in the select, so clearing
-  // the text would either strand an empty field over a real value or make Escape destroy a
-  // committed answer -- and dispatch input and change from a keystroke that means "never mind".
-  // Clearing a choice is what a blank option is for.
-  restoreText() {
-    // Unclaimed when there is nothing to put back, so the key still reaches a surrounding Modal.
-    const chosen = this.selectTarget.selectedOptions[0]
-    if (this.comboboxTarget.value === (chosen ? chosen.textContent : "")) return false
-
-    this.render()
-    this.clearFilter()
-    return true
   }
 
   openWith(activate) {
@@ -544,9 +655,10 @@ export default class extends Controller {
     return false
   }
 
-  // Search mode, open. Enter takes the active option if there is one and closes either way, and
-  // it is always prevented, so the key can never submit the form while the list is open. Tab
-  // closes without selecting: what the user typed is never turned into a choice by walking away.
+  // Search mode, open: DOM focus is in the search field, and the arrows are the group's. Enter
+  // takes the active option if there is one and closes either way, always prevented, so the key
+  // can never submit the form; the overlay hands focus back to the trigger. Escape is left to the
+  // browser's own light dismiss, which is what keeps the Modal ordering the top layer's.
   openSearchKeydown(key, altKey) {
     if (altKey) return false
 
@@ -557,12 +669,16 @@ export default class extends Controller {
     }
 
     if (key === "Tab") {
-      this.close()
+      // Not prevented: the browser moves focus on from here, and the overlay stands aside for
+      // this one close rather than pulling it back to the trigger. What was typed is never
+      // turned into a choice by walking away.
+      this.closeAndMoveOn()
       return false
     }
 
-    // The caret keys belong to the text field; taking them back means clearing visual focus.
-    if (CARET_KEYS.includes(key)) {
+    // Editing keys and printable characters belong to the field: what they change is the query,
+    // so visual focus goes back to it and the filter runs from the field's own input event.
+    if (EDIT_KEYS.includes(key) || key.length === 1) {
       this.clearActive()
       return false
     }
@@ -570,8 +686,15 @@ export default class extends Controller {
     return false
   }
 
+  // Closing on the way out of the widget. ui--overlay returns focus to the trigger on every other
+  // close, which is right for Enter and Escape and wrong for Tab: the browser is already moving
+  // focus to whatever follows the trigger, and putting it back would undo the key.
+  closeAndMoveOn() {
+    this.overlay?.closeWithoutFocusReturn()
+  }
+
   // A click on an option. Its mousedown was already cancelled by ui--roving-focus, so DOM focus
-  // never left the combobox and there is nothing to restore here.
+  // never left the control that owns the listbox, and closing puts it back where the mode says.
   choose(event) {
     const option = event.target.closest(OPTION)
     if (!option) return
@@ -583,17 +706,17 @@ export default class extends Controller {
     this.close()
   }
 
-  // The trigger in select-only mode, and the show-options button in search mode -- which is a
-  // real button, so pressing it takes DOM focus; focus goes straight back to the field it belongs
-  // to (§ Behavior, item 18).
+  // A press on the control, in either mode. Where focus goes from here is the overlay's:
+  // select-only mode opens without moving it, search mode opens onto the field in the popup.
   toggle(event) {
     event.preventDefault()
     if (this.expanded) {
       this.close()
     } else {
-      this.open()
+      // Search mode opens with no active option, however it was opened: the key table says so
+      // for Enter and Space, and a press is the same gesture with a pointer.
+      this.open({ activate: this.searchValue ? "none" : "selected" })
     }
-    if (this.searchValue) this.comboboxTarget.focus()
   }
 
   // --- state ---------------------------------------------------------------------------------

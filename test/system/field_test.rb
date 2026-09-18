@@ -40,6 +40,17 @@ class FieldTest < ApplicationSystemTestCase
     assert_equal 'Email', control.native.accessible_name
   end
 
+  # The same claim, read out of Chrome's own accessibility tree rather than an attribute (the
+  # route select_accessibility_test.rb's SA10 uses): the hidden required-label span added for
+  # search mode's Select trigger sits inside every required Field's <label>, and a `<label for>`
+  # control -- Input, here -- must not pick it up too, or "required" is announced twice
+  # (ui-select § Behavior, item 17, "Required is the label's to say"). `required` itself still
+  # reaches the tree, but as the control's own state, not through its name.
+  test 'a required Input\'s computed accessible name is the plain label, with required as its own state' do
+    assert_equal 'Email', ax('#profile_email', 'name')
+    assert_equal true, ax_property('#profile_email', 'required')
+  end
+
   test 'a field given required: false over its validator renders no marker and no required' do
     assert_selector '#profile_handle:not([required])'
     assert_no_selector "label[for='profile_handle'] [data-slot=field-required-indicator]"
@@ -59,5 +70,15 @@ class FieldTest < ApplicationSystemTestCase
 
   def preview
     find_by_id('field-preview')
+  end
+
+  # ax_node (Chrome's accessibility tree for one element) comes from ApplicationSystemTestCase's
+  # BrowserHelpers.
+  def ax(selector, key)
+    ax_node(selector)&.dig(key, 'value')
+  end
+
+  def ax_property(selector, name)
+    ax_node(selector)&.fetch('properties', [])&.find { |property| property['name'] == name }&.dig('value', 'value')
   end
 end

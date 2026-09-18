@@ -3,11 +3,11 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Button</h1>
   <p class="text-muted-foreground">
-    The submit button of a Rails form, the trigger for a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-confirm</code> or a
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-stream</code> link, and the link that has to look like an action. It carries whatever
-    Turbo attribute you forward to it, shows a submitting state through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>,
-    and renders a real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;button&gt;</code> — or an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;a&gt;</code> when you pass
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href:</code>. Six variants across four sizes, drawn entirely from the design tokens.
+    The submit button of a Rails form, the trigger for a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-confirm</code> or a
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-stream</code> link, and the link that has to look like an action. It carries whatever
+    Turbo attribute you forward to it, shows a submitting state through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>,
+    and renders a real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;button&gt;</code> — or an <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;a&gt;</code> when you pass
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">href:</code>. Six variants across six sizes, drawn entirely from the design tokens.
   </p>
 </div>
 
@@ -33,8 +33,8 @@
     <div class="flex items-center gap-6 px-5 py-4">
       <div class="w-36 shrink-0"><%= render(Ui::ButtonComponent.new(variant: variant)) { variant.to_s.capitalize } %></div>
       <div>
-        <p class="font-mono text-xs text-violet-600 dark:text-violet-400 mb-0.5">variant: :<%= variant %></p>
-        <p class="text-sm text-neutral-600 dark:text-neutral-400"><%= description %></p>
+        <p class="font-mono text-xs text-primary mb-0.5">variant: :<%= variant %></p>
+        <p class="text-sm text-muted-foreground"><%= description %></p>
       </div>
     </div>
   <% end %>
@@ -43,9 +43,11 @@
 <%# Sizes %>
 <h2 class="text-base font-semibold mb-3">Sizes</h2>
 <div id="button-sizes-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-center gap-4 p-8 mb-8">
+  <%= render(Ui::ButtonComponent.new(size: :xs)) { "Extra small" } %>
   <%= render(Ui::ButtonComponent.new(size: :sm)) { "Small" } %>
   <%= render(Ui::ButtonComponent.new) { "Default" } %>
   <%= render(Ui::ButtonComponent.new(size: :lg)) { "Large" } %>
+  <%= render(Ui::ButtonComponent.new(size: :xl)) { "Extra large" } %>
   <%= render Ui::ButtonComponent.new(size: :icon, variant: :outline, aria: { label: "Add item" }) do %>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14"/>
@@ -60,7 +62,7 @@
     <thead class="bg-muted">
       <tr>
         <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Variant</th>
-        <% %i[sm default lg icon].each do |size| %>
+        <% %i[xs sm default lg xl icon].each do |size| %>
           <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider"><%= size %></th>
         <% end %>
       </tr>
@@ -69,7 +71,7 @@
       <% %i[default secondary outline ghost link destructive].each do |variant| %>
         <tr>
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= variant %></td>
-          <% %i[sm default lg].each do |size| %>
+          <% %i[xs sm default lg xl].each do |size| %>
             <td class="px-4 py-3"><%= render(Ui::ButtonComponent.new(variant: variant, size: size)) { "Button" } %></td>
           <% end %>
           <td class="px-4 py-3">
@@ -99,18 +101,18 @@
     Icon + label
   <% end %>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
-  Tab to a button to see the focus ring — it is drawn from the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code> token,
-  so it follows the theme. A disabled <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href</code> button
-  drops its href and reports <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled</code>, so it is inert without JavaScript.
+<p class="text-sm text-muted-foreground mb-8">
+  Tab to a button to see the focus ring — it is drawn from the <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--ring</code> token,
+  so it follows the theme. A disabled <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">href</code> button
+  drops its href and reports <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-disabled</code>, so it is inert without JavaScript.
 </p>
 
 <%# Submitting %>
 <h2 class="text-base font-semibold mb-3">Submitting</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  Give a submit button <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data: { turbo_disable_with: "Saving…" }</code> and, while the form submits, it is disabled,
+  Give a submit button <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data: { turbo_disable_with: "Saving…" }</code> and, while the form submits, it is disabled,
   keeps its size, shows the text — with a spinner or a pulse if you ask — and announces it to screen readers. The
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">ui--turbo-disable-with</code> controller in your layout does this for every form; see
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">ui--turbo-disable-with</code> controller in your layout does this for every form; see
   <%= link_to "Turbo Disable With", turbo_disable_with_path, class: "text-primary underline" %>. This one waits a second and a half
   for its response.
 </p>
@@ -122,12 +124,12 @@
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#button-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#button-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="button-usage" class="text-neutral-200"><%= h(example_button_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="button-usage" class="text-card-foreground"><%= h(example_button_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -145,7 +147,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["variant", "Symbol", ":default",  "One of :default, :destructive, :outline, :secondary, :ghost, :link."],
-        ["size",    "Symbol", ":default",  "One of :default, :sm, :lg, :icon. The first three are the control scale Input, Select and Textarea share, so controls at one size line up; :icon is a square at the default height."],
+        ["size",    "Symbol", ":default",  "One of :xs, :sm, :default, :lg, :xl, :icon. The first five are the control scale Input, Select and Textarea share, so controls at one size line up; :icon is a square at the default height."],
         ["href",    "String", "nil",       "When present the component renders an <a> instead of a <button>."],
         ["type",    "String", '"button"',  "Button type. Ignored on the <a> form."],
         ["class",   "String", "nil",       "Merged over the variant classes with tailwind_merge — the caller always wins."],
@@ -164,34 +166,34 @@
 
 <%# Overriding classes %>
 <h2 class="text-base font-semibold mb-3">Overriding classes</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  Your <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">class:</code> replaces a conflicting default,
+<p class="text-sm text-muted-foreground mb-3">
+  Your <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class:</code> replaces a conflicting default,
   but only a default with the same modifier. Some defaults carry one: a button with an icon uses
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">has-[&gt;svg]:px-3</code>, which still applies over a plain
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">px-2</code>. To override it, pass the same modifier:
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">has-[&gt;svg]:px-3</code>, which still applies over a plain
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">px-2</code>. To override it, pass the same modifier:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-neutral-200">&lt;%= render Ui::ButtonComponent.new(class: "px-2 has-[&gt;svg]:px-2") do %&gt;…&lt;% end %&gt;</code></pre>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-card-foreground">&lt;%= render Ui::ButtonComponent.new(class: "px-2 has-[&gt;svg]:px-2") do %&gt;…&lt;% end %&gt;</code></pre>
 </div>
 
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>A real <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;button&gt;</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">type="button"</code> unless you say <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">type: "submit"</code>,
+  <li>A real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;button&gt;</code>, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">type="button"</code> unless you say <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">type: "submit"</code>,
       so a button inside a form never submits it by accident.</li>
-  <li>A disabled <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">href</code> button drops its href and reports <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="link" aria-disabled="true"</code>,
+  <li>A disabled <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">href</code> button drops its href and reports <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="link" aria-disabled="true"</code>,
       so it is inert and announced as unavailable, with or without JavaScript.</li>
-  <li>An icon-only button has no text to be named by: give it <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>. The
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;svg&gt;</code> itself should be <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
-  <li>The focus ring is an outline drawn from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--ring</code>, so it follows the theme and stays visible in
+  <li>An icon-only button has no text to be named by: give it <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>. The
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;svg&gt;</code> itself should be <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-hidden</code>.</li>
+  <li>The focus ring is an outline drawn from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--ring</code>, so it follows the theme and stays visible in
       forced-colors mode.</li>
 </ul>
 
 <%# Not this %>
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>
 <p class="text-sm text-muted-foreground mb-8">
-  Navigation that reads as text is a plain link, not <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">variant: :link</code>. An on/off setting that stays
+  Navigation that reads as text is a plain link, not <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">variant: :link</code>. An on/off setting that stays
   pressed is a toggle or a switch, which the kit doesn't ship. And a destructive action on its own is one click from
-  data loss: put a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-confirm</code> on it, which the
+  data loss: put a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-confirm</code> on it, which the
   <%= link_to "Confirm Dialog", confirm_dialog_path, class: "text-primary underline" %> answers.
 </p>

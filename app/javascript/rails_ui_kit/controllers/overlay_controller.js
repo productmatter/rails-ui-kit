@@ -143,6 +143,18 @@ export default class extends Controller {
     this.openValue = false
   }
 
+  // A close that leaves focus where the gesture is already taking it, rather than returning it to
+  // the trigger. Tab out of an open layer is the case it exists for: the browser is moving focus
+  // to whatever follows the trigger, and restoring would undo the key the user pressed. It skips
+  // exactly one close -- the flag is spent by the restore that stands aside, so every other close
+  // still returns focus, and restoreFocus is untouched.
+  closeWithoutFocusReturn() {
+    if (!this.active) return
+
+    this.skipFocusReturn = true
+    this.close()
+  }
+
   toggle(event) {
     event?.preventDefault()
     this.openValue = !this.active
@@ -237,7 +249,13 @@ export default class extends Controller {
   // --- Closing -----------------------------------------------------------------------------
 
   async hide() {
-    if (!this.shown || !this.hasContentTarget) return
+    // Nothing here ever reaches finish(): already hidden, or nothing to hide. A one-shot
+    // closeWithoutFocusReturn() set for this close has no restore left to be spent by, so it is
+    // cleared here instead of outliving a close that never happened.
+    if (!this.shown || !this.hasContentTarget) {
+      this.skipFocusReturn = false
+      return
+    }
 
     this.shown = false
     this.setExpanded(false)
@@ -255,7 +273,12 @@ export default class extends Controller {
     // out at all: closing it first takes it out of the top layer and nothing renders.
     const closed = presence.exit(this.contentTarget)
     if (this.hasBackdropTarget) presence.exit(this.backdropTarget)
-    if (!(await closed)) return // a re-open overtook this close; the overlay stays open
+    if (!(await closed)) {
+      // A re-open overtook this close; the overlay stays open and finish() never runs, so a flag
+      // set for this close is cleared here rather than left for whatever closes it next.
+      this.skipFocusReturn = false
+      return
+    }
 
     this.unplace()
     this.finish()
@@ -689,10 +712,12 @@ export default class extends Controller {
   restoreFocusIfLost() {
     const target = this.focusRestoreTarget()
     const deferred = this.dismissReason === "outside"
+    const skipped = this.skipFocusReturn === true
     this.returnTarget = null
     this.returnTargetId = null
     this.dismissReason = null
-    if (!this.restoreFocusValue || !target) return
+    this.skipFocusReturn = false
+    if (!this.restoreFocusValue || skipped || !target) return
 
     // An outside gesture is deferred to the next frame; everything else restores in this task. A
     // click on another control focuses it as the mousedown's default action, which runs after
@@ -714,10 +739,27 @@ export default class extends Controller {
       if ((!parked && !inside) || !target.isConnected) return
 
       target.focus({ preventScroll: true })
+      // focus() on an element that cannot take focus yet is a silent no-op, and the trigger this
+      // is putting focus back on is commonly exactly that: a control its own component reveals
+      // when it connects, which for a Turbo Stream that replaced this overlay happens after the
+      // removal that brought us here. One more frame is all it needs.
+      if (document.activeElement !== target) requestAnimationFrame(() => this.retryRestore(target))
     }
 
     if (deferred) requestAnimationFrame(restore)
     else restore()
+  }
+
+  // The second attempt, made only while focus is still stranded -- on <body>, nowhere, or parked
+  // by the browser on the <dialog> the target itself sits in. A frame later something may have
+  // taken focus on purpose, and this never takes it back.
+  retryRestore(target) {
+    const active = document.activeElement
+    const stranded = !active || active === document.body || active === document.documentElement ||
+      (active.tagName === "DIALOG" && active.contains(target))
+    if (!target.isConnected || active === target || !stranded) return
+
+    target.focus({ preventScroll: true })
   }
 
   // The element focus goes back to. Normally the one that was focused when the overlay opened --

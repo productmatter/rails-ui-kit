@@ -14,9 +14,11 @@ module Ui
     }.freeze
 
     SIZE_MARKERS = {
-      default: 'h-(--control-height)',
+      xs: 'h-(--control-height-xs)',
       sm: 'h-(--control-height-sm)',
+      default: 'h-(--control-height)',
       lg: 'h-(--control-height-lg)',
+      xl: 'h-(--control-height-xl)',
       icon: 'size-(--control-height)'
     }.freeze
 
@@ -195,7 +197,7 @@ module Ui
 
     test 'an unknown variant raises in development and test' do
       assert_raises(Ui::Base::UnknownVariantError) { render_inline(Ui::ButtonComponent.new(variant: :primary)) { 'Save' } }
-      assert_raises(Ui::Base::UnknownVariantError) { render_inline(Ui::ButtonComponent.new(size: :xl)) { 'Save' } }
+      assert_raises(Ui::Base::UnknownVariantError) { render_inline(Ui::ButtonComponent.new(size: :xxl)) { 'Save' } }
     end
 
     # BTN7

@@ -4,7 +4,7 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Form Change</h1>
   <p class="text-muted-foreground">
     Tracks whether a form has unsaved changes and dispatches events that other controllers can react to.
-    Powers the <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">track_changes</code> option on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ModalComponent</code>.
+    Powers the <code class="text-xs bg-muted px-1 py-0.5 rounded">track_changes</code> option on <code class="text-xs bg-muted px-1 py-0.5 rounded">Ui::ModalComponent</code>.
   </p>
 </div>
 
@@ -12,17 +12,17 @@
 <div class="rounded-lg border border-border bg-background p-8 mb-8">
   <form data-controller="ui--form-change" id="fc-demo-form" class="w-full max-w-sm space-y-3">
     <div>
-      <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Title</label>
+      <label class="block text-xs font-medium text-muted-foreground mb-1">Title</label>
       <input type="text" name="title" placeholder="Edit to trigger dirty state"
-             class="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+             class="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" />
     </div>
     <div>
-      <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Body</label>
+      <label class="block text-xs font-medium text-muted-foreground mb-1">Body</label>
       <textarea name="body" rows="2" placeholder="Or edit this field…"
-                class="block w-full rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"></textarea>
+                class="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"></textarea>
     </div>
   </form>
-  <div id="fc-status" class="hidden mt-4 flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400">
+  <div id="fc-status" class="hidden mt-4 flex items-center gap-1.5 text-sm text-warning">
     <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
       <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
     </svg>
@@ -42,12 +42,12 @@
 </script>
 
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#form-change-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#form-change-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="form-change-usage" class="text-neutral-200"><%= h(example_form_change_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="form-change-usage" class="text-card-foreground"><%= h(example_form_change_usage) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Events</h2>
@@ -70,26 +70,26 @@
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-primary">form:changed</td>
-        <td class="px-4 py-3 text-muted-foreground">Deprecated alias for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change:changed</code>, fired alongside it. Removed in 0.4.0.</td>
+        <td class="px-4 py-3 text-muted-foreground">Deprecated alias for <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--form-change:changed</code>, fired alongside it. Removed in 0.4.0.</td>
       </tr>
       <tr>
         <td class="px-4 py-3 font-mono text-xs text-primary">form:pristine</td>
-        <td class="px-4 py-3 text-muted-foreground">Deprecated alias for <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--form-change:pristine</code>, fired alongside it. Removed in 0.4.0.</td>
+        <td class="px-4 py-3 text-muted-foreground">Deprecated alias for <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--form-change:pristine</code>, fired alongside it. Removed in 0.4.0.</td>
       </tr>
     </tbody>
   </table>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:changed</code> and
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:pristine</code> collide with anything a
-  host names <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">form:*</code> itself; every other
-  event the kit dispatches is namespaced <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--&lt;identifier&gt;:&lt;event&gt;</code>.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">form:changed</code> and
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">form:pristine</code> collide with anything a
+  host names <code class="text-xs bg-muted px-1 py-0.5 rounded">form:*</code> itself; every other
+  event the kit dispatches is namespaced <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--&lt;identifier&gt;:&lt;event&gt;</code>.
   Listen for the namespaced pair — the unnamespaced one is deprecated and will stop firing in 0.4.0.
 </p>
 
 <h2 class="text-base font-semibold mb-3">Public API</h2>
-<ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markDirty()</code> — manually mark the form dirty.</li>
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">markPristine()</code> / <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">reset()</code> — reset dirty state and capture new baseline.</li>
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">isDirty</code> getter — returns <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">true/false</code>.</li>
+<ul class="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+  <li><code class="text-xs bg-muted px-1 py-0.5 rounded">markDirty()</code> — manually mark the form dirty.</li>
+  <li><code class="text-xs bg-muted px-1 py-0.5 rounded">markPristine()</code> / <code class="text-xs bg-muted px-1 py-0.5 rounded">reset()</code> — reset dirty state and capture new baseline.</li>
+  <li><code class="text-xs bg-muted px-1 py-0.5 rounded">isDirty</code> getter — returns <code class="text-xs bg-muted px-1 py-0.5 rounded">true/false</code>.</li>
 </ul>

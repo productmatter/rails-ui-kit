@@ -1,21 +1,34 @@
 <%= tag.div(**root_attributes(data: primitives.root_data.merge(results_data))) do %>
   <%= content_tag(:select, native_options, select_attributes) %>
   <% if search? %>
-    <%= tag.input(**combobox_attributes) %>
-    <%# APG keeps this button for touch screen-reader users, who have no other way to open the
-        list. It is out of the tab order, because the text field is the control. %>
-    <button type="button" tabindex="-1" hidden aria-label="<%= show_options_label %>"
-            class="<%= show_options_class %>"
-            data-ui--select-target="showOptions" data-action="click->ui--select#toggle">
-      <%= render_chevron %>
-    </button>
+    <%= tag.button(**trigger_attributes) do %>
+      <span class="truncate data-[placeholder=true]:text-muted-foreground" data-ui--select-target="label"></span>
+    <% end %>
   <% else %>
     <%= tag.div(**combobox_attributes) do %>
       <span class="truncate data-[placeholder=true]:text-muted-foreground" data-ui--select-target="label"></span>
     <% end %>
-    <span class="pointer-events-none absolute inset-e-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"><%= render_chevron %></span>
   <% end %>
+  <% if clear? %>
+    <%# A sibling of the control and before the chevron: the only way back to the prompt, shown by
+        ui--select while the select holds a value it can return from (§ Behavior, item 10). %>
+    <%= tag.button(**clear_attributes) do %>
+      <%# The button's own word. ui--select puts the field's name after it, so the name a screen
+          reader hears says what is being cleared. %>
+      <span id="<%= clear_id %>-label" class="sr-only"><%= clear_label %></span>
+      <%= render_clear_glyph %>
+    <% end %>
+  <% end %>
+  <span class="pointer-events-none absolute inset-e-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"><%= render_chevron %></span>
   <%= tag.div(**popup_attributes) do %>
+    <% if search? %>
+      <%# First in the popup, above the list it filters: the query and the value are two elements
+          now, and this is the one the query lives in (§ Behavior, item 17). %>
+      <%= tag.div(class: search_row_class) do %>
+        <%= render_search_glyph %>
+        <%= tag.input(**search_attributes) %>
+      <% end %>
+    <% end %>
     <%= render Ui::Select::ListboxComponent.new(id: control_id, option_set: option_set) %>
     <% if search? %>
       <%= tag.div(no_results, id: empty_id, hidden: true, class: 'px-2 py-6 text-center text-sm text-muted-foreground',

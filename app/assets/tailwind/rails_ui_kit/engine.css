@@ -4,13 +4,16 @@
 @source "../../../javascript/**/*.js";
 
 /*
- * Design tokens — shadcn/ui's variable names verbatim, Product Matter's values.
+ * Design tokens — shadcn/ui's variable names verbatim, Tailwind's own palette as
+ * the values.
  *
  * Names are the contract: an external shadcn theme (tweakcn output and friends)
  * redefines these same names under its own :root/.dark and reskins the kit
- * without touching this file. Values are ours: a warm neutral ramp (hue 75,
- * chroma <= 0.013) carrying every surface, with one saturated indigo (hue 277)
- * as the only chromatic voice in the UI.
+ * without touching this file. Values are Tailwind v4's default palette: a slate
+ * neutral ramp carrying every surface, with indigo as the single chromatic voice
+ * — the slate + indigo pairing Tailwind's own component examples use. Every value
+ * below is a verbatim Tailwind palette step (named in the trailing comment), with
+ * the step chosen so the kit keeps its WCAG contracts (see notes inline).
  *
  * Light and dark are the same names redefined under .dark, which is the class
  * ui--dark-mode toggles on <html>.
@@ -23,141 +26,166 @@
 
 @layer theme.rails-ui-kit {
   :root {
-    --background: oklch(0.994 0.002 75);
-    --foreground: oklch(0.21 0.008 75);
+    --background: oklch(0.984 0.003 247.858); /* slate-50 */
+    --foreground: oklch(0.208 0.042 265.755); /* slate-900 */
 
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.21 0.008 75);
+    --card: oklch(1 0 0); /* white */
+    --card-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
 
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.21 0.008 75);
+    --popover: oklch(1 0 0); /* white */
+    --popover-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
 
-    --primary: oklch(0.52 0.17 277);
-    --primary-foreground: oklch(0.985 0.006 277);
+    --primary: oklch(0.511 0.262 276.966); /* indigo-600 */
+    --primary-foreground: oklch(1 0 0); /* white */
 
-    --secondary: oklch(0.962 0.005 75);
-    --secondary-foreground: oklch(0.28 0.008 75);
+    --secondary: oklch(0.968 0.007 247.896); /* slate-100 */
+    --secondary-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
 
-    --muted: oklch(0.962 0.005 75);
-    --muted-foreground: oklch(0.532 0.013 75);
+    --muted: oklch(0.968 0.007 247.896); /* slate-100 */
+    /* slate-600, not Tailwind's usual slate-500 secondary-text step: slate-500
+       lands under 4.5:1 (4.35) on the --muted/--accent fill this text can sit on,
+       slate-600 clears it on every surface. */
+    --muted-foreground: oklch(0.446 0.043 257.281); /* slate-600 */
 
-    --accent: oklch(0.945 0.012 277);
-    --accent-foreground: oklch(0.35 0.06 277);
+    --accent: oklch(0.968 0.007 247.896); /* slate-100 */
+    --accent-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
 
-    --destructive: oklch(0.49 0.196 27);
+    /* red-700, not Tailwind's red-600 button step: destructive is also text (an error line,
+       a required marker), and red-600 lands at 4.35:1 on --muted. red-700 clears 4.5:1 on
+       every light surface and still carries a white label (measured in field_test.rb). */
+    --destructive: oklch(0.505 0.213 27.518); /* red-700 */
 
-    --border: oklch(0.915 0.005 75);
+    --border: oklch(0.929 0.013 255.508); /* slate-200 */
     /* A control's boundary, so it must reach 3:1 on every surface it sits on and on
-       every fill it takes, including hover's --accent (WCAG 1.4.11). --border stays
-       subtle because it is decoration, which is exempt. */
-    --input: oklch(0.62 0.012 75);
-    --ring: oklch(0.52 0.17 277);
+       every fill it takes, including hover's --accent (WCAG 1.4.11). Tailwind's own
+       input borders are slate-300 (~2.6:1) — below that bar — so the kit steps to
+       slate-500. --border stays subtle (slate-200) because it is decoration, which
+       is exempt. */
+    --input: oklch(0.554 0.046 257.417); /* slate-500 */
+    --ring: oklch(0.511 0.262 276.966); /* indigo-600 */
 
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
-    --destructive-foreground: oklch(0.985 0.006 27);
+    --destructive-foreground: oklch(1 0 0); /* white */
 
     /* Kit extensions — the status colours a toast's glyph and countdown bar read
        (ui-toast § Assumptions). Each base colour reaches at least 3:1 on --popover, the
-       surface a toast sits on, and each -foreground at least 4.5:1 on its base. */
-    --success: oklch(0.52 0.13 150);
-    --success-foreground: oklch(0.985 0.01 150);
-    --warning: oklch(0.56 0.13 65);
-    --warning-foreground: oklch(0.985 0.01 65);
-    --info: oklch(0.52 0.13 245);
-    --info-foreground: oklch(0.985 0.01 245);
+       surface a toast sits on, and each -foreground at least 4.5:1 on its base. Light
+       mode uses the Tailwind step dark enough to carry a white label. */
+    --success: oklch(0.527 0.154 150.069); /* green-700 */
+    --success-foreground: oklch(1 0 0); /* white */
+    --warning: oklch(0.555 0.163 48.998); /* amber-700 */
+    --warning-foreground: oklch(1 0 0); /* white */
+    --info: oklch(0.546 0.245 262.881); /* blue-600 */
+    --info-foreground: oklch(1 0 0); /* white */
 
-    --chart-1: oklch(0.55 0.17 277);
-    --chart-2: oklch(0.64 0.115 225);
-    --chart-3: oklch(0.72 0.12 165);
-    --chart-4: oklch(0.8 0.13 90);
-    --chart-5: oklch(0.63 0.18 25);
+    --chart-1: oklch(0.585 0.233 277.117); /* indigo-500 */
+    --chart-2: oklch(0.685 0.169 237.323); /* sky-500 */
+    --chart-3: oklch(0.696 0.17 162.48); /* emerald-500 */
+    --chart-4: oklch(0.769 0.188 70.08); /* amber-500 */
+    --chart-5: oklch(0.645 0.246 16.439); /* rose-500 */
 
-    --sidebar: oklch(0.975 0.004 75);
-    --sidebar-foreground: oklch(0.21 0.008 75);
-    --sidebar-primary: oklch(0.52 0.17 277);
-    --sidebar-primary-foreground: oklch(0.985 0.006 277);
-    --sidebar-accent: oklch(0.945 0.012 277);
-    --sidebar-accent-foreground: oklch(0.35 0.06 277);
-    --sidebar-border: oklch(0.915 0.005 75);
-    --sidebar-ring: oklch(0.52 0.17 277);
+    --sidebar: oklch(1 0 0); /* white */
+    --sidebar-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
+    --sidebar-primary: oklch(0.511 0.262 276.966); /* indigo-600 */
+    --sidebar-primary-foreground: oklch(1 0 0); /* white */
+    --sidebar-accent: oklch(0.968 0.007 247.896); /* slate-100 */
+    --sidebar-accent-foreground: oklch(0.208 0.042 265.755); /* slate-900 */
+    --sidebar-border: oklch(0.929 0.013 255.508); /* slate-200 */
+    --sidebar-ring: oklch(0.511 0.262 276.966); /* indigo-600 */
 
     --radius: 0.5rem;
 
-    /* Kit extensions — a control's height at each step of the shared size scale, so Button,
-       Input, Select and Textarea at one step line up by reading one token instead of four
-       literals. Written in Tailwind's own spacing unit, which is exactly what h-8, h-9 and
-       h-10 computed to before these existed, so a host that has already retuned --spacing
-       keeps the sizes it had. Three independent values, not a scale derived from one: each is
-       honoured wherever it is redefined, including below :root, where a derived scale would
-       move one step and leave the others at the root's value. Metrics don't change between
-       light and dark, so they are defined here only. A value under 24px puts a control under
-       WCAG 2.5.8's target minimum. */
-    --control-height-sm: calc(var(--spacing) * 8);
-    --control-height: calc(var(--spacing) * 9);
-    --control-height-lg: calc(var(--spacing) * 10);
+    /* Kit extensions — a control's height at each of the five steps of the shared size scale
+       (Tailwind's own button heights, 24 to 40px), so Button, Input, Select and Textarea at one
+       step line up by reading one token instead of four literals. Written in Tailwind's own
+       spacing unit, so a host that has already retuned --spacing keeps the sizes it had. Five
+       independent values, not a scale derived from one: each is honoured wherever it is
+       redefined, including below :root, where a derived scale would move one step and leave the
+       others at the root's value. Metrics don't change between light and dark, so they are
+       defined here only.
+       Amended 2026-09-18: the scale gained --control-height-xs and -xl, and the three existing
+       names each dropped one step -- -sm from spacing×8 to ×7, the unnamed default from ×9 to
+       ×8, -lg from ×10 to ×9 -- because three adjacent steps with nothing else changing were
+       nearly indistinguishable. A host that set any of these three keeps its own value.
+       --control-height-xs sits exactly on WCAG 2.5.8's 24px target-size floor, with no margin:
+       the kit's default never goes lower. A value under 24px is the host's choice to make, not
+       the kit's. */
+    --control-height-xs: calc(var(--spacing) * 6);
+    --control-height-sm: calc(var(--spacing) * 7);
+    --control-height: calc(var(--spacing) * 8);
+    --control-height-lg: calc(var(--spacing) * 9);
+    --control-height-xl: calc(var(--spacing) * 10);
   }
 
   .dark {
-    --background: oklch(0.175 0.008 75);
-    --foreground: oklch(0.965 0.004 75);
+    --background: oklch(0.129 0.042 264.695); /* slate-950 */
+    --foreground: oklch(0.984 0.003 247.858); /* slate-50 */
 
-    --card: oklch(0.215 0.009 75);
-    --card-foreground: oklch(0.965 0.004 75);
+    --card: oklch(0.208 0.042 265.755); /* slate-900 */
+    --card-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
 
-    --popover: oklch(0.235 0.009 75);
-    --popover-foreground: oklch(0.965 0.004 75);
+    --popover: oklch(0.208 0.042 265.755); /* slate-900 */
+    --popover-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
 
     /* Primary is also link text (Button's link variant), so it must reach 4.5:1 on
-       every dark surface. No indigo dark enough to carry a white label is light
-       enough for that, so dark mode lightens it and gives it a dark label. */
-    --primary: oklch(0.7 0.12 277);
-    --primary-foreground: oklch(0.2 0.02 277);
+       every dark surface. Tailwind's dark button step, indigo-500, only reaches
+       ~3.2–4.4:1 there, so dark mode uses indigo-400 and gives it a dark label. */
+    --primary: oklch(0.673 0.182 276.935); /* indigo-400 */
+    --primary-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
 
-    --secondary: oklch(0.275 0.01 75);
-    --secondary-foreground: oklch(0.965 0.004 75);
+    --secondary: oklch(0.279 0.041 260.031); /* slate-800 */
+    --secondary-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
 
-    --muted: oklch(0.275 0.01 75);
-    --muted-foreground: oklch(0.715 0.011 75);
+    --muted: oklch(0.279 0.041 260.031); /* slate-800 */
+    --muted-foreground: oklch(0.704 0.04 256.788); /* slate-400 */
 
-    --accent: oklch(0.315 0.025 277);
-    --accent-foreground: oklch(0.93 0.03 277);
+    --accent: oklch(0.279 0.041 260.031); /* slate-800 */
+    --accent-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
 
     /* Destructive is also text (a destructive menu item or alert), so like primary it
-       must reach 4.5:1 on every dark surface: dark mode lightens it and gives it a
+       must reach 4.5:1 on every dark surface: dark mode uses red-400 and gives it a
        dark label. */
-    --destructive: oklch(0.71 0.14 27);
+    --destructive: oklch(0.704 0.191 22.216); /* red-400 */
 
-    --border: oklch(0.305 0.01 75);
+    /* One step lighter than the surfaces around it would suggest. In light mode a shadow
+       separates a floating surface and the border is decoration; in dark mode the shadow is
+       invisible and the border is the only edge there is. slate-800 was 1.22:1 on --popover,
+       which did not read; slate-700 is 1.73:1 (decided 2026-09-18). */
+    --border: oklch(0.372 0.044 257.287); /* slate-700 */
     /* Light enough to reach 3:1 against the surface and against the translucent
        fill a control paints on it. Boundaries only: a control's fill comes from a
-       surface token, never from --input. */
-    --input: oklch(0.69 0.011 75);
-    --ring: oklch(0.7 0.12 277);
+       surface token, never from --input. slate-500, the same step as light mode: it
+       clears 3:1 on every surface and fill (3.07:1 at the tightest, a field on --muted)
+       without the near-white line slate-400 drew (decided 2026-09-18). */
+    --input: oklch(0.554 0.046 257.417); /* slate-500 */
+    --ring: oklch(0.673 0.182 276.935); /* indigo-400 */
 
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
-    --destructive-foreground: oklch(0.2 0.02 27);
+    --destructive-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
 
-    --success: oklch(0.74 0.14 150);
-    --success-foreground: oklch(0.2 0.03 150);
-    --warning: oklch(0.8 0.14 75);
-    --warning-foreground: oklch(0.22 0.03 75);
-    --info: oklch(0.74 0.11 245);
-    --info-foreground: oklch(0.2 0.03 245);
+    /* Dark mode flips each status to a lighter Tailwind step with a dark label, so
+       the base still clears 3:1 on --popover and the label clears 4.5:1 on the base. */
+    --success: oklch(0.723 0.219 149.579); /* green-500 */
+    --success-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
+    --warning: oklch(0.769 0.188 70.08); /* amber-500 */
+    --warning-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
+    --info: oklch(0.707 0.165 254.624); /* blue-400 */
+    --info-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
 
-    --chart-1: oklch(0.66 0.16 277);
-    --chart-2: oklch(0.72 0.12 225);
-    --chart-3: oklch(0.78 0.115 165);
-    --chart-4: oklch(0.85 0.125 90);
-    --chart-5: oklch(0.7 0.17 25);
+    --chart-1: oklch(0.673 0.182 276.935); /* indigo-400 */
+    --chart-2: oklch(0.746 0.16 232.661); /* sky-400 */
+    --chart-3: oklch(0.765 0.177 163.223); /* emerald-400 */
+    --chart-4: oklch(0.828 0.189 84.429); /* amber-400 */
+    --chart-5: oklch(0.712 0.194 13.428); /* rose-400 */
 
-    --sidebar: oklch(0.205 0.009 75);
-    --sidebar-foreground: oklch(0.965 0.004 75);
-    --sidebar-primary: oklch(0.7 0.12 277);
-    --sidebar-primary-foreground: oklch(0.2 0.02 277);
-    --sidebar-accent: oklch(0.315 0.025 277);
-    --sidebar-accent-foreground: oklch(0.93 0.03 277);
-    --sidebar-border: oklch(0.305 0.01 75);
-    --sidebar-ring: oklch(0.7 0.12 277);
+    --sidebar: oklch(0.208 0.042 265.755); /* slate-900 */
+    --sidebar-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
+    --sidebar-primary: oklch(0.673 0.182 276.935); /* indigo-400 */
+    --sidebar-primary-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
+    --sidebar-accent: oklch(0.279 0.041 260.031); /* slate-800 */
+    --sidebar-accent-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
+    --sidebar-border: oklch(0.372 0.044 257.287); /* slate-700, mirroring --border */
+    --sidebar-ring: oklch(0.673 0.182 276.935); /* indigo-400 */
   }
 }
 

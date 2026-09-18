@@ -121,6 +121,13 @@ module Ui
       assert_no_selector '[data-slot=toast-actions]'
     end
 
+    test 'the footer is a full-width row of the card, outside the text column' do
+      render_inline(Ui::ToastComponent.new(type: :success, title: 'x', actions: [{ label: 'View', href: '/v' }, { label: 'Undo' }]))
+
+      assert_no_selector '[data-slot=toast-content] [data-slot=toast-actions]'
+      assert_selector '[data-slot=toast] > [data-slot=toast-actions]'
+    end
+
     test "the type's glyph renders by default in an aria-hidden cell that sets the type's colour" do
       render_inline(Ui::ToastComponent.new(type: :warning, message: 'x'))
 

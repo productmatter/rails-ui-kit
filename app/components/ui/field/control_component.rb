@@ -43,17 +43,41 @@ module Ui
         @attributes[:required]
       end
 
+      # `counter:`/`limit:` the caller passed to with_control, read the same way stated_required
+      # is: straight off the raw attributes, before Textarea is ever built. This is what Field
+      # asks to know whether it has a count to render, and how big the limit is, without a
+      # circular dependency on building the control first (ui-character-counter § Behavior,
+      # item 3 -- "what Textarea tells Field it wants").
+      def stated_counter
+        @attributes[:counter]
+      end
+
+      def stated_limit
+        @attributes[:limit]
+      end
+
       def call
         return content if content?
 
         value = @field.value
-        return render(@component.new(**attributes)) if value.nil?
-        return render(@component.new(**attributes)) { value.to_s } if @component <= Ui::TextareaComponent
+        return render(@component.new(**component_attributes)) if value.nil?
+        return render(@component.new(**component_attributes)) { value.to_s } if @component <= Ui::TextareaComponent
 
-        render(@component.new(**attributes, **value_attributes(value)))
+        render(@component.new(**component_attributes, **value_attributes(value)))
       end
 
       private
+
+      # The resolved attributes, plus one marker no public keyword carries: this method is the
+      # only caller that ever constructs a Textarea, so its presence is what tells Textarea's
+      # own `counter: true` check it has a Field to render its count in. Never forwarded to the
+      # element -- Textarea's initialize consumes it -- and never added for another component,
+      # so nothing else is affected.
+      def component_attributes
+        return attributes unless @component <= Ui::TextareaComponent
+
+        attributes.merge(rendered_by_field: true)
+      end
 
       # Select and Choices take model:/enum: for their option source. Inside a model-bound
       # Field, both are inferable, additively: enum: alone completes to the field's record

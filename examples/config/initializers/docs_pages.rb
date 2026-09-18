@@ -50,6 +50,8 @@ module DocsPages
       summary: 'Tracks whether a form has unsaved changes and dispatches events when that changes.' },
     { slug: :turbo_disable_with, prefix: 'utilities', title: 'Turbo Disable With', section: 'Forms',
       summary: 'Disables form buttons during Turbo submissions and shows a loading state.' },
+    { slug: :character_counter, prefix: 'utilities', title: 'Character Counter', section: 'Forms',
+      summary: 'A soft, live count against a Textarea(counter:, limit:), rendered as help text and announced at three thresholds.' },
 
     { slug: :modal, prefix: 'components', title: 'Modal', section: 'Overlays',
       summary: 'A modal that opens when rendered, driven by Turbo Frames and Streams, with an optional guard for unsaved changes.' },

@@ -3,10 +3,10 @@
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Field</h1>
   <p class="text-muted-foreground">
-    One attribute of a Rails form. Hand it the record — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">model: @user, attribute: :email</code> — and it renders
-    the name and id <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">form_with</code> would, the label <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">form.label</code> would, the record's value and errors,
+    One attribute of a Rails form. Hand it the record — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">model: @user, attribute: :email</code> — and it renders
+    the name and id <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">form_with</code> would, the label <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">form.label</code> would, the record's value and errors,
     and marks the field required when the model says so. A label, control, description and error come out as one
-    accessible unit. Without a record, give it <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name:</code> and it still derives every id. The
+    accessible unit. Without a record, give it <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name:</code> and it still derives every id. The
     <%= link_to "Building a form", forms_guide_path, class: "text-primary underline" %> guide takes it through enums, associations and
     nested attributes.
   </p>
@@ -41,7 +41,7 @@
 <%# Without a record %>
 <h2 class="text-base font-semibold mb-3">Without a record</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">name: "signup[email]"</code> and the parts you state: the ids are still derived, and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">errors:</code> takes a plain array of messages.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name: "signup[email]"</code> and the parts you state: the ids are still derived, and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">errors:</code> takes a plain array of messages.
 </p>
 <div id="field-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="w-64">
@@ -101,20 +101,43 @@
 
 <%# Control sizing %>
 <h2 class="text-base font-semibold mb-3">Control sizing</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  Button, Input, Select and Textarea share one <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code>
-  scale — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:sm</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:default</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">:lg</code> — and every control at a step reads the same
-  token for its height, so a row of them lines up without a single height class. Retune the scale for your whole app by redefining
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height-sm</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height</code> or
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">--control-height-lg</code>; see Overriding in the README.
+<p class="text-sm text-muted-foreground mb-3">
+  Button, Input, Select and Textarea share one <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code>
+  scale — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xs</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:sm</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:default</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:lg</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xl</code> — and every control at a step reads the same
+  token for its height and the same padding, text size and radius, so a row of them lines up and reads as a distinct
+  size. Button and Input are shown; Select and Textarea follow the same scale, and the full set is under the disclosure.
+  Retune the scale for your whole app by redefining
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-xs</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-sm</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-lg</code> or
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-xl</code>; see Overriding in the README.
 </p>
-<div id="control-sizes-preview" class="rounded-lg border border-border bg-background grid gap-6 p-8 mb-8">
-  <% %i[sm default lg].each do |step| %>
+<div id="control-sizes-preview" class="rounded-lg border border-border bg-background p-8 mb-8">
+  <%# The demo: two controls a row, so the five heights and the alignment are what the eye sees. %>
+  <div class="grid gap-4">
+    <% %i[xs sm default lg xl].each do |step| %>
+      <div class="flex items-center gap-3">
+        <span class="w-28 shrink-0 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
+        <%= render(Ui::ButtonComponent.new(size: step)) { "Save" } %>
+        <%= render Ui::InputComponent.new(size: step, name: "sizes_demo[#{step}]", value: "Jane Cooper", class: "w-48",
+                                          aria: { label: "Name, #{step}" }) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Every sized control, for anyone checking Select and Textarea too. Closed by default; the
+      browser lane opens it, because these rows are what it measures (ui-control-sizing). %>
+  <details id="control-sizes-all" class="mt-6 border-t border-border pt-4">
+    <summary class="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Every sized control at each step</summary>
+    <div class="mt-4 grid gap-6">
+  <% %i[xs sm default lg xl].each do |step| %>
     <div id="sizes-<%= step %>-row" class="flex flex-wrap items-start gap-3">
-      <span class="w-24 shrink-0 pt-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">size: :<%= step %></span>
+      <span class="w-24 shrink-0 pt-2 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
       <%= render(Ui::ButtonComponent.new(size: step, id: "sizes-#{step}-button")) { "Save" } %>
       <%= render Ui::ButtonComponent.new(size: step, variant: :outline, id: "sizes-#{step}-icon-button",
                                          aria: { label: "Add, #{step}" }) do %>
@@ -138,16 +161,18 @@
                                            placeholder: "Add a note…", class: "w-40") %>
     </div>
   <% end %>
+    </div>
+  </details>
 </div>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#field-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#field-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="field-usage" class="text-neutral-200"><%= h(example_field_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="field-usage" class="text-card-foreground"><%= h(example_field_usage) %></code></pre>
 </div>
 
 <%# Parts %>
@@ -168,6 +193,7 @@
         ["with_description", "field-description", "Named in aria-describedby whenever it's set, whatever order you call it in. Hidden while the field is invalid, and still named, so screen readers keep the instruction."],
         ["(errors)",         "field-error",       "Rendered automatically when the field has errors -- from errors:, or the model's -- in the description's place. There is no with_error slot to call."],
         ["(required)",       "field-required-indicator", "An aria-hidden * at the end of the label, whenever the field resolves to required."],
+        ["(required)",       "field-required-text", "A second, hidden span beside the *. Unused by every control that states \"required\" itself; search mode's Select trigger, which can't, is named through it via aria-labelledby."],
       ].each do |slot, data_slot, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= slot %></td>
@@ -199,6 +225,7 @@
         ["errors",     "Array",   "nil",      "A plain array of message strings, e.g. @user.errors[:email]. Any non-empty array marks the field invalid. With model:, replaces the model's errors; [] shows none."],
         ["required",   "Boolean", "nil",      "Marks the control, the label and the wrapper required, or not. With model:, replaces what the validators say. A required: passed to with_control wins over this."],
         ["control_id", "String",  "nil",      "Overrides the derived id when the caller needs a specific one, e.g. under form_with(namespace:)."],
+        ["required_label", "String", "chrome", "\"required\", read into the hidden field-required-text span. Only search mode's Select trigger ever uses it (see Internationalization)."],
         ["class",      "String",  "nil",      "Merged over the wrapper's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
@@ -215,18 +242,18 @@
 <%# Where the record isn't enough %>
 <h2 class="text-base font-semibold mb-3">Where the record isn't enough</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>Required detection under-reports on purpose. Conditional validators, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">on: :create</code>, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">allow_nil</code>, length, format, custom validations and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">belongs_to</code> don't mark a field required; pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required: true</code> when you know better. A field wrongly marked required blocks a form the model would accept, so the one case to watch is a presence validator on a value the server fills in itself: pass <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">required: false</code>.</li>
-  <li>An association keys its errors differently from the field. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">belongs_to</code> puts its error on the association, not the foreign key: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">errors: @post.errors[:author_id] + @post.errors[:author]</code>. A <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">has_many</code> edited as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role_ids</code> is validated as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">roles</code>: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">errors: @user.errors[:roles]</code>.</li>
-  <li>A nested record needs its full name: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">model: address, attribute: :city, name: address_form.field_name(:city)</code>.</li>
+  <li>Required detection under-reports on purpose. Conditional validators, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">on: :create</code>, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">allow_nil</code>, length, format, custom validations and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">belongs_to</code> don't mark a field required; pass <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required: true</code> when you know better. A field wrongly marked required blocks a form the model would accept, so the one case to watch is a presence validator on a value the server fills in itself: pass <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required: false</code>.</li>
+  <li>An association keys its errors differently from the field. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">belongs_to</code> puts its error on the association, not the foreign key: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">errors: @post.errors[:author_id] + @post.errors[:author]</code>. A <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">has_many</code> edited as <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role_ids</code> is validated as <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">roles</code>: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">errors: @user.errors[:roles]</code>.</li>
+  <li>A nested record needs its full name: <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">model: address, attribute: :city, name: address_form.field_name(:city)</code>.</li>
 </ul>
 
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>Errors set <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid="true"</code> on the control and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-invalid="true"</code> on the wrapper — styling keys off those attributes, never off DOM structure, so Rails' <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">div.field_with_errors</code> wrapper can't break it.</li>
-  <li><code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code> lists only the parts that actually render, in reading order, however you call the slots. A description hidden by an error stays in it, so the guidance is still read.</li>
-  <li>A server-rendered error has no live-region role, because it is already on the page when the page or frame arrives. An error a morph reveals gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="alert"</code> as it appears, so it is announced. To get that for a single field, answer with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">turbo_stream.replace(..., method: :morph)</code> rather than a plain replace.</li>
-  <li>The required <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">*</code> is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-hidden</code>: a screen reader already hears "required" from the control.</li>
+  <li>Errors set <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid="true"</code> on the control and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-invalid="true"</code> on the wrapper — styling keys off those attributes, never off DOM structure, so Rails' <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">div.field_with_errors</code> wrapper can't break it.</li>
+  <li><code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-describedby</code> lists only the parts that actually render, in reading order, however you call the slots. A description hidden by an error stays in it, so the guidance is still read.</li>
+  <li>A server-rendered error has no live-region role, because it is already on the page when the page or frame arrives. An error a morph reveals gets <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="alert"</code> as it appears, so it is announced. To get that for a single field, answer with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">turbo_stream.replace(..., method: :morph)</code> rather than a plain replace.</li>
+  <li>The required <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">*</code> is <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-hidden</code>: a screen reader already hears "required" from the control.</li>
 </ul>
 
 <%# Not this %>
@@ -234,6 +261,6 @@
 <p class="text-sm text-muted-foreground mb-8">
   A control with no label of its own — a search box in a toolbar, a filter — doesn't need a Field: render the
   <%= link_to "Input", input_path, class: "text-primary underline" %> or <%= link_to "Select", select_path, class: "text-primary underline" %>
-  with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria: { label: }</code>. Label, control, description and error are real components, so a layout Field doesn't fit can
+  with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>. Label, control, description and error are real components, so a layout Field doesn't fit can
   still use them — but then the ids are yours to keep in step.
 </p>

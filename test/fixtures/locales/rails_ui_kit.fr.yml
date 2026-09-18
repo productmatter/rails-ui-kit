@@ -14,13 +14,24 @@ fr:
       region_label: "Notifications"
       actions_hint: "Appuyez sur F8 pour atteindre ses actions."
     select:
-      show_options_label: "Afficher les options"
+      search_placeholder: "Rechercher…"
       no_results: "Aucun résultat"
+      clear_label: "Effacer"
       results:
         one: "%{count} résultat"
         other: "%{count} résultats"
     choices:
       required_message: "Sélectionnez au moins une option."
+    field:
+      required_label: "obligatoire"
+    character_counter:
+      count: "%{count} sur %{limit}"
+      remaining:
+        one: "%{count} caractère restant"
+        other: "%{count} caractères restants"
+      over:
+        one: "%{count} caractère au-delà de la limite"
+        other: "%{count} caractères au-delà de la limite"
     turbo_disable_with:
       processing: "Traitement en cours..."
     dark_mode:

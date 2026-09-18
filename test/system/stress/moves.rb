@@ -4,15 +4,13 @@ module Stress
   # Opening and dismissing one row of the table. Each opening gesture is the one its owning spec
   # names, and each waits for the overlay to settle, so the next step never races an animation.
   module Moves
-    # ui-modal-turbo § Behavior, item 2 (the frame link); ui-select § Behavior, items 16 and 17
-    # (select-only opens on a click, the editable combobox on Alt+ArrowDown); a Tooltip on hover
-    # (ui-foundation-retrofit); everything else on its trigger.
+    # ui-modal-turbo § Behavior, item 2 (the frame link); a Tooltip on hover
+    # (ui-foundation-retrofit); everything else on its trigger, including both Select modes --
+    # search mode's control is a button now, so it opens on a press like the rest
+    # (ui-select § Behavior, item 17).
     def open_overlay(overlay)
       case overlay.key
       when :T then find(overlay.trigger).hover
-      when :S2, :SC
-        find(overlay.trigger).click
-        press_chord(:alt, :arrow_down)
       else find(overlay.trigger).click
       end
       await_state(overlay.content, 'open')
@@ -42,7 +40,7 @@ module Stress
     end
 
     # ui-select § Behavior, items 16 and 17: ArrowDown makes an option active, Enter selects it and
-    # closes, and focus stays on the combobox.
+    # closes, and focus ends up on the control that owns the listbox in either mode.
     def commit_option
       press(:arrow_down)
       press(:enter)

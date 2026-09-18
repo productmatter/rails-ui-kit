@@ -4,9 +4,9 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Textarea</h1>
   <p class="text-muted-foreground">
     Longer text in a form. Give a <%= link_to "Field", field_path, class: "text-primary underline" %>
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">with_control(Ui::TextareaComponent)</code> and the record's value, errors and label come with it. On its own
-    it is a native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code> with the same control styling as Input and the same
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">size:</code> scale.
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">with_control(Ui::TextareaComponent)</code> and the record's value, errors and label come with it. On its own
+    it is a native <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code> with the same control styling as Input and the same
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code> scale.
   </p>
 </div>
 
@@ -14,46 +14,54 @@
 <h2 class="text-base font-semibold mb-3">Preview</h2>
 <div id="textarea-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "default-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "default" } %>
+    <%= render(Ui::LabelComponent.new(for: "default-textarea", class: "text-xs font-mono text-muted-foreground")) { "default" } %>
     <%= render Ui::TextareaComponent.new(id: "default-textarea", name: "default") do %>Ship the release notes with the changelog.<% end %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "placeholder-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "placeholder" } %>
+    <%= render(Ui::LabelComponent.new(for: "placeholder-textarea", class: "text-xs font-mono text-muted-foreground")) { "placeholder" } %>
     <%= render Ui::TextareaComponent.new(id: "placeholder-textarea", name: "placeholder", placeholder: "Add a note…") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "focused-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "focus (tab to me)" } %>
+    <%= render(Ui::LabelComponent.new(for: "focused-textarea", class: "text-xs font-mono text-muted-foreground")) { "focus (tab to me)" } %>
     <%= render Ui::TextareaComponent.new(id: "focused-textarea", name: "focused") do %>Tab to me<% end %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "invalid-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "invalid" } %>
+    <%= render(Ui::LabelComponent.new(for: "invalid-textarea", class: "text-xs font-mono text-muted-foreground")) { "invalid" } %>
     <%= render Ui::TextareaComponent.new(id: "invalid-textarea", name: "invalid", aria: { invalid: true }) do %>Too short<% end %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "disabled-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "disabled" } %>
+    <%= render(Ui::LabelComponent.new(for: "disabled-textarea", class: "text-xs font-mono text-muted-foreground")) { "disabled" } %>
     <%= render Ui::TextareaComponent.new(id: "disabled-textarea", name: "disabled", disabled: true) do %>Locked<% end %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "sm-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :sm" } %>
+    <%= render(Ui::LabelComponent.new(for: "xs-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :xs" } %>
+    <%= render Ui::TextareaComponent.new(size: :xs, id: "xs-textarea", name: "xs", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "sm-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :sm" } %>
     <%= render Ui::TextareaComponent.new(size: :sm, id: "sm-textarea", name: "sm", placeholder: "Add a note…") %>
   </div>
   <div class="grid gap-2 w-56">
-    <%= render(Ui::LabelComponent.new(for: "lg-textarea", class: "text-xs font-mono text-neutral-600 dark:text-neutral-400")) { "size: :lg" } %>
+    <%= render(Ui::LabelComponent.new(for: "lg-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :lg" } %>
     <%= render Ui::TextareaComponent.new(size: :lg, id: "lg-textarea", name: "lg", placeholder: "Add a note…") %>
   </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "xl-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :xl" } %>
+    <%= render Ui::TextareaComponent.new(size: :xl, id: "xl-textarea", name: "xl", placeholder: "Add a note…") %>
+  </div>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+<p class="text-sm text-muted-foreground mb-8">
   Tab to the "focused" field to see the focus ring — the same offset-outline idiom as Button and Input.
 </p>
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#textarea-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#textarea-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="textarea-usage" class="text-neutral-200"><%= h(example_textarea_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="textarea-usage" class="text-card-foreground"><%= h(example_textarea_usage) %></code></pre>
 </div>
 
 <%# Options %>
@@ -70,7 +78,7 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
+        ["size",         "Symbol",  ":default", "One of :xs, :sm, :default, :lg, :xl. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
         ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],
@@ -90,9 +98,9 @@
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The same boundary, focus ring and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> treatment as Input; in a Field, the Field sets
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-invalid</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code>.</li>
-  <li>There is no <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">value:</code> keyword: a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>'s text is its content, so pass it as the
+  <li>The same boundary, focus ring and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code> treatment as Input; in a Field, the Field sets
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-describedby</code>.</li>
+  <li>There is no <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">value:</code> keyword: a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;textarea&gt;</code>'s text is its content, so pass it as the
       block. Inside a Field bound to a record, the Field does that for you.</li>
 </ul>
 

@@ -24,12 +24,12 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#tooltip-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#tooltip-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="tooltip-usage" class="text-neutral-200"><%= h(example_tooltip_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="tooltip-usage" class="text-card-foreground"><%= h(example_tooltip_usage) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Options</h2>
@@ -81,17 +81,17 @@
 
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The control in the trigger slot gets <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-describedby</code> pointing at the tooltip, which has
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">role="tooltip"</code>. The tooltip describes the control; it doesn't name it, so an icon-only button still needs
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-label</code>.</li>
+  <li>The control in the trigger slot gets <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-describedby</code> pointing at the tooltip, which has
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="tooltip"</code>. The tooltip describes the control; it doesn't name it, so an icon-only button still needs
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-label</code>.</li>
   <li>It shows on focus as well as hover, and stays while either lasts. The pointer can travel onto the tooltip without it
       disappearing.</li>
   <li>Escape hides it without moving focus, and without closing a dialog the control sits in.</li>
-  <li>A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">disabled</code> control never receives focus, so keyboard and screen reader users can't reach its
-      tooltip even though a mouse can. If a disabled control needs one, use <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> instead, so it
+  <li>A native <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">disabled</code> control never receives focus, so keyboard and screen reader users can't reach its
+      tooltip even though a mouse can. If a disabled control needs one, use <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> instead, so it
       stays focusable.</li>
   <li>Hover is tracked on the trigger wrapper rather than on your control, so a control the page has taken out of pointer events — which is what
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> does to a kit Button — still shows its tooltip on hover. Focus is tracked on the control itself.</li>
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-disabled="true"</code> does to a kit Button — still shows its tooltip on hover. Focus is tracked on the control itself.</li>
 </ul>
 
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>

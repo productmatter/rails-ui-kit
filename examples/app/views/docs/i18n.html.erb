@@ -11,8 +11,8 @@
   <p class="text-sm mb-3">
     <strong>Content</strong> is what your call site writes: a field's label, a button's text, a select's
     options, a modal's title, a toast's message. It's yours, and you translate it the way you translate
-    everything else — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">t(".x")</code>,
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">human_attribute_name</code>, your own locale files.
+    everything else — <code class="text-xs bg-muted px-1 py-0.5 rounded">t(".x")</code>,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">human_attribute_name</code>, your own locale files.
     <strong>The kit never ships a translation for content.</strong> Model-aware Field and Select's enum labels
     already work this way: they resolve through Rails' own label and attribute lookups, so your locale files
     translate them and the kit adds nothing.
@@ -21,30 +21,30 @@
     <strong>Chrome</strong> is what the kit says on its own, that no call site ever writes: a toast's close-button
     accessible name, Select's "No results" and its result count, the unsaved-changes prompt. You don't pass these
     because you don't know they exist. <strong>Only chrome lives in
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — the handful of strings listed under Keys below,
+    <code class="text-xs bg-muted px-1 py-0.5 rounded">rails_ui_kit.en.yml</code></strong> — the handful of strings listed under Keys below,
     several of them accessible names, which is the only thing a screen reader announces. It is not a translation
     of the components.
   </p>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Where the strings live</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales/rails_ui_kit.en.yml</code>, shipped in the gem. Rails engines add their own
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales</code> to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.load_path</code> automatically — there's no initializer to add and nothing to
-  require. To override a string, add the same key under <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">rails_ui_kit.*</code> to any YAML file in
-  your own app's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">config/locales</code>. Your application's load path is added after every engine's, so your
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">config/locales/rails_ui_kit.en.yml</code>, shipped in the gem. Rails engines add their own
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">config/locales</code> to <code class="text-xs bg-muted px-1 py-0.5 rounded">I18n.load_path</code> automatically — there's no initializer to add and nothing to
+  require. To override a string, add the same key under <code class="text-xs bg-muted px-1 py-0.5 rounded">rails_ui_kit.*</code> to any YAML file in
+  your own app's <code class="text-xs bg-muted px-1 py-0.5 rounded">config/locales</code>. Your application's load path is added after every engine's, so your
   value wins — no monkey-patching, no forking the gem:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">config/locales/rails_ui_kit.en.yml — in your app, not the gem</span>
-    <button data-copy-target="#i18n-override" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">config/locales/rails_ui_kit.en.yml — in your app, not the gem</span>
+    <button data-copy-target="#i18n-override" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-override" class="text-neutral-200"><%= h(example_i18n_override) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-override" class="text-card-foreground"><%= h(example_i18n_override) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Keys</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   Every chrome string the kit renders. Each one resolves <strong>call site → your locale file → the kit's default</strong>: the
   keyword is the key's last segment, so if you know one you know the other.
 </p>
@@ -70,10 +70,15 @@
         ["rails_ui_kit.toast.default_title",            "Notification",            "default_title:",           "Ui::ToastComponent(message: nil) and window.triggerToast(type) with no message"],
         ["rails_ui_kit.toast.actions_hint",             "Press F8 to reach its actions.", "actions_hint:",     "Ui::ToastComponent and Ui::ToastContainerComponent — announced after a toast that has actions"],
         ["rails_ui_kit.toast.region_label",             "Notifications",           "region_label:",            "Ui::ToastContainerComponent — the name of the toast stack's landmark, which F8 reaches"],
-        ["rails_ui_kit.select.show_options_label",      "Show options",            "show_options_label:",      "Ui::SelectComponent(search: true) — the chevron button's accessible name"],
+        ["rails_ui_kit.select.search_placeholder",      "Search…",                 "search_placeholder:",      "Ui::SelectComponent(search: true) — the placeholder in the field at the top of the popup"],
         ["rails_ui_kit.select.no_results",              "No results",              "no_results:",              "Ui::SelectComponent(search: true) — shown when the filter matches nothing"],
-        ["rails_ui_kit.select.results",                 "%{count} result / %{count} results", "results:",       "Ui::SelectComponent(search: true) — announced once typing settles. Give every plural category your locale uses; the browser picks with Intl.PluralRules"],
+        ["rails_ui_kit.select.clear_label",             "Clear",                   "clear_label:",             "Ui::SelectComponent(prompt:) — the clear button's own word, in front of the field's name"],
+        ["rails_ui_kit.select.results",               "%{count} result / %{count} results", "results:",       "Ui::SelectComponent(search: true) — announced once typing settles. Give every plural category your locale uses; the browser picks with Intl.PluralRules"],
         ["rails_ui_kit.choices.required_message",       "Select at least one option.", "required_message:",   "Ui::ChoicesComponent(multiple: true, required: true) — the screen-reader hint beside the * and the message ui--choices gives the browser"],
+        ["rails_ui_kit.field.required_label",           "required",                "required_label:",         "Ui::FieldComponent — a hidden span beside the label's *, read into the accessible name of search-mode Select's trigger only, the one control ARIA bars aria-required on"],
+        ["rails_ui_kit.character_counter.count",        "%{count} / %{limit}",     "count:",                   "Ui::FieldComponent — the visible count at the end of the description line, on a Textarea(counter: true, limit:)"],
+        ["rails_ui_kit.character_counter.remaining",    "%{count} character remaining / %{count} characters remaining", "remaining:", "Ui::FieldComponent — announced once when the room left first reaches ten percent of the limit"],
+        ["rails_ui_kit.character_counter.over",         "%{count} character over the limit / %{count} characters over the limit", "over:", "Ui::FieldComponent — announced once when the count first exceeds the limit, and once when it comes back under"],
         ["rails_ui_kit.turbo_disable_with.processing",  "Processing...",           "data-turbo-disable-with",  "no owning component — render it into the meta tag yourself, see below"],
         ["rails_ui_kit.dark_mode.switch_to_light",      "Switch to light mode",    "data-ui--dark-mode-light-label-value", "no owning component — render it into the toggle button yourself, see below"],
         ["rails_ui_kit.dark_mode.switch_to_dark",       "Switch to dark mode",     "data-ui--dark-mode-dark-label-value",  "same"],
@@ -90,68 +95,68 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Ruby components</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  A component that owns a string resolves it through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.t</code> at render time — so a locale
+<p class="text-sm text-muted-foreground mb-3">
+  A component that owns a string resolves it through <code class="text-xs bg-muted px-1 py-0.5 rounded">I18n.t</code> at render time — so a locale
   switch between renders takes effect — and accepts a keyword that overrides it, same as every
   other attribute in the kit:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#i18n-ruby" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#i18n-ruby" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-ruby" class="text-neutral-200"><%= h(example_i18n_ruby_override) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-ruby" class="text-card-foreground"><%= h(example_i18n_ruby_override) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Stimulus controllers</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  A Stimulus controller can't call <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.t</code>. Where a controller's string is owned by one of the kit's
+<p class="text-sm text-muted-foreground mb-3">
+  A Stimulus controller can't call <code class="text-xs bg-muted px-1 py-0.5 rounded">I18n.t</code>. Where a controller's string is owned by one of the kit's
   own components (Modal, ConfirmDialog, Toast), that component renders the translated value as a
   Stimulus value or data attribute, and the controller reads it — falling back to the English
   literal only when the attribute is missing, so hand-written markup that predates this still
-  works. <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ConfirmDialogComponent</code> is the clearest example: it renders the same title and
-  message both as visible text and as <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-default-title</code>/<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-default-message</code>, and
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--dialog</code> reads those back rather than keeping its own English-only copy — call
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> with no argument and it shows whatever title and message Ruby
+  works. <code class="text-xs bg-muted px-1 py-0.5 rounded">Ui::ConfirmDialogComponent</code> is the clearest example: it renders the same title and
+  message both as visible text and as <code class="text-xs bg-muted px-1 py-0.5 rounded">data-default-title</code>/<code class="text-xs bg-muted px-1 py-0.5 rounded">data-default-message</code>, and
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--dialog</code> reads those back rather than keeping its own English-only copy — call
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">window.defaultConfirmDialog()</code> with no argument and it shows whatever title and message Ruby
   rendered, in whatever locale rendered them.
 </p>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--turbo-disable-with</code> and <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--dark-mode</code> are different: neither is rendered by a kit component —
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--turbo-disable-with</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--dark-mode</code> are different: neither is rendered by a kit component —
   a host wires each one up on its own markup — so there's no Ruby render call to source the string
   from automatically. Render the translation into the attribute yourself:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#i18n-standalone" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#i18n-standalone" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-standalone" class="text-neutral-200"><%= h(example_i18n_standalone_controllers) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-standalone" class="text-card-foreground"><%= h(example_i18n_standalone_controllers) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Plural categories</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   A count's wording is the language's business, not the kit's. English has two plural categories,
-  French two with different boundaries (0 takes <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">one</code>), Russian four and
+  French two with different boundaries (0 takes <code class="text-xs bg-muted px-1 py-0.5 rounded">one</code>), Russian four and
   Arabic six. So Ruby hands the browser <em>every</em> form the locale defines, plus the locale that
   rendered them, and the browser picks with
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Intl.PluralRules</code> once the count is known. Write every form with
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">%{count}</code> in it — <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">one</code>
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">Intl.PluralRules</code> once the count is known. Write every form with
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">%{count}</code> in it — <code class="text-xs bg-muted px-1 py-0.5 rounded">one</code>
   is a category, not the number one:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">config/locales/rails_ui_kit.ru.yml — in your app</span>
-    <button data-copy-target="#i18n-plurals" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">config/locales/rails_ui_kit.ru.yml — in your app</span>
+    <button data-copy-target="#i18n-plurals" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-plurals" class="text-neutral-200"><%= h(example_i18n_plurals) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="i18n-plurals" class="text-card-foreground"><%= h(example_i18n_plurals) %></code></pre>
 </div>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  Type one of <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q1-</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q2-</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q3-</code>,
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q11-</code> or
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">q100-</code> below to narrow the list to that many
+<p class="text-sm text-muted-foreground mb-3">
+  Type one of <code class="text-xs bg-muted px-1 py-0.5 rounded">q1-</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">q2-</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">q3-</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">q11-</code> or
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">q100-</code> below to narrow the list to that many
   options. The count is announced in the field's status region, which is what a screen reader reads:
 </p>
 <div id="plural-preview" class="rounded-lg border border-border bg-background p-8 mb-8">
@@ -163,7 +168,7 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">When words get longer</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   German runs about 30% longer than English, and a pseudo-locale pass runs 40% longer. Controls
   hold their height — a row of controls lining up is what the height scale is for — so length has to
   go somewhere else. What the kit guarantees: a button grows sideways and never wraps; a closed
@@ -192,9 +197,9 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Switching locale</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   This example app doesn't wire up locale switching itself — it ships one locale, English — but
-  every string above resolves through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.locale</code> the same as any other Rails string. Set it the
-  way you already do (a <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">before_action</code>, a route scope, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ActiveSupport::CurrentAttributes</code>) and the kit's
+  every string above resolves through <code class="text-xs bg-muted px-1 py-0.5 rounded">I18n.locale</code> the same as any other Rails string. Set it the
+  way you already do (a <code class="text-xs bg-muted px-1 py-0.5 rounded">before_action</code>, a route scope, <code class="text-xs bg-muted px-1 py-0.5 rounded">ActiveSupport::CurrentAttributes</code>) and the kit's
   own components follow it.
 </p>

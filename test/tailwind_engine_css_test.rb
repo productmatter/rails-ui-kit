@@ -47,9 +47,9 @@ module RailsUiKit
       tokens = layer_block(css, 'theme.rails-ui-kit')
 
       refute_nil tokens, "expected an @layer theme.rails-ui-kit block in the built CSS:\n#{css[0, 500]}"
-      assert_match(/:root\s*\{[^}]*--primary: oklch\(0\.52 0\.17 277\)/, tokens)
-      assert_match(/\.dark\s*\{[^}]*--primary: oklch\(0\.7 0\.12 277\)/, tokens)
-      assert_equal 1, css.scan('--primary: oklch(0.52 0.17 277)').size, 'the light --primary value must exist only inside the layer'
+      assert_match(/:root\s*\{[^}]*--primary: oklch\(0\.511 0\.262 276\.966\)/, tokens)
+      assert_match(/\.dark\s*\{[^}]*--primary: oklch\(0\.673 0\.182 276\.935\)/, tokens)
+      assert_equal 1, css.scan('--primary: oklch(0.511 0.262 276.966)').size, 'the light --primary value must exist only inside the layer'
       assert_match(/\A.*?@layer theme, base, components, utilities;/m, css, 'Tailwind must declare theme as the first layer')
     end
 

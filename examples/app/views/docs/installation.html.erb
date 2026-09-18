@@ -7,9 +7,9 @@
 </div>
 
 <div class="mb-10 rounded-lg border border-border bg-background px-5 py-4">
-  <p class="text-sm text-neutral-600 dark:text-neutral-400">
-    <span class="font-semibold text-neutral-900 dark:text-neutral-100">Requires Tailwind CSS 4</span>, through
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">tailwindcss-rails</code> 4.x.
+  <p class="text-sm text-muted-foreground">
+    <span class="font-semibold text-foreground">Requires Tailwind CSS 4</span>, through
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">tailwindcss-rails</code> 4.x.
     Every colour and radius in the kit comes from design tokens that only a Tailwind 4 build can compile — there is no
     Tailwind 3, PostCSS or Sprockets path for them.
   </p>
@@ -19,65 +19,65 @@
 
   <div>
     <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">1</span>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">1</span>
       Add to your Gemfile
     </h2>
-    <div class="rounded-lg overflow-hidden border border-neutral-800">
-      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-        <span class="text-xs text-neutral-400">Gemfile</span>
-        <button data-copy-target="#install-gem" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+    <div class="rounded-lg overflow-hidden border border-border">
+      <div class="flex items-center justify-between bg-muted px-4 py-2">
+        <span class="text-xs text-muted-foreground">Gemfile</span>
+        <button data-copy-target="#install-gem" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gem" class="text-neutral-200">gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v<%= RailsUiKit::VERSION %>"</code></pre>
+      <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gem" class="text-card-foreground">gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v<%= RailsUiKit::VERSION %>"</code></pre>
     </div>
     <p class="mt-2 text-sm text-muted-foreground">
-      Then run <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">bundle install</code>.
+      Then run <code class="text-xs bg-muted px-1 py-0.5 rounded">bundle install</code>.
       The kit isn't on RubyGems: it installs from the private GitHub repository, pinned to a release tag, so an upgrade is
       a change you make on purpose. On CI, use the HTTPS URL
-      (<code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">https://github.com/productmatter/rails-ui-kit.git</code>)
-      with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">BUNDLE_GITHUB__COM</code> set to a token that can read the repo.
+      (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">https://github.com/productmatter/rails-ui-kit.git</code>)
+      with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">BUNDLE_GITHUB__COM</code> set to a token that can read the repo.
     </p>
   </div>
 
   <div>
     <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">2</span>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">2</span>
       Run the install generator
     </h2>
-    <div class="rounded-lg overflow-hidden border border-neutral-800">
-      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-        <span class="text-xs text-neutral-400">Terminal</span>
-        <button data-copy-target="#install-gen" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+    <div class="rounded-lg overflow-hidden border border-border">
+      <div class="flex items-center justify-between bg-muted px-4 py-2">
+        <span class="text-xs text-muted-foreground">Terminal</span>
+        <button data-copy-target="#install-gen" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gen" class="text-neutral-200">bin/rails generate rails_ui_kit:install</code></pre>
+      <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-gen" class="text-card-foreground">bin/rails generate rails_ui_kit:install</code></pre>
     </div>
     <p class="mt-2 text-sm text-muted-foreground">
-      This wires the JavaScript controllers into <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">application.js</code>,
+      This wires the JavaScript controllers into <code class="text-xs bg-muted px-1 py-0.5 rounded">application.js</code>,
       imports the built CSS into your Tailwind entry point, and adds
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">@custom-variant dark (&amp;:where(.dark, .dark *));</code>
-      so Tailwind's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">dark:</code> utilities follow the same
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">.dark</code> class the kit's tokens do, rather than the
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">@custom-variant dark (&amp;:where(.dark, .dark *));</code>
+      so Tailwind's <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">dark:</code> utilities follow the same
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">.dark</code> class the kit's tokens do, rather than the
       OS preference. If your stylesheet already defines a dark variant, the generator leaves it alone and says so.
     </p>
   </div>
 
   <div>
     <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">3</span>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">3</span>
       Set up your layout
     </h2>
-    <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-      Put <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">bg-background text-foreground</code> on
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">&lt;body&gt;</code>. The kit paints no page colour
+    <p class="text-sm text-muted-foreground mb-3">
+      Put <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">bg-background text-foreground</code> on
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;body&gt;</code>. The kit paints no page colour
       of its own, so without it your page keeps the browser's white under dark-mode components, and kit surfaces won't match the page around them.
       Then render the singletons once — they provide the global confirm dialog, toast stack, utility controllers, and the
       container a Turbo Stream renders a modal into (see <%= link_to "Modal & Turbo", modal_turbo_path, class: "underline" %>).
     </p>
-    <div class="rounded-lg overflow-hidden border border-neutral-800">
-      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-        <span class="text-xs text-neutral-400">app/views/layouts/application.html.erb</span>
-        <button data-copy-target="#install-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+    <div class="rounded-lg overflow-hidden border border-border">
+      <div class="flex items-center justify-between bg-muted px-4 py-2">
+        <span class="text-xs text-muted-foreground">app/views/layouts/application.html.erb</span>
+        <button data-copy-target="#install-layout" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-layout" class="text-neutral-200">&lt;body class="bg-background text-foreground"&gt;
+      <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-layout" class="text-card-foreground">&lt;body class="bg-background text-foreground"&gt;
   &lt;%= render Ui::ConfirmDialogComponent.new %&gt;
   &lt;%= render Ui::ToastContainerComponent.new(flash: flash) %&gt;
   &lt;div data-controller="ui--turbo-confirm ui--turbo-disable-with"&gt;&lt;/div&gt;
@@ -90,24 +90,24 @@
 
   <div>
     <h2 class="flex items-center gap-3 text-lg font-semibold mb-4">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold">4</span>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">4</span>
       Install peer dependencies
     </h2>
-    <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+    <p class="text-sm text-muted-foreground mb-3">
       Dropdown, Popover, Tooltip and Select position themselves with
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">@floating-ui/dom</code>, and the kit's JavaScript entry
+      <code class="text-xs bg-muted px-1 py-0.5 rounded">@floating-ui/dom</code>, and the kit's JavaScript entry
       point imports it whichever components you use. With importmap (the default) there is nothing to do: the engine pins it for you.
       With a JavaScript bundler (esbuild, webpack, rollup), install it alongside the kit's own package, which comes from the same
-      GitHub repository, then call <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">registerControllers(application)</code>
-      from <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">rails-ui-kit</code> after
-      <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">Application.start()</code>:
+      GitHub repository, then call <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">registerControllers(application)</code>
+      from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">rails-ui-kit</code> after
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Application.start()</code>:
     </p>
-    <div class="rounded-lg overflow-hidden border border-neutral-800">
-      <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-        <span class="text-xs text-neutral-400">Terminal</span>
-        <button data-copy-target="#install-npm" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+    <div class="rounded-lg overflow-hidden border border-border">
+      <div class="flex items-center justify-between bg-muted px-4 py-2">
+        <span class="text-xs text-muted-foreground">Terminal</span>
+        <button data-copy-target="#install-npm" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
       </div>
-      <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-npm" class="text-neutral-200">npm install @floating-ui/dom @hotwired/stimulus
+      <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="install-npm" class="text-card-foreground">npm install @floating-ui/dom @hotwired/stimulus
 npm install github:productmatter/rails-ui-kit#v<%= RailsUiKit::VERSION %></code></pre>
     </div>
   </div>

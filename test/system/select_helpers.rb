@@ -18,8 +18,29 @@ module SelectHelpers
     find("##{id}-option-#{index}", visible: :all)['data-value']
   end
 
+  # The element that owns the listbox, whichever mode the Select is in: the combobox in
+  # select-only mode, the trigger button in search mode. It is ui--overlay's trigger either way,
+  # and it is what carries aria-expanded, aria-required and the aria that describes the control.
+  def control_selector(id)
+    "[data-ui--overlay-target='trigger'][aria-controls='#{id}-listbox']"
+  end
+
+  # The element aria-activedescendant lives on: select-only mode's combobox, or search mode's
+  # field in the popup. Visual focus is read from here, never from the control.
+  def active_selector(id)
+    "[data-ui--roving-focus-target='input'][aria-controls='#{id}-listbox']"
+  end
+
   def combobox(id)
     find("##{id}-combobox")
+  end
+
+  def control(id)
+    find(control_selector(id))
+  end
+
+  def active_id(id)
+    find(active_selector(id), visible: :all)['aria-activedescendant']
   end
 
   def focus_combobox(id)
@@ -29,14 +50,38 @@ module SelectHelpers
     element
   end
 
+  # Search mode's trigger, focused the way the browser would leave it: DOM focus is on the trigger
+  # whenever the popup is closed.
+  def focus_trigger(id)
+    element = find("##{id}-trigger")
+    page.execute_script('arguments[0].focus()', element)
+    assert_equal "#{id}-trigger", focused_id
+    element
+  end
+
+  def search_value(id)
+    page.evaluate_script("document.getElementById('#{id}-search').value")
+  end
+
+  def assert_focus_on_trigger(id, message = 'DOM focus is not on the trigger')
+    assert_equal "#{id}-trigger", focused_id, message
+  end
+
+  def assert_focus_on_search(id, message = 'DOM focus is not in the search field')
+    assert_equal "#{id}-search", focused_id, message
+  end
+
   # The value the form would post: the select's, never the label's.
   def select_value(id)
     page.evaluate_script('document.getElementById(arguments[0]).value', id)
   end
 
-  def combobox_label(id)
-    combobox(id).text.strip
+  # What the control shows, in either mode: the selected option's label, or the prompt. In
+  # select-only mode the control is the combobox, so the two names read the same element.
+  def control_label(id)
+    control(id).text.strip
   end
+  alias combobox_label control_label
 
   # Waits, the way any Capybara assertion waits, for the popup to reach `expected` with its
   # transitions finished: data-state="open" is set as the entry transition starts.
@@ -51,21 +96,21 @@ module SelectHelpers
     Timeout.timeout(Capybara.default_max_wait_time) do
       sleep 0.02 until page.evaluate_script(settled, "#{id}-popup", expected)
     end
-    assert page.has_css?("##{id}-combobox[aria-expanded='#{expected == 'open'}']"),
+    assert page.has_css?("#{control_selector(id)}[aria-expanded='#{expected == 'open'}']"),
            "expected #{id} to be #{expected}, but aria-expanded says otherwise"
   end
 
   # Visual focus: the option aria-activedescendant names, by its index in the listbox. Waits the
   # way any Capybara matcher does, and says what it wanted when it gives up.
   def assert_active(id, index, message = nil)
-    selector = "##{id}-combobox[aria-activedescendant='#{id}-option-#{index}']"
-    assert page.has_css?(selector), message || "expected the active option to be #{id}-option-#{index}, " \
-                                               "got #{combobox(id)['aria-activedescendant'].inspect}"
+    selector = "#{active_selector(id)}[aria-activedescendant='#{id}-option-#{index}']"
+    assert page.has_css?(selector, visible: :all),
+           message || "expected the active option to be #{id}-option-#{index}, got #{active_id(id).inspect}"
   end
 
   def assert_no_active(id, message = nil)
-    assert page.has_no_css?("##{id}-combobox[aria-activedescendant]"),
-           message || "expected no active option, got #{combobox(id)['aria-activedescendant'].inspect}"
+    assert page.has_no_css?("#{active_selector(id)}[aria-activedescendant]", visible: :all),
+           message || "expected no active option, got #{active_id(id).inspect}"
   end
 
   def assert_focus_on_combobox(id, message = 'DOM focus left the combobox')

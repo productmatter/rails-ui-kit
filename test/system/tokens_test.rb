@@ -29,8 +29,8 @@ class TokensTest < ApplicationSystemTestCase
   test 'with no host theme the kit token values apply' do
     load_host_css(KIT_IMPORT)
 
-    assert_equal 'oklch(0.52 0.17 277)', token('--primary')
-    assert_equal 'oklch(0.7 0.12 277)', token('--primary', dark: true)
+    assert_equal 'oklch(0.511 0.262 276.966)', token('--primary')
+    assert_equal 'oklch(0.673 0.182 276.935)', token('--primary', dark: true)
   end
 
   SCENARIOS.each do |name, parts|
@@ -49,8 +49,8 @@ class TokensTest < ApplicationSystemTestCase
   test 'a host that redefines only some tokens keeps the kit values for the rest' do
     load_host_css(KIT_IMPORT, UNLAYERED)
 
-    assert_equal 'oklch(0.994 0.002 75)', token('--background')
-    assert_equal 'oklch(0.175 0.008 75)', token('--background', dark: true)
+    assert_equal 'oklch(0.984 0.003 247.858)', token('--background')
+    assert_equal 'oklch(0.129 0.042 264.695)', token('--background', dark: true)
   end
 
   # The three status colours a toast reads are kit extensions (ui-toast § Assumptions): present in

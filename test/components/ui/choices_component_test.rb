@@ -240,5 +240,62 @@ module Ui
       assert_raises(Ui::Base::UnknownVariantError) { render_choices(name: 'a[b]', options: %w[x], size: :huge) }
       assert_raises(Ui::Base::UnknownVariantError) { render_choices(name: 'a[b]', options: %w[x], variant: :grid) }
     end
+
+    def label_classes
+      page.all('label', visible: :all).map { |label| label['class'].split }
+    end
+
+    test 'CH18 a list row takes the 24px floor at every size step, never the control-height token' do
+      %i[sm default lg].each do |step|
+        render_choices(name: 'a[b]', options: %w[x y], size: step)
+
+        label_classes.each do |classes|
+          assert_includes classes, 'min-h-6', "list row at #{step}"
+          assert_empty classes.grep(/\A(?:min-)?h-\(--control-height/), "list row at #{step} kept a control-height class"
+        end
+      end
+    end
+
+    test 'CH19 size: is accepted on a card and changes nothing, as on a list' do
+      rendered = %i[sm default lg].map do |step|
+        render_choices(name: 'a[b]', options: %w[x y], variant: :card, size: step)
+        label_classes
+      end
+
+      assert_equal 1, rendered.uniq.size, 'size: changed a card'
+      rendered.first.each do |classes|
+        assert_includes classes, 'min-h-6'
+        assert_empty classes.grep(/\A(?:min-)?h-\(--control-height/), 'a card kept a control-height class'
+      end
+    end
+
+    test 'CH20 a list group centers a one-line row and stays top-aligned once it has descriptions' do
+      render_choices(name: 'a[b]', options: %w[x y])
+      label_classes.each do |classes|
+        assert_includes classes, 'items-center'
+        assert_not_includes classes, 'items-start'
+      end
+
+      render_choices(name: 'user[role_ids]', multiple: true, description_method: :tagline, **collection_source)
+      label_classes.each do |classes|
+        assert_includes classes, 'items-start'
+        assert_not_includes classes, 'items-center'
+      end
+    end
+
+    test 'CH21 a card stays top-aligned whether or not it has descriptions' do
+      render_choices(name: 'a[b]', options: %w[x y], variant: :card)
+      label_classes.each do |classes|
+        assert_includes classes, 'items-start'
+        assert_not_includes classes, 'items-center'
+      end
+
+      render_choices(name: 'user[role_ids]', multiple: true, variant: :card, description_method: :tagline,
+                     **collection_source)
+      label_classes.each do |classes|
+        assert_includes classes, 'items-start'
+        assert_not_includes classes, 'items-center'
+      end
+    end
   end
 end

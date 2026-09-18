@@ -1,0 +1,120 @@
+<% content_for :title, "Character Counter" %>
+<div class="mb-8">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
+  <h1 class="text-3xl font-bold tracking-tight mb-3">Character Counter</h1>
+  <p class="text-muted-foreground">
+    A Rails model says <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">validates :bio, length: { maximum: 500 }</code>,
+    and this tells the person typing before they submit. The limit is soft — nothing stops typing or pasting, and the
+    server still decides — but the count is exactly what <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">validates length:</code>
+    will count, rendered as <%= link_to "Field", field_path, class: "text-primary underline" %>'s own help text.
+  </p>
+</div>
+
+<%# Preview %>
+<h2 class="text-base font-semibold mb-3">Preview</h2>
+<div id="character-counter-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <div class="w-80">
+    <%= render Ui::FieldComponent.new(name: "demo[bio]") do |field| %>
+      <% field.with_label { "Bio" } %>
+      <% field.with_description { "A couple of sentences about you." } %>
+      <% field.with_control(Ui::TextareaComponent, counter: true, limit: 60, rows: 3) %>
+    <% end %>
+  </div>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Usage</h2>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#character-counter-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
+  </div>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="character-counter-usage" class="text-card-foreground"><%= h(example_character_counter_usage) %></code></pre>
+</div>
+
+<%# Over the limit %>
+<h2 class="text-base font-semibold mb-3">Past the limit</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  Nothing stops typing or pasting — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">maxlength</code> is
+  still yours to set if you want that. Over the limit the count turns destructive
+  (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-over="true"</code>) and nothing else changes: no
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code>, no error, no change to the field's
+  invalid state. Validity stays the server's.
+</p>
+<div id="character-counter-over-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <div class="w-80">
+    <%= render Ui::FieldComponent.new(model: DemoNote.new(body: "This note is already longer than its twenty character limit."),
+                                      attribute: :body, control_id: "character_counter_over") do |field| %>
+      <% field.with_label { "Short note" } %>
+      <% field.with_control(Ui::TextareaComponent, counter: true, limit: 20, rows: 2) %>
+    <% end %>
+  </div>
+</div>
+
+<%# In a form %>
+<h2 class="text-base font-semibold mb-3">In a form</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The counter never validates — a blank note here is still rejected by the model's own presence
+  validator, the same way it would be without a counter at all. Field's help-text-and-error swap
+  is what shows the failure; the count rides along inside it, tracked even while hidden, and comes
+  back showing what is currently typed once the field is valid again.
+</p>
+<div id="character-counter-form-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
+  <%= render "docs/character_counter_swap_demo", note: DemoNote.new, submission: 0 %>
+</div>
+
+<%# Line breaks %>
+<h2 class="text-base font-semibold mb-3">Line breaks and your validator</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The counter counts a line break as one character, which is what the person typing sees and what Rails receives when
+  Turbo submits the form. A form submitted without Turbo, and any
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multipart/form-data</code> form, sends each line break as
+  two characters instead, so <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">validates length:</code> can
+  reject text the counter showed as within the limit. Normalise line endings on the model and the two always agree:
+</p>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Ruby</span>
+  </div>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-card-foreground">normalizes :bio, with: -&gt;(text) { text.gsub("\r\n", "\n") }
+validates :bio, length: { maximum: 500 }</code></pre>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Options</h2>
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["counter",  "Boolean", "false", "Ui::TextareaComponent(counter:). Consumed, never forwarded to the element. Needs limit:, and a Field to render its count in."],
+        ["limit",    "Integer", "nil",   "The soft limit the count is measured against. Needs counter: true. Never sets maxlength."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<h2 class="text-base font-semibold mb-3">Accessibility</h2>
+<ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
+  <li>The count is the last child of the description part, so it joins the control's computed
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-describedby</code> after the help text —
+    read on focus, not as a live region.</li>
+  <li>A polite <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">role="status"</code> region, visually
+    hidden, announces exactly three moments: ten percent of the limit remaining, exceeding the limit, and coming
+    back to it or under. Typing inside a band announces nothing.</li>
+  <li>Past the limit, nothing changes but the count's own colour: never
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code>, never an error. A validation
+    failure is a different signal from a soft limit.</li>
+</ul>

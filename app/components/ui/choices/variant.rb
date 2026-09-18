@@ -7,13 +7,19 @@ module Ui
     # apart from the component the way Ui::Select::Primitives is, so the component stays about
     # names, values and wiring, and every state here is CSS reading a real input.
     class Variant
-      # The step's own token, as a minimum: a one-line choice lines up with the Input or Select
-      # beside it, and content is free to make it taller (ui-control-sizing).
-      SIZES = {
-        sm: 'min-h-(--control-height-sm)', default: 'min-h-(--control-height)', lg: 'min-h-(--control-height-lg)'
-      }.freeze
+      # `size:` is accepted, so a form can hand every control one size, and changes nothing here
+      # (ui-choices § Behavior, item 17, decided 2026-09-18). A list row is sized by its content,
+      # and a card's padding plus one line of text was always taller than the largest step's
+      # minimum, so a step never bound and the option never did anything visible. The keys are
+      # what validates the keyword; they carry no classes.
+      SIZES = { xs: nil, sm: nil, default: nil, lg: nil, xl: nil }.freeze
 
-      CHOICE = 'relative flex items-start gap-3 text-sm has-disabled:cursor-not-allowed'
+      # Every choice, row or card: WCAG 2.5.8's target size. A one-line list row centers its
+      # indicator on it; a row with a description stays top-aligned so the indicator sits on the
+      # first line of text.
+      MIN_HEIGHT = 'min-h-6'
+
+      CHOICE = 'relative flex gap-3 text-sm has-disabled:cursor-not-allowed'
 
       # A card is a control too: the same boundary and fill, with the checked, focused and
       # disabled states read from the input inside it. The invalid border has to beat the checked
@@ -21,10 +27,11 @@ module Ui
       # specificity, so the invalid rule for a checked card is written as the compound selector.
       CARD = 'rounded-md border border-input bg-background dark:bg-muted/50 p-3 shadow-xs transition-colors ' \
              'has-checked:border-primary ' \
-             'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring ' \
+             'has-focus-visible:border-ring has-focus-visible:outline-2 has-focus-visible:outline-ring ' \
              'has-disabled:opacity-50 ' \
              'group-aria-invalid/choices:border-destructive ' \
              'group-aria-invalid/choices:has-checked:border-destructive ' \
+             'group-aria-invalid/choices:has-focus-visible:border-destructive ' \
              'group-aria-invalid/choices:has-focus-visible:outline-destructive'
 
       LIST = 'has-disabled:opacity-50'
@@ -49,14 +56,14 @@ module Ui
       # turn them into CanvasText instead of losing them with the fill.
       MARKS = { checkbox: { path: 'm4 12 5 5L20 6', width: 3 }, radio: { path: 'M12 12h.01', width: 9 } }.freeze
 
-      def initialize(variant:, size:, multiple:)
+      def initialize(variant:, multiple:, described:)
         @variant = variant
-        @size = size
         @multiple = multiple
+        @described = described
       end
 
       def choice_class
-        [CHOICE, SIZES[@size], VARIANTS[@variant]].join(' ')
+        [CHOICE, align_class, MIN_HEIGHT, VARIANTS[@variant]].join(' ')
       end
 
       def input_class
@@ -66,6 +73,18 @@ module Ui
 
       def mark
         MARKS[@multiple ? :checkbox : :radio]
+      end
+
+      private
+
+      # A card keeps items-start regardless of description, the way it always has. A list row
+      # centers a one-line choice on its 24px floor, and stays top-aligned once a description
+      # puts a second line under the text -- not items-baseline: the indicator sits inside a
+      # `flex h-5 items-center` wrapper matching text-sm's line height, so items-start already
+      # centers it on the first line, which is what items-baseline would otherwise be reaching
+      # for by way of the wrapper's synthesized baseline.
+      def align_class
+        @variant == :card || @described ? 'items-start' : 'items-center'
       end
     end
   end

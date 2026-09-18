@@ -107,22 +107,62 @@ module Ui
     # SE — Ui::SelectComponent. Its chrome keywords must not leak into the <select> or the root
     # as HTML attributes, which is what an unconsumed keyword does in Ui::Base.
 
-    test 'SE1 call-site chrome wins for the empty state and the show-options button' do
+    test 'SE1 call-site chrome wins for the empty state and the search placeholder' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b],
-                                            no_results: 'Nothing matches', show_options_label: 'Open the list'))
+                                            no_results: 'Nothing matches', search_placeholder: 'Find a state'))
 
       assert_selector '#post_state-empty', text: 'Nothing matches', visible: :all
-      assert_selector "button[aria-label='Open the list']", visible: :all
+      assert_selector "#post_state-search[placeholder='Find a state']", visible: :all
       assert_no_selector '[no_results]', visible: :all
-      assert_no_selector '[show-options-label]', visible: :all
+      assert_no_selector '[search-placeholder]', visible: :all
     end
 
     test 'SE2 without keywords Select reads the locale file, per render' do
       I18n.with_locale(:fr) do
-        render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b]))
+        render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b],
+                                              prompt: 'Choisissez'))
 
         assert_selector '#post_state-empty', text: 'Aucun résultat', visible: :all
-        assert_selector "button[aria-label='Afficher les options']", visible: :all
+        assert_selector "#post_state-search[placeholder='Rechercher…']", visible: :all
+        assert_selector '#post_state-clear-label', text: 'Effacer', visible: :all
+      end
+    end
+
+    test 'SE3 a call-site clear label wins, and the button only exists where a prompt does' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: %w[a b], prompt: true,
+                                            clear_label: 'Start over'))
+      assert_selector '#post_state-clear-label', text: 'Start over', visible: :all
+      assert_no_selector '[clear-label]', visible: :all
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: %w[a b], clear_label: 'Start over'))
+      assert_no_selector '#post_state-clear', visible: :all
+    end
+
+    # FI — Ui::FieldComponent's character-counter chrome, rendered when the bound control asks
+    # for one (ui-character-counter § Behavior, items 10-11).
+
+    def render_counter_field(**overrides)
+      render_inline(Ui::FieldComponent.new(name: 'post[bio]', **overrides)) do |field|
+        field.with_control(Ui::TextareaComponent, counter: true, limit: 20)
+      end
+    end
+
+    def counter_text
+      page.find('[data-ui--character-count-target=count]', visible: :all).text
+    end
+
+    test 'FI1 a call-site count: format wins over the locale file' do
+      template = "#{I18n.t('rails_ui_kit.character_counter.count')} total"
+      render_counter_field(count: template)
+
+      assert_equal format(template, count: 0, limit: 20), counter_text
+    end
+
+    test 'FI2 without count: Field reads the locale file, per render' do
+      I18n.with_locale(:fr) do
+        render_counter_field
+
+        assert_equal I18n.t('rails_ui_kit.character_counter.count', locale: :fr, count: 0, limit: 20), counter_text
       end
     end
 
@@ -143,7 +183,8 @@ module Ui
         Ui::ModalComponent => %w[unsaved_changes_title unsaved_changes_message],
         Ui::ToastComponent => %w[close_label default_title],
         Ui::ToastContainerComponent => %w[close_label default_title],
-        Ui::SelectComponent => %w[show_options_label no_results]
+        Ui::SelectComponent => %w[search_placeholder no_results clear_label],
+        Ui::FieldComponent => %w[required_label count remaining over]
       }.each do |component, keywords|
         accepted = component.instance_method(:initialize).parameters
                             .filter_map { |kind, name| name.to_s if %i[key keyreq].include?(kind) }

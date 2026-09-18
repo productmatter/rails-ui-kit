@@ -16,7 +16,8 @@ class RegisterControllersTest < ActiveSupport::TestCase
     'ui--anchor' => 'AnchorController',
     'ui--roving-focus' => 'RovingFocusController',
     'ui--select' => 'SelectController',
-    'ui--field' => 'FieldController'
+    'ui--field' => 'FieldController',
+    'ui--character-count' => 'CharacterCountController'
   }.each do |identifier, constant|
     test "registers #{identifier}" do
       assert_includes source, %(application.register("#{identifier}", #{constant}))

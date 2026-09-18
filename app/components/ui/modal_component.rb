@@ -6,7 +6,7 @@ module Ui
     # ::backdrop animate out before ui--overlay closes the dialog.
     BASE_CLASSES = %w[
       fixed p-0 m-0 max-h-none max-w-none
-      bg-background text-foreground shadow-2xl
+      bg-popover text-popover-foreground border border-border shadow-2xl
       opacity-0 data-[state=open]:opacity-100 transition-all duration-300 ease-in-out focus-visible:outline-none
       backdrop:bg-black/50 backdrop:backdrop-blur-sm backdrop:opacity-0 data-[state=open]:backdrop:opacity-100
       backdrop:transition-opacity backdrop:duration-300 backdrop:ease-in-out

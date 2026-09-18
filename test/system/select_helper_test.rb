@@ -38,7 +38,8 @@ class SelectHelperTest < ApplicationSystemTestCase
     ui_select 'Oslo', from: 'City'
 
     assert_equal 'oslo', select_value('demo_city')
-    assert_equal 'Oslo', page.evaluate_script("document.getElementById('demo_city-combobox').value")
+    assert_equal 'Oslo', control_label('demo_city')
+    assert_popup 'demo_city', 'closed'
     assert_equal ['input:oslo:true', 'change:oslo:true'], recorded_events
   end
 
@@ -64,6 +65,11 @@ class SelectHelperTest < ApplicationSystemTestCase
   test 'SH6: a name that matches two Selects fails the way Capybara own ambiguity does' do
     # The Modal on this page carries a second Select labelled "City", which is exactly the
     # situation where picking the first match silently would write to the wrong control.
+    #
+    # Opened the way a person opens it: pressing the trigger scrolls the page to it, and the Modal
+    # then locks the scroll, so the page's own "City" label is off screen while the ambiguity is
+    # checked. The driver reports such a label as not displayed. The helper has to count it
+    # anyway: a name is what the label says, not whether it is currently painted.
     find('#select-modal-trigger').click
     assert_selector '#modal_city-combobox'
 
@@ -71,9 +77,33 @@ class SelectHelperTest < ApplicationSystemTestCase
     assert_match(/found 2 Selects/, error.message)
   end
 
+  test 'SH9: a required Select answers to its plain label, marker and hidden hint left out' do
+    # A required Field's label paints a `*` beside its text and holds a hidden "required" for the
+    # search trigger's accessible name. Neither is part of the name a person calls the field by.
+    ui_select 'Growth', from: 'Plan (required)'
+    assert_equal 'growth', select_value('booking_plan')
+
+    ui_select 'Tokyo', from: 'City (search, required)'
+    assert_equal 'tokyo', select_value('booking_city')
+  end
+
   test 'SH7: a name that matches nothing says so' do
     error = assert_raises(RailsUiKit::TestHelpers::OptionNotFound) { ui_select 'Tokyo', from: 'Nowhere' }
     assert_match(/found no Ui::SelectComponent for "Nowhere"/, error.message)
+  end
+
+  # A prompt is a placeholder, not a listed option (ui-select § Behavior, item 10), so asking for
+  # it by name means the button a person would press -- not a listbox row, which isn't there.
+  test 'SH8: asking for the prompt by name presses the clear button' do
+    record_events('demo_role')
+    ui_select 'Admin', from: 'Role'
+    assert_equal 'admin', select_value('demo_role')
+
+    ui_select 'Choose a role', from: 'Role'
+
+    assert_equal '', select_value('demo_role')
+    assert_equal 'Choose a role', combobox_label('demo_role')
+    assert_equal ['input:admin:true', 'change:admin:true', 'input::true', 'change::true'], recorded_events
   end
 
   test 'SH5: where the Select is not enhanced, it falls back to Capybara own select' do

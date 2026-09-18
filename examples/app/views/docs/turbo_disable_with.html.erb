@@ -4,7 +4,7 @@
   <h1 class="text-3xl font-bold tracking-tight mb-3">Turbo Disable With</h1>
   <p class="text-muted-foreground">
     The submitting state for a Rails form: while a submission runs, every button marked
-    <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code> is disabled, keeps its size and shows a loading state — text, a spinner or a
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code> is disabled, keeps its size and shows a loading state — text, a spinner or a
     pulse — and a screen reader hears it. It is restored when Turbo reports the response.
   </p>
 </div>
@@ -27,38 +27,38 @@
   There are three attributes with nearly the same name. Use this one, and only this one, on a button:
 </p>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li><strong>Rails' <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-disable-with</code></strong> is what <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">f.submit</code> adds on its own. It is read by
+  <li><strong>Rails' <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-disable-with</code></strong> is what <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">f.submit</code> adds on its own. It is read by
       rails-ujs, which a Rails 7+ app no longer loads, so under Turbo it does nothing.</li>
-  <li><strong>Turbo's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code></strong> swaps the text of the button that submitted, for a
+  <li><strong>Turbo's <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code></strong> swaps the text of the button that submitted, for a
       Turbo-driven submission. Text only, that one button only.</li>
-  <li><strong>The kit's <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code></strong> adds what those don't: the spinner and pulse styles at
-      the button's own height; every marked button in the form, not only the one clicked; <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-busy</code> and a
-      polite announcement; forms with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo="false"</code>, which Turbo never sees; restoring the button
+  <li><strong>The kit's <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code></strong> adds what those don't: the spinner and pulse styles at
+      the button's own height; every marked button in the form, not only the one clicked; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-busy</code> and a
+      polite announcement; forms with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo="false"</code>, which Turbo never sees; restoring the button
       before Turbo caches the page and when the browser brings it back from its back-forward cache; and a default text that
-      is translatable, <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">rails_ui_kit.turbo_disable_with.processing</code>.</li>
+      is translatable, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">rails_ui_kit.turbo_disable_with.processing</code>.</li>
 </ul>
 <p class="text-sm text-muted-foreground mb-8">
-  Don't combine it with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code> on the same button: both rewrite its content, and they
+  Don't combine it with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-submits-with</code> on the same button: both rewrite its content, and they
   restore it at different moments.
 </p>
 
 <h2 class="text-base font-semibold mb-3">Setup</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">Mount once in your layout:</p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">Layout — ERB</span>
-    <button data-copy-target="#disable-with-setup" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<p class="text-sm text-muted-foreground mb-3">Mount once in your layout:</p>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Layout — ERB</span>
+    <button data-copy-target="#disable-with-setup" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="disable-with-setup" class="text-neutral-200"><%= h(example_disable_with_setup) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="disable-with-setup" class="text-card-foreground"><%= h(example_disable_with_setup) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#disable-with-usage" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#disable-with-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="disable-with-usage" class="text-neutral-200"><%= h(example_disable_with_usage) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code id="disable-with-usage" class="text-card-foreground"><%= h(example_disable_with_usage) %></code></pre>
 </div>
 
 <h2 class="text-base font-semibold mb-3">Options</h2>
@@ -84,23 +84,23 @@
     </tbody>
   </table>
 </div>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-8">
+<p class="text-sm text-muted-foreground mb-8">
   No component renders the meta tag — you write it — so translate the fallback text with
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">I18n.t('rails_ui_kit.turbo_disable_with.processing')</code> as its <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">content:</code>; see
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">I18n.t('rails_ui_kit.turbo_disable_with.processing')</code> as its <code class="text-xs bg-muted px-1 py-0.5 rounded">content:</code>; see
   <%= link_to "Internationalization", i18n_path, class: "underline" %>.
 </p>
 
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>Announces the loading state via an <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">aria-live="polite"</code> region so screen readers are notified.</li>
-  <li>Re-enables and restores the original button text on <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">turbo:submit-end</code>.</li>
-  <li>The button is <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">aria-busy="true"</code> while it waits, and disabled, so it can't be pressed twice.</li>
-  <li>Turbo disables the button that submitted a form while the request runs, and the browser moves focus off a disabled element, so a keyboard user would land on the page itself. If that button had focus when the form was submitted, focus goes back to it when the submission ends: for every Turbo form on a page that renders this controller, whether or not the button has <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>. It doesn't if the button has gone, or if something else has taken focus in the meantime, such as a response that focused an error.</li>
+  <li>Announces the loading state via an <code class="text-xs bg-muted px-1 py-0.5 rounded">aria-live="polite"</code> region so screen readers are notified.</li>
+  <li>Re-enables and restores the original button text on <code class="text-xs bg-muted px-1 py-0.5 rounded">turbo:submit-end</code>.</li>
+  <li>The button is <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-busy="true"</code> while it waits, and disabled, so it can't be pressed twice.</li>
+  <li>Turbo disables the button that submitted a form while the request runs, and the browser moves focus off a disabled element, so a keyboard user would land on the page itself. If that button had focus when the form was submitted, focus goes back to it when the submission ends: for every Turbo form on a page that renders this controller, whether or not the button has <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>. It doesn't if the button has gone, or if something else has taken focus in the meantime, such as a response that focused an error.</li>
 </ul>
 
 <h2 class="text-base font-semibold mb-3">When not to use it</h2>
 <p class="text-sm text-muted-foreground mb-8">
   A submission that finishes faster than a person can see doesn't need it, and a request that runs for more than a few
   seconds needs more than it: progress, or a job the page reports on. For a submit button rendered by
-  <%= link_to "Button", button_path, class: "text-primary underline" %>, pass the attribute through <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">data:</code>.
+  <%= link_to "Button", button_path, class: "text-primary underline" %>, pass the attribute through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data:</code>.
 </p>

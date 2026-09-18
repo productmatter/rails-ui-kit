@@ -84,6 +84,21 @@ module CodeExamplesHelper
     RUBY
   end
 
+  def example_character_counter_usage
+    <<~'RUBY'
+      <%= render Ui::FieldComponent.new(model: @post, attribute: :bio) do |field| %>
+        <% field.with_description { "A couple of sentences about you." } %>
+        <% field.with_control(Ui::TextareaComponent, counter: true, limit: 160, rows: 3) %>
+      <% end %>
+
+      <%# With no description, the field still renders the count alone %>
+      <%= render Ui::FieldComponent.new(name: "post[bio]") do |field| %>
+        <% field.with_label { "Bio" } %>
+        <% field.with_control(Ui::TextareaComponent, counter: true, limit: 160, rows: 3) %>
+      <% end %>
+    RUBY
+  end
+
   def example_tooltip_usage
     <<~'RUBY'
       <%= render Ui::TooltipComponent.new(text: "Save your changes", placement: "top") do |t| %>

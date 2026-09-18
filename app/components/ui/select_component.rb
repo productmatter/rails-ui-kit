@@ -15,83 +15,34 @@ module Ui
 
     data_slot 'select'
 
-    # The visible control's box, shared by the select and the combobox that takes over from
-    # it, so the swap between them shifts nothing. Filled in both modes, as Input is, so it
-    # reads as a control on any surface; the popup is bg-popover, a different token, so the
-    # open list never blends into the box it hangs from.
-    CONTROL_CLASSES = 'flex w-full min-w-0 appearance-none items-center rounded-md border border-input ' \
-                      'bg-background dark:bg-muted/50 ps-3 pe-8 text-sm shadow-xs transition-colors ' \
-                      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
-                      'disabled:pointer-events-none disabled:opacity-50 ' \
-                      'aria-disabled:pointer-events-none aria-disabled:opacity-50 ' \
-                      'aria-invalid:border-destructive aria-invalid:focus-visible:outline-destructive'
-
-    # Native <option>s don't inherit the select's classes, so the popup colours reach them
-    # through a descendant selector rather than by asking the caller to class each one.
-    NATIVE_CLASSES = '[&_option]:bg-popover [&_option]:text-popover-foreground ' \
-                     '[&_optgroup]:bg-popover [&_optgroup]:text-popover-foreground'
-
-    # Enhanced, the select stays rendered and keeps its box — it is what the browser anchors a
-    # validation bubble to — but it is transparent, unfocusable by pointer, and laid exactly
-    # over the combobox.
-    ENHANCED_CLASSES = 'group-data-[enhanced=true]/select:absolute group-data-[enhanced=true]/select:inset-0 ' \
-                       'group-data-[enhanced=true]/select:h-full group-data-[enhanced=true]/select:w-full ' \
-                       'group-data-[enhanced=true]/select:opacity-0 ' \
-                       'group-data-[enhanced=true]/select:pointer-events-none'
-
-    # Select-only mode keeps the platform picker on a touch screen (ui-select open-questions.md),
-    # and the browser makes that swap itself, live: the combobox is display:none wherever the
-    # primary pointer is coarse, and the select gives up its box only wherever it isn't. The two
-    # media queries are exact complements, so exactly one control is ever the visible one.
-    # ui--select flips what CSS can't reach: the select's aria-hidden and tabindex.
-    TOUCH_COMBOBOX_CLASSES = 'pointer-coarse:hidden'
-    TOUCH_ENHANCED_CLASSES = 'group-data-[enhanced=true]/select:not-pointer-coarse:absolute ' \
-                             'group-data-[enhanced=true]/select:not-pointer-coarse:inset-0 ' \
-                             'group-data-[enhanced=true]/select:not-pointer-coarse:h-full ' \
-                             'group-data-[enhanced=true]/select:not-pointer-coarse:w-full ' \
-                             'group-data-[enhanced=true]/select:not-pointer-coarse:opacity-0 ' \
-                             'group-data-[enhanced=true]/select:not-pointer-coarse:pointer-events-none'
-
-    POPUP_CLASSES = 'overflow-visible rounded-md border border-border bg-popover text-popover-foreground ' \
-                    'shadow-md outline-none transition duration-100 ease-out origin-top ' \
-                    'data-[state=closed]:opacity-0 data-[state=closed]:scale-95 ' \
-                    'data-[state=closing]:opacity-0 data-[state=closing]:scale-95'
-
     # The aria that describes or names the control itself follows it onto whichever element is
     # playing that part, because the select and the combobox are one control in two renderings.
     # Every other aria and data attribute the caller passes stays on the root, which is where
     # the select's change events bubble to (§ Behavior, item 12).
     CONTROL_ARIA = %i[describedby invalid label labelledby].freeze
 
-    # The control's height at each step of the shared size scale, read from the same tokens as
-    # Button, Input and Textarea (ui-control-sizing). Not a class_variants axis: variants render
-    # onto this component's root, and the height belongs on the control and the show-options
-    # button, which are not the root.
-    SIZE_CLASSES = {
-      sm: 'h-(--control-height-sm)',
-      default: 'h-(--control-height)',
-      lg: 'h-(--control-height-lg)'
-    }.freeze
-
     class_variants(base: 'group/select relative w-full')
 
-    # The two strings Select says in its own voice; the options themselves are the caller's
+    # The four strings Select says in its own voice; the options themselves are the caller's
     # content, translated by the host (ui-localization § Behavior, items 1 and 2).
-    chrome_string :show_options_label, key: 'select.show_options_label'
+    chrome_string :search_placeholder, key: 'select.search_placeholder'
     chrome_string :no_results, key: 'select.no_results'
+    chrome_string :clear_label, key: 'select.clear_label'
     chrome_plural :results, key: 'select.results'
 
-    attr_reader :name, :control_id, :option_set, :size, :primitives
+    attr_reader :name, :control_id, :option_set, :size, :primitives, :box
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
                    search: false, native_on_touch: true, size: :default,
-                   show_options_label: nil, no_results: nil, results: nil, **attributes)
-      assign_chrome(show_options_label, no_results, results)
+                   search_placeholder: nil, no_results: nil, results: nil, clear_label: nil,
+                   **attributes)
+      assign_chrome(search_placeholder, no_results, results, clear_label)
       @name = name.to_s
       @control_id = (id || derive_control_id).to_s
       assign_flags(required: required, disabled: disabled, autofocus: autofocus, search: search,
                    native_on_touch: native_on_touch)
       @size = resolve_size(size)
+      @box = Ui::Select::Box.new(size: @size, search: @search, native_on_touch: primitives.native_on_touch?)
       @form = form
       @option_set = Ui::OptionSet.new(component: self.class.name, **option_keywords(attributes))
       super(**attributes)
@@ -106,30 +57,34 @@ module Ui
       option_set.native_options(self)
     end
 
-    def listbox_id
-      "#{control_id}-listbox"
+    # Every part is named after the control, so the ids a re-render produces are the ids the
+    # previous one produced and aria-controls keeps resolving (Ui::Select::ListboxComponent
+    # derives the listbox's the same way). `combobox` is select-only mode's control; `trigger` and
+    # `search` are search mode's two elements, one for each job (§ Behavior, item 17).
+    %i[listbox combobox trigger search popup empty status clear].each do |part|
+      define_method(:"#{part}_id") { "#{control_id}-#{part}" }
     end
 
-    def combobox_id
-      "#{control_id}-combobox"
+    # A clear button only where the native select holds the prompt option: that is the one
+    # placeholder state there is to return to (§ Behavior, item 10, and Ui::OptionSet).
+    def clear?
+      option_set.prompt_option?
     end
 
-    def empty_id
-      "#{control_id}-empty"
-    end
-
-    def status_id
-      "#{control_id}-status"
-    end
-
-    # The same chevron in both modes: decorative in select-only, inside the show-options button
-    # when searching.
+    # The same decorative chevron in both modes: the control is one box, whichever element plays it.
     def render_chevron
-      attributes = { class: 'size-4', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-                     'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-                     aria: { hidden: true } }
+      render_glyph(tag.path(d: 'm6 9 6 6 6-6'))
+    end
 
-      tag.svg(tag.path(d: 'm6 9 6 6 6-6'), **attributes)
+    # The clear button's glyph. Decorative: the button is named by its hidden text and the field's.
+    def render_clear_glyph
+      render_glyph(safe_join([tag.path(d: 'M18 6 6 18'), tag.path(d: 'm6 6 12 12')]), css: 'size-3.5')
+    end
+
+    # The search row's glyph, which is what says "this field filters" without a second label.
+    def render_search_glyph
+      render_glyph(safe_join([tag.circle(cx: 11, cy: 11, r: 8), tag.path(d: 'm21 21-4.3-4.3')]),
+                   css: 'size-4 shrink-0 text-muted-foreground')
     end
 
     # What makes this a form control, plus the aria the control carries wherever it renders.
@@ -141,20 +96,50 @@ module Ui
       }.compact
     end
 
-    # `hidden` is what keeps the combobox out of the unenhanced page; everything else is the
-    # same in both modes except the element itself, which is a text field when searching.
+    # Select-only mode's control: the combobox itself, a div that owns the listbox and keeps DOM
+    # focus throughout (§ Behavior, item 16). `hidden` is what keeps it out of the unenhanced page.
     def combobox_attributes
-      shared = {
+      {
         id: combobox_id, hidden: true, role: 'combobox', class: control_class,
         aria: { controls: listbox_id, expanded: 'false', required: @required.presence }.merge(@control_aria),
         data: { 'ui--select-target': 'combobox', 'ui--overlay-target': 'trigger',
                 'ui--anchor-target': 'anchor', 'ui--roving-focus-target': 'input',
-                action: primitives.combobox_actions }
+                action: primitives.control_actions },
+        tabindex: 0
       }
-      return shared.merge(tabindex: 0) unless search?
+    end
 
-      # No name, so the text field never submits: the select next to it is what posts.
-      shared.deep_merge(type: 'text', autocomplete: 'off', aria: { autocomplete: 'list' })
+    # Search mode's control: a button in the same box, showing the value. It is not the combobox —
+    # the field in its popup is — so it is named with aria-haspopup and never carries
+    # aria-activedescendant. `type="button"` is what keeps Enter from submitting (§ Behavior,
+    # item 17).
+    #
+    # aria-required is not on it, and can't be: ARIA doesn't allow the attribute on `button`, and a
+    # browser drops it rather than announcing it. It goes on the search field instead, which is the
+    # combobox and the element the user is on while choosing (see search_attributes).
+    def trigger_attributes
+      {
+        id: trigger_id, type: 'button', hidden: true, class: control_class,
+        aria: { haspopup: 'listbox', controls: listbox_id, expanded: 'false' }.merge(@control_aria),
+        data: { 'ui--select-target': 'trigger', 'ui--overlay-target': 'trigger',
+                'ui--anchor-target': 'anchor', action: primitives.control_actions }
+      }
+    end
+
+    # The only role="combobox" in the widget. No name, so it never submits: the select beside it is
+    # what posts, and what the user types here is a query, never the value. It carries
+    # aria-expanded for the same listbox the trigger does, because the role requires it and
+    # because a widget that claims a closed list is open is a lie a screen reader acts on;
+    # ui--select keeps it in step, since this field is not ui--overlay's trigger.
+    def search_attributes
+      {
+        id: search_id, type: 'text', role: 'combobox', autocomplete: 'off',
+        placeholder: search_placeholder, class: Ui::Select::Box::SEARCH_FIELD,
+        aria: { autocomplete: 'list', controls: listbox_id, expanded: 'false',
+                required: @required.presence }.merge(@control_aria.slice(:label, :labelledby)),
+        data: { 'ui--select-target': 'search', 'ui--roving-focus-target': 'input',
+                action: primitives.search_actions }
+      }
     end
 
     # The count is only known once the filter runs, so the forms and the locale that produced
@@ -166,9 +151,19 @@ module Ui
       { 'ui--select-results-value': results.to_json, 'ui--select-locale-value': chrome_locale }
     end
 
+    # A sibling of the control, never inside it: interactive content inside a role="combobox" or
+    # a <button> is invalid, and a press on it is a press outside the popup either way. It sits
+    # after the control in the DOM, so it is after it in the tab order, and it is server-rendered
+    # `hidden` like the control -- unenhanced there is nothing to clear with, because the native
+    # select's own prompt option is right there in the picker.
+    def clear_attributes
+      { id: clear_id, type: 'button', hidden: true, class: merge_box(box.clear_button),
+        data: { 'ui--select-target': 'clear', action: 'click->ui--select#clear' } }
+    end
+
     def popup_attributes
       {
-        id: "#{control_id}-popup", hidden: true, class: POPUP_CLASSES,
+        id: popup_id, hidden: true, class: Ui::Select::Box::POPUP,
         data: { 'ui--select-target': 'popup', 'ui--overlay-target': 'content',
                 'ui--anchor-target': 'floating' }
       }
@@ -178,18 +173,15 @@ module Ui
     # (ui-component-library § Business rules, rule 5) — both renderings of it, since they are
     # the same box.
     def control_class
-      touch = TOUCH_COMBOBOX_CLASSES if primitives.native_on_touch?
-      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], touch, caller_class].compact.join(' '))
+      merge_box(box.control(caller_class, clear: clear?))
     end
 
     def select_class
-      enhanced = primitives.native_on_touch? ? TOUCH_ENHANCED_CLASSES : ENHANCED_CLASSES
-      MERGER.merge([CONTROL_CLASSES, SIZE_CLASSES[size], NATIVE_CLASSES, enhanced, caller_class].compact.join(' '))
+      merge_box(box.native_select(caller_class))
     end
 
-    # Spans the control's height at every step, so the chevron stays centred in the field.
-    def show_options_class
-      "absolute inset-e-0 top-0 flex #{SIZE_CLASSES[size]} w-8 items-center justify-center text-muted-foreground"
+    def search_row_class
+      Ui::Select::Box::SEARCH_ROW
     end
 
     # Variant classes only: the caller's class went to the control.
@@ -199,12 +191,26 @@ module Ui
 
     private
 
+    def merge_box(classes)
+      MERGER.merge(classes.compact.join(' '))
+    end
+
+    # One 24×24 line glyph, drawn the way every other icon in the kit is.
+    def render_glyph(paths, css: 'size-4')
+      attributes = { class: css, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+                     'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+                     aria: { hidden: true } }
+
+      tag.svg(paths, **attributes)
+    end
+
     # The strings Select says in its own voice, each falling through to the locale file when the
     # call site leaves it out (ui-localization § Behavior, item 2).
-    def assign_chrome(show_options_label, no_results, results)
-      @show_options_label = show_options_label
+    def assign_chrome(search_placeholder, no_results, results, clear_label)
+      @search_placeholder = search_placeholder
       @no_results = no_results
       @results = results
+      @clear_label = clear_label
     end
 
     # Every boolean a caller may spell as a string, and the primitive configuration two of them
@@ -222,7 +228,8 @@ module Ui
     # Ui::Base's own handling: raised in development and test, the default elsewhere.
     def resolve_size(value)
       key = (value.presence || :default).to_sym
-      SIZE_CLASSES.key?(key) ? key : (unknown_variant(:size, value, SIZE_CLASSES.keys) || :default)
+      sizes = Ui::Select::Box::SIZES
+      sizes.key?(key) ? key : (unknown_variant(:size, value, sizes.keys) || :default)
     end
 
     def option_keywords(attributes)

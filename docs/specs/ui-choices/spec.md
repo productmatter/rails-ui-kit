@@ -395,8 +395,11 @@ mode.
     target too. The indicator draws the control boundary: `border-input`, with the
     control fill rule `bg-background` in light and `dark:bg-muted/50` in dark, never
     transparent (`ui-presentational-components` § Business rules, rule 6(a), amended
-    2026-09-14). The focus ring is the input's own `focus-visible` outline, the same
-    as Input's.
+    2026-09-14). The focus ring is the input's own `focus-visible` outline in the
+    stand-off form, 2px offset 2px, and not Input's fused line: the indicator is
+    `--primary` when checked, which is the focus colour, so a line pressed against it
+    would merge with the fill (`ui-presentational-components` § Business rules, rule 3,
+    amended 2026-09-18).
 16. **`variant: :card`** makes each choice a bordered box: the indicator, then the
     optional icon, then the text column with its optional description line in
     `text-muted-foreground`. The card takes the control fill and a `border-input`
@@ -405,7 +408,7 @@ mode.
     | State | Where it shows | Selector (compiled with tailwindcss 4.3.1 against the kit's theme) |
     |---|---|---|
     | checked | card border `--primary`; indicator filled `--primary` with a `--primary-foreground` mark | `has-checked:` → `&:has(*:checked)` |
-    | keyboard focus | a 2px `--ring` outline, offset 2px, on the **card**; the input's own outline is suppressed in this appearance only | `has-focus-visible:` → `&:has(*:focus-visible)` |
+    | keyboard focus | the **card**'s border takes `--ring` and a 2px `--ring` outline sits flush against it, one fused line (`ui-presentational-components` § Business rules, rule 3, amended 2026-09-18; it was a 2px outline offset 2px before); the input's own outline is suppressed in this appearance only | `has-focus-visible:` → `&:has(*:focus-visible)` |
     | disabled | card at 50% opacity, not-allowed cursor | `has-disabled:` → `&:has(*:disabled)`, which also matches inputs inside `fieldset[disabled]` |
     | invalid | every card's border `--destructive`, **including the checked card** | the fieldset's `aria-invalid`, read by a named `group/choices` |
 
@@ -428,12 +431,18 @@ mode.
       `stroke`/`color` alone, so a `currentColor` stroke does **not** become `CanvasText`
       and the mark went white-on-white. The mark names the system colour itself
       (`forced-colors:text-[CanvasText]`), and the acceptance check measures it.
-17. **`size:` sets each choice's minimum block size** to the step's
-    `--control-height*` token (`ui-control-sizing`), in both appearances. So a
-    one-line card matches the Input or Select beside it, and every choice stays a
-    target of at least 24px (WCAG 2.5.8). Text size and indicator size don't change by
-    step, as with Input and Select. Content makes a choice taller; a step never makes
-    it shorter. An unknown size fails the way an unknown variant does.
+17. **`size:` is accepted and changes nothing on Choices** (decided 2026-09-18, Jonathan
+    Simmons). `sm`, `default` and `lg` are validated, so a form can hand every control
+    one size, and an unknown size fails the way an unknown variant does; but no choice
+    reads a `--control-height*` token. Every choice, row or card, is sized by its
+    content, with a flat 24px floor (WCAG 2.5.8). This item first said a step set each
+    choice's minimum block size, so a one-line card would match the Input or Select
+    beside it. That never held: a card's padding and one line of text come to 46px,
+    taller than the largest step's 40px, so no step's minimum ever bound and the three
+    sizes rendered identically (`status.md` § Corrections). Alignment is by content, not
+    size: a one-line list row centers its indicator on the 24px floor (`items-center`);
+    a row with a description, and every card row regardless, stays top-aligned
+    (`items-start`) so the indicator sits on the first line of text.
 18. **Long text and narrow widths: controls truncate, lists wrap**
     (`ui-localization` § Behavior, item 12). Choices is a list, so it never truncates.
     - Choice text and description wrap. An unbreakable string breaks rather than
@@ -626,7 +635,7 @@ Inherits `ui-component-library` § Assumptions, and `ui-select`'s and
 - With JavaScript disabled, both variants post their choices, the unchecked-all entry clears the attribute, and an empty required checkbox group posts and returns Field's error — run: `bundle exec rake test:system TEST=test/system/choices_no_javascript_test.rb`
 - Chrome's accessibility tree (CDP) shows `radiogroup`/`group` named by the Field label and described by description, error and hint; each input named by its choice text only and described by its description line; no icon in the tree; and both variants in both appearances pass `assert_accessible` resting, checked, disabled and invalid in light and dark mode — run: `bundle exec rake test:system TEST=test/system/choices_accessibility_test.rb`
 - Measured computed styles: a card rings with `--ring` on keyboard focus and not after a click; a checked card's border is `--primary` and an invalid group's checked card is `--destructive`; indicator boundary, checked border and ring reach 3:1 on every token surface; the focus outline and the check mark stay visible under forced colours — run: `bundle exec rake test:system TEST=test/system/choices_variant_test.rb`
-- At a 320px viewport, a 200-character choice and a 60-character unbreakable token wrap inside their card with no horizontal overflow of the fieldset; the indicator neither shrinks nor leaves the first line; every choice measures at least its step's `--control-height*` and 24px — run: `bundle exec rake test:system TEST=test/system/choices_layout_test.rb`
+- At a 320px viewport, a 200-character choice and a 60-character unbreakable token wrap inside their card with no horizontal overflow of the fieldset; the indicator neither shrinks nor leaves the first line; every choice, row or card, measures at least the 24px floor — run: `bundle exec rake test:system TEST=test/system/choices_layout_test.rb`
 - `ui--form-change` turns dirty when a choice changes and pristine when it changes back, and Back from a cached page restores the choices the user left — run: `bundle exec rake test:system TEST=test/system/choices_turbo_test.rb`
 - `registerControllers` registers `ui--choices` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 

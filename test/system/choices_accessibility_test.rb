@@ -78,8 +78,7 @@ class ChoicesAccessibilityTest < ApplicationSystemTestCase
   end
 
   test 'CA6 every preview passes axe, in light and dark mode' do
-    previews = %w[#choices-preview #choices-card-preview #choices-required-preview #choices-locked-preview
-                  #choices-sizes-preview]
+    previews = %w[#choices-preview #choices-card-preview #choices-required-preview #choices-locked-preview]
 
     [false, true].each do |dark|
       use_dark_mode(dark)

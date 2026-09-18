@@ -23,7 +23,7 @@
 </style>
 
 <h2 class="text-base font-semibold mb-3">Presence</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+<p class="text-sm text-muted-foreground mb-4">
   The controlled element carries <code class="font-mono text-xs">data-state="open&nbsp;|&nbsp;closing&nbsp;|&nbsp;closed"</code>
   and nothing else: no classes are added or removed. Closing leaves it visible and laid out at
   <code class="font-mono text-xs">closing</code> until its own animation reports done, then hides it with the
@@ -35,14 +35,14 @@
   <div>
     <div class="flex items-center gap-2 mb-3">
       <button id="fade-open" data-presence="fade-panel" data-presence-open="true"
-              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">Open</button>
+              class="rounded-md bg-foreground text-background px-3 py-1.5 text-sm font-medium">Open</button>
       <button id="fade-close" data-presence="fade-panel" data-presence-open="false"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">Close</button>
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">Close</button>
       <span class="text-xs text-muted-foreground">500ms fade + slide</span>
     </div>
     <div id="fade-panel"
          data-controller="ui--presence"
-         class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-4 text-sm
+         class="rounded-md border border-border bg-card p-4 text-sm
                 transition duration-500 ease-out
                 data-[state=closed]:opacity-0 data-[state=closed]:-translate-y-2
                 data-[state=closing]:opacity-0 data-[state=closing]:-translate-y-2"
@@ -56,14 +56,14 @@
   <div>
     <div class="flex items-center gap-2 mb-3">
       <button id="instant-open" data-presence="instant-panel" data-presence-open="true"
-              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">Open</button>
+              class="rounded-md bg-foreground text-background px-3 py-1.5 text-sm font-medium">Open</button>
       <button id="instant-close" data-presence="instant-panel" data-presence-open="false"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">Close</button>
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">Close</button>
       <span class="text-xs text-muted-foreground">no transition declared</span>
     </div>
     <div id="instant-panel"
          data-controller="ui--presence"
-         class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-4 text-sm"
+         class="rounded-md border border-border bg-card p-4 text-sm"
          hidden>
       Nothing is declared on me, so I close in the same frame — the primitive measures rather than waits.
     </div>
@@ -71,7 +71,7 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Overlay</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+<p class="text-sm text-muted-foreground mb-4">
   Three modes, each one a platform primitive: <code class="font-mono text-xs">modal</code> is a
   <code class="font-mono text-xs">&lt;dialog&gt;</code> opened with <code class="font-mono text-xs">showModal()</code>,
   <code class="font-mono text-xs">layer</code> is <code class="font-mono text-xs">popover="auto"</code>, and
@@ -93,21 +93,21 @@
       <button id="modal-trigger"
               data-ui--overlay-target="trigger"
               data-action="click->ui--overlay#toggle"
-              class="rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900">
+              class="rounded-md bg-foreground text-background px-3 py-1.5 text-sm font-medium">
         Open modal
       </button>
 
       <dialog id="modal-content"
               data-ui--overlay-target="content"
               aria-labelledby="modal-title"
-              class="mx-auto mt-10 mb-auto w-full max-w-lg max-h-[40vh] overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-700
-                     bg-white dark:bg-neutral-950 p-6 text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+              class="mx-auto mt-10 mb-auto w-full max-w-lg max-h-[40vh] overflow-y-auto rounded-lg border border-border
+                     bg-popover p-6 text-popover-foreground shadow-xl backdrop:bg-black/50
                      transition duration-300 ease-out
                      data-[state=open]:scale-100
                      data-[state=closed]:opacity-0 data-[state=closed]:scale-95
                      data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
         <h3 id="modal-title" class="text-base font-semibold mb-2">A modal overlay</h3>
-        <p id="modal-text" class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        <p id="modal-text" class="text-sm text-muted-foreground mb-4">
           The focus trap, the top layer and Escape are the browser&rsquo;s. The scroll lock, the backdrop click and
           the exit animation are the primitive&rsquo;s. Drag-select this sentence out onto the backdrop and let go —
           the overlay stays open, because the gesture began inside it.
@@ -120,19 +120,19 @@
             <button id="inner-layer-trigger"
                     data-ui--overlay-target="trigger"
                     data-action="click->ui--overlay#toggle"
-                    class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                    class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
               Open a layer inside
             </button>
             <div id="inner-layer-content"
                  data-ui--overlay-target="content"
                  role="menu"
                  aria-label="Nested layer"
-                 class="m-auto rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
+                 class="m-auto rounded-md border border-border bg-popover p-2 text-sm shadow-xl
                         transition duration-200 ease-out
                         data-[state=closed]:opacity-0 data-[state=closed]:scale-95
                         data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
-              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-neutral-100 dark:hover:bg-neutral-800">Rename</button>
-              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-neutral-100 dark:hover:bg-neutral-800">Duplicate</button>
+              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-accent">Rename</button>
+              <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-accent">Duplicate</button>
             </div>
           </div>
 
@@ -144,23 +144,23 @@
             <button id="nested-modal-trigger"
                     data-ui--overlay-target="trigger"
                     data-action="click->ui--overlay#toggle"
-                    class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                    class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
               Open a second modal
             </button>
             <dialog id="nested-modal-content"
                     data-ui--overlay-target="content"
                     aria-labelledby="nested-modal-title"
-                    class="m-auto w-full max-w-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
-                           text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+                    class="m-auto w-full max-w-sm rounded-lg border border-border bg-popover p-6
+                           text-popover-foreground shadow-xl backdrop:bg-black/50
                            transition duration-300 ease-out
                            data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
               <h3 id="nested-modal-title" class="text-base font-semibold mb-2">Second modal</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+              <p class="text-sm text-muted-foreground mb-4">
                 Closing me leaves the page locked, because the modal underneath still holds a lock.
               </p>
               <button id="nested-modal-close"
                       data-action="click->ui--overlay#close"
-                      class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                      class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
                 Close
               </button>
             </dialog>
@@ -168,7 +168,7 @@
 
           <button id="modal-close"
                   data-action="click->ui--overlay#close"
-                  class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                  class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
             Close
           </button>
         </div>
@@ -187,7 +187,7 @@
               data-ui--overlay-target="trigger"
               data-ui--anchor-target="anchor"
               data-action="click->ui--overlay#toggle"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
         Open layer
       </button>
       <div id="menu-content"
@@ -195,12 +195,12 @@
            data-ui--anchor-target="floating"
            role="menu"
            aria-label="Standalone layer"
-           class="rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-2 text-sm shadow-xl
+           class="rounded-md border border-border bg-popover p-2 text-sm shadow-xl
                   transition duration-200 ease-out
                   data-[state=closed]:opacity-0 data-[state=closed]:scale-95
                   data-[state=closing]:opacity-0 data-[state=closing]:scale-95">
-        <button id="menu-item-edit" role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-neutral-100 dark:hover:bg-neutral-800">Edit</button>
-        <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-neutral-100 dark:hover:bg-neutral-800">Delete</button>
+        <button id="menu-item-edit" role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-accent">Edit</button>
+        <button role="menuitem" class="block w-full rounded px-3 py-1.5 text-start hover:bg-accent">Delete</button>
       </div>
     </div>
 
@@ -214,14 +214,14 @@
               data-ui--overlay-target="trigger"
               data-ui--anchor-target="anchor"
               data-action="click->ui--overlay#toggle"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
         Show hint
       </button>
       <div id="hint-content"
            data-ui--overlay-target="content"
            data-ui--anchor-target="floating"
            role="tooltip"
-           class="rounded-md bg-neutral-900 px-2 py-1 text-xs text-white shadow-lg
+           class="rounded-md bg-foreground text-background px-2 py-1 text-xs shadow-lg
                   transition duration-150 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
         Escape dismisses me without closing anything underneath.
       </div>
@@ -235,28 +235,28 @@
       <button id="guarded-trigger"
               data-ui--overlay-target="trigger"
               data-action="click->ui--overlay#toggle"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
         Open guarded modal
       </button>
       <dialog id="guarded-content"
               data-ui--overlay-target="content"
               aria-labelledby="guarded-title"
-              class="m-auto w-full max-w-md rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
-                     text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+              class="m-auto w-full max-w-md rounded-lg border border-border bg-popover p-6
+                     text-popover-foreground shadow-xl backdrop:bg-black/50
                      transition duration-300 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
         <h3 id="guarded-title" class="text-base font-semibold mb-2">Guarded modal</h3>
         <label class="flex items-center gap-2 text-sm mb-4">
-          <input id="guard-toggle" type="checkbox" checked class="rounded border-neutral-300">
+          <input id="guard-toggle" type="checkbox" checked class="rounded border-input">
           Refuse Escape and backdrop dismissal
         </label>
-        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        <p class="text-sm text-muted-foreground mb-4">
           A listener on <code class="font-mono text-xs">ui--overlay:dismiss</code> calls
           <code class="font-mono text-xs">preventDefault()</code> while that box is ticked. The Close button below
           closes programmatically, which never asks.
         </p>
         <button id="guarded-close"
                 data-action="click->ui--overlay#close"
-                class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
           Close
         </button>
       </dialog>
@@ -270,22 +270,22 @@
       <button id="removable-trigger"
               data-ui--overlay-target="trigger"
               data-action="click->ui--overlay#toggle"
-              class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+              class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
         Open removable modal
       </button>
       <dialog id="removable-content"
               data-ui--overlay-target="content"
               aria-labelledby="removable-title"
-              class="m-auto w-full max-w-md rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-6
-                     text-neutral-900 dark:text-neutral-50 shadow-xl backdrop:bg-neutral-950/50
+              class="m-auto w-full max-w-md rounded-lg border border-border bg-popover p-6
+                     text-popover-foreground shadow-xl backdrop:bg-black/50
                      transition duration-300 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0">
         <h3 id="removable-title" class="text-base font-semibold mb-2">Removable modal</h3>
-        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        <p class="text-sm text-muted-foreground mb-4">
           A Turbo Stream that empties this overlay&rsquo;s container never runs its close. Removal is a close:
           the page unlocks and focus goes back to the trigger anyway.
         </p>
         <button id="remove-overlay"
-                class="rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-sm font-medium">
+                class="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
           Remove me from the DOM
         </button>
       </dialog>
@@ -328,7 +328,7 @@
 </div>
 
 <h2 class="text-base font-semibold mb-3">Targets &amp; events</h2>
-<ul class="mb-8 space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+<ul class="mb-8 space-y-2 text-sm text-muted-foreground">
   <li><code class="font-mono text-xs">ui--presence</code> — no targets; it operates on its own element. Emits
     <code class="font-mono text-xs">ui--presence:opened</code>, <code class="font-mono text-xs">ui--presence:closing</code>
     and <code class="font-mono text-xs">ui--presence:closed</code>. Actions: <code class="font-mono text-xs">open</code>,

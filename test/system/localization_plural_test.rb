@@ -22,11 +22,13 @@ class LocalizationPluralTest < ApplicationSystemTestCase
     'q100-' => '100 من النتائج'  # other
   }.freeze
 
+  # Search mode opens onto the field in its popup, so the query is typed there
+  # (ui-select § Behavior, item 17).
   def filter(query, locale: nil)
     visit locale ? i18n_path(locale: locale) : i18n_path
-    page.execute_script("document.getElementById('#{ID}-combobox').scrollIntoView({ block: 'center' })")
-    page.execute_script("document.getElementById('#{ID}-combobox').focus()")
-    find("##{ID}-combobox").send_keys(query)
+    page.execute_script("document.getElementById('#{ID}-trigger').scrollIntoView({ block: 'center' })")
+    find("##{ID}-trigger").click
+    find("##{ID}-search").send_keys(query)
   end
 
   ARABIC.each do |query, expected|
@@ -56,7 +58,7 @@ class LocalizationPluralTest < ApplicationSystemTestCase
 
   test 'LP4 the locale rendered into the markup is what picks the rules, not <html lang>' do
     visit i18n_path(locale: :ar)
-    root = find("##{ID}-combobox").find(:xpath, "ancestor::*[@data-slot='select']")
+    root = find("##{ID}-trigger").find(:xpath, "ancestor::*[@data-slot='select']")
 
     assert_equal 'ar', root['data-ui--select-locale-value']
     assert_includes root['data-ui--select-results-value'], 'نتيجتان'

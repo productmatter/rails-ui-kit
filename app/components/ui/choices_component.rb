@@ -156,7 +156,13 @@ module Ui
     def assign_style(size, variant)
       @size = resolve_key(:size, size, Ui::Choices::Variant::SIZES)
       @variant = resolve_key(:variant, variant, Ui::Choices::Variant::VARIANTS)
-      @style = Ui::Choices::Variant.new(variant: @variant, size: @size, multiple: multiple?)
+      @style = Ui::Choices::Variant.new(variant: @variant, multiple: multiple?, described: described?)
+    end
+
+    # Whether the group renders a description line at all -- decided once, since every choice in
+    # the group shares the same alignment (Ui::Choices::Variant#align_class).
+    def described?
+      items.any? { |item| description_for(item) }
     end
 
     def assign_flags(required:, disabled:, include_hidden:, form:)

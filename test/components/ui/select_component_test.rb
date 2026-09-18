@@ -194,19 +194,22 @@ module Ui
       assert_nil root['aria-label']
     end
 
-    test 'required renders aria-required on the combobox in both modes, and omits it when not required' do
+    test 'required renders aria-required on the control in both modes, and omits it when not required' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, required: true))
       assert_selector 'select[required]', visible: :all
-      assert_selector "[role=combobox][aria-required='true']", visible: :all
+      assert_selector "#post_state-combobox[aria-required='true']", visible: :all
 
+      # ARIA has no aria-required for `button`, so search mode's goes on the combobox it does
+      # allow it on: the search field, which is where the user is while choosing.
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true, required: true))
-      assert_selector "input[role=combobox][aria-required='true']", visible: :all
+      assert_selector "input#post_state-search[aria-required='true']", visible: :all
+      assert_no_selector '#post_state-trigger[aria-required]', visible: :all
 
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
-      assert_no_selector '[role=combobox][aria-required]', visible: :all
+      assert_no_selector '[aria-required]', visible: :all
 
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
-      assert_no_selector '[role=combobox][aria-required]', visible: :all
+      assert_no_selector '[aria-required]', visible: :all
     end
 
     test 'other data and aria attributes stay on the root, where change events bubble to' do
@@ -252,22 +255,57 @@ module Ui
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
 
       assert_selector "div#post_state-combobox[role=combobox][tabindex='0']", visible: :all
-      assert_no_selector 'input[role=combobox]', visible: :all
+      assert_no_selector 'input', visible: :all
       assert_no_selector 'button', visible: :all
       assert_no_selector '[role=status]', visible: :all
+      assert_no_selector '#post_state-trigger', visible: :all
+      assert_no_selector '#post_state-search', visible: :all
     end
 
-    test 'search mode renders a text field that never submits, plus the APG show-options button' do
+    test 'search mode renders a trigger button that never submits, and no combobox of its own' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
 
-      combobox = page.find('#post_state-combobox', visible: :all)
-      assert_equal 'input', combobox.tag_name
-      assert_equal 'text', combobox['type']
-      assert_equal 'list', combobox['aria-autocomplete']
-      assert_equal 'off', combobox['autocomplete']
-      assert_nil combobox['name'], 'the text field would submit a second value'
-      assert_selector "button[type=button][tabindex='-1'][aria-label]", visible: :all
+      trigger = page.find('#post_state-trigger', visible: :all)
+      assert_equal 'button', trigger.tag_name
+      assert_equal 'button', trigger['type'], 'a trigger with no type would submit the form around it'
+      assert_equal 'listbox', trigger['aria-haspopup']
+      assert_equal 'post_state-listbox', trigger['aria-controls']
+      assert_equal 'false', trigger['aria-expanded']
+      assert_nil trigger['role'], 'the trigger is not the combobox: the field in the popup is'
+      assert_nil trigger['aria-activedescendant']
+      assert_no_selector '#post_state-combobox', visible: :all
       assert_selector "select[name='post[state]']", visible: :all
+    end
+
+    test 'search mode puts one search field first in the popup, and it never submits' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+
+      field = page.find('#post_state-search', visible: :all)
+      assert_equal 'input', field.tag_name
+      assert_equal 'text', field['type']
+      assert_equal 'combobox', field['role']
+      assert_equal 'list', field['aria-autocomplete']
+      assert_equal 'off', field['autocomplete']
+      assert_equal 'post_state-listbox', field['aria-controls']
+      assert_equal 'false', field['aria-expanded'], 'the role requires it, and a closed list is closed'
+      assert_equal I18n.t('rails_ui_kit.select.search_placeholder'), field['placeholder']
+      assert_nil field['name'], 'the search field would submit a second value'
+
+      assert_equal 1, page.all('[role=combobox]', visible: :all).size,
+                   'a widget with two comboboxes tells a screen reader there are two controls'
+      # First in the popup, above the list it filters, with a rule under the row.
+      inside = page.find('#post_state-popup', visible: :all)
+      ids = inside.all('input, [role=listbox]', visible: :all).map { |element| element['id'] }
+      assert_equal %w[post_state-search post_state-listbox], ids
+      assert_selector '#post_state-popup .border-b.border-border input#post_state-search', visible: :all
+    end
+
+    test 'the trigger and the search field both carry the name the caller gave the control' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true,
+                                            aria: { label: 'State' }))
+
+      assert_selector "#post_state-trigger[aria-label='State']", visible: :all
+      assert_selector "#post_state-search[aria-label='State']", visible: :all
     end
 
     test 'search mode renders the empty state and the polite status region, both from i18n' do
@@ -276,7 +314,8 @@ module Ui
 
         assert_selector '#post_state-empty[hidden]', text: I18n.t('rails_ui_kit.select.no_results'), visible: :all
         assert_selector "#post_state-status[role=status][aria-live='polite']", visible: :all
-        assert_selector "button[aria-label='#{I18n.t('rails_ui_kit.select.show_options_label')}']", visible: :all
+        assert_selector "#post_state-search[placeholder='#{I18n.t('rails_ui_kit.select.search_placeholder')}']",
+                        visible: :all
         # The whole plural map, and the locale that produced it: the count is only known in the
         # browser, and so is the category it falls in (ui-localization § Behavior, items 6 and 7).
         root = page.find("[data-slot='select']", visible: :all)
@@ -298,6 +337,99 @@ module Ui
       assert_equal 'true', searching['data-ui--roving-focus-loop-value']
       assert_equal 'false', searching['data-ui--roving-focus-typeahead-value']
       assert_equal '0', searching['data-ui--roving-focus-page-step-value']
+    end
+
+    # The clear button (ui-select § Behavior, item 10). It exists only where the native select
+    # holds the prompt option Rails rendered: without one a single select cannot be emptied, since
+    # deselecting everything makes the browser select the first option instead.
+
+    def clear_button(**)
+      render_inline(Ui::SelectComponent.new(clear_label: 'Clear', **))
+      page.first("[data-ui--select-target='clear']", minimum: 0, visible: :all)
+    end
+
+    test 'a prompt renders a clear button; a value, a blank on its own and no placeholder render none' do
+      assert_not_nil clear_button(name: 'post[state]', options: STATES, prompt: true)
+      assert_not_nil clear_button(name: 'post[state]', options: STATES, prompt: 'Pick one', search: true)
+
+      assert_nil clear_button(name: 'post[state]', options: STATES, prompt: true, selected: 'draft'),
+                 'a page Rails rendered with a value has no prompt option to return to'
+      assert_nil clear_button(name: 'post[state]', options: STATES, include_blank: 'None'),
+                 'a blank is a listed choice, not a placeholder the control returns to'
+      assert_nil clear_button(name: 'post[state]', options: STATES)
+      assert_nil clear_button(name: 'post[state]', options: STATES, required: true),
+                 "required's implicit blank is a blank, not a prompt"
+    end
+
+    test 'it is a hidden button of its own, a sibling of the control and before the chevron' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true,
+                                            clear_label: 'Clear'))
+
+      button = page.find('#post_state-clear', visible: :all)
+      assert_equal 'button', button.tag_name
+      assert_equal 'button', button['type'], 'a button with no type would submit the form around it'
+      assert button.matches_css?('[hidden]'), 'it is revealed by ui--select, like the control it sits beside'
+      assert_equal 'click->ui--select#clear', button['data-action']
+
+      # A sibling: interactive content inside a role="combobox" or a <button> is invalid markup.
+      assert_selector "[data-slot='select'] > #post_state-clear", visible: :all
+      assert_no_selector '#post_state-combobox #post_state-clear', visible: :all
+      # After the control, so it is after it in the tab order, and before the chevron.
+      ids = page.all("[data-slot='select'] > *", visible: :all).map { |element| element['id'] }
+      assert_equal %w[post_state post_state-combobox post_state-clear], ids.first(3)
+    end
+
+    test 'its name is its own word and then the field name; the word comes from the call site or i18n' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true,
+                                            clear_label: 'Empty it'))
+      assert_selector '#post_state-clear #post_state-clear-label.sr-only', text: 'Empty it', visible: :all
+      assert_selector "#post_state-clear svg[aria-hidden='true']", visible: :all
+
+      # ui--select puts the field's name after that word, from the label element the control is
+      # named by -- so the markup carries the word alone and no half-written name.
+      assert_nil page.find('#post_state-clear', visible: :all)['aria-labelledby']
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true))
+      assert_selector '#post_state-clear-label', text: I18n.t('rails_ui_kit.select.clear_label'), visible: :all
+    end
+
+    test 'it is a fixed 24px target whatever the control size, and the control makes room for it' do
+      Ui::Select::Box::SIZES.each_key do |size|
+        classes = clear_button(name: 'post[state]', options: STATES, prompt: true, size: size)['class'].split
+
+        assert_includes classes, 'size-6', "size: #{size} moved the target off 24px (WCAG 2.5.8)"
+        assert_includes classes, 'focus-visible:outline-2'
+        assert_includes classes, 'focus-visible:outline-ring'
+        assert_none_matches(/shadow/, classes, 'the focus ring is a flush outline, never a box-shadow')
+        assert_none_matches(/^border(-|$)/, classes, 'it has no border, so its outline draws flush')
+      end
+
+      # The room is taken only while the button is showing, which is what ui--select marks.
+      with_prompt = clear_control_classes(name: 'post[state]', options: STATES, prompt: true)
+      assert_includes with_prompt, 'group-data-[clearable=true]/select:pe-14'
+      assert_not_includes clear_control_classes(name: 'post[state]', options: STATES),
+                          'group-data-[clearable=true]/select:pe-14'
+    end
+
+    test 'it hides with the same media query that hides the control it sits in' do
+      touch = clear_button(name: 'post[state]', options: STATES, prompt: true)['class'].split
+      assert_includes touch, 'pointer-coarse:hidden',
+                      'the platform picker lists the prompt itself, so the button has nothing to add there'
+
+      enhanced = clear_button(name: 'post[state]', options: STATES, prompt: true, native_on_touch: false)
+      assert_not_includes enhanced['class'].split, 'pointer-coarse:hidden'
+      # Search mode always enhances, so its button is never the one the platform picker replaces.
+      searching = clear_button(name: 'post[state]', options: STATES, prompt: true, search: true)
+      assert_not_includes searching['class'].split, 'pointer-coarse:hidden'
+    end
+
+    def clear_control_classes(**)
+      render_inline(Ui::SelectComponent.new(clear_label: 'Clear', **))
+      page.find('#post_state-combobox', visible: :all)['class'].split
+    end
+
+    def assert_none_matches(pattern, classes, message)
+      assert_empty classes.grep(pattern), message
     end
 
     test 'exactly one option source is required' do

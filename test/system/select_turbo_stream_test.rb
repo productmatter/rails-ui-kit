@@ -55,7 +55,7 @@ class SelectTurboStreamTest < ApplicationSystemTestCase
     within '#select-round-trip-preview' do
       find('#trip_city-combobox').click
       assert_popup 'trip_city', 'open'
-      find('#trip_city-option-1').click
+      find('#trip_city-option-0').click
       assert_equal 'berlin', select_value('trip_city')
       find('#select-round-trip-submit').click
       assert_selector '#select-round-trip-result'

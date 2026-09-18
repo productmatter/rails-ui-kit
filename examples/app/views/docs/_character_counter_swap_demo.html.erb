@@ -1,0 +1,19 @@
+<%# The Character Counter page's server round trip, and what POST /demos/character_counter sends
+    back: as a morphing Turbo Stream with JavaScript, so the field -- and its counter -- are kept
+    in place while the help text and error swap. The received length is rendered too, so the
+    browser lane can check it against what the counter showed before submitting. %>
+<%= form_with model: note, url: demo_character_counter_path, id: "character-counter-swap-demo", class: "flex flex-wrap items-end gap-4" do %>
+  <div class="w-80">
+    <%= render Ui::FieldComponent.new(model: note, attribute: :body, control_id: "character_counter_swap") do |field| %>
+      <% field.with_label { "Note" } %>
+      <% field.with_control(Ui::TextareaComponent, counter: true, limit: 40, rows: 3) %>
+    <% end %>
+  </div>
+  <%= render(Ui::ButtonComponent.new(type: "submit", id: "character-counter-swap-submit")) { "Save" } %>
+  <% if submission.to_i.positive? %>
+    <p id="character-counter-swap-result" data-submission="<%= submission %>" class="text-sm text-muted-foreground">
+      Response <%= submission %>: <%= note.errors.empty? ? "saved" : "blocked" %>,
+      received length <span id="character-counter-received-length"><%= note.body.to_s.length %></span>
+    </p>
+  <% end %>
+<% end %>

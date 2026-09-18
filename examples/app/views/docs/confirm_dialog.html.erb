@@ -1,24 +1,24 @@
 <% content_for :title, "Confirm Dialog" %>
 
 <div class="mb-8">
-  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">Components</p>
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Components</p>
   <h1 class="text-3xl font-bold tracking-tight mb-3">Confirm Dialog</h1>
-  <p class="text-neutral-600 dark:text-neutral-400">
-    A native <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">&lt;dialog&gt;</code>-based confirmation prompt.
-    Returns a Promise so it can replace <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.confirm()</code> anywhere —
+  <p class="text-muted-foreground">
+    A native <code class="text-xs bg-muted px-1 py-0.5 rounded">&lt;dialog&gt;</code>-based confirmation prompt.
+    Returns a Promise so it can replace <code class="text-xs bg-muted px-1 py-0.5 rounded">window.confirm()</code> anywhere —
     including Turbo's built-in confirmation flow.
   </p>
 </div>
 
 <%# Preview %>
 <h2 class="text-base font-semibold mb-3">Preview</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  A delete and a publish confirmation, side by side. The kit renders <strong class="font-medium text-neutral-900 dark:text-neutral-100">no icon</strong>,
-  and the confirm button's colour is the caller's choice: <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">confirm_variant</code>
-  defaults to <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">:destructive</code>, and a publish asks for
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">"default"</code>. The words carry the meaning, not the colour.
+<p class="text-sm text-muted-foreground mb-3">
+  A delete and a publish confirmation, side by side. The kit renders <strong class="font-medium text-foreground">no icon</strong>,
+  and the confirm button's colour is the caller's choice: <code class="text-xs bg-muted px-1 py-0.5 rounded">confirm_variant</code>
+  defaults to <code class="text-xs bg-muted px-1 py-0.5 rounded">:destructive</code>, and a publish asks for
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">"default"</code>. The words carry the meaning, not the colour.
 </p>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-4 p-12 mb-8">
+<div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-4 p-12 mb-8">
   <%= render Ui::ButtonComponent.new(variant: :destructive, id: "delete-item",
         onclick: "window.defaultConfirmDialog({ title: 'Delete this project?', message: 'Its files, its history and every comment on it go too. This cannot be undone.', confirm_label: 'Delete project' }).then(ok => { if (ok) window.triggerToast('success', 'Deleted.') })") do %>
     Delete project
@@ -51,54 +51,54 @@
 
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Render once in your layout:</strong>
+<p class="text-sm text-muted-foreground mb-3">
+  <strong class="font-medium text-foreground">Render once in your layout:</strong>
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">Layout — ERB</span>
-    <button data-copy-target="#confirm-layout" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-4">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Layout — ERB</span>
+    <button data-copy-target="#confirm-layout" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-layout" class="text-neutral-200"><%= h(example_confirm_layout) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-layout" class="text-card-foreground"><%= h(example_confirm_layout) %></code></pre>
 </div>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Call from JavaScript:</strong>
+<p class="text-sm text-muted-foreground mb-3">
+  <strong class="font-medium text-foreground">Call from JavaScript:</strong>
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-4">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">JavaScript</span>
-    <button data-copy-target="#confirm-js" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-4">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">JavaScript</span>
+    <button data-copy-target="#confirm-js" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-js" class="text-neutral-200">const ok = await window.defaultConfirmDialog("Delete this item?")
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-js" class="text-card-foreground">const ok = await window.defaultConfirmDialog("Delete this item?")
 if (ok) { /* proceed */ }
 
 // With title:
 const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This is permanent." })</code></pre>
 </div>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  <strong class="font-medium text-neutral-900 dark:text-neutral-100">Turbo confirmation (drop-in replace):</strong>
-  Add <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">ui--turbo-confirm</code> to your layout. See <a href="<%= turbo_confirm_path %>" class="text-violet-600 dark:text-violet-400 hover:underline">Turbo Confirm utility</a>.
+<p class="text-sm text-muted-foreground mb-3">
+  <strong class="font-medium text-foreground">Turbo confirmation (drop-in replace):</strong>
+  Add <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--turbo-confirm</code> to your layout. See <a href="<%= turbo_confirm_path %>" class="text-primary hover:underline">Turbo Confirm utility</a>.
 </p>
 
 <%# Options %>
 <h2 class="text-base font-semibold mb-3">Theming</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-  Every class option is <strong class="font-medium text-neutral-900 dark:text-neutral-100">merged onto</strong> the component's own
-  classes with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">tailwind_merge</code>, so where your class and a
+<p class="text-sm text-muted-foreground mb-3">
+  Every class option is <strong class="font-medium text-foreground">merged onto</strong> the component's own
+  classes with <code class="text-xs bg-muted px-1 py-0.5 rounded">tailwind_merge</code>, so where your class and a
   default set the same property yours wins, and the rest of the defaults stay. Pass any combination of these to
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">Ui::ConfirmDialogComponent.new</code>:
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">Ui::ConfirmDialogComponent.new</code>:
 </p>
-<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 mb-8">
+<div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
-    <thead class="bg-neutral-50 dark:bg-neutral-900">
+    <thead class="bg-muted">
       <tr>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Option</th>
-        <th class="text-start px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Option</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody class="divide-y divide-border">
       <% [
         ["confirm_variant", "Which Button variant the confirm button uses: :destructive (default), :default, :outline, :secondary, :ghost, :link."],
         ["confirm_label / cancel_label", "Button text."],
@@ -110,9 +110,9 @@ const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This
         ["wrapper_class / body_class / footer_class", "Classes on the panel, its body and its footer."],
         ["icon_wrapper_class", "Classes on the icon cell — its tint and shape are yours."],
       ].each do |name, desc| %>
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-          <td class="px-4 py-3 font-mono text-xs text-violet-600 dark:text-violet-400 whitespace-nowrap"><%= name %></td>
-          <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400"><%= desc %></td>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary whitespace-nowrap"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
         </tr>
       <% end %>
     </tbody>
@@ -120,24 +120,24 @@ const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This
 </div>
 
 <h2 class="text-base font-semibold mb-3">Rich content, and getting an icon back</h2>
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   An icon and a rich body are markup, so they come from a Ruby-rendered dialog — never through
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">defaultConfirmDialog</code> or a
-  <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">data-turbo-confirm</code> attribute. Render the dialog once, then open it
-  by id with <code class="text-xs bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">window.customConfirmDialog</code>.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">defaultConfirmDialog</code> or a
+  <code class="text-xs bg-muted px-1 py-0.5 rounded">data-turbo-confirm</code> attribute. Render the dialog once, then open it
+  by id with <code class="text-xs bg-muted px-1 py-0.5 rounded">window.customConfirmDialog</code>.
 </p>
-<div class="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-wrap items-center justify-center gap-4 p-12 mb-4">
+<div class="rounded-lg border border-border bg-background flex flex-wrap items-center justify-center gap-4 p-12 mb-4">
   <%= render Ui::ButtonComponent.new(variant: :outline, id: "open-icon-confirm",
         onclick: "window.customConfirmDialog('#icon-confirm')") do %>
     Delete, with the v0.2.0 icon
   <% end %>
 </div>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB — the icon, as UPGRADING.md restores it</span>
-    <button data-copy-target="#confirm-icon" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB — the icon, as UPGRADING.md restores it</span>
+    <button data-copy-target="#confirm-icon" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-icon" class="text-neutral-200"><%= h(example_confirm_icon) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-icon" class="text-card-foreground"><%= h(example_confirm_icon) %></code></pre>
 </div>
 
 <%# The v0.2.0 look, restored exactly as UPGRADING.md documents it: the glyph and its tint are
@@ -153,13 +153,13 @@ const ok = await window.defaultConfirmDialog({ title: "Publish?", message: "This
   <% end %>
 <% end %>
 
-<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+<p class="text-sm text-muted-foreground mb-3">
   The same slots carry a rich body. This is the "Archive project" example above:
 </p>
-<div class="rounded-lg overflow-hidden border border-neutral-800 mb-8">
-  <div class="flex items-center justify-between bg-neutral-900 px-4 py-2">
-    <span class="text-xs text-neutral-400">ERB</span>
-    <button data-copy-target="#confirm-rich" class="text-xs text-neutral-400 hover:text-white transition-colors">Copy</button>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB</span>
+    <button data-copy-target="#confirm-rich" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
   </div>
-  <pre class="bg-neutral-950 px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-rich" class="text-neutral-200"><%= h(example_confirm_rich) %></code></pre>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="confirm-rich" class="text-card-foreground"><%= h(example_confirm_rich) %></code></pre>
 </div>

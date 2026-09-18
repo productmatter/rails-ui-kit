@@ -32,7 +32,8 @@ module Ui
       render_inline(Ui::InputComponent.new)
 
       assert_includes input_classes, 'focus-visible:outline-2'
-      assert_includes input_classes, 'focus-visible:outline-offset-2'
+      assert_includes input_classes, 'focus-visible:border-ring'
+      assert_not_includes input_classes, 'focus-visible:outline-offset-2', 'a bordered control draws the fused line, not the stand-off ring'
       assert_includes input_classes, 'focus-visible:outline-ring'
       assert_empty input_classes.grep(/ring-\[|:ring-ring/)
     end

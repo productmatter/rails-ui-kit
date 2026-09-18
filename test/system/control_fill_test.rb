@@ -23,6 +23,8 @@ class ControlFillTest < ApplicationSystemTestCase
 
   setup do
     visit field_path
+    # The controls measured here sit under the sizing demo's disclosure; closed, they have no boxes.
+    page.execute_script("document.getElementById('control-sizes-all').open = true")
     disable_transitions
   end
 
@@ -78,7 +80,7 @@ class ControlFillTest < ApplicationSystemTestCase
       'Input' => find('#sizes-default-input'),
       'Textarea' => find('#sizes-default-textarea'),
       'select-only Select' => find('#sizes-default-select-combobox'),
-      'search Select' => find('#sizes-default-search-combobox')
+      'search Select' => find('#sizes-default-search-trigger')
     }
   end
 

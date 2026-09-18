@@ -24,7 +24,7 @@ themes the kit by redefining variables, not by overriding components.
 | Component | Stimulus identifier | What it's for |
 |---|---|---|
 | `Ui::FieldComponent` | `ui--field` | A label, control, description and error as one accessible unit, built from `model:` and `attribute:` — name, id, label, value, errors and `required` all derived ([forms guide](docs/guides/forms.md)) |
-| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a WAI-ARIA combobox with keyboard support and optional search |
+| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field |
 | `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card` |
 | `Ui::InputComponent` | — | A native `<input>` on the tokens, sized from the shared control scale; in a form, render it through Field |
 | `Ui::TextareaComponent` | — | A native `<textarea>`, styled and sized like Input |
@@ -460,7 +460,7 @@ applies the theme before first paint.
 
 Checkboxes, radios, inputs and textareas are native, so Capybara's `check`, `choose` and `fill_in`
 work on them unchanged. An enhanced Select isn't: its native `<select>` sits invisibly over the
-combobox, so `select "Invited", from: "Status"` no longer picks what a user would. Include the
+control, so `select "Invited", from: "Status"` no longer picks what a user would. Include the
 kit's helper in your system tests and use `ui_select`:
 
 ```ruby
@@ -476,9 +476,10 @@ end
 ui_select "Invited", from: "Status"
 ```
 
-It drives the combobox the way a person does, and falls back to the native select where the
-component wasn't enhanced (JavaScript off, or the platform picker on a phone). The value still
-lives in the native `<select>`, so assert it the way you always did.
+It drives the control the way a person does — press it, then choose the option — in either mode,
+and falls back to the native select where the component wasn't enhanced (JavaScript off, or the
+platform picker on a phone). The value still lives in the native `<select>`, so assert it the way
+you always did.
 
 ## Overriding
 
@@ -504,14 +505,14 @@ your own `@theme` all win over them wherever they sit in the file.
 
 The full set is `background`/`foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent` (each with a `-foreground` pair), `destructive`, `border`, `input`, `ring`, `chart-1`…`chart-5`, `sidebar` and its variants, and `radius` — defined under `:root` and `.dark` in `app/assets/tailwind/rails_ui_kit/engine.css`. `ui--dark-mode` toggles the `.dark` class on `<html>`.
 
-**Control heights** are tokens too. Button, Input, Select, Textarea and Choices share one `size:` scale — `:sm`, `:default`, `:lg` — and every control at a size reads its height from the same token: `--control-height-sm`, `--control-height` and `--control-height-lg`, which are 32, 36 and 40px at Tailwind's default spacing. Redefine them to make your app denser or roomier, and a row of controls at one size keeps lining up. These are kit extensions rather than shadcn names, so a shadcn theme that doesn't mention them leaves the kit's values in place. Each one is honoured wherever you set it, including on a single part of a page:
+**Control heights** are tokens too. Button, Input, Select and Textarea share one `size:` scale — `:xs`, `:sm`, `:default`, `:lg`, `:xl` — and every control at a size reads its height from the same token: `--control-height-xs`, `--control-height-sm`, `--control-height`, `--control-height-lg` and `--control-height-xl`, which are 24, 28, 32, 36 and 40px at Tailwind's default spacing. Each size also carries its own side padding, text size and corner radius, so the five read as five sizes rather than one box at five heights; only the height is a token. Choices accepts the same five names so a form can hand every control one size, and reads none of the tokens. Redefine them to make your app denser or roomier, and a row of controls at one size keeps lining up. These are kit extensions rather than shadcn names, so a shadcn theme that doesn't mention them leaves the kit's values in place. Each one is honoured wherever you set it, including on a single part of a page:
 
 ```css
-:root       { --control-height-sm: 1.75rem; --control-height: 2rem; --control-height-lg: 2.25rem; }
-.data-table { --control-height: 1.75rem; }
+:root       { --control-height: 2.25rem; --control-height-lg: 2.5rem; } /* a roomier app: 36 and 40px */
+.data-table { --control-height: 1.75rem; }                              /* a denser table: 28px */
 ```
 
-**Don't set a control height below 24px.** A control under 24 CSS pixels fails WCAG 2.5.8, Target Size (Minimum), so people with limited dexterity can't reliably hit it. The kit's own heights pass. It won't stop you setting a smaller one, the same way it won't stop you choosing an unreadable colour pair, so this one is on you.
+**Don't set a control height below 24px.** A control under 24 CSS pixels fails WCAG 2.5.8, Target Size (Minimum), so people with limited dexterity can't reliably hit it. The kit's own heights pass; the smallest, `xs`, sits exactly on 24px, with no margin. It won't stop you setting a smaller one, the same way it won't stop you choosing an unreadable colour pair, so this one is on you.
 
 **Chrome strings.** Two kinds of words, translated in two places.
 

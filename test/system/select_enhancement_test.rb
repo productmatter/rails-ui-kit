@@ -125,7 +125,9 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     page.execute_script("document.getElementById('trip_city-combobox').scrollIntoView({ block: 'center' })")
     find('#trip_city-combobox').click
     assert_popup 'trip_city', 'open'
-    find('#trip_city-option-4').click
+    # Tokyo, the city the server rejects. The prompt is not in the listbox (§ Behavior, item 10),
+    # so the last option's index is the last city's.
+    find('#trip_city-option-3').click
     find('#select-round-trip-submit').click
     assert_selector '[data-slot=field-error]'
     assert_empty duplicate_ids, 'the 422 re-render left a stale copy behind'

@@ -136,5 +136,38 @@ module Ui
 
       assert_no_selector '[aria-required]'
     end
+
+    # The hidden required-label span (ui-select § Behavior, item 17, "Required is the label's to
+    # say"): present only alongside the marker, named for a direct aria-labelledby reference, and
+    # resolving call site -> host locale -> kit default like every other chrome string.
+    test 'the hidden required-label span exists beside the marker, with its id and the chrome default text' do
+      render_bound(FieldModels::Validated.new, :plain)
+
+      label_id = page.find('label')['id']
+      span = page.find('label [data-slot=field-required-text]', visible: :all)
+      assert_equal "#{label_id}-required", span['id']
+      assert span['hidden']
+      assert_equal I18n.t('rails_ui_kit.field.required_label'), span.text(:all)
+    end
+
+    test 'the hidden required-label span is absent when the field is not required' do
+      render_bound(FieldModels::Bare.new, :email)
+
+      assert_no_selector '[data-slot=field-required-text]', visible: :all
+    end
+
+    test 'the required-label span reads the fr locale file, per render' do
+      I18n.with_locale(:fr) do
+        render_bound(FieldModels::Validated.new, :plain)
+
+        assert_selector '[data-slot=field-required-text]', text: 'obligatoire', visible: :all
+      end
+    end
+
+    test 'a call-site required_label wins over the locale file' do
+      render_bound(FieldModels::Validated.new, :plain, required_label: 'needed')
+
+      assert_selector '[data-slot=field-required-text]', text: 'needed', visible: :all
+    end
   end
 end
