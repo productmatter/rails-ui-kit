@@ -66,16 +66,25 @@ class SelectHelperTest < ApplicationSystemTestCase
     # The Modal on this page carries a second Select labelled "City", which is exactly the
     # situation where picking the first match silently would write to the wrong control.
     #
-    # Both have to be on screen when the ambiguity is checked: a Modal locks the scroll behind it,
-    # and a label the viewport has scrolled past is one the driver reports as not displayed, so
-    # the Select it names stops answering to it. Hence the scroll, and hence opening the Modal
-    # from script rather than by pressing its trigger, which would scroll the page to the trigger.
-    page.execute_script("document.getElementById('demo_city').scrollIntoView({ block: 'center' })")
-    page.execute_script("document.getElementById('select-modal-trigger').click()")
+    # Opened the way a person opens it: pressing the trigger scrolls the page to it, and the Modal
+    # then locks the scroll, so the page's own "City" label is off screen while the ambiguity is
+    # checked. The driver reports such a label as not displayed. The helper has to count it
+    # anyway: a name is what the label says, not whether it is currently painted.
+    find('#select-modal-trigger').click
     assert_selector '#modal_city-combobox'
 
     error = assert_raises(Capybara::Ambiguous) { ui_select 'Tokyo', from: 'City' }
     assert_match(/found 2 Selects/, error.message)
+  end
+
+  test 'SH9: a required Select answers to its plain label, marker and hidden hint left out' do
+    # A required Field's label paints a `*` beside its text and holds a hidden "required" for the
+    # search trigger's accessible name. Neither is part of the name a person calls the field by.
+    ui_select 'Growth', from: 'Plan (required)'
+    assert_equal 'growth', select_value('booking_plan')
+
+    ui_select 'Tokyo', from: 'City (search, required)'
+    assert_equal 'tokyo', select_value('booking_city')
   end
 
   test 'SH7: a name that matches nothing says so' do

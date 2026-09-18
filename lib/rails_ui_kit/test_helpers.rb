@@ -74,10 +74,28 @@ module RailsUiKit
     end
 
     def ui_select_names(root, native)
-      label = page.first("label[for='#{native[:id]}']", minimum: 0, wait: 0)
+      label = page.first("label[for='#{native[:id]}']", visible: :all, minimum: 0, wait: 0)
       control = root.first(CONTROL, visible: :all, minimum: 0, wait: 0)
 
-      [label&.text, native[:'aria-label'], control&.[](:'aria-label')].compact
+      [(ui_select_label_name(label) if label), native[:'aria-label'], control&.[](:'aria-label')].compact
+    end
+
+    # The label's accessible text: what a screen reader reads out, and what a host means by
+    # `from:`. Read in the browser from a clone with every aria-hidden and hidden descendant
+    # removed, so a Field's required marker and its hidden "required" never join the name; and
+    # read whether or not the label is painted, because a label scrolled behind an open Modal is
+    # one the driver reports as not displayed, and dropping it made the ambiguity check
+    # under-count -- the helper then picked the other Select instead of raising.
+    LABEL_NAME = <<~JS
+      ((label) => {
+        const clone = label.cloneNode(true)
+        clone.querySelectorAll('[aria-hidden="true"], [hidden]').forEach((node) => node.remove())
+        return clone.textContent.replace(/\\s+/g, ' ').trim()
+      })(arguments[0])
+    JS
+
+    def ui_select_label_name(label)
+      page.evaluate_script(LABEL_NAME, label)
     end
 
     def ui_select_native(root)
