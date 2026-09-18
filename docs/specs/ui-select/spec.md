@@ -320,7 +320,7 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       field `<id>-search`; `<id>-combobox` exists in select-only mode only. The search
       field carries `aria-expanded`, which `role="combobox"` requires, rendered `false`
       and kept honest by `ui--select`, since the field is not the overlay's trigger. The
-      search row is a flat `h-9` at every `size:` step (`ui-control-sizing`). A pointer
+      search row is a flat `h-8`, the option rows' own height, at every `size:` step (`ui-control-sizing`). A pointer
       press on the trigger opens with no active option, as `Enter` and `Space` do.
     - **The text is a query, never the value.** It is empty when the popup opens and
       discarded when it closes. The trigger shows the truth from the native select at

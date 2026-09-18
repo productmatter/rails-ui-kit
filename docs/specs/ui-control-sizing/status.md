@@ -1,11 +1,17 @@
 ## State
 
-ready-for-review
+building
 
-Built and verified 2026-09-14. Every agent-loopable check in § Acceptance checks passes
-exactly as written. What remains is the judgeable review of the token surface and
-Jonathan's human gate: the side-by-side docs comparison and a mixed row at each size,
-at the kit's tokens and at a denser host value.
+Reshaped 2026-09-18 (Jonathan Simmons). The three-step scale built and verified on
+2026-09-14 worked as specified and was nearly invisible: 32, 36 and 40px, adjacent steps
+with nothing else changing on Input or Select. The scale is now Tailwind's five button
+steps, 24 to 40px, with `default` the middle one at 32px, and each step carries inline
+padding, text size and radius as well as its height token (§ Behavior). That retires
+rule 3's "no visual change at the defaults" and the browser check that proved it; rule 3
+now pins all five boxes and records that the defaults moved once, on purpose. Awaiting
+build, after the character counter, which holds Textarea. Jonathan's human gate is
+rewritten to match: the five steps read as five sizes, and the 32px default is accepted
+on a real form.
 
 ## Done
 
@@ -31,6 +37,15 @@ at the kit's tokens and at a denser host value.
   § Scopes row to ui-component-library.
 
 ## In progress
+
+The 2026-09-18 reshape, not yet started: two new tokens (`--control-height-xs`, `-xl`)
+and the three existing ones each dropped one step in `engine.css`; the five-step table's
+inline padding, text size and radius on Button, Input, Select's shared box and Textarea;
+Choices accepting `xs` and `xl`; Select's popup search row from `h-9` to `h-8`;
+`control_sizing_test.rb`'s v0.3.0 box check replaced by one that pins all five steps;
+docs pages showing the ramp; CHANGELOG and UPGRADING entries, since a host on the kit's
+defaults sees every control get 4px shorter. What follows is the record of the
+2026-09-14 build.
 
 Step 1 of the build is done: `test/system/control_sizing_test.rb` (CS1 and CS2) measures
 every control's box at its defaults and passes against the unmodified components, at
