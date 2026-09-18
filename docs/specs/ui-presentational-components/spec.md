@@ -92,9 +92,21 @@ These refine § Business rules of ui-component-library, rules 1, 5, 6 and 9, and
    snippet with caller-supplied icon-only content shows the `aria-label`. Text reaches
    4.5:1 and a non-text indicator that carries meaning (a control's boundary, a focus
    indicator) reaches 3:1, on every token surface, in light and in dark. Focus is
-   drawn as Button draws it,
+   drawn with an outline, never a box-shadow ring, because forced-colors mode drops
+   box-shadows, and in one of two forms (decided 2026-09-18, Jonathan Simmons; before
+   then every control drew the second). **A control with a border and a plain fill** —
+   Input, Textarea, Select's control, the outline Button, a Choices card — draws one
+   fused line: its border takes `--ring` and a 2px `--ring` outline sits flush against
+   it, `focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring`
+   with no offset, so the eye sees a single solid line and nothing in the layout moves.
+   A border, a gap and a ring read as two lines where one would do. **A control that
+   can be filled with the focus colour** — a filled Button, a Choices indicator, which
+   is `--primary` when checked — keeps the stand-off form,
    `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`,
-   never a box-shadow ring, because forced-colors mode drops box-shadows. Pointer
+   because a line pressed against its own colour would disappear. Either way the line
+   reaches 3:1 against what it touches: the surface outside it and, for the fused form,
+   the control's fill inside it. An invalid control's fused line is `--destructive`,
+   border and outline both. Pointer
    targets meet WCAG 2.2's 24×24 CSS px minimum, except inline text links. Where a
    token value makes a rule unmeetable, the worker stops and escalates. Never paint
    around it with a literal (§ Assumptions).

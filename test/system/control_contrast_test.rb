@@ -102,7 +102,33 @@ class ControlContrastTest < ApplicationSystemTestCase
   def assert_focus_ring_contrast(element, preview, mode, surface)
     focus_visibly(element)
     assert_not_equal 'none', outline_of(element)['style'], 'element draws no focus outline'
-    ratio = contrast_ratio(color_of(:outline, element), color_of(:background, preview))
+    ring = color_of(:outline, element)
+    ratio = contrast_ratio(ring, color_of(:background, preview))
     assert_operator ratio, :>=, 3, "focus ring is #{ratio.round(2)}:1 on #{surface} in #{mode} mode"
+    return unless fused_focus?(element)
+
+    # The fused line touches the control's own fill as well as the surface, and it is one line
+    # only if the border took the focus colour too (ui-presentational-components, rule 3).
+    fill = contrast_ratio(ring, color_of(:background, element))
+    assert_operator fill, :>=, 3, "fused focus line is #{fill.round(2)}:1 against the control's fill on #{surface} in #{mode} mode"
+    assert_equal ring, settled_border(element, ring),
+                 "the border did not take the focus colour on #{surface} in #{mode} mode, so the line reads as two"
+  end
+
+  # A flush outline is the fused form a bordered control draws; an offset one is the stand-off ring.
+  def fused_focus?(element)
+    page.evaluate_script('parseFloat(getComputedStyle(arguments[0]).outlineOffset) === 0', element)
+  end
+
+  # These controls animate colour, so the border is read until it settles rather than mid-fade.
+  def settled_border(element, expected)
+    border = color_of(:border, element)
+    20.times do
+      break if border == expected
+
+      sleep 0.05
+      border = color_of(:border, element)
+    end
+    border
   end
 end

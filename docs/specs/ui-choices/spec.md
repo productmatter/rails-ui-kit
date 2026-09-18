@@ -395,8 +395,11 @@ mode.
     target too. The indicator draws the control boundary: `border-input`, with the
     control fill rule `bg-background` in light and `dark:bg-muted/50` in dark, never
     transparent (`ui-presentational-components` § Business rules, rule 6(a), amended
-    2026-09-14). The focus ring is the input's own `focus-visible` outline, the same
-    as Input's.
+    2026-09-14). The focus ring is the input's own `focus-visible` outline in the
+    stand-off form, 2px offset 2px, and not Input's fused line: the indicator is
+    `--primary` when checked, which is the focus colour, so a line pressed against it
+    would merge with the fill (`ui-presentational-components` § Business rules, rule 3,
+    amended 2026-09-18).
 16. **`variant: :card`** makes each choice a bordered box: the indicator, then the
     optional icon, then the text column with its optional description line in
     `text-muted-foreground`. The card takes the control fill and a `border-input`
@@ -405,7 +408,7 @@ mode.
     | State | Where it shows | Selector (compiled with tailwindcss 4.3.1 against the kit's theme) |
     |---|---|---|
     | checked | card border `--primary`; indicator filled `--primary` with a `--primary-foreground` mark | `has-checked:` → `&:has(*:checked)` |
-    | keyboard focus | a 2px `--ring` outline, offset 2px, on the **card**; the input's own outline is suppressed in this appearance only | `has-focus-visible:` → `&:has(*:focus-visible)` |
+    | keyboard focus | the **card**'s border takes `--ring` and a 2px `--ring` outline sits flush against it, one fused line (`ui-presentational-components` § Business rules, rule 3, amended 2026-09-18; it was a 2px outline offset 2px before); the input's own outline is suppressed in this appearance only | `has-focus-visible:` → `&:has(*:focus-visible)` |
     | disabled | card at 50% opacity, not-allowed cursor | `has-disabled:` → `&:has(*:disabled)`, which also matches inputs inside `fieldset[disabled]` |
     | invalid | every card's border `--destructive`, **including the checked card** | the fieldset's `aria-invalid`, read by a named `group/choices` |
 

@@ -27,10 +27,11 @@ module Ui
       # specificity, so the invalid rule for a checked card is written as the compound selector.
       CARD = 'rounded-md border border-input bg-background dark:bg-muted/50 p-3 shadow-xs transition-colors ' \
              'has-checked:border-primary ' \
-             'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring ' \
+             'has-focus-visible:border-ring has-focus-visible:outline-2 has-focus-visible:outline-ring ' \
              'has-disabled:opacity-50 ' \
              'group-aria-invalid/choices:border-destructive ' \
              'group-aria-invalid/choices:has-checked:border-destructive ' \
+             'group-aria-invalid/choices:has-focus-visible:border-destructive ' \
              'group-aria-invalid/choices:has-focus-visible:outline-destructive'
 
       LIST = 'has-disabled:opacity-50'

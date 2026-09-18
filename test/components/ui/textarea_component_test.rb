@@ -38,7 +38,8 @@ module Ui
       render_inline(Ui::TextareaComponent.new)
 
       assert_includes textarea_classes, 'focus-visible:outline-2'
-      assert_includes textarea_classes, 'focus-visible:outline-offset-2'
+      assert_includes textarea_classes, 'focus-visible:border-ring'
+      assert_not_includes textarea_classes, 'focus-visible:outline-offset-2', 'a bordered control draws the fused line, not the stand-off ring'
       assert_includes textarea_classes, 'focus-visible:outline-ring'
       assert_empty textarea_classes.grep(/ring-\[|:ring-ring/)
     end

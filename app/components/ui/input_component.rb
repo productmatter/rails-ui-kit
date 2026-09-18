@@ -19,9 +19,10 @@ module Ui
       base: 'flex w-full min-w-0 rounded-md border border-input bg-background dark:bg-muted/50 ' \
             'px-3 py-1 text-sm shadow-xs transition-colors ' \
             'placeholder:text-muted-foreground ' \
-            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
+            'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
             'disabled:pointer-events-none disabled:opacity-50 ' \
-            'aria-invalid:border-destructive aria-invalid:focus-visible:outline-destructive',
+            'aria-invalid:border-destructive aria-invalid:focus-visible:border-destructive ' \
+            'aria-invalid:focus-visible:outline-destructive',
       variants: {
         size: {
           sm: 'h-(--control-height-sm)',
