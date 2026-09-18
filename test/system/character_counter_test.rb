@@ -35,13 +35,23 @@ class CharacterCounterTest < ApplicationSystemTestCase
   end
 
   test 'CC2: a paste past the limit turns the count destructive with data-over, and the control stays valid' do
+    muted = color_of(:text, count_span)
     textarea.send_keys('x' * 65)
 
     span = count_span
     assert_equal '65 / 60', span.text
     assert_equal 'true', span['data-over']
+    # The marker is not the behaviour. The colour a person sees has to change, and change back:
+    # this test once passed on data-over alone while the count stayed grey.
+    over = color_of(:text, span)
+    assert_not_equal muted, over, 'the count is marked over but painted the same colour'
+    assert_operator contrast_ratio(over, color_of(:background, span)), :>=, 4.5
     assert_nil textarea['aria-invalid']
     assert_no_selector '#demo_bio[aria-invalid]'
+
+    textarea.send_keys(*([:backspace] * 10))
+    assert_nil count_span['data-over']
+    assert_equal muted, color_of(:text, count_span), 'back under the limit, the count stayed destructive'
   end
 
   test 'CC3: the status region announces once at each threshold and nothing between' do

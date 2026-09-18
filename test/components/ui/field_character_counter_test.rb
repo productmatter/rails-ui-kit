@@ -75,7 +75,9 @@ module Ui
 
       span = count_span
       assert_equal 'true', span['data-over']
-      assert_includes span['class'].split, 'text-destructive'
+      # The colour keys off data-over, so the same rule covers a count typed past the limit.
+      assert_includes span['class'].split, 'data-[over=true]:text-destructive'
+      assert_not_includes span['class'].split, 'text-destructive'
       assert_nil page.find('textarea')['aria-invalid']
       assert_no_selector '[data-slot=field-error]'
       assert_no_selector "[data-slot='field'][data-invalid]"
