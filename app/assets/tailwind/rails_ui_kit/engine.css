@@ -146,8 +146,10 @@
     --border: oklch(0.372 0.044 257.287); /* slate-700 */
     /* Light enough to reach 3:1 against the surface and against the translucent
        fill a control paints on it. Boundaries only: a control's fill comes from a
-       surface token, never from --input. */
-    --input: oklch(0.704 0.04 256.788); /* slate-400 */
+       surface token, never from --input. slate-500, the same step as light mode: it
+       clears 3:1 on every surface and fill (3.07:1 at the tightest, a field on --muted)
+       without the near-white line slate-400 drew (decided 2026-09-18). */
+    --input: oklch(0.554 0.046 257.417); /* slate-500 */
     --ring: oklch(0.673 0.182 276.935); /* indigo-400 */
 
     /* Kit extensions — not part of the shadcn contract, so a redefining theme leaves these at the kit's own default. */
