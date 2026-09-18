@@ -90,11 +90,20 @@ when the text comes back under it.
 6. **Code points, as Ruby counts them.** The count is the number of code points, which
    is what `String#length` returns, so a value the counter calls 500 is 500 to
    `validates length:`. An emoji sequence counts as its code points on both sides.
-7. **Line breaks count as the server receives them.** A `<textarea>`'s API value has
-   `LF` line breaks, but the browser submits `CRLF`, so each line break reaches Rails as
-   two characters. The counter counts a line break as two, and the server-rendered count
-   (item 8) does the same, so the counter and the validator agree exactly. A counter
-   that used the API value's length would be one short per line.
+7. **A line break counts as one character.** That is what a person typing sees, what a
+   `<textarea>`'s value holds, and what Rails receives through Turbo's default
+   submission, which re-encodes the form's fields itself and sends a bare `LF` (measured
+   in the browser at build time, 2026-09-18, by posting through the docs demo). The
+   server-rendered count (item 8) does the same. It is not what every path sends. By the
+   HTML standard's encoding algorithms, a native submission — Turbo off, or JavaScript
+   unavailable — and a `multipart/form-data` submission both normalise line breaks to
+   `CRLF`, so Rails receives two characters per break there, and `validates length:` can
+   reject a value the counter showed as within the limit. Those two paths were not
+   measured here. The remedy is the host's and is one line: normalise line endings
+   before validating (`normalizes :bio, with: ->(text) { text.gsub("\r\n", "\n") }`),
+   and the docs page says so. This item first said a break counted as two on every path;
+   that was wrong for the path the kit's forms take by default (`status.md`
+   § Corrections).
 8. **Server-rendered first.** Ruby renders the initial count and the limit from the
    textarea's content, so with JavaScript off the line shows a true count that simply
    doesn't update. `ui--character-count` takes over on connect and recounts on every
@@ -144,9 +153,11 @@ when the text comes back under it.
    blocks a submission, never adds to `aria-describedby` beyond the description part it
    lives in, and never changes the Field's invalid state. The Field's error always wins
    (`ui-field-model-binding` § Behavior, items 19 and 20).
-2. **Agrees with the server.** What the counter shows is what `validates length:` would
-   count for the submitted value (§ Behavior, items 6 and 7). A disagreement, in either
-   direction, is a defect.
+2. **Agrees with the server.** What the counter shows is what `validates length:` counts
+   for a value submitted through Turbo's default path, and for any value whose line
+   endings the host has normalised (§ Behavior, items 6 and 7). On those terms a
+   disagreement, in either direction, is a defect. Where a host lets `CRLF` reach its
+   validator, the two differ by one per line break, and item 7 says what to do.
 3. **One mechanism.** Placement, hiding, restoring and animation are Field's. The counter
    adds no swap, presence or live-region logic beyond writing the status text.
 4. **Tokens, chrome, direction.** No palette literal; every string through
@@ -170,11 +181,13 @@ Inherits `ui-component-library` § Assumptions.
   way Field item 20 verifies its description (the computed description, not the
   attribute). **At a contradiction**, keep the DOM order and drop any layout that would
   visually reorder; never reorder with CSS.
-- **Rails does not normalise textarea line breaks on the way in.** `CRLF` from the
-  browser reaches `validates length:` as two characters on every supported Rails
-  version. Verify at build time by posting a value with line breaks and reading the
-  param's length. **At a contradiction**, follow what Rails does and record a
-  correction; rule 2 stands either way.
+- **What reaches Rails for a line break depends on who encoded the form.** This
+  assumption first read "the browser submits `CRLF`, so Rails receives two characters",
+  to be verified at build time. It was, and it did not hold: through Turbo's default
+  submission Rails receives a bare `LF`, one character, because Turbo re-encodes the
+  fields itself. Rails normalises nothing on the way in, so a native or multipart
+  submission's `CRLF` does arrive as two. The counter follows the default path, as the
+  contradiction clause here directed, and item 7 records the rest.
 - **`ui--field` swaps the description part as a unit.** Checked 2026-09-18 in
   `field_controller.js`: it collects every `field-description` part and settles each,
   so a part with children needs nothing from it.

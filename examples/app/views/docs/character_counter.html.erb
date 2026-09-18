@@ -62,6 +62,23 @@
   <%= render "docs/character_counter_swap_demo", note: DemoNote.new, submission: 0 %>
 </div>
 
+<%# Line breaks %>
+<h2 class="text-base font-semibold mb-3">Line breaks and your validator</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The counter counts a line break as one character, which is what the person typing sees and what Rails receives when
+  Turbo submits the form. A form submitted without Turbo, and any
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multipart/form-data</code> form, sends each line break as
+  two characters instead, so <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">validates length:</code> can
+  reject text the counter showed as within the limit. Normalise line endings on the model and the two always agree:
+</p>
+<div class="rounded-lg overflow-hidden border border-border mb-8">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">Ruby</span>
+  </div>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed" tabindex="0"><code class="text-card-foreground">normalizes :bio, with: -&gt;(text) { text.gsub("\r\n", "\n") }
+validates :bio, length: { maximum: 500 }</code></pre>
+</div>
+
 <h2 class="text-base font-semibold mb-3">Options</h2>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
