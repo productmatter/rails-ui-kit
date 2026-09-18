@@ -157,6 +157,21 @@ Public API: targets — none (operates on `this.element`). Values — `open` (Bo
     it, and it is not moved in later either, so focus that falls to `<body>` while the
     content changes is left there. A combobox needs exactly that, since its DOM focus
     has to stay on its own input while its listbox is open. Focus return is unaffected.
+
+    Two additions, 2026-09-18, both made for ui-select's search mode and both the
+    overlay's rather than Select's. **A close can decline the return, once.**
+    `closeWithoutFocusReturn()` exists for Tab out of an open layer: the browser is
+    already moving focus to whatever follows the trigger, and returning it would undo
+    the key the user pressed. It skips exactly one close; `restoreFocus` is untouched and
+    every other close still returns focus. **The return checks its own work.** `focus()`
+    on a control its component has not revealed yet is a silent no-op, and that is the
+    state a control is in when a Turbo Stream has just replaced it: the old overlay
+    disconnects, and restores, before the new component connects and reveals the control.
+    So the return is tried once more on the next frame, and only while focus is still
+    stranded — on nothing, on `<body>`, or on the `<dialog>` the target sits in — which
+    means it never takes focus from somewhere it has since landed on purpose. This
+    second one changes existing behaviour, a silent decline becoming a restore, and was
+    ratified as such by Jonathan Simmons on 2026-09-18.
 13. Body scroll lock is **reference-counted across every open overlay**. Opening a
     second lock-requesting overlay and closing it again leaves the page locked while
     the first is still open; releasing the last lock restores the exact prior scroll

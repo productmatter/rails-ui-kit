@@ -263,14 +263,29 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     - **Trigger.** A `<button type="button" aria-haspopup="listbox" aria-expanded
       aria-controls="<listbox id>">` in the same box select-only mode's combobox uses,
       showing the selected option's label, or the prompt in `text-muted-foreground`.
-      Named by the Field label through `aria-labelledby`; `aria-required` where the
-      select is required (item 12). It never submits: it is a button, not a field.
+      Named by the Field label through `aria-labelledby`. It never submits: it is a
+      button, not a field.
     - **Search field.** First in the popup: an `<input type="text" role="combobox"
       aria-autocomplete="list" autocomplete="off" aria-controls="<listbox id>"
       aria-activedescendant>`, a search glyph beside it and `border-b border-border`
       under the row, placeholder `rails_ui_kit.select.search_placeholder`. It is the
       only `role="combobox"` in the widget, and it has no `name`. Named by the Field
       label too, so a screen reader hears the field's name, then "combobox".
+    - **Required is the label's to say.** A required Select is a field that needs a
+      value, and the Field's label is what flags it; how the control is built inside does
+      not come into it (decided 2026-09-18, Jonathan Simmons). The native select carries
+      `required`, so the form blocks exactly as it does in select-only mode. The trigger
+      carries no `aria-required`: ARIA does not allow the attribute on a `button`, and axe
+      fails it as critical (corrected 2026-09-18; this item first put it there, and axe
+      caught it in the build). The search field, the widget's `role="combobox"`, does
+      carry it. A button has no state of its own to announce "required" with, so the
+      label carries it into the trigger's accessible name.
+    - **Ids, expansion and the pointer.** The trigger is `<id>-trigger` and the search
+      field `<id>-search`; `<id>-combobox` exists in select-only mode only. The search
+      field carries `aria-expanded`, which `role="combobox"` requires, rendered `false`
+      and kept honest by `ui--select`, since the field is not the overlay's trigger. The
+      search row is a flat `h-9` at every `size:` step (`ui-control-sizing`). A pointer
+      press on the trigger opens with no active option, as `Enter` and `Space` do.
     - **The text is a query, never the value.** It is empty when the popup opens and
       discarded when it closes. The trigger shows the truth from the native select at
       all times, so there is nothing to restore and no rule about what an empty field

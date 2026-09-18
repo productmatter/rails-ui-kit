@@ -7,10 +7,13 @@ to a trigger button with the search field in its popup — § Behavior, items 13
 24, § Business rules 4 and 5, and the search, pointer, validation and accessibility
 acceptance checks are amended; the old shape is retired, not kept beside the new one. v1
 as built on 2026-09-14 stands for select-only mode, the Rails option API, Field, Turbo and
-the submission model. Search mode is being rebuilt to the amended contract and
-`select_search_test.rb` rewritten to item 17's new table. Jonathan's three human gates
+the submission model. Search mode was rebuilt to the amended contract on 2026-09-18
+(`2f9bc7a`), with `select_search_test.rb` rewritten to item 17's new table: unit 634 runs,
+browser 874 runs, every amended acceptance check green on its own run line, and no
+select-only test file changed. What keeps this at `building` is one line of item 17 not yet
+built: the label carrying "required" into the trigger's accessible name. Jonathan's three human gates
 remain, and the VoiceOver gate now also judges the new shape. Remote search stays designed
-in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are recorded below.
+in § Behavior, items 27–31 and deliberately unbuilt. The corrections are recorded below.
 
 ## Done
 
@@ -54,14 +57,14 @@ in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are reco
 
 ## In progress
 
-Search mode to the 2026-09-18 shape (§ Behavior, item 17): a trigger button; the search
-field first in the popup; focus in on open and back on close through `ui--overlay`'s
-`initialFocus` and focus return, with a Tab-close that lets focus move on; the show-options
-button and `rails_ui_kit.select.show_options_label` removed and `search_placeholder` added;
-`Ui::Select::Primitives` carrying the mode difference as values, as before;
-`select_search_test.rb` rewritten to the new key table, with the pointer, validation and
-accessibility checks amended; the docs page's "With search" section and behaviour notes
-brought to the new shape. Remote search (items 27–31) stays deliberately later.
+Two things, in order. First, item 17's "Required is the label's to say": the Field label
+carries "required" into the search trigger's accessible name, because a button has no state
+to announce it with, without a native control hearing it twice. Second, a unit still to be
+specced, decided in outline with Jonathan on 2026-09-18: when a Select is given `prompt:`,
+the prompt leaves the listbox (it is a placeholder, not a choice) and a clear button returns
+the control to it, shown only while the native select still holds the prompt option Rails
+rendered; `include_blank:` stays a listed choice; both modes. Remote search (items 27–31)
+stays deliberately later.
 
 ## Last green checkpoint
 
@@ -93,3 +96,4 @@ every `test/system/` file run on its own. Select's own files: `select_keyboard` 
 - § Assumptions' first prerequisite described `ui--overlay` as it stood before `8446865`, which had already added `moveFocus`. What the prerequisite actually needed — that focus landing on `<body>` while the content changes is not pulled into the popup — was already true, and is now covered by a test rather than assumed — provable — implementer
 - § Behavior, item 2 described the coarse-pointer swap as `ui--select` reading `ui--media-query`'s `data-media-matches` and marking the root `data-enhanced="false"`. Primitive F was removed on 2026-09-14 on the decider's ruling that a component with a media-query dependency carries the query in its own CSS. The swap is now `pointer-coarse:` / `not-pointer-coarse:` on the combobox and the select (Tailwind 4, verified against a real compile), the root stays `data-enhanced="true"` once the controller connects, and `select_controller.js` owns the `matchMedia` listener that flips the select's `aria-hidden` and `tabindex`. Proved in Chrome's accessibility tree in both pointer states (`select_enhancement_test.rb`, SE8) — tasteable — decider
 - The parent table (`ui-component-library` § Scopes) named this scope `ratified`; this file's own State is `ready-for-review` and names the three outstanding human gates. Corrected the parent table to match, since none of the three is recorded here as closed — provable — implementer
+- § Behavior, item 17, as amended on 2026-09-18, put `aria-required` on search mode's trigger. ARIA does not allow that attribute on a `button`, and axe reported it as a critical `aria-allowed-attr` failure during the build, which also failed § Business rules, rule 8. The build moved it to the search field, where `role="combobox"` allows it. Jonathan's ruling the same day settles what the item should have said from the start: a required Select is a field that needs a value, the Field's label is what flags it, and how the control is built inside does not come into it. Item 17 now says so, and says the label carries "required" into the trigger's accessible name, since a button has no state to announce it with. Caught by axe, through the builder — provable — implementer
