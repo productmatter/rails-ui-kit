@@ -1,15 +1,18 @@
 ## State
 
-building
+ready-for-review
 
-Reshaped 2026-09-18 (Jonathan Simmons). The three-step scale built and verified on
+Reshaped 2026-09-18 (Jonathan Simmons) and rebuilt the same day (`21daa49`): every
+agent-loopable check passes on its own run line, the twelve new box tests among them. The three-step scale built and verified on
 2026-09-14 worked as specified and was nearly invisible: 32, 36 and 40px, adjacent steps
 with nothing else changing on Input or Select. The scale is now Tailwind's five button
 steps, 24 to 40px, with `default` the middle one at 32px, and each step carries inline
 padding, text size and radius as well as its height token (§ Behavior). That retires
 rule 3's "no visual change at the defaults" and the browser check that proved it; rule 3
-now pins all five boxes and records that the defaults moved once, on purpose. Awaiting
-build, after the character counter, which holds Textarea. Jonathan's human gate is
+now pins all five boxes and records that the defaults moved once, on purpose. The build
+also removed Input's fixed vertical padding, which would have overflowed the box at `xs`
+and `sm`, and gave Select's popup search row the focus line it never had. What remains is
+the judgeable review and Jonathan's human gate, which is
 rewritten to match: the five steps read as five sizes, and the 32px default is accepted
 on a real form.
 
@@ -38,7 +41,7 @@ on a real form.
 
 ## In progress
 
-The 2026-09-18 reshape, not yet started: two new tokens (`--control-height-xs`, `-xl`)
+The 2026-09-18 reshape, built the same day: two new tokens (`--control-height-xs`, `-xl`)
 and the three existing ones each dropped one step in `engine.css`; the five-step table's
 inline padding, text size and radius on Button, Input, Select's shared box and Textarea;
 Choices accepting `xs` and `xl`; Select's popup search row from `h-9` to `h-8`;
