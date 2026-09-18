@@ -24,7 +24,7 @@ themes the kit by redefining variables, not by overriding components.
 | Component | Stimulus identifier | What it's for |
 |---|---|---|
 | `Ui::FieldComponent` | `ui--field` | A label, control, description and error as one accessible unit, built from `model:` and `attribute:` — name, id, label, value, errors and `required` all derived ([forms guide](docs/guides/forms.md)) |
-| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a WAI-ARIA combobox with keyboard support and optional search |
+| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field |
 | `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card` |
 | `Ui::InputComponent` | — | A native `<input>` on the tokens, sized from the shared control scale; in a form, render it through Field |
 | `Ui::TextareaComponent` | — | A native `<textarea>`, styled and sized like Input |
@@ -460,7 +460,7 @@ applies the theme before first paint.
 
 Checkboxes, radios, inputs and textareas are native, so Capybara's `check`, `choose` and `fill_in`
 work on them unchanged. An enhanced Select isn't: its native `<select>` sits invisibly over the
-combobox, so `select "Invited", from: "Status"` no longer picks what a user would. Include the
+control, so `select "Invited", from: "Status"` no longer picks what a user would. Include the
 kit's helper in your system tests and use `ui_select`:
 
 ```ruby
@@ -476,9 +476,10 @@ end
 ui_select "Invited", from: "Status"
 ```
 
-It drives the combobox the way a person does, and falls back to the native select where the
-component wasn't enhanced (JavaScript off, or the platform picker on a phone). The value still
-lives in the native `<select>`, so assert it the way you always did.
+It drives the control the way a person does — press it, then choose the option — in either mode,
+and falls back to the native select where the component wasn't enhanced (JavaScript off, or the
+platform picker on a phone). The value still lives in the native `<select>`, so assert it the way
+you always did.
 
 ## Overriding
 

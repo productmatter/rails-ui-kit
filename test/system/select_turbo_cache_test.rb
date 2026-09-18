@@ -44,11 +44,13 @@ class SelectTurboCacheTest < ApplicationSystemTestCase
     assert_empty page.evaluate_script('window.__errors')
   end
 
-  test 'SC2: Back restores a search Select closed, unfiltered, showing its selected label' do
+  test 'SC2: Back restores a search Select closed, unfiltered, empty-fielded, on its selected label' do
     id = 'demo_city'
-    page.execute_script("document.getElementById('#{id}-combobox').focus()")
-    press 'l', 'o', 'n'
+    focus_trigger(id)
+    press :enter
     assert_popup id, 'open'
+    press 'l', 'o', 'n'
+    assert_equal 'lon', search_value(id)
 
     page.execute_script('Turbo.visit(arguments[0])', installation_path)
     assert_selector 'h1', text: 'Installation'
@@ -57,12 +59,14 @@ class SelectTurboCacheTest < ApplicationSystemTestCase
 
     assert_popup id, 'closed'
     assert_equal 'london', select_value(id)
-    assert_equal 'London', page.evaluate_script("document.getElementById('#{id}-combobox').value"),
-                 'the restored field showed what the user had typed rather than the value'
+    assert_equal 'London', control_label(id), 'the restored trigger was not showing the value'
+    assert_equal '', search_value(id), 'the restored field kept what the user had typed'
     hidden = page.evaluate_script(<<~JS, id)
       Array.from(document.querySelectorAll(`#${arguments[0]}-listbox [role="option"]`)).filter((o) => o.hidden).length
     JS
     assert_equal 0, hidden, 'the filter was cached with the page'
+    assert_not_equal "#{id}-search", focused_id, 'the restored page pulled focus into the Select'
+    assert_not_equal "#{id}-trigger", focused_id
     assert_empty page.evaluate_script('window.__errors')
   end
 

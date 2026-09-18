@@ -44,8 +44,8 @@ class SelectNoJavascriptTest < ApplicationSystemTestCase
 
   test 'SN5: search mode degrades to the same native select' do
     assert_selector 'select#demo_city'
-    assert_no_selector '#demo_city-combobox'
-    assert_no_selector "button[aria-label='Show options']"
+    assert_no_selector '#demo_city-trigger'
+    assert_no_selector '#demo_city-search'
     assert_equal 'london', find('select#demo_city').value
   end
 end

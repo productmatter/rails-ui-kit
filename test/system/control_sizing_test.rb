@@ -65,6 +65,14 @@ class ControlSizingTest < ApplicationSystemTestCase
     disable_transitions
 
     STEPS.each { |step, height| assert_step(step, height) }
+
+    # The popup's search row is not a control: a list's density is its own, so it keeps one height
+    # while the trigger it hangs from takes the step (ui-control-sizing § Behavior; ui-select
+    # § Behavior, item 17).
+    heights = STEPS.each_key.map { |step| search_row_height(step) }
+    assert_equal 1, heights.uniq.size,
+                 "the popup's search row moved with the step: #{STEPS.keys.zip(heights).to_h}"
+    assert_operator heights.first, :>=, TARGET_MINIMUM
   end
 
   test 'CS4: an enhanced popup aligns to the width of the control it replaces, at every step' do
@@ -129,6 +137,17 @@ class ControlSizingTest < ApplicationSystemTestCase
     end
   end
 
+  # Measured with the popup open, because a row inside a closed popover has no box to measure.
+  def search_row_height(step)
+    id = "sizes-#{step}-search"
+    find("##{id}-trigger").click
+    assert_popup id, 'open'
+    height = laid_out_rect("##{id}-search")['height']
+    press :escape
+    assert_popup id, 'closed'
+    height
+  end
+
   # Every control at one step, plus the textarea's minimum, against one height.
   def assert_step(step, height)
     step_controls(step).each do |name, selector|
@@ -151,8 +170,7 @@ class ControlSizingTest < ApplicationSystemTestCase
       'the input' => "#sizes-#{step}-input",
       'the native select' => "#sizes-#{step}-select",
       'the combobox' => "#sizes-#{step}-select-combobox",
-      'the search combobox' => "#sizes-#{step}-search-combobox",
-      'search mode\'s show-options button' => "#sizes-#{step}-search-combobox + button" }
+      "search mode's trigger" => "#sizes-#{step}-search-trigger" }
   end
 
   def set_token(element, token, value)

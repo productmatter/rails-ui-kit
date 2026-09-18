@@ -14,7 +14,9 @@ en:
       region_label: "Notifications"
       actions_hint: "Press F8 to reach its actions."
     select:
-      show_options_label: "Show options"
+      # The placeholder in the field at the top of a searchable Select's popup. It is the only
+      # thing in that row that says what the row is for, so it is chrome, not content.
+      search_placeholder: "Search…"
       no_results: "No results"
       # Interpolated in the browser as the filter narrows, so the count itself is not known when
       # this is rendered: the whole plural map is handed to ui--select, which picks with

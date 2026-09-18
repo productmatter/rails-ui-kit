@@ -45,13 +45,13 @@ class LocalizationSwitchTest < ApplicationSystemTestCase
   test 'LS5 Select says "no results" and counts results in French' do
     visit select_path(**FRENCH)
 
-    page.execute_script("document.getElementById('demo_city-combobox').focus()")
-    find('#demo_city-combobox').send_keys('zzzzz')
+    find('#demo_city-trigger').click
+    assert_selector "#demo_city-search[placeholder='Rechercher…']"
+
+    find('#demo_city-search').send_keys('zzzzz')
     assert_selector '[data-ui--select-target="empty"]', text: 'Aucun résultat'
     # French puts 0 in the `one` category, so the singular form is the right one here.
     assert_selector '#demo_city-status', text: '0 résultat', exact_text: true, visible: :all
-
-    assert_selector "button[aria-label='Afficher les options']", visible: :all
   end
 
   test 'LS6 the same page in English is English' do

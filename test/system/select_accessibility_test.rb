@@ -33,16 +33,32 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
   end
 
   test 'SA3: a filtered list, and an emptied one, pass an axe audit' do
-    field = find('#demo_city-combobox')
-    field.click
-    press 'l', 'o'
+    find('#demo_city-trigger').click
     assert_popup 'demo_city', 'open'
+    assert_focus_on_search 'demo_city'
+    press 'l', 'o'
     assert_selector '#demo_city-status', text: 'results', visible: :all
     assert_accessible(within: 'main')
 
     press 'z', 'z'
     assert_selector '#demo_city-empty', text: 'No results'
     assert_accessible(within: 'main')
+  end
+
+  test 'SA7: each mode offers exactly one combobox, open and closed' do
+    { 'demo_timezone' => 'div', 'demo_city' => 'input' }.each do |id, tag|
+      root = find("##{id}", visible: :all).find(:xpath, "ancestor::*[@data-slot='select']")
+      assert_equal 1, root.all('[role=combobox]', visible: :all).size,
+                   "#{id} offers a screen reader two comboboxes while closed"
+      assert_equal tag, root.first('[role=combobox]', visible: :all).tag_name
+
+      control(id).click
+      assert_popup id, 'open'
+      assert_equal 1, root.all('[role=combobox]', visible: :all).size,
+                   "#{id} offers a screen reader two comboboxes while open"
+      press :escape
+      assert_popup id, 'closed'
+    end
   end
 
   test 'SA4: an open listbox passes an axe audit in dark mode, in both modes' do
@@ -53,9 +69,9 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
 
     press :escape
     assert_popup 'demo_timezone', 'closed'
-    find('#demo_city-combobox').click
-    press 'l', 'o'
+    find('#demo_city-trigger').click
     assert_popup 'demo_city', 'open'
+    press 'l', 'o'
     assert_accessible(within: 'main')
   end
 
@@ -72,6 +88,31 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     assert_accessible(within: '#select-round-trip-preview')
     use_dark_mode(true)
     assert_accessible(within: '#select-round-trip-preview')
+  end
+
+  # Search mode's invalid state. The server sets it through Field on a 422, which is an attribute
+  # on the native select; here it is set the same way, because what is under audit is the state,
+  # not the round trip that produced it.
+  test 'SA9: search mode invalid passes an axe audit, light and dark, open and closed' do
+    id = 'demo_city'
+    page.execute_script(<<~JS, id)
+      const select = document.getElementById(arguments[0])
+      select.setAttribute('aria-invalid', 'true')
+      select.setAttribute('aria-describedby', `${arguments[0]}-description`)
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    JS
+    assert_selector "##{id}-trigger[aria-invalid='true'][aria-describedby='#{id}-description']"
+
+    %w[light dark].each do |mode|
+      use_dark_mode(mode == 'dark')
+      assert_accessible(within: '#select-search-preview')
+
+      find("##{id}-trigger").click
+      assert_popup id, 'open'
+      assert_accessible(within: 'main')
+      press :escape
+      assert_popup id, 'closed'
+    end
   end
 
   # The control's own text contrast is control_contrast_test.rb's "Select's control box" test;
@@ -93,18 +134,25 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     end
   end
 
+  # ARIA has no aria-required for `button`, so in search mode it lands on the search field, which
+  # is the widget's combobox and the element the user is on while choosing. A required search
+  # Select still blocks its form either way: that is the native select's, not this attribute's
+  # (select_validation_test.rb, SV5).
   test 'SA8: aria-required mirrors the select, server-rendered and after a programmatic change, in both modes' do
     assert_selector "#trip_city-combobox[aria-required='true']"
+    page.execute_script("document.getElementById('booking_city-trigger').scrollIntoView({ block: 'center' })")
+    assert_selector "#booking_city-search[aria-required='true']", visible: :all
+    assert_no_selector '#booking_city-trigger[aria-required]'
 
     id = 'demo_city'
-    assert_no_selector "##{id}-combobox[aria-required]"
+    assert_no_selector "##{id}-search[aria-required]", visible: :all
 
     page.execute_script(<<~JS, id)
       const select = document.getElementById(arguments[0])
       select.required = true
       select.dispatchEvent(new Event('change', { bubbles: true }))
     JS
-    assert_selector "##{id}-combobox[aria-required='true']"
+    assert_selector "##{id}-search[aria-required='true']", visible: :all
     assert_accessible(within: '#select-search-preview')
 
     page.execute_script(<<~JS, id)
@@ -112,7 +160,7 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
       select.required = false
       select.dispatchEvent(new Event('change', { bubbles: true }))
     JS
-    assert_no_selector "##{id}-combobox[aria-required]"
+    assert_no_selector "##{id}-search[aria-required]", visible: :all
   end
 
   # SA7 (the focus ring on the control reaches 3:1 against every surface) moved to

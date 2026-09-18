@@ -14,7 +14,7 @@ fr:
       region_label: "Notifications"
       actions_hint: "Appuyez sur F8 pour atteindre ses actions."
     select:
-      show_options_label: "Afficher les options"
+      search_placeholder: "Rechercher…"
       no_results: "Aucun résultat"
       results:
         one: "%{count} résultat"

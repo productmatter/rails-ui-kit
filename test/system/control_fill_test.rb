@@ -78,7 +78,7 @@ class ControlFillTest < ApplicationSystemTestCase
       'Input' => find('#sizes-default-input'),
       'Textarea' => find('#sizes-default-textarea'),
       'select-only Select' => find('#sizes-default-select-combobox'),
-      'search Select' => find('#sizes-default-search-combobox')
+      'search Select' => find('#sizes-default-search-trigger')
     }
   end
 

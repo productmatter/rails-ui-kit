@@ -70,4 +70,54 @@ class SelectValidationTest < ApplicationSystemTestCase
     assert_selector "select##{ID}[aria-invalid='true'][aria-describedby~='#{ID}-error']", visible: :all
     assert_selector "##{ID}-combobox[aria-invalid='true'][aria-describedby~='#{ID}-error']"
   end
+
+  # Search mode. The control the browser has to land focus on is the trigger, and it has to be
+  # operable from there (ui-select § Behavior, items 6 and 17).
+  test 'SV5: a required search Select blocks submission and the browser focus lands on its trigger' do
+    id = 'booking_city'
+    page.execute_script("document.getElementById('#{id}-trigger').scrollIntoView({ block: 'center' })")
+    page.execute_script(<<~JS)
+      window.__submits = 0
+      document.getElementById('select-form').addEventListener('submit', () => { window.__submits += 1 })
+    JS
+    # The form's other required Select comes first, so it is answered before this one is the one
+    # blocking: constraint validation reports the first invalid control, which is the platform's.
+    focus_combobox('booking_plan')
+    press :enter
+    press :arrow_down
+    press :arrow_down
+    press :enter
+    assert_equal 'starter', select_value('booking_plan')
+    assert_equal '', select_value(id)
+
+    find('#select-form button[type=submit]').click
+
+    assert_equal 0, page.evaluate_script('window.__submits'), 'a blank required Select let the form through'
+    assert_focus_on_trigger id, 'focus was left on a select the user cannot see'
+
+    # And it is operable from there, so the user can fix what the browser complained about.
+    press :enter
+    assert_popup id, 'open'
+    assert_focus_on_search id
+    # Twice: the first option is the prompt, whose value is empty.
+    press :arrow_down
+    press :arrow_down
+    press :enter
+    assert_popup id, 'closed'
+    assert_focus_on_trigger id
+    assert_not page.evaluate_script("document.getElementById('#{id}').validity.valueMissing")
+  end
+
+  test 'SV6: a server-side error reaches the trigger in search mode too' do
+    id = 'demo_city'
+    page.execute_script(<<~JS, id)
+      const select = document.getElementById(arguments[0])
+      select.setAttribute('aria-invalid', 'true')
+      select.setAttribute('aria-describedby', `${arguments[0]}-description`)
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    JS
+
+    assert_selector "##{id}-trigger[aria-invalid='true'][aria-describedby='#{id}-description']"
+    assert_no_selector "##{id}-search[aria-invalid]", visible: :all
+  end
 end

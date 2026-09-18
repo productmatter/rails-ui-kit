@@ -35,11 +35,13 @@ class SelectFormResetTest < ApplicationSystemTestCase
     assert_equal 'Berlin', combobox_label(ID)
   end
 
-  test 'SR2: resetting also clears a search field back to the selected label' do
+  test 'SR2: resetting also empties a search field and puts the trigger back on the default' do
     id = 'booking_city'
-    page.execute_script("document.getElementById('#{id}-combobox').focus()")
-    press 'b', 'e'
+    focus_trigger(id)
+    press :enter
     assert_popup id, 'open'
+    press 'b', 'e'
+    assert_equal 'be', search_value(id)
 
     # Reset from the form itself rather than the button: the open listbox covers it, which is
     # exactly what it should do. The event, and everything that follows it, is the same one.
@@ -47,7 +49,8 @@ class SelectFormResetTest < ApplicationSystemTestCase
 
     assert_popup id, 'closed'
     assert_equal '', select_value(id)
-    assert_equal '', page.evaluate_script("document.getElementById('#{id}-combobox').value")
+    assert_equal '', search_value(id)
+    assert_equal 'Choose a city', control_label(id)
     hidden = page.evaluate_script(<<~JS, id)
       Array.from(document.querySelectorAll(`#${arguments[0]}-listbox [role="option"]`)).filter((o) => o.hidden).length
     JS

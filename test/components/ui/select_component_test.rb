@@ -194,19 +194,22 @@ module Ui
       assert_nil root['aria-label']
     end
 
-    test 'required renders aria-required on the combobox in both modes, and omits it when not required' do
+    test 'required renders aria-required on the control in both modes, and omits it when not required' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, required: true))
       assert_selector 'select[required]', visible: :all
-      assert_selector "[role=combobox][aria-required='true']", visible: :all
+      assert_selector "#post_state-combobox[aria-required='true']", visible: :all
 
+      # ARIA has no aria-required for `button`, so search mode's goes on the combobox it does
+      # allow it on: the search field, which is where the user is while choosing.
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true, required: true))
-      assert_selector "input[role=combobox][aria-required='true']", visible: :all
+      assert_selector "input#post_state-search[aria-required='true']", visible: :all
+      assert_no_selector '#post_state-trigger[aria-required]', visible: :all
 
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
-      assert_no_selector '[role=combobox][aria-required]', visible: :all
+      assert_no_selector '[aria-required]', visible: :all
 
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
-      assert_no_selector '[role=combobox][aria-required]', visible: :all
+      assert_no_selector '[aria-required]', visible: :all
     end
 
     test 'other data and aria attributes stay on the root, where change events bubble to' do
@@ -252,22 +255,57 @@ module Ui
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES))
 
       assert_selector "div#post_state-combobox[role=combobox][tabindex='0']", visible: :all
-      assert_no_selector 'input[role=combobox]', visible: :all
+      assert_no_selector 'input', visible: :all
       assert_no_selector 'button', visible: :all
       assert_no_selector '[role=status]', visible: :all
+      assert_no_selector '#post_state-trigger', visible: :all
+      assert_no_selector '#post_state-search', visible: :all
     end
 
-    test 'search mode renders a text field that never submits, plus the APG show-options button' do
+    test 'search mode renders a trigger button that never submits, and no combobox of its own' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
 
-      combobox = page.find('#post_state-combobox', visible: :all)
-      assert_equal 'input', combobox.tag_name
-      assert_equal 'text', combobox['type']
-      assert_equal 'list', combobox['aria-autocomplete']
-      assert_equal 'off', combobox['autocomplete']
-      assert_nil combobox['name'], 'the text field would submit a second value'
-      assert_selector "button[type=button][tabindex='-1'][aria-label]", visible: :all
+      trigger = page.find('#post_state-trigger', visible: :all)
+      assert_equal 'button', trigger.tag_name
+      assert_equal 'button', trigger['type'], 'a trigger with no type would submit the form around it'
+      assert_equal 'listbox', trigger['aria-haspopup']
+      assert_equal 'post_state-listbox', trigger['aria-controls']
+      assert_equal 'false', trigger['aria-expanded']
+      assert_nil trigger['role'], 'the trigger is not the combobox: the field in the popup is'
+      assert_nil trigger['aria-activedescendant']
+      assert_no_selector '#post_state-combobox', visible: :all
       assert_selector "select[name='post[state]']", visible: :all
+    end
+
+    test 'search mode puts one search field first in the popup, and it never submits' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true))
+
+      field = page.find('#post_state-search', visible: :all)
+      assert_equal 'input', field.tag_name
+      assert_equal 'text', field['type']
+      assert_equal 'combobox', field['role']
+      assert_equal 'list', field['aria-autocomplete']
+      assert_equal 'off', field['autocomplete']
+      assert_equal 'post_state-listbox', field['aria-controls']
+      assert_equal 'false', field['aria-expanded'], 'the role requires it, and a closed list is closed'
+      assert_equal I18n.t('rails_ui_kit.select.search_placeholder'), field['placeholder']
+      assert_nil field['name'], 'the search field would submit a second value'
+
+      assert_equal 1, page.all('[role=combobox]', visible: :all).size,
+                   'a widget with two comboboxes tells a screen reader there are two controls'
+      # First in the popup, above the list it filters, with a rule under the row.
+      inside = page.find('#post_state-popup', visible: :all)
+      ids = inside.all('input, [role=listbox]', visible: :all).map { |element| element['id'] }
+      assert_equal %w[post_state-search post_state-listbox], ids
+      assert_selector '#post_state-popup .border-b.border-border input#post_state-search', visible: :all
+    end
+
+    test 'the trigger and the search field both carry the name the caller gave the control' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, search: true,
+                                            aria: { label: 'State' }))
+
+      assert_selector "#post_state-trigger[aria-label='State']", visible: :all
+      assert_selector "#post_state-search[aria-label='State']", visible: :all
     end
 
     test 'search mode renders the empty state and the polite status region, both from i18n' do
@@ -276,7 +314,8 @@ module Ui
 
         assert_selector '#post_state-empty[hidden]', text: I18n.t('rails_ui_kit.select.no_results'), visible: :all
         assert_selector "#post_state-status[role=status][aria-live='polite']", visible: :all
-        assert_selector "button[aria-label='#{I18n.t('rails_ui_kit.select.show_options_label')}']", visible: :all
+        assert_selector "#post_state-search[placeholder='#{I18n.t('rails_ui_kit.select.search_placeholder')}']",
+                        visible: :all
         # The whole plural map, and the locale that produced it: the count is only known in the
         # browser, and so is the category it falls in (ui-localization § Behavior, items 6 and 7).
         root = page.find("[data-slot='select']", visible: :all)

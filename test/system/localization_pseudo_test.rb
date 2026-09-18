@@ -36,12 +36,12 @@ class LocalizationPseudoTest < ApplicationSystemTestCase
 
   test 'LP3 Select is pseudo-translated, including the count it announces' do
     visit i18n_path(**PSEUDO)
-    page.execute_script("document.getElementById('plural_demo-combobox').focus()")
-    find('#plural_demo-combobox').send_keys('q3-')
+    find('#plural_demo-trigger').click
+    assert_selector "#plural_demo-search[placeholder='#{pseudo('select.search_placeholder')}']"
+    find('#plural_demo-search').send_keys('q3-')
 
     assert_selector '#plural_demo-status', text: MARK, visible: :all
     assert_selector '#plural_demo-status', text: '3', visible: :all
-    assert_selector "button[aria-label='#{pseudo('select.show_options_label')}']", visible: :all
   end
 
   test 'LP4 no chrome surface on a component page is left in plain English' do
@@ -49,8 +49,10 @@ class LocalizationPseudoTest < ApplicationSystemTestCase
 
     english = I18n.t('rails_ui_kit.select', locale: :en).values.grep(String)
     english.each do |string|
-      assert_not_includes page.html, %(aria-label="#{string}"),
-                          "#{string.inspect} rendered in English under the pseudo-locale, so it is hardcoded"
+      %w[aria-label placeholder].each do |attribute|
+        assert_not_includes page.html, %(#{attribute}="#{string}"),
+                            "#{string.inspect} rendered in English under the pseudo-locale, so it is hardcoded"
+      end
     end
   end
 

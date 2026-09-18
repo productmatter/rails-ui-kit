@@ -107,14 +107,14 @@ module Ui
     # SE — Ui::SelectComponent. Its chrome keywords must not leak into the <select> or the root
     # as HTML attributes, which is what an unconsumed keyword does in Ui::Base.
 
-    test 'SE1 call-site chrome wins for the empty state and the show-options button' do
+    test 'SE1 call-site chrome wins for the empty state and the search placeholder' do
       render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b],
-                                            no_results: 'Nothing matches', show_options_label: 'Open the list'))
+                                            no_results: 'Nothing matches', search_placeholder: 'Find a state'))
 
       assert_selector '#post_state-empty', text: 'Nothing matches', visible: :all
-      assert_selector "button[aria-label='Open the list']", visible: :all
+      assert_selector "#post_state-search[placeholder='Find a state']", visible: :all
       assert_no_selector '[no_results]', visible: :all
-      assert_no_selector '[show-options-label]', visible: :all
+      assert_no_selector '[search-placeholder]', visible: :all
     end
 
     test 'SE2 without keywords Select reads the locale file, per render' do
@@ -122,7 +122,7 @@ module Ui
         render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b]))
 
         assert_selector '#post_state-empty', text: 'Aucun résultat', visible: :all
-        assert_selector "button[aria-label='Afficher les options']", visible: :all
+        assert_selector "#post_state-search[placeholder='Rechercher…']", visible: :all
       end
     end
 
@@ -143,7 +143,7 @@ module Ui
         Ui::ModalComponent => %w[unsaved_changes_title unsaved_changes_message],
         Ui::ToastComponent => %w[close_label default_title],
         Ui::ToastContainerComponent => %w[close_label default_title],
-        Ui::SelectComponent => %w[show_options_label no_results]
+        Ui::SelectComponent => %w[search_placeholder no_results]
       }.each do |component, keywords|
         accepted = component.instance_method(:initialize).parameters
                             .filter_map { |kind, name| name.to_s if %i[key keyreq].include?(kind) }

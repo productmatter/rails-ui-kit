@@ -38,7 +38,8 @@ class SelectHelperTest < ApplicationSystemTestCase
     ui_select 'Oslo', from: 'City'
 
     assert_equal 'oslo', select_value('demo_city')
-    assert_equal 'Oslo', page.evaluate_script("document.getElementById('demo_city-combobox').value")
+    assert_equal 'Oslo', control_label('demo_city')
+    assert_popup 'demo_city', 'closed'
     assert_equal ['input:oslo:true', 'change:oslo:true'], recorded_events
   end
 

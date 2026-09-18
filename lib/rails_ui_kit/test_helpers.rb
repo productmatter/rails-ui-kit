@@ -11,10 +11,10 @@ module RailsUiKit
   #
   #   ui_select "Pending", from: "Status"
   #
-  # Enhanced, Ui::SelectComponent lays its native <select> over the combobox at `opacity: 0`, so a
-  # host's `select "Pending", from: "Status"` no longer picks what the user would. This drives the
-  # widget the way a person does -- open it, then choose the option -- and falls back to the
-  # native select where the component was never enhanced, so one call covers every state.
+  # Enhanced, Ui::SelectComponent lays its native <select> over its own control at `opacity: 0`,
+  # so a host's `select "Pending", from: "Status"` no longer picks what the user would. This drives
+  # the widget the way a person does -- press the control, then choose the option -- and falls back
+  # to the native select where the component was never enhanced, so one call covers every state.
   #
   # Not required by the engine: it loads nothing at runtime, and a host that writes no system
   # test never loads it.
@@ -22,21 +22,23 @@ module RailsUiKit
     class OptionNotFound < Capybara::ElementNotFound; end
 
     SELECT_ROOT = "[data-slot='select']"
-    COMBOBOX = '[role=combobox]'
-    SHOW_OPTIONS = '[data-ui--select-target="showOptions"]'
+    # The element that owns the listbox, in either mode: the combobox in select-only mode, the
+    # trigger button in search mode. Search mode's own role="combobox" is the field inside the
+    # popup, which takes a query rather than the value, so it is never what this drives.
+    CONTROL = "[data-ui--overlay-target='trigger']"
 
     # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
     # id or name of the select inside it.
     def ui_select(text, from:)
       root = ui_select_root(from)
-      combobox = root.first(COMBOBOX, minimum: 0, wait: 0)
-      return ui_select_natively(root, text, from) unless combobox&.visible?
+      control = root.first(CONTROL, minimum: 0, wait: 0)
+      return ui_select_natively(root, text, from) unless control&.visible?
 
-      ui_select_open(root, combobox, from)
-      ui_select_option(root, combobox, text, from).click
-      ui_select_expanded?(combobox, 'false') ||
+      ui_select_open(control, from)
+      ui_select_option(root, control, text, from).click
+      ui_select_expanded?(control, 'false') ||
         raise(OptionNotFound, "the Select for #{from.inspect} stayed open after choosing #{text.inspect}")
-      combobox
+      control
     end
 
     private
@@ -65,31 +67,29 @@ module RailsUiKit
 
     def ui_select_names(root, native)
       label = page.first("label[for='#{native[:id]}']", minimum: 0, wait: 0)
-      combobox = root.first(COMBOBOX, visible: :all, minimum: 0, wait: 0)
+      control = root.first(CONTROL, visible: :all, minimum: 0, wait: 0)
 
-      [label&.text, native[:'aria-label'], combobox&.[](:'aria-label')].compact
+      [label&.text, native[:'aria-label'], control&.[](:'aria-label')].compact
     end
 
     def ui_select_native(root)
       root.first('select', visible: :all, minimum: 0, wait: 0)
     end
 
-    # Select-only mode opens on a click of the control itself. Search mode's control is a text
-    # field, where a click only places the caret, so it opens the way a pointer user does: with
-    # the chevron button beside it.
-    def ui_select_open(root, combobox, from)
-      return if combobox[:'aria-expanded'] == 'true'
+    # Both modes open on a press of the control, which is what a person does.
+    def ui_select_open(control, from)
+      return if control[:'aria-expanded'] == 'true'
 
-      (root.first(SHOW_OPTIONS, minimum: 0, wait: 0) || combobox).click
-      return if ui_select_expanded?(combobox, 'true')
+      control.click
+      return if ui_select_expanded?(control, 'true')
 
       raise OptionNotFound, "the Select for #{from.inspect} did not open"
     end
 
     # Named after what the caller asked for, not after an internal id: a host debugging its own
     # suite should be told which Select and what it offers, not handed a selector.
-    def ui_select_option(root, combobox, text, from)
-      listbox = find("##{combobox[:'aria-controls']}", visible: :all)
+    def ui_select_option(root, control, text, from)
+      listbox = find("##{control[:'aria-controls']}", visible: :all)
       option = listbox.all('[role=option]').find { |candidate| candidate.text.strip == text.to_s.strip }
       return option if option
 
@@ -119,8 +119,8 @@ module RailsUiKit
 
     # Capybara's own waiting matcher rather than a polled loop under Timeout: interrupting a
     # request that is already in flight to the browser can leave the session wedged.
-    def ui_select_expanded?(combobox, expanded)
-      combobox.matches_css?("[aria-expanded='#{expanded}']", wait: Capybara.default_max_wait_time)
+    def ui_select_expanded?(control, expanded)
+      control.matches_css?("[aria-expanded='#{expanded}']", wait: Capybara.default_max_wait_time)
     end
   end
 end

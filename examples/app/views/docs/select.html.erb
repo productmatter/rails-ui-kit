@@ -21,8 +21,9 @@
     One choice from a list Rails already has: a model's enum (<code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">model: Order, enum: :status</code>, labelled through
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">human_attribute_name</code>), a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">belongs_to</code> collection read the way <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">collection_select</code> reads
     it, or an options array or hash. Inside a model-bound <%= link_to "Field", field_path, class: "text-primary underline" %> the
-    record's value is selected and its errors shown. It renders a real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, mirrored into a WAI-ARIA
-    combobox; the select is the only place the value lives, so it submits, validates <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>, resets with its
+    record's value is selected and its errors shown. It renders a real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code>, mirrored into a
+    keyboard-driven listbox — a WAI-ARIA combobox by default, a trigger with a searchable popup with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">search: true</code>;
+    the select is the only place the value lives, so it submits, validates <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code>, resets with its
     form and still works with JavaScript off.
   </p>
 </div>
@@ -91,9 +92,10 @@
 <%# Search %>
 <h2 class="text-base font-semibold mb-3">With search</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">search: true</code> switches the
-  combobox to its editable mode: the WAI-ARIA combobox with list autocomplete. Typing filters the list, ignoring case and
-  accents; nothing else in the API changes, and the value still lives in the same native select.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">search: true</code> gives the control two elements
+  instead of one: a trigger button that shows the value, and a search field at the top of its popup that takes the
+  query. What you type filters the list, ignoring case and accents, and is discarded when the popup closes — it is a
+  query, never the value. Nothing else in the API changes, and the value still lives in the same native select.
 </p>
 <div id="select-search-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
   <div class="w-64">
@@ -101,7 +103,7 @@
       <% field.with_label { "City" } %>
       <% field.with_control(Ui::SelectComponent, options: timezones, selected: "london", search: true,
                             include_blank: "No preference") %>
-      <% field.with_description { "Type to filter. Empty the field to clear your choice." } %>
+      <% field.with_description { "Open it and type to filter. \"No preference\" is how you clear a choice." } %>
     <% end %>
   </div>
 
@@ -146,8 +148,9 @@
     </div>
     <div class="w-64">
       <%= render Ui::FieldComponent.new(name: "booking[city]") do |field| %>
-        <% field.with_label { "City (search)" } %>
-        <% field.with_control(Ui::SelectComponent, options: timezones, search: true, include_blank: true) %>
+        <% field.with_label { "City (search, required)" } %>
+        <% field.with_control(Ui::SelectComponent, options: timezones, search: true, required: true,
+                              prompt: "Choose a city") %>
       <% end %>
     </div>
     <div class="w-64">
@@ -210,7 +213,7 @@
 <h2 class="text-base font-semibold mb-3">Without a Field</h2>
 <p class="text-sm text-muted-foreground mb-3">
   Outside a Field, name it yourself with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria: { label: }</code>
-  — it reaches both the select and the combobox.
+  — it reaches both the select and the control that replaces it.
 </p>
 <div id="select-standalone-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <div class="w-64">
@@ -234,7 +237,7 @@
 <%# Testing %>
 <h2 class="text-base font-semibold mb-3">Testing host applications</h2>
 <p class="text-sm text-muted-foreground mb-3">
-  Enhanced, the native select is laid under the combobox at
+  Enhanced, the native select is laid under the control at
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">opacity: 0</code>, so Capybara's
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">select "Pending", from: "Status"</code>
   no longer picks what a person would. The kit ships a helper that drives the widget instead —
@@ -274,8 +277,8 @@
         ["disabled_values",    "Array",         "nil",      "Options that are reachable by keyboard but never selectable."],
         ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
         ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
-        ["search",             "Boolean",       "false",    "Switches the combobox to its editable, filtering mode."],
-        ["size",               "Symbol",        ":default", "One of :sm, :default, :lg — the heights Button's sizes have. The combobox, the select under it and search mode's show-options button all take it; the popup keeps matching the control's width."],
+        ["search",             "Boolean",       "false",    "Switches the control to a trigger button whose popup carries a search field."],
+        ["size",               "Symbol",        ":default", "One of :sm, :default, :lg — the heights Button's sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control's width, and its search row and option rows keep one height at every step."],
         ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances."],
         ["class",              "String",        "nil",      "Merged over the control's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
@@ -330,9 +333,9 @@
 
 <h3 class="text-sm font-semibold mb-3">Search mode</h3>
 <p class="text-sm text-muted-foreground mb-3">
-  The editable combobox with list autocomplete. The text field never submits — it has no
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name</code> — and what you type is
-  never turned into a value: only a real option can be chosen.
+  DOM focus is on the trigger while the popup is closed and in the search field while it is open — never on an option.
+  The search field never submits: it has no <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name</code>,
+  and what you type is never turned into a value. Only a real option can be chosen.
 </p>
 <div class="overflow-x-auto rounded-lg border border-border mb-8">
   <table class="w-full text-sm">
@@ -345,16 +348,15 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["closed", "↓ / ↑", "Opens and moves visual focus to the first / last option."],
-        ["closed", "Alt+↓", "Opens without moving visual focus."],
-        ["closed", "Escape", "Puts the text back to the selected option's label. It never changes the value: clearing a choice is what a blank option is for."],
-        ["closed", "Enter", "Not handled: the form submits, exactly as it would from any text field."],
-        ["closed or open", "typing", "Opens if closed, and filters the list — ignoring case and accents."],
-        ["open", "↓ / ↑", "Next / previous option, wrapping."],
-        ["open", "Enter", "Takes the active option if there is one, and closes either way. Never submits while the list is open."],
-        ["open", "Escape", "Closes; the text goes back to the selected option's label."],
-        ["open", "←, →, Home, End, typing", "Visual focus returns to the text field and the key edits the text."],
-        ["open", "Tab", "Closes without selecting: what you typed is never turned into a choice."],
+        ["closed, on the trigger", "Enter, Space, Alt+↓", "Opens; DOM focus moves to the empty search field; no option is active."],
+        ["closed, on the trigger", "↓ / ↑", "Opens onto the search field, and moves visual focus to the first / last option."],
+        ["closed, on the trigger", "a printable character", "Opens, seeds the search field with that character, and filters. Typing on a closed select keeps working."],
+        ["closed, on the trigger", "Escape, Tab", "Not handled: Escape reaches a surrounding Modal, and Tab moves on."],
+        ["open, in the search field", "↓ / ↑", "Next / previous option, wrapping."],
+        ["open", "Enter", "Takes the active option if there is one, closes either way, and returns focus to the trigger. It never submits the form."],
+        ["open", "Escape", "Closes with no change; focus returns to the trigger."],
+        ["open", "Tab", "Closes without selecting, and focus moves on past the trigger. What you typed is never turned into a choice."],
+        ["open", "←, →, Home, End, Backspace, typing", "Edits the query: visual focus returns to the search field and the list filters."],
       ].each do |state, key, result| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 text-muted-foreground"><%= state %></td>
@@ -373,17 +375,17 @@
   <li>Choosing an option dispatches <code class="text-xs bg-muted px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-muted px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
   <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-muted px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
   <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
-  <li>In search mode a click on the text field places the caret; the chevron button beside it opens the list, which is also what a touch screen-reader user reaches for. Typing opens it too.</li>
-  <li>Escape is the cancel key in both modes: with the list open it closes it, and on a closed search field it puts the text back to the selected option's label. It never changes the value, so a dependent select or an auto-save never sees a change the user meant as "never mind". This is a deliberate deviation from the APG key table, where the text field <em>is</em> the value.</li>
+  <li>In search mode the trigger shows the value and the field in the popup takes the query — two jobs, two elements. The trigger is a button, so a pointer, a keyboard and a touch screen reader all open the list the same way.</li>
+  <li>What is typed is a query, never the value: the field is empty on every open and discarded on every close, and the trigger goes on showing whatever the native select holds. So Escape has nothing to restore, and walking away with Tab commits nothing. Clearing a choice is what <code class="text-xs bg-muted px-1 py-0.5 rounded">include_blank:</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">prompt:</code> are for.</li>
   <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-muted px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
 </ul>
 
 <%# Accessibility %>
 <h2 class="text-base font-semibold mb-3">Accessibility</h2>
 <ul class="text-sm text-muted-foreground space-y-2 mb-8 list-disc ps-5">
-  <li>The combobox is named by the Field's label, and described by its description and error; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code> and
-      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on.</li>
-  <li>Focus never leaves the combobox. The active option is announced through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
+  <li>The control is named by the Field's label, and described by its description and error; <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-invalid</code> and
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on. Search mode's field takes the same name, so it reads as that field, then "combobox".</li>
+  <li>Focus never lands on an option: it stays on the combobox in select-only mode, and moves between the trigger and the search field in search mode. The active option is announced through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
       search mode the number of results is announced once typing settles.</li>
   <li>Where it isn't enhanced — JavaScript off, or select-only mode on a phone — the user has the platform's own select,
       which is fully accessible on its own.</li>

@@ -30,7 +30,7 @@ module Stress
     end
 
     def self.row_s2(_scope)
-      new(key: :S2, scope: 'modal', content: '#modal_city-popup', trigger: '#modal_city-combobox', outside: '#modal-outside', ways: WAYS)
+      new(key: :S2, scope: 'modal', content: '#modal_city-popup', trigger: '#modal_city-trigger', outside: '#modal-outside', ways: WAYS)
     end
 
     def self.row_s1(scope)
@@ -53,7 +53,7 @@ module Stress
     end
 
     def self.row_sc(_scope)
-      new(key: :SC, scope: 'page', content: '#stress_record_city-popup', trigger: '#stress_record_city-combobox',
+      new(key: :SC, scope: 'page', content: '#stress_record_city-popup', trigger: '#stress_record_city-trigger',
           outside: '#page-outside', ways: WAYS)
     end
 
@@ -66,9 +66,14 @@ module Stress
       %i[S1 S2 SF SC].include?(key)
     end
 
-    # The editable comboboxes, which open on Alt+ArrowDown rather than a click.
+    # The searchable Selects, whose query field lives in the popup (ui-select § Behavior,
+    # item 17). They open on a press of the trigger, like every other overlay here.
     def searchable?
       %i[S2 SC].include?(key)
+    end
+
+    def search_field
+      trigger.sub(/-trigger\z/, '-search')
     end
 
     def hint?

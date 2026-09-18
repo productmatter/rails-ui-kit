@@ -63,7 +63,7 @@ module Stress
       when :cluster_over_dm then { focus: '#page-dm-trigger' }
       when :cluster_over_po then { focus: '#page-po-trigger' }
       when :modal then { open: [modal.content], topmost: modal.content }
-      when :city_field then { open: [modal.content], focus: '#modal_city-combobox', topmost: modal.content }
+      when :city_field then { open: [modal.content], focus: '#modal_city-trigger', topmost: modal.content }
       end
     end
 
@@ -107,19 +107,21 @@ module Stress
       page.execute_script('Turbo.visit(arguments[0])', stress_bare_path)
     end
 
-    # Typing opens the listbox and filters it (ui-select § Behavior, item 21). The blank option is
-    # first in the unfiltered list, so the filter is what makes "Lisbon" the one ArrowDown reaches.
+    # Pressing the trigger opens the popup onto its search field, and typing there filters the list
+    # (ui-select § Behavior, items 17 and 21). The blank option is first in the unfiltered list, so
+    # the filter is what makes "Lisbon" the one ArrowDown reaches.
     def filter_select(select, text)
-      # set, not send_keys: the field already shows the selected option's label, and typing would
-      # append to it.
-      find(select.trigger).set(text)
+      open_overlay(select)
+      find(select.search_field).set(text)
       await_state(select.content, 'open')
     end
 
-    # ui-select § Behavior, item 32: the value is kept and the filter cleared.
+    # ui-select § Behavior, item 32: the value is kept, and the filter and its query cleared.
     def assert_select_restored
       assert_equal 'lisbon', page.evaluate_script("document.querySelector('#stress_record_city').value")
-      assert_equal 'Lisbon', page.evaluate_script("document.querySelector('#stress_record_city-combobox').value")
+      assert_equal 'Lisbon', page.evaluate_script("document.querySelector('#stress_record_city-trigger').textContent.trim()")
+      assert_equal '', page.evaluate_script("document.querySelector('#stress_record_city-search').value"),
+                   'the restored Select kept what the user had typed'
       assert page.evaluate_script("![...document.querySelectorAll('#stress_record_city-popup [role=option]')].some((option) => option.hidden)"),
              'the restored Select kept its filter'
     end

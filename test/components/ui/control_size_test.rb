@@ -60,12 +60,16 @@ module Ui
         (TEXTAREA_MINIMUMS.values - [TEXTAREA_MINIMUMS[step]]).each { |other| assert_not_includes classes, other }
       end
 
-      # The select and the combobox are one box in two renderings; the show-options button spans it.
-      test "select at size: :#{step} puts the step on the combobox and the show-options button too" do
-        render_control(:select, size: step, search: true)
-
+      # The select and the control are one box in two renderings, in either mode. The popup's
+      # search row is not a control, so the step never reaches it (ui-control-sizing § Behavior).
+      test "select at size: :#{step} puts the step on the control in both modes, and not on the search row" do
+        render_control(:select, size: step)
         assert_includes classes_of('#post_state-combobox'), height
-        assert_includes classes_of('#post_state-combobox + button'), height
+
+        render_control(:select, size: step, search: true)
+        assert_includes classes_of('#post_state-trigger'), height
+        (HEIGHTS.values - [height]).each { |other| assert_not_includes classes_of('#post_state-trigger'), other }
+        assert_not_includes classes_of('#post_state-search'), height
       end
     end
 
