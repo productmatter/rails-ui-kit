@@ -7,13 +7,19 @@ module Ui
     # apart from the component the way Ui::Select::Primitives is, so the component stays about
     # names, values and wiring, and every state here is CSS reading a real input.
     class Variant
-      # The step's own token, as a minimum: a one-line choice lines up with the Input or Select
-      # beside it, and content is free to make it taller (ui-control-sizing).
+      # A card is a control, so it keeps the step's own token as a minimum: a one-line card lines
+      # up with the Input or Select beside it, and content is free to make it taller
+      # (ui-control-sizing). A list row is not a control on its own -- it is sized by its content,
+      # with a flat 24px floor at every step (WCAG 2.5.8). A one-line row centers its indicator on
+      # that floor; a row with a description stays top-aligned so the indicator sits on the first
+      # line of text.
       SIZES = {
         sm: 'min-h-(--control-height-sm)', default: 'min-h-(--control-height)', lg: 'min-h-(--control-height-lg)'
       }.freeze
 
-      CHOICE = 'relative flex items-start gap-3 text-sm has-disabled:cursor-not-allowed'
+      LIST_MIN_HEIGHT = 'min-h-6'
+
+      CHOICE = 'relative flex gap-3 text-sm has-disabled:cursor-not-allowed'
 
       # A card is a control too: the same boundary and fill, with the checked, focused and
       # disabled states read from the input inside it. The invalid border has to beat the checked
@@ -49,14 +55,15 @@ module Ui
       # turn them into CanvasText instead of losing them with the fill.
       MARKS = { checkbox: { path: 'm4 12 5 5L20 6', width: 3 }, radio: { path: 'M12 12h.01', width: 9 } }.freeze
 
-      def initialize(variant:, size:, multiple:)
+      def initialize(variant:, size:, multiple:, described:)
         @variant = variant
         @size = size
         @multiple = multiple
+        @described = described
       end
 
       def choice_class
-        [CHOICE, SIZES[@size], VARIANTS[@variant]].join(' ')
+        [CHOICE, align_class, height_class, VARIANTS[@variant]].join(' ')
       end
 
       def input_class
@@ -66,6 +73,22 @@ module Ui
 
       def mark
         MARKS[@multiple ? :checkbox : :radio]
+      end
+
+      private
+
+      # A card keeps items-start regardless of description, the way it always has. A list row
+      # centers a one-line choice on its 24px floor, and stays top-aligned once a description
+      # puts a second line under the text -- not items-baseline: the indicator sits inside a
+      # `flex h-5 items-center` wrapper matching text-sm's line height, so items-start already
+      # centers it on the first line, which is what items-baseline would otherwise be reaching
+      # for by way of the wrapper's synthesized baseline.
+      def align_class
+        @variant == :card || @described ? 'items-start' : 'items-center'
+      end
+
+      def height_class
+        @variant == :card ? SIZES[@size] : LIST_MIN_HEIGHT
       end
     end
   end

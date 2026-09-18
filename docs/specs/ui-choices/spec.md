@@ -428,12 +428,17 @@ mode.
       `stroke`/`color` alone, so a `currentColor` stroke does **not** become `CanvasText`
       and the mark went white-on-white. The mark names the system colour itself
       (`forced-colors:text-[CanvasText]`), and the acceptance check measures it.
-17. **`size:` sets each choice's minimum block size** to the step's
-    `--control-height*` token (`ui-control-sizing`), in both appearances. So a
-    one-line card matches the Input or Select beside it, and every choice stays a
-    target of at least 24px (WCAG 2.5.8). Text size and indicator size don't change by
-    step, as with Input and Select. Content makes a choice taller; a step never makes
-    it shorter. An unknown size fails the way an unknown variant does.
+17. **`size:` sets each card's minimum block size** to the step's `--control-height*`
+    token (`ui-control-sizing`), so a one-line card matches the Input or Select beside
+    it. A list row is not a control by itself: it takes a flat 24px floor at every step
+    (WCAG 2.5.8) instead, so `size:` has no visible effect on the list variant — it is
+    still accepted and still validated, for an API that reads the same across both
+    appearances. Text size and indicator size don't change by step, as with Input and
+    Select. Content makes a choice taller; a step never makes it shorter. Alignment
+    follows the same appearance split: a one-line list row centers its indicator on the
+    24px floor (`items-center`); a row with a description, and every card row
+    regardless, stays top-aligned (`items-start`) so the indicator sits on the first
+    line of text. An unknown size fails the way an unknown variant does.
 18. **Long text and narrow widths: controls truncate, lists wrap**
     (`ui-localization` § Behavior, item 12). Choices is a list, so it never truncates.
     - Choice text and description wrap. An unbreakable string breaks rather than
@@ -626,7 +631,7 @@ Inherits `ui-component-library` § Assumptions, and `ui-select`'s and
 - With JavaScript disabled, both variants post their choices, the unchecked-all entry clears the attribute, and an empty required checkbox group posts and returns Field's error — run: `bundle exec rake test:system TEST=test/system/choices_no_javascript_test.rb`
 - Chrome's accessibility tree (CDP) shows `radiogroup`/`group` named by the Field label and described by description, error and hint; each input named by its choice text only and described by its description line; no icon in the tree; and both variants in both appearances pass `assert_accessible` resting, checked, disabled and invalid in light and dark mode — run: `bundle exec rake test:system TEST=test/system/choices_accessibility_test.rb`
 - Measured computed styles: a card rings with `--ring` on keyboard focus and not after a click; a checked card's border is `--primary` and an invalid group's checked card is `--destructive`; indicator boundary, checked border and ring reach 3:1 on every token surface; the focus outline and the check mark stay visible under forced colours — run: `bundle exec rake test:system TEST=test/system/choices_variant_test.rb`
-- At a 320px viewport, a 200-character choice and a 60-character unbreakable token wrap inside their card with no horizontal overflow of the fieldset; the indicator neither shrinks nor leaves the first line; every choice measures at least its step's `--control-height*` and 24px — run: `bundle exec rake test:system TEST=test/system/choices_layout_test.rb`
+- At a 320px viewport, a 200-character choice and a 60-character unbreakable token wrap inside their card with no horizontal overflow of the fieldset; the indicator neither shrinks nor leaves the first line; a card measures at least its step's `--control-height*`, and a one-line list row measures the 24px floor regardless of step — run: `bundle exec rake test:system TEST=test/system/choices_layout_test.rb`
 - `ui--form-change` turns dirty when a choice changes and pristine when it changes back, and Back from a cached page restores the choices the user left — run: `bundle exec rake test:system TEST=test/system/choices_turbo_test.rb`
 - `registerControllers` registers `ui--choices` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 
