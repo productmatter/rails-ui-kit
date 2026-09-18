@@ -185,6 +185,40 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     - `required: true` with neither a blank nor a prompt adds the empty option, as Rails'
       `select` does for a required single select, so a required select can start blank.
     - `selected:` compares by string value, as Rails' helpers do.
+
+    **A prompt is a placeholder, not a choice** (decided 2026-09-18, Jonathan Simmons).
+    Rails says as much: it renders the prompt only while nothing is chosen. So the two
+    renderings differ on purpose in one place, and only there.
+    - **The listbox never lists the prompt.** The native select keeps the prompt option
+      exactly as Rails renders it, because that option is how a select holds "nothing
+      chosen"; the listbox leaves it out. The control shows the prompt's text in
+      `text-muted-foreground` while it is the selected option, as it already does.
+      `include_blank:` is untouched: a blank is a choice in Rails' terms, and stays a
+      listed option.
+    - **A clear button returns the control to the prompt.** It shows when, and only
+      when, the native select holds a prompt option and its value is not blank: the
+      state a person reaches by choosing something on a page Rails rendered with the
+      prompt. On a page rendered with a value already, Rails renders no prompt option,
+      there is no placeholder state to return to, and no button shows; clearing a saved
+      value is what `include_blank:` is for. Pressing it selects the prompt option in the
+      native select, which is a user choice like any other (item 3): `input` and `change`
+      dispatch, the control shows the prompt, and a `required` select blocks its form
+      again. It never shows without that option because a single select cannot be
+      emptied without one: deselect everything and the browser selects the first option,
+      so "clear" would silently choose it.
+    - **It is a button beside the control, never inside it.** A `<button type="button">`
+      in the control's box at the inline-end, before the chevron, server-rendered
+      `hidden` like the control and revealed by `ui--select`. Its accessible name is
+      `rails_ui_kit.select.clear_label` ("Clear") followed by the field's name, wired the
+      way the control's own name is. It is in the tab order after the control and at
+      least 24×24 CSS px (WCAG 2.5.8). It is a sibling because interactive content inside
+      a `role="combobox"` or a `button` is invalid. It is the only way to clear — no key
+      on the control does it (decided 2026-09-18) — and it is in both modes. Once pressed
+      it is gone, so focus moves to the control rather than being left on nothing. A
+      press while the popup is open closes the popup first, as any press outside it
+      does. A disabled Select shows none, and neither does select-only mode where the
+      native picker is showing on a coarse pointer (item 2): that picker lists the prompt
+      itself.
 11. **One option model, rendered twice, proven equal.** The native `<option>`s and
     `<optgroup>`s are rendered with Rails' public helpers (`options_for_select`,
     `options_from_collection_for_select`, `option_groups_from_collection_for_select`,
@@ -192,7 +226,9 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     adopted, not rebuilt. The listbox is rendered from the same normalised list of
     `{ text, value, disabled, selected, group }`. A unit test asserts that the native
     select matches what `collection_select` and `select` render for the same arguments,
-    and that the listbox has the same value, text, disabled and selected sequence.
+    and that the listbox has the same value, text, disabled and selected sequence, the
+    prompt option excepted: the native select has it and the listbox never does
+    (item 10).
 12. **Attribute routing.** The component takes the attributes `Ui::FieldComponent`
     hands any control, so it needs no special case there:
     - `id`, `name`, `required`, `disabled`, `form` and `autofocus` go to the native
@@ -534,8 +570,9 @@ numbering is referenced as-is; the rules below are scope-local.
 
 11. **Local first.** Remote search ships in a later phase, behind `search_url:`, with no
     change to the v1 API (§ Behavior, items 27–31).
-12. **Every user-facing string goes through i18n.** "No results", the result count and
-    the search field's placeholder come from `rails_ui_kit.select.*`. The prompt comes
+12. **Every user-facing string goes through i18n.** "No results", the result count,
+    the search field's placeholder and the clear button's name come from
+    `rails_ui_kit.select.*`. The prompt comes
     from Rails' own `helpers.select.prompt`.
 
 **May**
@@ -650,7 +687,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 ### agent-loopable
 
 - Each option source (collection, array, hash, enum, grouped) renders a native select identical to Rails' `collection_select`, `select` or `grouped_collection_select` output for the same arguments, including `selected:`, `include_blank:`, `prompt:`, `disabled_values:` and `required:`'s implicit blank — run: `bundle exec rake test TEST=test/components/ui/select_component_test.rb`
-- The listbox's option value, text, disabled and selected sequence equals the native select's for every source, and enum labels resolve through `human_attribute_name` with a humanised fallback — run: `bundle exec rake test TEST=test/components/ui/select_options_test.rb`
+- The listbox's option value, text, disabled and selected sequence equals the native select's for every source, the prompt option excepted (§ Behavior, item 10), and enum labels resolve through `human_attribute_name` with a humanised fallback — run: `bundle exec rake test TEST=test/components/ui/select_options_test.rb`
 - Choosing an option by keyboard and by pointer posts its value with the form, dispatches `input` and `change` from the native select, and a `422` re-render shows the submitted value still selected — run: `bundle exec rake test:system TEST=test/system/select_form_submission_test.rb`
 - A `required` Select left blank blocks submission with no request sent and focus on the control (the combobox, or search mode's trigger); a server-side error re-rendered through Field puts `aria-invalid` and an `aria-describedby` naming the error on the combobox — run: `bundle exec rake test:system TEST=test/system/select_validation_test.rb`
 - Form reset restores the default selection in both the native select and the combobox's label, and a disabled Select neither opens nor submits — run: `bundle exec rake test:system TEST=test/system/select_form_reset_test.rb`
@@ -662,6 +699,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - Back to a page cached with a Select open restores it closed, unfiltered, showing the value the user left and without pulling focus in — run: `bundle exec rake test:system TEST=test/system/select_turbo_cache_test.rb`
 - A Turbo Stream replacing a Select, a frame swap containing one, and a morphing refresh that changes its selection each leave a working Select showing the select's current value — run: `bundle exec rake test:system TEST=test/system/select_turbo_stream_test.rb`
 - Both modes pass `assert_accessible` closed, open, filtered, empty and invalid, in light and dark mode, with exactly one `role="combobox"` in the tree per Select; and the control's text, the search field's placeholder, option text, active indicator and focus ring meet contrast on their surfaces — run: `bundle exec rake test:system TEST=test/system/select_accessibility_test.rb`
+- With `prompt:`, the listbox never lists the prompt in either mode; after a choice a clear button shows, and pressing it selects the native select's prompt option, dispatches `input` and `change`, shows the prompt, moves focus to the control and leaves a `required` form blocked; rendered with a value, or with `include_blank:` and no prompt, or disabled, no clear button shows; the button is a sibling of the control, at least 24px square, named "Clear" and the field's name, and the page passes `assert_accessible` with it showing, in light and dark mode — run: `bundle exec rake test:system TEST=test/system/select_clear_test.rb`
 - `registerControllers` registers `ui--select` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 - `kind: :listbox` is no longer a recognised Dropdown kind: passing it falls back to `:menu` rather than raising — run: `bundle exec rake test TEST=test/components/ui/dropdown_component_test.rb`
 

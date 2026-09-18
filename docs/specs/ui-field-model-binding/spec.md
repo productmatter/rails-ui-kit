@@ -295,6 +295,18 @@ coming from an ActiveModel object.
       *is* part of accessible-name computation, and the alt-text syntax for it isn't
       verified across the browsers the kit supports. Its colour comes from a token and
       meets 4.5:1 on every token surface in both modes.
+
+      Beside it, when the field is required, the label also holds the word itself, where
+      only a direct reference reaches it:
+      `<span id="<label id>-required" hidden data-slot="field-required-text">required</span>`,
+      from `rails_ui_kit.field.required_label` or the field's `required_label:`. `hidden`
+      keeps it out of the label's own text, so every control that states "required"
+      itself still has the plain name. It exists for the control that cannot: ARIA gives
+      a `button` no required state, so ui-select's search trigger names itself with the
+      label *and* this element, and an element referenced directly joins the name even
+      when hidden (item 20's exception). Decided 2026-09-18, Jonathan Simmons: a required
+      field is a field that needs a value, the label is what says so, and what the
+      control is built from does not come into it.
 15. **A non-native control carries it too.** Select's enhanced combobox is a
     `div role="combobox"` or `input role="combobox"`, not the native select, so native
     `required` never reaches it. It gets `aria-required="true"` whenever its native
@@ -501,8 +513,12 @@ scope-local.
    A rendered field in which any two of them disagree is a defect.
 6. **The required marker is invisible to assistive technology** (item 14). The control's
    computed accessible name is the label text with no marker glyph. Required state
-   reaches assistive technology through the control's own `required` or `aria-required`,
-   never through label text.
+   reaches assistive technology through the control's own `required` or `aria-required`
+   wherever the control has one. Where it cannot — a `button`, which ARIA gives no
+   required state — the label says it: its hidden "required" text joins that control's
+   name by direct reference, and no other control's (amended 2026-09-18; before then
+   this rule said "never through label text"). Never both: a control that states it is
+   never also named with it.
 
 **Should**
 

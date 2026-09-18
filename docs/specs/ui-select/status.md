@@ -59,8 +59,9 @@ in § Behavior, items 27–31 and deliberately unbuilt. The corrections are reco
 
 Two things, in order. First, item 17's "Required is the label's to say": the Field label
 carries "required" into the search trigger's accessible name, because a button has no state
-to announce it with, without a native control hearing it twice. Second, a unit still to be
-specced, decided in outline with Jonathan on 2026-09-18: when a Select is given `prompt:`,
+to announce it with, without a native control hearing it twice. Second, the prompt unit,
+specced in § Behavior, item 10 on 2026-09-18 from Jonathan's decisions and ratified by him
+the same day, to be built after the character counter since it touches the same files: when a Select is given `prompt:`,
 the prompt leaves the listbox (it is a placeholder, not a choice) and a clear button returns
 the control to it, shown only while the native select still holds the prompt option Rails
 rendered; `include_blank:` stays a listed choice; both modes. Remote search (items 27–31)
