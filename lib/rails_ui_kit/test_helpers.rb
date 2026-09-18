@@ -28,6 +28,14 @@ module RailsUiKit
     CONTROL = "[data-ui--overlay-target='trigger']"
     # The button beside the control that returns it to the prompt, where the Select has one.
     CLEAR = "[data-ui--select-target='clear']"
+    # A label's accessible text, read in the browser (see ui_select_label_name).
+    LABEL_NAME = <<~JS
+      ((label) => {
+        const clone = label.cloneNode(true)
+        clone.querySelectorAll('[aria-hidden="true"], [hidden]').forEach((node) => node.remove())
+        return clone.textContent.replace(/\\s+/g, ' ').trim()
+      })(arguments[0])
+    JS
 
     # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
     # id or name of the select inside it.
@@ -86,14 +94,6 @@ module RailsUiKit
     # read whether or not the label is painted, because a label scrolled behind an open Modal is
     # one the driver reports as not displayed, and dropping it made the ambiguity check
     # under-count -- the helper then picked the other Select instead of raising.
-    LABEL_NAME = <<~JS
-      ((label) => {
-        const clone = label.cloneNode(true)
-        clone.querySelectorAll('[aria-hidden="true"], [hidden]').forEach((node) => node.remove())
-        return clone.textContent.replace(/\\s+/g, ' ').trim()
-      })(arguments[0])
-    JS
-
     def ui_select_label_name(label)
       page.evaluate_script(LABEL_NAME, label)
     end
