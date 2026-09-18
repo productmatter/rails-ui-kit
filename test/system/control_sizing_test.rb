@@ -5,15 +5,19 @@ require_relative 'select_helpers'
 
 # The kit's control metrics, measured in the browser (docs/specs/ui-control-sizing).
 #
-# Written and green against the unmodified v0.3.0 components before any of them moved onto
-# the --control-height* tokens (§ Business rules, rule 3): a regression check that has never
-# run against the old code proves nothing.
+# Amended 2026-09-18: the scale gained two steps, xs and xl, and every step now carries inline
+# padding, text size and radius as well as its height token, so the old "every control renders
+# v0.3.0 unchanged" check (proved against the unmodified pre-scale components) is retired with
+# the promise it proved. In its place, the box tests below pin each of the five steps' boxes to
+# § Behavior's table -- a decision recorded once, in docs/specs/ui-control-sizing § Business
+# rules, rule 3, never a side effect from here on.
 #
 # Every length Tailwind draws from its spacing unit is recorded here in units rather than
 # pixels, and asserted twice -- once at Tailwind's own 0.25rem unit, once with --spacing
-# retuned on :root. That is what the token defaults claim (calc(var(--spacing) * 9) and its
-# siblings), so a host that has already retuned --spacing sees no change either. Font size
-# and line height are asserted in pixels, because they must not move with the spacing unit.
+# retuned on :root -- which is what the token defaults claim (calc(var(--spacing) * 8) and its
+# siblings). Font size, line height and radius are asserted in pixels: they don't move with the
+# spacing unit (radius comes from --radius, a separate token; text size from Tailwind's own
+# --text-* variables).
 class ControlSizingTest < ApplicationSystemTestCase
   include SelectHelpers
 
@@ -21,43 +25,67 @@ class ControlSizingTest < ApplicationSystemTestCase
   RETUNED = '0.3rem'    # a host that has retuned it
   RETUNED_UNIT = 4.8
 
-  TEXT_SM = 14.0
-  TEXT_SM_LINE_HEIGHT = 20.0
+  # WCAG 2.5.8's target minimum, in CSS px.
+  TARGET_MINIMUM = 24.0
 
   # The shared scale: one height per step, whatever the control (§ Behavior). A textarea grows
   # with its content, so its step sets a minimum instead -- one control height plus a constant
   # one-line allowance of seven spacing units.
-  STEPS = { sm: 32.0, default: 36.0, lg: 40.0 }.freeze
-  TEXTAREA_ALLOWANCE = 28.0
+  HEIGHT_UNITS = { xs: 6, sm: 7, default: 8, lg: 9, xl: 10 }.freeze
+  STEPS = HEIGHT_UNITS.transform_values { |units| units * UNIT }.freeze
+  TEXTAREA_ALLOWANCE_UNITS = 7
+  TEXTAREA_ALLOWANCE = TEXTAREA_ALLOWANCE_UNITS * UNIT
 
-  # WCAG 2.5.8's target minimum, in CSS px.
-  TARGET_MINIMUM = 24.0
-
-  # v0.3.0's boxes. `height`, `min_height`, `width` and the paddings are in spacing units.
-  CONTROLS = {
-    'Button sm' => { page: :button, selector: '#button-sizes-preview [data-slot=button]', text: 'Small',
-                     height: 8, padding_x: 3, padding_y: 0 },
-    'Button default' => { page: :button, selector: '#button-sizes-preview [data-slot=button]', text: 'Default',
-                          height: 9, padding_x: 4, padding_y: 2 },
-    'Button lg' => { page: :button, selector: '#button-sizes-preview [data-slot=button]', text: 'Large',
-                     height: 10, padding_x: 6, padding_y: 0 },
-    'Button icon' => { page: :button, selector: "#button-sizes-preview [data-slot=button][aria-label='Add item']",
-                       height: 9, width: 9, padding_x: 0, padding_y: 0 },
-    'Input' => { page: :input, selector: '#default-input', height: 9, padding_x: 3, padding_y: 1 },
-    'Textarea' => { page: :textarea, selector: '#default-textarea', min_height: 16,
-                    padding_x: 3, padding_y: 2 },
-    'Select, native' => { page: :select, selector: '#demo_timezone', height: 9,
-                          padding_left: 3, padding_right: 8 },
-    'Select, combobox' => { page: :select, selector: '#demo_timezone-combobox', height: 9,
-                            padding_left: 3, padding_right: 8 }
+  # Each step's own recipe, independent of the spacing unit: inline padding in spacing units
+  # (multiplied by the unit under test below), font size and line height in px, and radius in
+  # px -- Tailwind's rounded-sm/rounded-md at the kit's own --radius: 0.5rem.
+  STEP_RECIPE = {
+    xs: { padding: 2.0, font_size: 12.0, line_height: 16.0, radius: 4.0 },
+    sm: { padding: 2.0, font_size: 14.0, line_height: 20.0, radius: 4.0 },
+    default: { padding: 2.5, font_size: 14.0, line_height: 20.0, radius: 6.0 },
+    lg: { padding: 3.0, font_size: 14.0, line_height: 20.0, radius: 6.0 },
+    xl: { padding: 3.5, font_size: 14.0, line_height: 20.0, radius: 6.0 }
   }.freeze
 
-  test 'CS1: every control renders v0.3.0 box metrics unchanged, at Tailwind default spacing' do
-    assert_boxes(UNIT)
+  # Select's shared box (the native select, the combobox and search mode's trigger) widens its
+  # end padding past the table's own value, by a constant five spacing units, to clear the
+  # chevron (Ui::Select::Box::SIZES) -- the glyph's own size and position don't move with the
+  # step, so the headroom it needs doesn't either.
+  SELECT_END_EXTRA = 5.0
+  SELECT_CONTROLS = ['the native select', 'the combobox', "search mode's trigger"].freeze
+
+  HEIGHT_UNITS.each_key do |step|
+    test "the box at size: :#{step} matches the table, at Tailwind's default spacing" do
+      visit field_path
+      open_all_sized_controls
+      disable_transitions
+
+      assert_step_box(step, UNIT)
+    end
+
+    test "the box at size: :#{step} matches the table, when a host retunes --spacing" do
+      visit field_path
+      open_all_sized_controls
+      disable_transitions
+      page.execute_script("document.documentElement.style.setProperty('--spacing', '#{RETUNED}')")
+
+      assert_step_box(step, RETUNED_UNIT)
+    end
   end
 
-  test 'CS2: every control renders v0.3.0 box metrics unchanged when a host retunes --spacing' do
-    assert_boxes(RETUNED_UNIT) { page.execute_script("document.documentElement.style.setProperty('--spacing', '#{RETUNED}')") }
+  test "the icon Button's box matches the table, at Tailwind's default spacing" do
+    visit button_path
+    disable_transitions
+
+    assert_icon_box(UNIT)
+  end
+
+  test "the icon Button's box matches the table, when a host retunes --spacing" do
+    visit button_path
+    disable_transitions
+    page.execute_script("document.documentElement.style.setProperty('--spacing', '#{RETUNED}')")
+
+    assert_icon_box(RETUNED_UNIT)
   end
 
   test 'CS3: every control at a step is the height of that step, so a row of them aligns' do
@@ -99,7 +127,7 @@ class ControlSizingTest < ApplicationSystemTestCase
     open_all_sized_controls
     disable_transitions
 
-    # Three independent tokens rather than a derived scale, so a redefinition is honoured
+    # Five independent tokens rather than a derived scale, so a redefinition is honoured
     # wherever it lands -- including below :root, where a derived scale would move `default`
     # and leave `sm` behind (docs/specs/ui-control-sizing, § Behavior).
     set_token(:root, '--control-height-sm', '3rem')
@@ -122,8 +150,8 @@ class ControlSizingTest < ApplicationSystemTestCase
     open_all_sized_controls
     disable_transitions
 
-    step_controls(:sm).merge('the textarea' => '#sizes-sm-textarea',
-                             'an icon-only Button at size: :sm' => '#sizes-sm-icon-button')
+    step_controls(:xs).merge('the textarea' => '#sizes-xs-textarea',
+                             'an icon-only Button at size: :xs' => '#sizes-xs-icon-button')
                       .each { |name, selector| assert_target_size(name, selector) }
 
     visit button_path
@@ -173,6 +201,63 @@ class ControlSizingTest < ApplicationSystemTestCase
                     "not the #{height + TEXTAREA_ALLOWANCE}px its step sets"
   end
 
+  # Every control's box at one step, against § Behavior's table: height, inline padding, font
+  # size, line height and radius. Select's shared box (the native select, the combobox and
+  # search mode's trigger) takes the same recipe with its end padding widened for the chevron.
+  def assert_step_box(step, unit)
+    height = HEIGHT_UNITS[step] * unit
+    recipe = STEP_RECIPE.fetch(step)
+
+    step_controls(step).each do |name, selector|
+      assert_box(name, find(selector, visible: :all), height, recipe, unit,
+                 end_padding: SELECT_CONTROLS.include?(name) ? recipe[:padding] + SELECT_END_EXTRA : recipe[:padding])
+    end
+
+    textarea = find("#sizes-#{step}-textarea")
+    assert_box('the textarea', textarea, nil, recipe, unit, min_height: height + (TEXTAREA_ALLOWANCE_UNITS * unit))
+  end
+
+  # `icon` stays a single square bound to the default step (§ Behavior), so it is checked once,
+  # against the default row's recipe, rather than once per step.
+  def assert_icon_box(unit)
+    recipe = STEP_RECIPE.fetch(:default)
+    height = HEIGHT_UNITS[:default] * unit
+    measured = metrics_of(find("#button-sizes-preview [data-slot=button][aria-label='Add item']"))
+
+    assert_in_delta height, measured['height'], 0.5, "the icon Button is #{measured['height']}px tall, not #{height}px"
+    assert_in_delta height, measured['width'], 0.5, "the icon Button is #{measured['width']}px wide, not #{height}px"
+    assert_box_type('the icon Button', measured, recipe)
+  end
+
+  # One control's box against the recipe: height (or min_height, for a textarea), inline padding
+  # -- symmetric unless `end_padding:` names a different end value, the way Select's box does --
+  # font size, line height and radius.
+  def assert_box(name, element, height, recipe, unit, end_padding: recipe[:padding], min_height: nil)
+    measured = metrics_of(element)
+
+    assert_box_height(name, measured, height, min_height)
+    assert_in_delta recipe[:padding] * unit, measured['padding_left'], 0.5,
+                    "#{name} has #{measured['padding_left']}px of start padding, not #{recipe[:padding] * unit}px"
+    assert_in_delta end_padding * unit, measured['padding_right'], 0.5,
+                    "#{name} has #{measured['padding_right']}px of end padding, not #{end_padding * unit}px"
+    assert_box_type(name, measured, recipe)
+  end
+
+  def assert_box_height(name, measured, height, min_height)
+    if min_height
+      assert_in_delta min_height, measured['min_height'], 0.5,
+                      "#{name} has a #{measured['min_height']}px minimum, not the #{min_height}px its step sets"
+    else
+      assert_in_delta height, measured['height'], 0.5, "#{name} is #{measured['height']}px tall, not #{height}px"
+    end
+  end
+
+  def assert_box_type(name, measured, recipe)
+    assert_in_delta recipe[:font_size], measured['fontSize'], 0.1, "#{name}'s font size moved"
+    assert_in_delta recipe[:line_height], measured['lineHeight'], 0.1, "#{name}'s line height moved"
+    assert_in_delta recipe[:radius], measured['radius'], 0.1, "#{name}'s radius moved"
+  end
+
   # The native select is measured alongside the combobox that covers it: they are one box, and
   # a step that moved only one of them would show as a jump the moment JavaScript arrived.
   def step_controls(step)
@@ -190,50 +275,9 @@ class ControlSizingTest < ApplicationSystemTestCase
     JS
   end
 
-  # Walks the table a page at a time, so the four docs pages are each visited once.
-  def assert_boxes(unit)
-    CONTROLS.group_by { |_, spec| spec[:page] }.each do |docs_page, controls|
-      visit send("#{docs_page}_path")
-      disable_transitions
-      yield if block_given?
-
-      controls.each { |name, spec| assert_box(name, spec, unit) }
-    end
-  end
-
-  def assert_box(name, spec, unit)
-    measured = metrics_of(locate(spec))
-
-    expected_lengths(spec, unit).each do |metric, expected|
-      assert_in_delta expected, measured.fetch(metric.to_s), 0.1,
-                      "#{name}'s #{metric.to_s.tr('_', ' ')} is #{measured.fetch(metric.to_s)}px, " \
-                      "not the #{expected}px it rendered in v0.3.0 (spacing unit #{unit}px)"
-    end
-
-    assert_in_delta TEXT_SM, measured['fontSize'], 0.1, "#{name}'s font size moved"
-    assert_in_delta TEXT_SM_LINE_HEIGHT, measured['lineHeight'], 0.1, "#{name}'s line height moved"
-  end
-
-  # Spacing units out of the table, pixels in -- and paddingX/paddingY expanded into the four
-  # sides they stand for, so a change to any one of them is named in the failure.
-  def expected_lengths(spec, unit)
-    lengths = { height: spec[:height], width: spec[:width], min_height: spec[:min_height],
-                padding_top: spec[:padding_y], padding_bottom: spec[:padding_y],
-                padding_left: spec[:padding_left] || spec[:padding_x],
-                padding_right: spec[:padding_right] || spec[:padding_x] }
-
-    lengths.compact.transform_values { |units| units * unit }
-  end
-
-  def locate(spec)
-    return find(spec[:selector], exact_text: spec[:text]) if spec[:text]
-
-    find(spec[:selector], visible: :all)
-  end
-
   # One read per control: the rendered box, plus the computed lengths a class could move
   # without changing the box on a page this narrow. min-height is `none` on most controls,
-  # which parses to NaN; that reads as 0 and is only asserted where the table names it.
+  # which parses to NaN; that reads as 0 and is only asserted where it's the metric named.
   def metrics_of(element)
     page.evaluate_script(<<~JS, element)
       (function (el) {
@@ -246,7 +290,8 @@ class ControlSizingTest < ApplicationSystemTestCase
           min_height: px(style.minHeight),
           padding_top: px(style.paddingTop), padding_right: px(style.paddingRight),
           padding_bottom: px(style.paddingBottom), padding_left: px(style.paddingLeft),
-          fontSize: px(style.fontSize), lineHeight: px(style.lineHeight)
+          fontSize: px(style.fontSize), lineHeight: px(style.lineHeight),
+          radius: px(style.borderTopLeftRadius)
         }
       })(arguments[0])
     JS

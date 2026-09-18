@@ -12,7 +12,7 @@ module Ui
       # and a card's padding plus one line of text was always taller than the largest step's
       # minimum, so a step never bound and the option never did anything visible. The keys are
       # what validates the keyword; they carry no classes.
-      SIZES = { sm: nil, default: nil, lg: nil }.freeze
+      SIZES = { xs: nil, sm: nil, default: nil, lg: nil, xl: nil }.freeze
 
       # Every choice, row or card: WCAG 2.5.8's target size. A one-line list row centers its
       # indicator on it; a row with a description stays top-aligned so the indicator sits on the

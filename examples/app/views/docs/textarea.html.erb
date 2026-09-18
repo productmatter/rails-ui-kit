@@ -34,12 +34,20 @@
     <%= render Ui::TextareaComponent.new(id: "disabled-textarea", name: "disabled", disabled: true) do %>Locked<% end %>
   </div>
   <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "xs-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :xs" } %>
+    <%= render Ui::TextareaComponent.new(size: :xs, id: "xs-textarea", name: "xs", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "sm-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :sm" } %>
     <%= render Ui::TextareaComponent.new(size: :sm, id: "sm-textarea", name: "sm", placeholder: "Add a note…") %>
   </div>
   <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "lg-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :lg" } %>
     <%= render Ui::TextareaComponent.new(size: :lg, id: "lg-textarea", name: "lg", placeholder: "Add a note…") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "xl-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :xl" } %>
+    <%= render Ui::TextareaComponent.new(size: :xl, id: "xl-textarea", name: "xl", placeholder: "Add a note…") %>
   </div>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
@@ -70,7 +78,7 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
+        ["size",         "Symbol",  ":default", "One of :xs, :sm, :default, :lg, :xl. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
         ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],

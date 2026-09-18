@@ -505,14 +505,14 @@ your own `@theme` all win over them wherever they sit in the file.
 
 The full set is `background`/`foreground`, `card`, `popover`, `primary`, `secondary`, `muted`, `accent` (each with a `-foreground` pair), `destructive`, `border`, `input`, `ring`, `chart-1`…`chart-5`, `sidebar` and its variants, and `radius` — defined under `:root` and `.dark` in `app/assets/tailwind/rails_ui_kit/engine.css`. `ui--dark-mode` toggles the `.dark` class on `<html>`.
 
-**Control heights** are tokens too. Button, Input, Select, Textarea and Choices share one `size:` scale — `:sm`, `:default`, `:lg` — and every control at a size reads its height from the same token: `--control-height-sm`, `--control-height` and `--control-height-lg`, which are 32, 36 and 40px at Tailwind's default spacing. Redefine them to make your app denser or roomier, and a row of controls at one size keeps lining up. These are kit extensions rather than shadcn names, so a shadcn theme that doesn't mention them leaves the kit's values in place. Each one is honoured wherever you set it, including on a single part of a page:
+**Control heights** are tokens too. Button, Input, Select and Textarea share one `size:` scale — `:xs`, `:sm`, `:default`, `:lg`, `:xl` — and every control at a size reads its height from the same token: `--control-height-xs`, `--control-height-sm`, `--control-height`, `--control-height-lg` and `--control-height-xl`, which are 24, 28, 32, 36 and 40px at Tailwind's default spacing. Each size also carries its own side padding, text size and corner radius, so the five read as five sizes rather than one box at five heights; only the height is a token. Choices accepts the same five names so a form can hand every control one size, and reads none of the tokens. Redefine them to make your app denser or roomier, and a row of controls at one size keeps lining up. These are kit extensions rather than shadcn names, so a shadcn theme that doesn't mention them leaves the kit's values in place. Each one is honoured wherever you set it, including on a single part of a page:
 
 ```css
-:root       { --control-height-sm: 1.75rem; --control-height: 2rem; --control-height-lg: 2.25rem; }
-.data-table { --control-height: 1.75rem; }
+:root       { --control-height: 2.25rem; --control-height-lg: 2.5rem; } /* a roomier app: 36 and 40px */
+.data-table { --control-height: 1.75rem; }                              /* a denser table: 28px */
 ```
 
-**Don't set a control height below 24px.** A control under 24 CSS pixels fails WCAG 2.5.8, Target Size (Minimum), so people with limited dexterity can't reliably hit it. The kit's own heights pass. It won't stop you setting a smaller one, the same way it won't stop you choosing an unreadable colour pair, so this one is on you.
+**Don't set a control height below 24px.** A control under 24 CSS pixels fails WCAG 2.5.8, Target Size (Minimum), so people with limited dexterity can't reliably hit it. The kit's own heights pass; the smallest, `xs`, sits exactly on 24px, with no margin. It won't stop you setting a smaller one, the same way it won't stop you choosing an unreadable colour pair, so this one is on you.
 
 **Chrome strings.** Two kinds of words, translated in two places.
 

@@ -103,19 +103,24 @@
 <h2 class="text-base font-semibold mb-3">Control sizing</h2>
 <p class="text-sm text-muted-foreground mb-3">
   Button, Input, Select and Textarea share one <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code>
-  scale — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:sm</code>,
+  scale — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xs</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:sm</code>,
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:default</code>,
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:lg</code> — and every control at a step reads the same
-  token for its height, so a row of them lines up without a single height class. Button and Input are shown; Select and
-  Textarea follow the same scale, and the full set is under the disclosure. Retune the scale for your whole app by redefining
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:lg</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xl</code> — and every control at a step reads the same
+  token for its height and the same padding, text size and radius, so a row of them lines up and reads as a distinct
+  size. Button and Input are shown; Select and Textarea follow the same scale, and the full set is under the disclosure.
+  Retune the scale for your whole app by redefining
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-xs</code>,
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-sm</code>,
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height</code> or
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-lg</code>; see Overriding in the README.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-lg</code> or
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-xl</code>; see Overriding in the README.
 </p>
 <div id="control-sizes-preview" class="rounded-lg border border-border bg-background p-8 mb-8">
-  <%# The demo: two controls a row, so the three heights and the alignment are what the eye sees. %>
+  <%# The demo: two controls a row, so the five heights and the alignment are what the eye sees. %>
   <div class="grid gap-4">
-    <% %i[sm default lg].each do |step| %>
+    <% %i[xs sm default lg xl].each do |step| %>
       <div class="flex items-center gap-3">
         <span class="w-28 shrink-0 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
         <%= render(Ui::ButtonComponent.new(size: step)) { "Save" } %>
@@ -130,7 +135,7 @@
   <details id="control-sizes-all" class="mt-6 border-t border-border pt-4">
     <summary class="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Every sized control at each step</summary>
     <div class="mt-4 grid gap-6">
-  <% %i[sm default lg].each do |step| %>
+  <% %i[xs sm default lg xl].each do |step| %>
     <div id="sizes-<%= step %>-row" class="flex flex-wrap items-start gap-3">
       <span class="w-24 shrink-0 pt-2 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
       <%= render(Ui::ButtonComponent.new(size: step, id: "sizes-#{step}-button")) { "Save" } %>

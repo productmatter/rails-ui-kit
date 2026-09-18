@@ -7,7 +7,7 @@
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::FieldComponent.new(model: @user, attribute: :email)</code> gives you this input already named, valued,
     labelled and marked invalid from the record, so you rarely render it yourself. On its own it is a native
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;input&gt;</code> drawn from the design tokens, with one option of its own, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code>, the control
-    scale it shares with Button, Select and Textarea.
+    scale it shares with Button, Select and Textarea, from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xs</code> to <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xl</code>.
   </p>
 </div>
 
@@ -39,12 +39,20 @@
     <%= render Ui::InputComponent.new(type: "password", id: "password-input", name: "password", value: "hunter2") %>
   </div>
   <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "xs-input", class: "text-xs font-mono text-muted-foreground")) { "size: :xs" } %>
+    <%= render Ui::InputComponent.new(size: :xs, id: "xs-input", name: "xs", value: "Jane Cooper") %>
+  </div>
+  <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "sm-input", class: "text-xs font-mono text-muted-foreground")) { "size: :sm" } %>
     <%= render Ui::InputComponent.new(size: :sm, id: "sm-input", name: "sm", value: "Jane Cooper") %>
   </div>
   <div class="grid gap-2 w-56">
     <%= render(Ui::LabelComponent.new(for: "lg-input", class: "text-xs font-mono text-muted-foreground")) { "size: :lg" } %>
     <%= render Ui::InputComponent.new(size: :lg, id: "lg-input", name: "lg", value: "Jane Cooper") %>
+  </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "xl-input", class: "text-xs font-mono text-muted-foreground")) { "size: :xl" } %>
+    <%= render Ui::InputComponent.new(size: :xl, id: "xl-input", name: "xl", value: "Jane Cooper") %>
   </div>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
@@ -77,7 +85,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["type",         "String",  '"text"', "The input type attribute — text, email, password, and so on."],
-        ["size",         "Symbol",  ":default", "One of :sm, :default, :lg — the heights Button's sizes have, so controls at one size line up. The kit's scale, not the HTML size attribute."],
+        ["size",         "Symbol",  ":default", "One of :xs, :sm, :default, :lg, :xl — the sizes Button's scale has, so controls at one size line up. The kit's scale, not the HTML size attribute."],
         ["class",        "String",  "nil",    "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil",    "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil",    "Forwarded straight to the native disabled attribute."],

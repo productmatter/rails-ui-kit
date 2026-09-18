@@ -6,7 +6,8 @@ and the two failures below (§1, §2) are exactly what that test found — one o
 §5 are visible changes to the confirm dialog, not failures: nothing errors except a removed
 keyword. §6 and §7 change what a toast shows for the same call.
 
-**Headline: run `bundle update`, then fix seven things.** Most of the CHANGELOG's 0.3.0
+**Headline: run `bundle update`, then fix seven things.** What has changed since v0.3.0 is
+in [its own section](#since-v030-unreleased) further down, and isn't part of that count. Most of the CHANGELOG's 0.3.0
 section is new components, bug fixes, and internal refactors that need nothing from you. This
 file is only the part that touches a hand-rolled app.
 
@@ -380,6 +381,56 @@ whole payload.
 ```bash
 grep -rn 'ToastComponent.new' app/ | grep 'message: "[a-z_]*\.[a-z_.]*"'
 ```
+
+## Since v0.3.0 (unreleased)
+
+Not part of the 0.2.0 → 0.3.0 upgrade above. These land in the next release. None of them
+errors; the first is visible on every form, and the other two only touch code you wrote
+against 0.3.0.
+
+### Every control is smaller at the sizes you already use
+
+Button, Input, Select and Textarea's shared height scale gained two new steps, `xs` and `xl`,
+and the three you already call by name each moved down one: `default` is 32px where it was
+36, `sm` is 28px where it was 32, `lg` is 36px where it was 40. Nothing errors and no keyword
+changed — a form built on the kit's defaults renders 4px shorter at every step than it did.
+
+Button's inline padding tightened to match: `default` was 16px a side, now 10px; `sm` was 12px, now
+8px; `lg` was 24px, now 12px. Input, Select and Textarea's padding, text size and corner
+radius move with the same table, so a control at a step now reads as a genuinely different
+size, not the same box at three heights.
+
+**To keep the old heights,** redefine the three tokens you already had, back to the spacing
+multiples they used to be:
+
+```css
+:root {
+  --control-height-sm: calc(var(--spacing) * 8);
+  --control-height: calc(var(--spacing) * 9);
+  --control-height-lg: calc(var(--spacing) * 10);
+}
+```
+
+That restores the three old heights exactly. It doesn't restore Button's old padding, which
+was never a token: pass `class:` where you need it back.
+
+### Select's search mode renamed one keyword and two ids
+
+`Ui::SelectComponent(search: true)` is now a trigger button with the search field inside its
+popup, where it was a text field you typed into. If you passed `show_options_label:`, it is
+gone with the button it named: the new keyword is `search_placeholder:`
+(`rails_ui_kit.select.search_placeholder`). If your own CSS, JavaScript or tests found the
+control by id, `<id>-combobox` no longer exists in search mode: the trigger is `<id>-trigger`
+and the search field is `<id>-search`. Select-only mode keeps `<id>-combobox`. The `ui_select`
+test helper needs no change.
+
+### Bordered controls draw one focus line
+
+Input, Textarea, Select, the outline Button and Choices cards no longer draw a border, a gap
+and a ring: on focus the border takes `--ring` and a 2px outline sits flush against it. If you
+copied the kit's focus classes onto your own bordered controls to match, drop
+`focus-visible:outline-offset-2` and add `focus-visible:border-ring`. Filled Buttons,
+checkboxes and radios keep the stand-off ring.
 
 ## Also worth knowing
 

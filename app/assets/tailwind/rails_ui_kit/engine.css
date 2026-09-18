@@ -95,18 +95,26 @@
 
     --radius: 0.5rem;
 
-    /* Kit extensions — a control's height at each step of the shared size scale, so Button,
-       Input, Select and Textarea at one step line up by reading one token instead of four
-       literals. Written in Tailwind's own spacing unit, which is exactly what h-8, h-9 and
-       h-10 computed to before these existed, so a host that has already retuned --spacing
-       keeps the sizes it had. Three independent values, not a scale derived from one: each is
-       honoured wherever it is redefined, including below :root, where a derived scale would
-       move one step and leave the others at the root's value. Metrics don't change between
-       light and dark, so they are defined here only. A value under 24px puts a control under
-       WCAG 2.5.8's target minimum. */
-    --control-height-sm: calc(var(--spacing) * 8);
-    --control-height: calc(var(--spacing) * 9);
-    --control-height-lg: calc(var(--spacing) * 10);
+    /* Kit extensions — a control's height at each of the five steps of the shared size scale
+       (Tailwind's own button heights, 24 to 40px), so Button, Input, Select and Textarea at one
+       step line up by reading one token instead of four literals. Written in Tailwind's own
+       spacing unit, so a host that has already retuned --spacing keeps the sizes it had. Five
+       independent values, not a scale derived from one: each is honoured wherever it is
+       redefined, including below :root, where a derived scale would move one step and leave the
+       others at the root's value. Metrics don't change between light and dark, so they are
+       defined here only.
+       Amended 2026-09-18: the scale gained --control-height-xs and -xl, and the three existing
+       names each dropped one step -- -sm from spacing×8 to ×7, the unnamed default from ×9 to
+       ×8, -lg from ×10 to ×9 -- because three adjacent steps with nothing else changing were
+       nearly indistinguishable. A host that set any of these three keeps its own value.
+       --control-height-xs sits exactly on WCAG 2.5.8's 24px target-size floor, with no margin:
+       the kit's default never goes lower. A value under 24px is the host's choice to make, not
+       the kit's. */
+    --control-height-xs: calc(var(--spacing) * 6);
+    --control-height-sm: calc(var(--spacing) * 7);
+    --control-height: calc(var(--spacing) * 8);
+    --control-height-lg: calc(var(--spacing) * 9);
+    --control-height-xl: calc(var(--spacing) * 10);
   }
 
   .dark {

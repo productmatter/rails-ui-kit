@@ -7,7 +7,7 @@
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-stream</code> link, and the link that has to look like an action. It carries whatever
     Turbo attribute you forward to it, shows a submitting state through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">data-turbo-disable-with</code>,
     and renders a real <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;button&gt;</code> — or an <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;a&gt;</code> when you pass
-    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">href:</code>. Six variants across four sizes, drawn entirely from the design tokens.
+    <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">href:</code>. Six variants across six sizes, drawn entirely from the design tokens.
   </p>
 </div>
 
@@ -43,9 +43,11 @@
 <%# Sizes %>
 <h2 class="text-base font-semibold mb-3">Sizes</h2>
 <div id="button-sizes-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-center gap-4 p-8 mb-8">
+  <%= render(Ui::ButtonComponent.new(size: :xs)) { "Extra small" } %>
   <%= render(Ui::ButtonComponent.new(size: :sm)) { "Small" } %>
   <%= render(Ui::ButtonComponent.new) { "Default" } %>
   <%= render(Ui::ButtonComponent.new(size: :lg)) { "Large" } %>
+  <%= render(Ui::ButtonComponent.new(size: :xl)) { "Extra large" } %>
   <%= render Ui::ButtonComponent.new(size: :icon, variant: :outline, aria: { label: "Add item" }) do %>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14"/>
@@ -60,7 +62,7 @@
     <thead class="bg-muted">
       <tr>
         <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Variant</th>
-        <% %i[sm default lg icon].each do |size| %>
+        <% %i[xs sm default lg xl icon].each do |size| %>
           <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider"><%= size %></th>
         <% end %>
       </tr>
@@ -69,7 +71,7 @@
       <% %i[default secondary outline ghost link destructive].each do |variant| %>
         <tr>
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= variant %></td>
-          <% %i[sm default lg].each do |size| %>
+          <% %i[xs sm default lg xl].each do |size| %>
             <td class="px-4 py-3"><%= render(Ui::ButtonComponent.new(variant: variant, size: size)) { "Button" } %></td>
           <% end %>
           <td class="px-4 py-3">
@@ -145,7 +147,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["variant", "Symbol", ":default",  "One of :default, :destructive, :outline, :secondary, :ghost, :link."],
-        ["size",    "Symbol", ":default",  "One of :default, :sm, :lg, :icon. The first three are the control scale Input, Select and Textarea share, so controls at one size line up; :icon is a square at the default height."],
+        ["size",    "Symbol", ":default",  "One of :xs, :sm, :default, :lg, :xl, :icon. The first five are the control scale Input, Select and Textarea share, so controls at one size line up; :icon is a square at the default height."],
         ["href",    "String", "nil",       "When present the component renders an <a> instead of a <button>."],
         ["type",    "String", '"button"',  "Button type. Ignored on the <a> form."],
         ["class",   "String", "nil",       "Merged over the variant classes with tailwind_merge — the caller always wins."],

@@ -11,15 +11,19 @@ module Ui
     STATES = [%w[Draft draft], %w[Published published]].freeze
 
     HEIGHTS = {
+      xs: 'h-(--control-height-xs)',
       sm: 'h-(--control-height-sm)',
       default: 'h-(--control-height)',
-      lg: 'h-(--control-height-lg)'
+      lg: 'h-(--control-height-lg)',
+      xl: 'h-(--control-height-xl)'
     }.freeze
 
     TEXTAREA_MINIMUMS = {
+      xs: 'min-h-[calc(var(--control-height-xs)+var(--spacing)*7)]',
       sm: 'min-h-[calc(var(--control-height-sm)+var(--spacing)*7)]',
       default: 'min-h-[calc(var(--control-height)+var(--spacing)*7)]',
-      lg: 'min-h-[calc(var(--control-height-lg)+var(--spacing)*7)]'
+      lg: 'min-h-[calc(var(--control-height-lg)+var(--spacing)*7)]',
+      xl: 'min-h-[calc(var(--control-height-xl)+var(--spacing)*7)]'
     }.freeze
 
     FIXED_HEIGHT_CONTROLS = %i[button input select].freeze
@@ -98,18 +102,25 @@ module Ui
           render_control(control, size: step, class: 'h-12')
           assert_equal ['h-12'], classes_of(control_selector(control)).grep(/\Ah-/), "#{control} at #{step}"
         end
-
-        render_control(:textarea, size: step, class: 'min-h-24')
-        assert_equal ['min-h-24'], classes_of('textarea').grep(/\Amin-h-/), "textarea at #{step}"
       end
 
       render_control(:button, size: :icon, class: 'size-12')
       assert_equal ['size-12'], classes_of('[data-slot=button]').grep(/\Asize-/)
     end
 
+    # Textarea's own two new steps are gated to another worker; kept as its own test per step,
+    # rather than folded into the check above, so xs and xl failing there doesn't hide a
+    # regression on sm, default or lg (ui-control-sizing status.md, § In progress).
+    HEIGHTS.each_key do |step|
+      test "a caller's height class is the only height the textarea renders, at size: :#{step}" do
+        render_control(:textarea, size: step, class: 'min-h-24')
+        assert_equal ['min-h-24'], classes_of('textarea').grep(/\Amin-h-/), "textarea at #{step}"
+      end
+    end
+
     test 'an unknown size raises in development and test, on every control' do
       %i[button input textarea select].each do |control|
-        assert_raises(Ui::Base::UnknownVariantError, "#{control} accepted size: :xl") { render_control(control, size: :xl) }
+        assert_raises(Ui::Base::UnknownVariantError, "#{control} accepted size: :xxl") { render_control(control, size: :xxl) }
       end
     end
 

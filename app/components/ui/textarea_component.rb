@@ -9,14 +9,15 @@ module Ui
 
     # A textarea grows with its content, so a step of the shared size scale sets its
     # minimum rather than its height: one control height plus seven spacing units, a
-    # constant one-line allowance. At the default step that is sixteen spacing units,
-    # exactly the minimum it had before the scale existed (ui-control-sizing).
+    # constant one-line allowance. At the default step that is fifteen spacing units
+    # (ui-control-sizing). The step also carries the same inline padding, text size and
+    # radius as Button, Input and Select's shared box (§ Behavior's table).
     #
     # Filled in both modes, as Input is, so it reads as a control on any surface: see
     # InputComponent for why the fill is explicit and why it never comes from --input.
     class_variants(
-      base: 'flex w-full rounded-md border border-input bg-background dark:bg-muted/50 ' \
-            'px-3 py-2 text-sm shadow-xs transition-colors ' \
+      base: 'flex w-full border border-input bg-background dark:bg-muted/50 ' \
+            'py-2 shadow-xs transition-colors ' \
             'placeholder:text-muted-foreground ' \
             'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
             'disabled:pointer-events-none disabled:opacity-50 ' \
@@ -24,9 +25,11 @@ module Ui
             'aria-invalid:focus-visible:outline-destructive',
       variants: {
         size: {
-          sm: 'min-h-[calc(var(--control-height-sm)+var(--spacing)*7)]',
-          default: 'min-h-[calc(var(--control-height)+var(--spacing)*7)]',
-          lg: 'min-h-[calc(var(--control-height-lg)+var(--spacing)*7)]'
+          xs: 'min-h-[calc(var(--control-height-xs)+var(--spacing)*7)] px-2 text-xs rounded-sm',
+          sm: 'min-h-[calc(var(--control-height-sm)+var(--spacing)*7)] px-2 text-sm rounded-sm',
+          default: 'min-h-[calc(var(--control-height)+var(--spacing)*7)] px-2.5 text-sm rounded-md',
+          lg: 'min-h-[calc(var(--control-height-lg)+var(--spacing)*7)] px-3 text-sm rounded-md',
+          xl: 'min-h-[calc(var(--control-height-xl)+var(--spacing)*7)] px-3.5 text-sm rounded-md'
         }
       },
       defaults: { size: :default }

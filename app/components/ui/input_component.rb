@@ -14,10 +14,13 @@ module Ui
     # (ui-presentational-components rule 6). Invalid styling is driven entirely by
     # aria-invalid, never a Ruby keyword, so field binding can set it later.
     #
-    # Height is Button's size scale, read from the same tokens (ui-control-sizing).
+    # The shared control scale (ui-control-sizing § Behavior): height, inline padding, text size
+    # and radius all move together, read from the same tokens as Button, Select and Textarea. No
+    # vertical padding: an <input>'s text centres on its own, the way a native <select>'s already
+    # does, and a fixed py would have overflowed the box at the smaller steps.
     class_variants(
-      base: 'flex w-full min-w-0 rounded-md border border-input bg-background dark:bg-muted/50 ' \
-            'px-3 py-1 text-sm shadow-xs transition-colors ' \
+      base: 'flex w-full min-w-0 border border-input bg-background dark:bg-muted/50 ' \
+            'shadow-xs transition-colors ' \
             'placeholder:text-muted-foreground ' \
             'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
             'disabled:pointer-events-none disabled:opacity-50 ' \
@@ -25,9 +28,11 @@ module Ui
             'aria-invalid:focus-visible:outline-destructive',
       variants: {
         size: {
-          sm: 'h-(--control-height-sm)',
-          default: 'h-(--control-height)',
-          lg: 'h-(--control-height-lg)'
+          xs: 'h-(--control-height-xs) px-2 text-xs rounded-sm',
+          sm: 'h-(--control-height-sm) px-2 text-sm rounded-sm',
+          default: 'h-(--control-height) px-2.5 text-sm rounded-md',
+          lg: 'h-(--control-height-lg) px-3 text-sm rounded-md',
+          xl: 'h-(--control-height-xl) px-3.5 text-sm rounded-md'
         }
       },
       defaults: { size: :default }

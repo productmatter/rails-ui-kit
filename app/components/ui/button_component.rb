@@ -14,7 +14,7 @@ module Ui
     # wins. Nested svgs are the caller's markup and are left alone.
     class_variants(
       base: 'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap ' \
-            'rounded-md text-sm font-medium transition-colors ' \
+            'font-medium transition-colors ' \
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' \
             'disabled:pointer-events-none disabled:opacity-50 ' \
             'aria-disabled:pointer-events-none aria-disabled:opacity-50 ' \
@@ -31,15 +31,19 @@ module Ui
           ghost: 'hover:bg-accent hover:text-accent-foreground',
           link: 'text-primary underline-offset-4 hover:underline'
         },
-        # Heights come from the shared control scale in engine.css, in arbitrary-value form: a
-        # caller's h-* merges over `h-(--token)`, where a named key like `h-control` would
-        # survive tailwind_merge beside it. `icon` is a square at the default step, so it lines
-        # up beside a default Input whatever the host sets.
+        # The shared control scale (ui-control-sizing § Behavior): height, inline padding, text
+        # size and radius all move together, in arbitrary-value form so a caller's h-* merges
+        # over `h-(--token)`, where a named key like `h-control` would survive tailwind_merge
+        # beside it. A button whose first child is an icon tightens its inline padding by half a
+        # spacing unit at every step, as its has-[>svg]: forms did before. `icon` is a bare square
+        # bound to the default step, so it lines up beside a default Input whatever the host sets.
         size: {
-          default: 'h-(--control-height) px-4 py-2 has-[>svg]:px-3',
-          sm: 'h-(--control-height-sm) gap-1.5 px-3 has-[>svg]:px-2.5',
-          lg: 'h-(--control-height-lg) px-6 has-[>svg]:px-4',
-          icon: 'size-(--control-height)'
+          xs: 'h-(--control-height-xs) gap-1 px-2 text-xs rounded-sm has-[>svg]:px-1.5',
+          sm: 'h-(--control-height-sm) gap-1.5 px-2 text-sm rounded-sm has-[>svg]:px-1.5',
+          default: 'h-(--control-height) px-2.5 text-sm rounded-md has-[>svg]:px-2',
+          lg: 'h-(--control-height-lg) px-3 text-sm rounded-md has-[>svg]:px-2.5',
+          xl: 'h-(--control-height-xl) gap-2.5 px-3.5 text-sm rounded-md has-[>svg]:px-3',
+          icon: 'size-(--control-height) rounded-md text-sm'
         }
       },
       defaults: { variant: :default, size: :default }
