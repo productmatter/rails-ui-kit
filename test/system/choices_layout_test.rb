@@ -84,51 +84,17 @@ class ChoicesLayoutTest < ApplicationSystemTestCase
                     'the indicator is not aligned with the first line of the text'
   end
 
-  test 'CL4 a one-line list row holds the 24px floor and does not grow with the size step' do
-    page.execute_script("document.getElementById('choices-sizes-preview').scrollIntoView({ block: 'center' })")
-
-    heights_by_step = %w[sm default lg].to_h do |step|
-      heights = page.evaluate_script(<<~JS, step)
-        Array.from(document.querySelectorAll(`#size_${arguments[0]}_plan label`))
-             .map((label) => label.getBoundingClientRect().height)
+  # `size:` changes nothing on Choices (ui-choices § Behavior, item 17), which the unit test proves
+  # by rendering every step; what the browser can add is that the floor holds once laid out. Scoped
+  # to the fieldset, so the Field's own label, which is not a choice, is not measured.
+  test 'CL4 every choice, row or card, is at least the 24px target minimum' do
+    { 'a list row' => '#choices-preview fieldset label', 'a card' => '#choices-card-preview fieldset label' }
+      .each do |name, selector|
+      heights = page.evaluate_script(<<~JS, selector)
+        Array.from(document.querySelectorAll(arguments[0])).map((label) => label.getBoundingClientRect().height)
       JS
-      assert_operator heights.length, :>, 0
-      heights.each { |height| assert_operator height, :>=, 24, "a #{step} choice is under the 24px target minimum" }
-      [step, heights]
-    end
-
-    assert_equal heights_by_step['sm'], heights_by_step['default'],
-                 'size: changed a list row height, but the list variant has a flat 24px floor'
-    assert_equal heights_by_step['default'], heights_by_step['lg'],
-                 'size: changed a list row height, but the list variant has a flat 24px floor'
-  end
-
-  test 'CL5 a card is at least its step control height, and at least 24px' do
-    page.execute_script("document.getElementById('choices-card-preview').scrollIntoView({ block: 'center' })")
-
-    # Resolved by laying a probe out at the default token's height, rather than read as a custom
-    # property: what matters is the length the browser computes from it. The card preview only
-    # renders the default step, which is enough to prove a card still measures the token at all
-    # (test/components/ui/choices_component_test.rb covers every step directly).
-    expected = page.evaluate_script(<<~JS)
-      (() => {
-        const probe = document.createElement('div')
-        probe.style.height = 'var(--control-height)'
-        document.body.appendChild(probe)
-        const height = probe.getBoundingClientRect().height
-        probe.remove()
-        return height
-      })()
-    JS
-    assert_operator expected, :>, 0, '--control-height did not resolve'
-
-    heights = page.evaluate_script(<<~JS)
-      Array.from(document.querySelectorAll('#card_plan label')).map((label) => label.getBoundingClientRect().height)
-    JS
-    assert_operator heights.length, :>, 0
-    heights.each do |height|
-      assert_operator height, :>=, expected - 0.5, 'a card is shorter than --control-height'
-      assert_operator height, :>=, 24, 'a card is under the 24px target minimum'
+      assert_operator heights.length, :>, 0, "no #{name} found at #{selector}"
+      heights.each { |height| assert_operator height, :>=, 24, "#{name} is under the 24px target minimum" }
     end
   end
 end

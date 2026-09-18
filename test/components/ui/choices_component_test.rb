@@ -256,12 +256,16 @@ module Ui
       end
     end
 
-    test 'CH19 a card keeps the control-height minimum at every size step' do
-      { sm: 'min-h-(--control-height-sm)', default: 'min-h-(--control-height)', lg: 'min-h-(--control-height-lg)' }
-        .each do |step, height|
+    test 'CH19 size: is accepted on a card and changes nothing, as on a list' do
+      rendered = %i[sm default lg].map do |step|
         render_choices(name: 'a[b]', options: %w[x y], variant: :card, size: step)
+        label_classes
+      end
 
-        label_classes.each { |classes| assert_includes classes, height, "card at #{step}" }
+      assert_equal 1, rendered.uniq.size, 'size: changed a card'
+      rendered.first.each do |classes|
+        assert_includes classes, 'min-h-6'
+        assert_empty classes.grep(/\A(?:min-)?h-\(--control-height/), 'a card kept a control-height class'
       end
     end
 

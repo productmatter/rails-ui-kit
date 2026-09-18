@@ -140,26 +140,6 @@
   when "no key means no change" is what you want.
 </p>
 
-<%# Sizes %>
-<h2 class="text-base font-semibold mb-3">Sizes</h2>
-<p class="text-sm text-muted-foreground mb-3">
-  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code> moves the card, not the list. A card is a
-  control, so each one is at least the step's own control height and a one-line card lines up with the Input or Select
-  beside it. A list row isn't a control of its own: it takes a flat 24px floor (WCAG 2.5.8) at every step, so the
-  three lists below are the same height. Content makes a choice taller; a step never makes it shorter.
-</p>
-<div id="choices-sizes-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-8 p-12 mb-8">
-  <% %i[sm default lg].each do |step| %>
-    <div class="grid gap-4">
-      <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"><%= step %></p>
-      <%= render Ui::ChoicesComponent.new(name: "size_#{step}[plan]", options: plans, size: step, checked: "growth",
-                                          aria: { label: "Plan (#{step})" }) %>
-      <%= render Ui::ChoicesComponent.new(name: "card_size_#{step}[plan]", options: plans, size: step, variant: :card,
-                                          checked: "growth", aria: { label: "Plan card (#{step})" }) %>
-    </div>
-  <% end %>
-</div>
-
 <%# Usage %>
 <h2 class="text-base font-semibold mb-3">Usage</h2>
 <div class="rounded-lg overflow-hidden border border-border mb-8">
@@ -196,7 +176,7 @@
         ["disabled",            "Boolean",       "false",    "Renders <fieldset disabled>, so every input and hidden field is disabled and the attribute is left untouched."],
         ["form",                "String",        "nil",      "The id of a form elsewhere on the page; goes on every input and the hidden fields, as in Rails."],
         ["variant",             "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
-        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg — a card's minimum height, from the same tokens Input and Select read. No visible effect on the list variant, whose rows take a flat 24px floor."],
+        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg. Accepted so a form can give every control one size; it changes nothing on Choices, whose rows and cards are sized by their content with a 24px floor."],
         ["description_method",  "Symbol/Proc",   "nil",      "A second line per choice. Needs collection:, since there is no object to call it on otherwise."],
         ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. Needs collection: too."],
         ["required_message",    "String",        "nil",      "Overrides rails_ui_kit.choices.required_message for this instance."],

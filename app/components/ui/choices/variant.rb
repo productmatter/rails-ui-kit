@@ -7,17 +7,17 @@ module Ui
     # apart from the component the way Ui::Select::Primitives is, so the component stays about
     # names, values and wiring, and every state here is CSS reading a real input.
     class Variant
-      # A card is a control, so it keeps the step's own token as a minimum: a one-line card lines
-      # up with the Input or Select beside it, and content is free to make it taller
-      # (ui-control-sizing). A list row is not a control on its own -- it is sized by its content,
-      # with a flat 24px floor at every step (WCAG 2.5.8). A one-line row centers its indicator on
-      # that floor; a row with a description stays top-aligned so the indicator sits on the first
-      # line of text.
-      SIZES = {
-        sm: 'min-h-(--control-height-sm)', default: 'min-h-(--control-height)', lg: 'min-h-(--control-height-lg)'
-      }.freeze
+      # `size:` is accepted, so a form can hand every control one size, and changes nothing here
+      # (ui-choices § Behavior, item 17, decided 2026-09-18). A list row is sized by its content,
+      # and a card's padding plus one line of text was always taller than the largest step's
+      # minimum, so a step never bound and the option never did anything visible. The keys are
+      # what validates the keyword; they carry no classes.
+      SIZES = { sm: nil, default: nil, lg: nil }.freeze
 
-      LIST_MIN_HEIGHT = 'min-h-6'
+      # Every choice, row or card: WCAG 2.5.8's target size. A one-line list row centers its
+      # indicator on it; a row with a description stays top-aligned so the indicator sits on the
+      # first line of text.
+      MIN_HEIGHT = 'min-h-6'
 
       CHOICE = 'relative flex gap-3 text-sm has-disabled:cursor-not-allowed'
 
@@ -56,15 +56,14 @@ module Ui
       # turn them into CanvasText instead of losing them with the fill.
       MARKS = { checkbox: { path: 'm4 12 5 5L20 6', width: 3 }, radio: { path: 'M12 12h.01', width: 9 } }.freeze
 
-      def initialize(variant:, size:, multiple:, described:)
+      def initialize(variant:, multiple:, described:)
         @variant = variant
-        @size = size
         @multiple = multiple
         @described = described
       end
 
       def choice_class
-        [CHOICE, align_class, height_class, VARIANTS[@variant]].join(' ')
+        [CHOICE, align_class, MIN_HEIGHT, VARIANTS[@variant]].join(' ')
       end
 
       def input_class
@@ -86,10 +85,6 @@ module Ui
       # for by way of the wrapper's synthesized baseline.
       def align_class
         @variant == :card || @described ? 'items-start' : 'items-center'
-      end
-
-      def height_class
-        @variant == :card ? SIZES[@size] : LIST_MIN_HEIGHT
       end
     end
   end

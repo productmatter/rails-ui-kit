@@ -156,7 +156,7 @@ module Ui
     def assign_style(size, variant)
       @size = resolve_key(:size, size, Ui::Choices::Variant::SIZES)
       @variant = resolve_key(:variant, variant, Ui::Choices::Variant::VARIANTS)
-      @style = Ui::Choices::Variant.new(variant: @variant, size: @size, multiple: multiple?, described: described?)
+      @style = Ui::Choices::Variant.new(variant: @variant, multiple: multiple?, described: described?)
     end
 
     # Whether the group renders a description line at all -- decided once, since every choice in
