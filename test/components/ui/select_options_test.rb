@@ -5,9 +5,11 @@ require 'support/test_order'
 
 module Ui
   # The two renderings of one option model, held equal: what the native <select> holds is
-  # what the listbox offers, for every option source (ui-select § Behavior, item 11). The
-  # sequence compared is value, text, disabled, selected and group, in DOM order, because a
-  # listbox that disagrees with the select on any of them offers a choice that can't submit.
+  # what the listbox offers, for every option source (ui-select § Behavior, item 11) -- the
+  # prompt option excepted, which the select has and the listbox never does, because a
+  # prompt is a placeholder rather than a choice (item 10). The sequence compared is value,
+  # text, disabled, selected and group, in DOM order, because a listbox that disagrees with
+  # the select on any of them offers a choice that can't submit.
   class SelectOptionsTest < ViewComponent::TestCase
     Author = Struct.new(:id, :name)
     Continent = Struct.new(:name, :countries)
@@ -63,9 +65,16 @@ module Ui
         group: (parent.at('[id]').text if parent['role'] == 'group') }
     end
 
+    # Rails renders the prompt first, and only while nothing is selected, so where there is one it
+    # is the option the two renderings are allowed to differ on -- and the only one.
+    def prompt_rendered?(source)
+      source[:prompt].present? && Array.wrap(source[:selected]).map(&:to_s).all?(&:empty?)
+    end
+
     def assert_same_sequence(**source)
       native = native_sequence(**source)
       assert_predicate native, :any?, 'the select rendered no options, so there is nothing to hold equal'
+      native = native.drop(1) if prompt_rendered?(source)
       assert_equal native, listbox_sequence(**source)
     end
 
@@ -88,10 +97,38 @@ module Ui
       assert_same_sequence(**grouped_collection_source)
     end
 
-    test 'the two agree on the selected option, the disabled ones, the blank and the prompt' do
+    test 'the two agree on the selected option, the disabled ones and the blank' do
       assert_same_sequence(**collection_source, selected: 2, disabled_values: [3], include_blank: 'No author')
       assert_same_sequence(**collection_source, prompt: true)
       assert_same_sequence(**collection_source, required: true)
+    end
+
+    # § Behavior, item 10: a prompt is a placeholder, so the select keeps it -- that option is how a
+    # select holds "nothing chosen" -- and the listbox leaves it out. A blank is a choice in Rails'
+    # terms, and stays in both.
+    test 'the prompt option is in the native select and never in the listbox; a blank is in both' do
+      source = { **collection_source, prompt: 'Pick an author', include_blank: 'No author' }
+
+      assert_equal(['Pick an author', 'No author', 'Ada', 'Grace', 'Linus'],
+                   native_sequence(**source).map { |option| option[:text] })
+      assert_equal(['No author', 'Ada', 'Grace', 'Linus'],
+                   listbox_sequence(**source).map { |option| option[:text] })
+    end
+
+    test 'a prompt on its own leaves the listbox with no empty-valued option at all' do
+      assert_equal(%w[1 2 3], listbox_sequence(**collection_source, prompt: true).map { |option| option[:value] })
+
+      render_inline(Ui::Select::ListboxComponent.new(id: 'record_field', **collection_source, prompt: true))
+      assert_no_selector "[role=option][data-value='']", visible: :all
+    end
+
+    # Rails renders no prompt option once something is selected, so there is nothing for either
+    # rendering to drop: the two are identical again.
+    test 'a prompt with a value selected is rendered by neither' do
+      source = { **collection_source, prompt: true, selected: 2 }
+
+      assert_equal(%w[1 2 3], native_sequence(**source).map { |option| option[:value] })
+      assert_same_sequence(**source)
     end
 
     test 'the listbox marks the current value with data-selected and nothing with aria-selected' do

@@ -23,18 +23,20 @@ module Ui
 
     class_variants(base: 'group/select relative w-full')
 
-    # The three strings Select says in its own voice; the options themselves are the caller's
+    # The four strings Select says in its own voice; the options themselves are the caller's
     # content, translated by the host (ui-localization § Behavior, items 1 and 2).
     chrome_string :search_placeholder, key: 'select.search_placeholder'
     chrome_string :no_results, key: 'select.no_results'
+    chrome_string :clear_label, key: 'select.clear_label'
     chrome_plural :results, key: 'select.results'
 
     attr_reader :name, :control_id, :option_set, :size, :primitives, :box
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
                    search: false, native_on_touch: true, size: :default,
-                   search_placeholder: nil, no_results: nil, results: nil, **attributes)
-      assign_chrome(search_placeholder, no_results, results)
+                   search_placeholder: nil, no_results: nil, results: nil, clear_label: nil,
+                   **attributes)
+      assign_chrome(search_placeholder, no_results, results, clear_label)
       @name = name.to_s
       @control_id = (id || derive_control_id).to_s
       assign_flags(required: required, disabled: disabled, autofocus: autofocus, search: search,
@@ -59,13 +61,24 @@ module Ui
     # previous one produced and aria-controls keeps resolving (Ui::Select::ListboxComponent
     # derives the listbox's the same way). `combobox` is select-only mode's control; `trigger` and
     # `search` are search mode's two elements, one for each job (§ Behavior, item 17).
-    %i[listbox combobox trigger search popup empty status].each do |part|
+    %i[listbox combobox trigger search popup empty status clear].each do |part|
       define_method(:"#{part}_id") { "#{control_id}-#{part}" }
+    end
+
+    # A clear button only where the native select holds the prompt option: that is the one
+    # placeholder state there is to return to (§ Behavior, item 10, and Ui::OptionSet).
+    def clear?
+      option_set.prompt_option?
     end
 
     # The same decorative chevron in both modes: the control is one box, whichever element plays it.
     def render_chevron
       render_glyph(tag.path(d: 'm6 9 6 6 6-6'))
+    end
+
+    # The clear button's glyph. Decorative: the button is named by its hidden text and the field's.
+    def render_clear_glyph
+      render_glyph(safe_join([tag.path(d: 'M18 6 6 18'), tag.path(d: 'm6 6 12 12')]), css: 'size-3.5')
     end
 
     # The search row's glyph, which is what says "this field filters" without a second label.
@@ -138,6 +151,16 @@ module Ui
       { 'ui--select-results-value': results.to_json, 'ui--select-locale-value': chrome_locale }
     end
 
+    # A sibling of the control, never inside it: interactive content inside a role="combobox" or
+    # a <button> is invalid, and a press on it is a press outside the popup either way. It sits
+    # after the control in the DOM, so it is after it in the tab order, and it is server-rendered
+    # `hidden` like the control -- unenhanced there is nothing to clear with, because the native
+    # select's own prompt option is right there in the picker.
+    def clear_attributes
+      { id: clear_id, type: 'button', hidden: true, class: merge_box(box.clear_button),
+        data: { 'ui--select-target': 'clear', action: 'click->ui--select#clear' } }
+    end
+
     def popup_attributes
       {
         id: popup_id, hidden: true, class: Ui::Select::Box::POPUP,
@@ -150,7 +173,7 @@ module Ui
     # (ui-component-library § Business rules, rule 5) — both renderings of it, since they are
     # the same box.
     def control_class
-      merge_box(box.control(caller_class))
+      merge_box(box.control(caller_class, clear: clear?))
     end
 
     def select_class
@@ -183,10 +206,11 @@ module Ui
 
     # The strings Select says in its own voice, each falling through to the locale file when the
     # call site leaves it out (ui-localization § Behavior, item 2).
-    def assign_chrome(search_placeholder, no_results, results)
+    def assign_chrome(search_placeholder, no_results, results, clear_label)
       @search_placeholder = search_placeholder
       @no_results = no_results
       @results = results
+      @clear_label = clear_label
     end
 
     # Every boolean a caller may spell as a string, and the primitive configuration two of them

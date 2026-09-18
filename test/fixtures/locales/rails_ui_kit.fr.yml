@@ -16,6 +16,7 @@ fr:
     select:
       search_placeholder: "Rechercher…"
       no_results: "Aucun résultat"
+      clear_label: "Effacer"
       results:
         one: "%{count} résultat"
         other: "%{count} résultats"

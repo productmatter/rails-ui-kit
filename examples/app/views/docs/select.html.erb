@@ -13,6 +13,7 @@
     "Asia" => [["India", "in"], ["Japan", "jp"], ["Singapore", "sg"]]
   }
   plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
+  roles = [["Owner", "owner"], ["Admin", "admin"], ["Member", "member"]]
 %>
 <div class="mb-8">
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
@@ -120,6 +121,53 @@
       <% field.with_label { "Region" } %>
       <% field.with_control(Ui::SelectComponent, options: regions, search: true, prompt: "Search regions") %>
       <% field.with_description { "Grouped: a group with nothing left in it is hidden." } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Prompt and clearing %>
+<h2 class="text-base font-semibold mb-3">A prompt, and clearing back to it</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">prompt:</code> is a placeholder, not a choice — which is
+  what Rails already says, by rendering it only while nothing is selected. So the native
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code> keeps the prompt option, because that
+  option is how a select holds "nothing chosen", and the list you open never offers it. Choose something and a clear
+  button appears in the control, before the chevron: press it and the select goes back to the prompt, which dispatches
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">input</code> and
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">change</code> like any other choice and blocks a
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> form again.
+</p>
+<p class="text-sm text-muted-foreground mb-3">
+  It shows only where there is a prompt option to return to. A page rendered with a value already has no prompt option —
+  Rails rendered none — so no button shows: clearing a saved value is what
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">include_blank:</code> is for, and a blank stays a listed
+  choice in both renderings. A disabled Select shows none either, and neither does select-only mode on a phone, where
+  the platform's own picker lists the prompt itself.
+</p>
+<div id="select-prompt-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[role]") do |field| %>
+      <% field.with_label { "Role" } %>
+      <% field.with_control(Ui::SelectComponent, options: roles, prompt: "Choose a role",
+                            native_on_touch: false) %>
+      <% field.with_description { "Pick one, then clear it back to the prompt." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[team]") do |field| %>
+      <% field.with_label { "Team" } %>
+      <% field.with_control(Ui::SelectComponent, options: timezones, search: true, prompt: "Choose a team") %>
+      <% field.with_description { "The same button in search mode." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "demo[archived]") do |field| %>
+      <% field.with_label { "Archived plan (locked)" } %>
+      <% field.with_control(Ui::SelectComponent, options: plans, prompt: "Choose a plan", disabled: true,
+                            native_on_touch: false) %>
+      <% field.with_description { "Disabled: a prompt, and never a clear button." } %>
     <% end %>
   </div>
 </div>
@@ -273,12 +321,13 @@
         ["group_method",       "Symbol/Proc",   "nil",      "With group_label_method:, the grouped_collection_select shape."],
         ["selected",           "Object",        "nil",      "Compared by string value, as Rails' helpers compare it."],
         ["include_blank",      "Boolean/String","false",    "Rails' include_blank: true renders an empty option, a string labels it."],
-        ["prompt",             "Boolean/String","nil",      "Renders only while nothing is selected. true uses Rails' own helpers.select.prompt."],
+        ["prompt",             "Boolean/String","nil",      "A placeholder, not a choice: it renders in the select only while nothing is selected, never in the list, and a clear button returns the control to it. true uses Rails' own helpers.select.prompt."],
         ["disabled_values",    "Array",         "nil",      "Options that are reachable by keyboard but never selectable."],
         ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
         ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
         ["search",             "Boolean",       "false",    "Switches the control to a trigger button whose popup carries a search field."],
-        ["size",               "Symbol",        ":default", "One of :sm, :default, :lg — the heights Button's sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control's width, and its search row and option rows keep one height at every step."],
+        ["size",               "Symbol",        ":default", "One of :xs, :sm, :default, :lg, :xl — the heights Button's sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control's width, and its search row and option rows keep one height at every step."],
+        ["clear_label",        "String",        "nil",      "The clear button's own word, in front of the field's name. Falls through to rails_ui_kit.select.clear_label."],
         ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances."],
         ["class",              "String",        "nil",      "Merged over the control's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
@@ -377,6 +426,7 @@
   <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
   <li>In search mode the trigger shows the value and the field in the popup takes the query — two jobs, two elements. The trigger is a button, so a pointer, a keyboard and a touch screen reader all open the list the same way.</li>
   <li>What is typed is a query, never the value: the field is empty on every open and discarded on every close, and the trigger goes on showing whatever the native select holds. So Escape has nothing to restore, and walking away with Tab commits nothing. Clearing a choice is what <code class="text-xs bg-muted px-1 py-0.5 rounded">include_blank:</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">prompt:</code> are for.</li>
+  <li>A <code class="text-xs bg-muted px-1 py-0.5 rounded">prompt:</code> is a placeholder: the native select keeps it, the list never offers it, and the clear button is the only way back to it — no key on the control clears. Pressing it is a choice like any other, so <code class="text-xs bg-muted px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> dispatch and focus moves to the control.</li>
   <li>Search filters the listbox, never the select: the option that would post is never hidden away. A group with nothing left in it is hidden, and an empty result shows <code class="text-xs bg-muted px-1 py-0.5 rounded">rails_ui_kit.select.no_results</code> while the count is announced in a polite live region once typing settles.</li>
 </ul>
 
@@ -387,6 +437,10 @@
       <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">required</code> are on the element a screen reader is on. Search mode's field takes the same name, so it reads as that field, then "combobox".</li>
   <li>Focus never lands on an option: it stays on the combobox in select-only mode, and moves between the trigger and the search field in search mode. The active option is announced through <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">aria-activedescendant</code>, and in
       search mode the number of results is announced once typing settles.</li>
+  <li>The clear button is a real button beside the control, not inside it, so it is in the tab order after the control and
+      is pressed with Enter or Space. It is named "Clear" and then the field's name, and it is a 24×24 target at every
+      <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code> step (WCAG 2.5.8). Once pressed it is gone,
+      so focus moves to the control rather than being left on nothing.</li>
   <li>Where it isn't enhanced — JavaScript off, or select-only mode on a phone — the user has the platform's own select,
       which is fully accessible on its own.</li>
 </ul>

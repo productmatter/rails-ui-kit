@@ -119,11 +119,23 @@ module Ui
 
     test 'SE2 without keywords Select reads the locale file, per render' do
       I18n.with_locale(:fr) do
-        render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b]))
+        render_inline(Ui::SelectComponent.new(name: 'post[state]', search: true, options: %w[a b],
+                                              prompt: 'Choisissez'))
 
         assert_selector '#post_state-empty', text: 'Aucun résultat', visible: :all
         assert_selector "#post_state-search[placeholder='Rechercher…']", visible: :all
+        assert_selector '#post_state-clear-label', text: 'Effacer', visible: :all
       end
+    end
+
+    test 'SE3 a call-site clear label wins, and the button only exists where a prompt does' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: %w[a b], prompt: true,
+                                            clear_label: 'Start over'))
+      assert_selector '#post_state-clear-label', text: 'Start over', visible: :all
+      assert_no_selector '[clear-label]', visible: :all
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: %w[a b], clear_label: 'Start over'))
+      assert_no_selector '#post_state-clear', visible: :all
     end
 
     # FI — Ui::FieldComponent's character-counter chrome, rendered when the bound control asks
@@ -171,7 +183,7 @@ module Ui
         Ui::ModalComponent => %w[unsaved_changes_title unsaved_changes_message],
         Ui::ToastComponent => %w[close_label default_title],
         Ui::ToastContainerComponent => %w[close_label default_title],
-        Ui::SelectComponent => %w[search_placeholder no_results],
+        Ui::SelectComponent => %w[search_placeholder no_results clear_label],
         Ui::FieldComponent => %w[required_label count remaining over]
       }.each do |component, keywords|
         accepted = component.instance_method(:initialize).parameters

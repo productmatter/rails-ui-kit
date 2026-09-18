@@ -10,6 +10,7 @@ import { Controller } from "@hotwired/stimulus"
 //     <select data-ui--select-target="select">…</select>
 //     <div role="combobox" data-ui--select-target="combobox">…</div>   select-only: the control
 //     <button data-ui--select-target="trigger">…</button>              search: the control
+//     <button data-ui--select-target="clear">…</button>                back to the prompt
 //     <div data-ui--select-target="popup">
 //       <input role="combobox" data-ui--select-target="search">        search: the query
 //     </div>
@@ -32,7 +33,7 @@ function normalise(text) {
 }
 
 export default class extends Controller {
-  static targets = ["select", "combobox", "trigger", "search", "label", "popup", "empty", "status"]
+  static targets = ["select", "combobox", "trigger", "search", "label", "clear", "popup", "empty", "status"]
 
   static values = {
     search: { type: Boolean, default: false },
@@ -95,6 +96,7 @@ export default class extends Controller {
     if (enhance) {
       this.selectTarget.setAttribute("tabindex", "-1")
       this.nameCombobox()
+      this.nameClear()
     } else {
       this.selectTarget.removeAttribute("tabindex")
       this.close()
@@ -140,6 +142,23 @@ export default class extends Controller {
 
     const requiredId = `${label.id}-required`
     return document.getElementById(requiredId) ? `${label.id} ${requiredId}` : label.id
+  }
+
+  // The clear button says what it does and which field it does it to: its own hidden word, then
+  // the field's name. Named from the same label element the control is, so a screen reader hears
+  // one field name and not two spellings of it, and from the caller's aria-label where a Select
+  // is used outside a Field and there is no label element to point at.
+  nameClear() {
+    if (!this.hasClearTarget) return
+
+    const own = document.getElementById(`${this.clearTarget.id}-label`)
+    if (!own) return
+
+    const label = document.getElementById(`${this.selectTarget.id}-label`)
+    if (label) return this.clearTarget.setAttribute("aria-labelledby", `${own.id} ${label.id}`)
+
+    const given = this.control.getAttribute("aria-label")
+    if (given) this.clearTarget.setAttribute("aria-label", `${own.textContent} ${given}`)
   }
 
   get listbox() {
@@ -188,6 +207,7 @@ export default class extends Controller {
     })
 
     this.renderDisabled()
+    this.renderClear()
     this.mirrorAria("aria-invalid")
     this.mirrorAria("aria-describedby")
     this.mirrorRequired()
@@ -200,6 +220,44 @@ export default class extends Controller {
 
     this.labelTarget.textContent = chosen ? chosen.textContent : ""
     this.labelTarget.dataset.placeholder = value === "" ? "true" : "false"
+  }
+
+  // The clear button, and the room the control gives it, are the same state: the select holds the
+  // prompt option Rails rendered and something else is chosen. That is the one state there is a
+  // placeholder to go back to (§ Behavior, item 10). A disabled Select shows none, and neither
+  // does a Select whose picker is the platform's -- that one lists the prompt itself, and the
+  // component's own media query is what hides the button there, as it hides the control.
+  renderClear() {
+    if (!this.hasClearTarget) return
+
+    const show = !this.selectTarget.disabled && this.selectTarget.value !== "" && !!this.promptOption
+    this.clearTarget.hidden = !show
+    this.element.dataset.clearable = show ? "true" : "false"
+  }
+
+  // The prompt option, or null. Rails renders it first -- before the blank and the options -- and
+  // only while nothing is chosen, and the component renders the button only when it is there, so
+  // the select's first option is it. An include_blank option is a listed choice rather than a
+  // prompt, and never answers here: without a prompt there is no button to press.
+  get promptOption() {
+    const first = this.selectTarget.options[0]
+
+    return first && first.value === "" ? first : null
+  }
+
+  // The only way to clear, and a user choice like any other (§ Behavior, item 3): it selects the
+  // prompt option, which dispatches input and change, shows the prompt, and puts a required select
+  // back to blocking its form. The button goes with the state that justified it, so focus moves to
+  // the control rather than being left on an element that is no longer there.
+  clear(event) {
+    event.preventDefault()
+    const prompt = this.promptOption
+    if (!prompt || this.selectTarget.disabled) return
+
+    // A press anywhere outside the popup closes it, and this button is outside it.
+    this.close()
+    this.commitOption(prompt.value, prompt.index)
+    this.control.focus()
   }
 
   // A disabled Select doesn't open and isn't in the tab order, which is what disabling a native
@@ -248,16 +306,24 @@ export default class extends Controller {
     }
   }
 
-  // Writing the select is what choosing means; the events are what make it observable, and
-  // re-rendering from them is what keeps one render path. Choosing what is already chosen
-  // dispatches nothing, exactly as a native select does.
+  // Choosing a listbox option. Its value is the select's, because the two renderings hold the
+  // same options.
   commit(option) {
     if (!option || this.isDisabled(option)) return
 
-    const value = option.dataset.value
+    this.commitOption(option.dataset.value)
+  }
+
+  // Writing the select is what choosing means; the events are what make it observable, and
+  // re-rendering from them is what keeps one render path. Choosing what is already chosen
+  // dispatches nothing, exactly as a native select does. `index` names the option where the value
+  // alone would not: a prompt and an include_blank option are both "", and the clear button means
+  // the prompt.
+  commitOption(value, index = null) {
     if (value === this.selectTarget.value) return
 
-    this.selectTarget.value = value
+    if (index === null) this.selectTarget.value = value
+    else this.selectTarget.selectedIndex = index
     this.selectTarget.dispatchEvent(new Event("input", { bubbles: true }))
     this.selectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }

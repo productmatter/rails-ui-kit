@@ -26,6 +26,8 @@ module RailsUiKit
     # trigger button in search mode. Search mode's own role="combobox" is the field inside the
     # popup, which takes a query rather than the value, so it is never what this drives.
     CONTROL = "[data-ui--overlay-target='trigger']"
+    # The button beside the control that returns it to the prompt, where the Select has one.
+    CLEAR = "[data-ui--select-target='clear']"
 
     # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
     # id or name of the select inside it.
@@ -33,6 +35,12 @@ module RailsUiKit
       root = ui_select_root(from)
       control = root.first(CONTROL, minimum: 0, wait: 0)
       return ui_select_natively(root, text, from) unless control&.visible?
+
+      cleared = ui_select_clear(root, text)
+      if cleared
+        cleared.click
+        return control
+      end
 
       ui_select_open(control, from)
       ui_select_option(root, control, text, from).click
@@ -74,6 +82,18 @@ module RailsUiKit
 
     def ui_select_native(root)
       root.first('select', visible: :all, minimum: 0, wait: 0)
+    end
+
+    # A prompt is a placeholder rather than a choice, so the listbox does not list it: the way back
+    # to it is the clear button, which is what a person presses (ui-select § Behavior, item 10).
+    # Asking for the prompt by name means that button, where the component rendered one -- Rails
+    # renders the prompt first, and only while nothing is chosen, so it is the leading option.
+    def ui_select_clear(root, text)
+      prompt = ui_select_native(root)&.first('option', visible: :all, minimum: 0, wait: 0)
+      return unless prompt && prompt[:value].to_s.empty? && prompt.text(:all).strip == text.to_s.strip
+
+      button = root.first(CLEAR, minimum: 0, wait: 0)
+      button if button&.visible?
     end
 
     # Both modes open on a press of the control, which is what a person does.

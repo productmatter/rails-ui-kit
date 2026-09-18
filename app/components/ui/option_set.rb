@@ -7,7 +7,8 @@ module Ui
   # Rails' own option helpers, so the <select> is what `collection_select`, `select` or
   # `grouped_collection_select` would have rendered for the same arguments; `items` is the
   # same list normalised for the listbox. They are deliberately two derivations of one
-  # source (ui-select § Behavior, item 11), and `select_options_test.rb` holds them equal.
+  # source (ui-select § Behavior, item 11), and `select_options_test.rb` holds them equal --
+  # the prompt option excepted, which the select has and the listbox never does (item 10).
   #
   # Blank and prompt follow Rails' own rules (§ Behavior, item 10), including the blank a
   # required select gets when it has neither: ActionView::Helpers::Tags::Base#add_options
@@ -48,10 +49,21 @@ module Ui
       validate!
     end
 
-    # Every option in render order, the blank and the prompt included, because the select
-    # holds them too and the listbox has to offer the same choices.
+    # Every option the listbox offers, in render order. A blank is one of them; a prompt is
+    # not. A prompt is a placeholder rather than a choice -- Rails renders it only while
+    # nothing is chosen -- so the native select keeps it, because that option is how a select
+    # holds "nothing chosen", and the listbox leaves it out (ui-select § Behavior, item 10).
+    # Returning to it is the clear button's job, not a listed option's. `include_blank:` is
+    # untouched: a blank is a choice in Rails' terms, and stays listed in both renderings.
     def items
       @items ||= placeholder_items + source_items
+    end
+
+    # Whether the native select holds the prompt option Rails rendered. It is what decides
+    # whether there is a placeholder state to return to, which is the clear button's only
+    # reason to exist (§ Behavior, item 10).
+    def prompt_option?
+      prompt.present? && selected_values.all?(&:empty?)
     end
 
     # `view` is the component itself: a ViewComponent is an ActionView::Base, so Rails'
@@ -98,8 +110,9 @@ module Ui
 
     # --- the normalised list ---
 
+    # The blank, and only the blank: the prompt belongs to the native select alone.
     def placeholder_items
-      [(placeholder(prompt_text) if prompt_option?), (placeholder(blank_text) if blank_option?)].compact
+      blank_option? ? [placeholder(blank_text)] : []
     end
 
     def placeholder(text)
@@ -228,11 +241,6 @@ module Ui
 
     def blank_text
       include_blank.is_a?(String) ? include_blank : ''
-    end
-
-    # A prompt is a placeholder, so it renders only while nothing is selected.
-    def prompt_option?
-      prompt.present? && selected_values.all?(&:empty?)
     end
 
     def prompt_text

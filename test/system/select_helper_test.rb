@@ -65,7 +65,13 @@ class SelectHelperTest < ApplicationSystemTestCase
   test 'SH6: a name that matches two Selects fails the way Capybara own ambiguity does' do
     # The Modal on this page carries a second Select labelled "City", which is exactly the
     # situation where picking the first match silently would write to the wrong control.
-    find('#select-modal-trigger').click
+    #
+    # Both have to be on screen when the ambiguity is checked: a Modal locks the scroll behind it,
+    # and a label the viewport has scrolled past is one the driver reports as not displayed, so
+    # the Select it names stops answering to it. Hence the scroll, and hence opening the Modal
+    # from script rather than by pressing its trigger, which would scroll the page to the trigger.
+    page.execute_script("document.getElementById('demo_city').scrollIntoView({ block: 'center' })")
+    page.execute_script("document.getElementById('select-modal-trigger').click()")
     assert_selector '#modal_city-combobox'
 
     error = assert_raises(Capybara::Ambiguous) { ui_select 'Tokyo', from: 'City' }
@@ -75,6 +81,20 @@ class SelectHelperTest < ApplicationSystemTestCase
   test 'SH7: a name that matches nothing says so' do
     error = assert_raises(RailsUiKit::TestHelpers::OptionNotFound) { ui_select 'Tokyo', from: 'Nowhere' }
     assert_match(/found no Ui::SelectComponent for "Nowhere"/, error.message)
+  end
+
+  # A prompt is a placeholder, not a listed option (ui-select § Behavior, item 10), so asking for
+  # it by name means the button a person would press -- not a listbox row, which isn't there.
+  test 'SH8: asking for the prompt by name presses the clear button' do
+    record_events('demo_role')
+    ui_select 'Admin', from: 'Role'
+    assert_equal 'admin', select_value('demo_role')
+
+    ui_select 'Choose a role', from: 'Role'
+
+    assert_equal '', select_value('demo_role')
+    assert_equal 'Choose a role', combobox_label('demo_role')
+    assert_equal ['input:admin:true', 'change:admin:true', 'input::true', 'change::true'], recorded_events
   end
 
   test 'SH5: where the Select is not enhanced, it falls back to Capybara own select' do

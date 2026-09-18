@@ -34,7 +34,7 @@ class SelectFormSubmissionTest < ApplicationSystemTestCase
     focus_combobox(ID)
     press :enter
     assert_popup ID, 'open'
-    press :arrow_down
+    # One step: the prompt is a placeholder, not a listed option, so the first option is a city.
     press :arrow_down
     press :enter
     assert_equal 'berlin', select_value(ID)
@@ -48,7 +48,7 @@ class SelectFormSubmissionTest < ApplicationSystemTestCase
   test 'SF2: a value chosen by pointer is what the server receives' do
     combobox(ID).click
     assert_popup ID, 'open'
-    find("##{ID}-option-3").click
+    find("##{ID}-option-2").click
     assert_equal 'london', select_value(ID)
 
     submit_and_assert_received 'london'

@@ -339,6 +339,99 @@ module Ui
       assert_equal '0', searching['data-ui--roving-focus-page-step-value']
     end
 
+    # The clear button (ui-select § Behavior, item 10). It exists only where the native select
+    # holds the prompt option Rails rendered: without one a single select cannot be emptied, since
+    # deselecting everything makes the browser select the first option instead.
+
+    def clear_button(**)
+      render_inline(Ui::SelectComponent.new(clear_label: 'Clear', **))
+      page.first("[data-ui--select-target='clear']", minimum: 0, visible: :all)
+    end
+
+    test 'a prompt renders a clear button; a value, a blank on its own and no placeholder render none' do
+      assert_not_nil clear_button(name: 'post[state]', options: STATES, prompt: true)
+      assert_not_nil clear_button(name: 'post[state]', options: STATES, prompt: 'Pick one', search: true)
+
+      assert_nil clear_button(name: 'post[state]', options: STATES, prompt: true, selected: 'draft'),
+                 'a page Rails rendered with a value has no prompt option to return to'
+      assert_nil clear_button(name: 'post[state]', options: STATES, include_blank: 'None'),
+                 'a blank is a listed choice, not a placeholder the control returns to'
+      assert_nil clear_button(name: 'post[state]', options: STATES)
+      assert_nil clear_button(name: 'post[state]', options: STATES, required: true),
+                 "required's implicit blank is a blank, not a prompt"
+    end
+
+    test 'it is a hidden button of its own, a sibling of the control and before the chevron' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true,
+                                            clear_label: 'Clear'))
+
+      button = page.find('#post_state-clear', visible: :all)
+      assert_equal 'button', button.tag_name
+      assert_equal 'button', button['type'], 'a button with no type would submit the form around it'
+      assert button.matches_css?('[hidden]'), 'it is revealed by ui--select, like the control it sits beside'
+      assert_equal 'click->ui--select#clear', button['data-action']
+
+      # A sibling: interactive content inside a role="combobox" or a <button> is invalid markup.
+      assert_selector "[data-slot='select'] > #post_state-clear", visible: :all
+      assert_no_selector '#post_state-combobox #post_state-clear', visible: :all
+      # After the control, so it is after it in the tab order, and before the chevron.
+      ids = page.all("[data-slot='select'] > *", visible: :all).map { |element| element['id'] }
+      assert_equal %w[post_state post_state-combobox post_state-clear], ids.first(3)
+    end
+
+    test 'its name is its own word and then the field name; the word comes from the call site or i18n' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true,
+                                            clear_label: 'Empty it'))
+      assert_selector '#post_state-clear #post_state-clear-label.sr-only', text: 'Empty it', visible: :all
+      assert_selector "#post_state-clear svg[aria-hidden='true']", visible: :all
+
+      # ui--select puts the field's name after that word, from the label element the control is
+      # named by -- so the markup carries the word alone and no half-written name.
+      assert_nil page.find('#post_state-clear', visible: :all)['aria-labelledby']
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, prompt: true))
+      assert_selector '#post_state-clear-label', text: I18n.t('rails_ui_kit.select.clear_label'), visible: :all
+    end
+
+    test 'it is a fixed 24px target whatever the control size, and the control makes room for it' do
+      Ui::Select::Box::SIZES.each_key do |size|
+        classes = clear_button(name: 'post[state]', options: STATES, prompt: true, size: size)['class'].split
+
+        assert_includes classes, 'size-6', "size: #{size} moved the target off 24px (WCAG 2.5.8)"
+        assert_includes classes, 'focus-visible:outline-2'
+        assert_includes classes, 'focus-visible:outline-ring'
+        assert_none_matches(/shadow/, classes, 'the focus ring is a flush outline, never a box-shadow')
+        assert_none_matches(/^border(-|$)/, classes, 'it has no border, so its outline draws flush')
+      end
+
+      # The room is taken only while the button is showing, which is what ui--select marks.
+      with_prompt = clear_control_classes(name: 'post[state]', options: STATES, prompt: true)
+      assert_includes with_prompt, 'group-data-[clearable=true]/select:pe-14'
+      assert_not_includes clear_control_classes(name: 'post[state]', options: STATES),
+                          'group-data-[clearable=true]/select:pe-14'
+    end
+
+    test 'it hides with the same media query that hides the control it sits in' do
+      touch = clear_button(name: 'post[state]', options: STATES, prompt: true)['class'].split
+      assert_includes touch, 'pointer-coarse:hidden',
+                      'the platform picker lists the prompt itself, so the button has nothing to add there'
+
+      enhanced = clear_button(name: 'post[state]', options: STATES, prompt: true, native_on_touch: false)
+      assert_not_includes enhanced['class'].split, 'pointer-coarse:hidden'
+      # Search mode always enhances, so its button is never the one the platform picker replaces.
+      searching = clear_button(name: 'post[state]', options: STATES, prompt: true, search: true)
+      assert_not_includes searching['class'].split, 'pointer-coarse:hidden'
+    end
+
+    def clear_control_classes(**)
+      render_inline(Ui::SelectComponent.new(clear_label: 'Clear', **))
+      page.find('#post_state-combobox', visible: :all)['class'].split
+    end
+
+    def assert_none_matches(pattern, classes, message)
+      assert_empty classes.grep(pattern), message
+    end
+
     test 'exactly one option source is required' do
       assert_raises(ArgumentError) { Ui::SelectComponent.new(name: 'a') }
       assert_raises(ArgumentError) { Ui::SelectComponent.new(name: 'a', options: STATES, enum: :status, model: TestOrder) }

@@ -18,6 +18,10 @@ en:
       # thing in that row that says what the row is for, so it is chrome, not content.
       search_placeholder: "Search…"
       no_results: "No results"
+      # The clear button's own word. ui--select puts the field's name after it, so a screen
+      # reader hears which field is being cleared -- "Clear", then "City" -- which is why this
+      # is one word and not a sentence: the second half is the caller's, never translated here.
+      clear_label: "Clear"
       # Interpolated in the browser as the filter narrows, so the count itself is not known when
       # this is rendered: the whole plural map is handed to ui--select, which picks with
       # Intl.PluralRules. Every form carries %{count}: `one` is a CLDR category, not the number

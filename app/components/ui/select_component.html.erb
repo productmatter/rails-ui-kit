@@ -9,6 +9,16 @@
       <span class="truncate data-[placeholder=true]:text-muted-foreground" data-ui--select-target="label"></span>
     <% end %>
   <% end %>
+  <% if clear? %>
+    <%# A sibling of the control and before the chevron: the only way back to the prompt, shown by
+        ui--select while the select holds a value it can return from (§ Behavior, item 10). %>
+    <%= tag.button(**clear_attributes) do %>
+      <%# The button's own word. ui--select puts the field's name after it, so the name a screen
+          reader hears says what is being cleared. %>
+      <span id="<%= clear_id %>-label" class="sr-only"><%= clear_label %></span>
+      <%= render_clear_glyph %>
+    <% end %>
+  <% end %>
   <span class="pointer-events-none absolute inset-e-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"><%= render_chevron %></span>
   <%= tag.div(**popup_attributes) do %>
     <% if search? %>

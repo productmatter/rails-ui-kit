@@ -71,6 +71,23 @@ class SelectSearchTest < ApplicationSystemTestCase
     assert_equal %W[#{ID}-search #{ID}-listbox], ids
   end
 
+  # The field itself is outline-none, so without this the caret would be the only cue that the
+  # popup put focus in it -- and a caret is not a focus indicator (WCAG 2.4.11 / 1.4.11). The line
+  # is drawn on the row, so the glyph and the field read as one focused thing, and it is an
+  # outline rather than a box-shadow because forced-colors mode drops shadows.
+  test 'SS1b: the search row draws a visible focus line while its field is focused' do
+    open_search
+    assert_focus_on_search ID
+    row = find("##{ID}-search").find(:xpath, '..')
+
+    outline = outline_of(row)
+    assert_not_equal 'none', outline['style'], 'the search row shows nothing while its field has focus'
+    assert_operator outline['width'].to_f, :>=, 2, "the focus line is #{outline['width']}, under 2px"
+
+    ratio = contrast_ratio(color_of(:outline, row), color_of(:background, find("##{ID}-popup")))
+    assert_operator ratio, :>=, 3, "the focus line is #{ratio.round(2)}:1 on the popup it is drawn in"
+  end
+
   test 'SS2: typing filters the listbox and never the select' do
     before = native_option_count
     assert_operator before, :>, 5
@@ -322,9 +339,10 @@ class SelectSearchTest < ApplicationSystemTestCase
     # Chosen with the pointer, which never touches the trigger's own text.
     find("##{id}-trigger").click
     assert_popup id, 'open'
-    find("##{id}-option-3").click
+    # The prompt is not one of the options (§ Behavior, item 10), so the cities start at index 0.
+    find("##{id}-option-2").click
     assert_popup id, 'closed'
-    assert_equal option_value(id, 3), select_value(id)
+    assert_equal option_value(id, 2), select_value(id)
     assert_equal 'Bogotá', control_label(id)
 
     # Reset from the form itself: the browser restores the select's default selectedness, and the

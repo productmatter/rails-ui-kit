@@ -198,7 +198,7 @@ class FieldSwapTest < ApplicationSystemTestCase
     page.execute_script("document.getElementById('select-round-trip-preview').scrollIntoView({ block: 'center' })")
     within '#select-round-trip-preview' do
       find('#trip_city-combobox').click
-      find('#trip_city-option-4').click
+      find('#trip_city-option-3').click # Tokyo; the prompt is no longer in the listbox (ui-select, item 10)
       find('#select-round-trip-submit').click
     end
 

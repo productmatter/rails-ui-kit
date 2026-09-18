@@ -48,7 +48,7 @@ class SelectValidationTest < ApplicationSystemTestCase
     assert_focus_on_combobox ID
 
     press :enter
-    press :arrow_down
+    # One step: the prompt is not in the listbox, so the first option is the first city.
     press :arrow_down
     press :enter
     assert_equal 'berlin', select_value(ID)
@@ -85,7 +85,6 @@ class SelectValidationTest < ApplicationSystemTestCase
     focus_combobox('booking_plan')
     press :enter
     press :arrow_down
-    press :arrow_down
     press :enter
     assert_equal 'starter', select_value('booking_plan')
     assert_equal '', select_value(id)
@@ -99,8 +98,7 @@ class SelectValidationTest < ApplicationSystemTestCase
     press :enter
     assert_popup id, 'open'
     assert_focus_on_search id
-    # Twice: the first option is the prompt, whose value is empty.
-    press :arrow_down
+    # Once: the prompt is a placeholder, not a listed option, so the first option is a real city.
     press :arrow_down
     press :enter
     assert_popup id, 'closed'

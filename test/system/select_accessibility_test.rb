@@ -80,7 +80,9 @@ class SelectAccessibilityTest < ApplicationSystemTestCase
     page.execute_script("document.getElementById('#{id}-combobox').scrollIntoView({ block: 'center' })")
     find("##{id}-combobox").click
     assert_popup id, 'open'
-    find("##{id}-option-4").click
+    # Tokyo, which the server rejects. The prompt is not in the listbox (§ Behavior, item 10), so
+    # the cities start at index 0.
+    find("##{id}-option-3").click
     find('#select-round-trip-submit').click
     assert_selector '[data-slot=field-error]'
     assert_selector "##{id}-combobox[aria-invalid='true']"
