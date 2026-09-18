@@ -106,12 +106,30 @@
   scale — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:sm</code>,
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:default</code>,
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:lg</code> — and every control at a step reads the same
-  token for its height, so a row of them lines up without a single height class. Retune the scale for your whole app by redefining
+  token for its height, so a row of them lines up without a single height class. Button and Input are shown; Select and
+  Textarea follow the same scale, and the full set is under the disclosure. Retune the scale for your whole app by redefining
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-sm</code>,
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height</code> or
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">--control-height-lg</code>; see Overriding in the README.
 </p>
-<div id="control-sizes-preview" class="rounded-lg border border-border bg-background grid gap-6 p-8 mb-8">
+<div id="control-sizes-preview" class="rounded-lg border border-border bg-background p-8 mb-8">
+  <%# The demo: two controls a row, so the three heights and the alignment are what the eye sees. %>
+  <div class="grid gap-4">
+    <% %i[sm default lg].each do |step| %>
+      <div class="flex items-center gap-3">
+        <span class="w-28 shrink-0 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
+        <%= render(Ui::ButtonComponent.new(size: step)) { "Save" } %>
+        <%= render Ui::InputComponent.new(size: step, name: "sizes_demo[#{step}]", value: "Jane Cooper", class: "w-48",
+                                          aria: { label: "Name, #{step}" }) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Every sized control, for anyone checking Select and Textarea too. Closed by default; the
+      browser lane opens it, because these rows are what it measures (ui-control-sizing). %>
+  <details id="control-sizes-all" class="mt-6 border-t border-border pt-4">
+    <summary class="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Every sized control at each step</summary>
+    <div class="mt-4 grid gap-6">
   <% %i[sm default lg].each do |step| %>
     <div id="sizes-<%= step %>-row" class="flex flex-wrap items-start gap-3">
       <span class="w-24 shrink-0 pt-2 font-mono text-xs text-muted-foreground">size: :<%= step %></span>
@@ -138,6 +156,8 @@
                                            placeholder: "Add a note…", class: "w-40") %>
     </div>
   <% end %>
+    </div>
+  </details>
 </div>
 
 <%# Usage %>

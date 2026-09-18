@@ -23,6 +23,8 @@ class ControlFillTest < ApplicationSystemTestCase
 
   setup do
     visit field_path
+    # The controls measured here sit under the sizing demo's disclosure; closed, they have no boxes.
+    page.execute_script("document.getElementById('control-sizes-all').open = true")
     disable_transitions
   end
 

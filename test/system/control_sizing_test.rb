@@ -62,6 +62,7 @@ class ControlSizingTest < ApplicationSystemTestCase
 
   test 'CS3: every control at a step is the height of that step, so a row of them aligns' do
     visit field_path
+    open_all_sized_controls
     disable_transitions
 
     STEPS.each { |step, height| assert_step(step, height) }
@@ -77,6 +78,7 @@ class ControlSizingTest < ApplicationSystemTestCase
 
   test 'CS4: an enhanced popup aligns to the width of the control it replaces, at every step' do
     visit field_path
+    open_all_sized_controls
     disable_transitions
 
     STEPS.each_key do |step|
@@ -94,6 +96,7 @@ class ControlSizingTest < ApplicationSystemTestCase
 
   test 'CS5: redefining a step token, on :root or on one wrapper, aligns every control at that step to it' do
     visit field_path
+    open_all_sized_controls
     disable_transitions
 
     # Three independent tokens rather than a derived scale, so a redefinition is honoured
@@ -116,6 +119,7 @@ class ControlSizingTest < ApplicationSystemTestCase
   # clamp it (docs/specs/ui-control-sizing, § Business rules, rule 5).
   test 'CS6: every control at the smallest step, and every icon-only Button, meets the 24px target minimum' do
     visit field_path
+    open_all_sized_controls
     disable_transitions
 
     step_controls(:sm).merge('the textarea' => '#sizes-sm-textarea',
@@ -127,6 +131,12 @@ class ControlSizingTest < ApplicationSystemTestCase
   end
 
   private
+
+  # The page's demo shows two controls a row; the full set these checks measure sits under a
+  # disclosure, and a closed <details> has no boxes to measure.
+  def open_all_sized_controls
+    page.execute_script("document.getElementById('control-sizes-all').open = true")
+  end
 
   def assert_target_size(name, selector)
     rect = rect_of(selector)
