@@ -37,7 +37,7 @@ module Ui
     # Enter and exit are Primitive D's: data-state drives them, and reduced motion is honoured
     # there. No overflow clipping, so an action label too long for the card stays visible.
     class_variants(
-      base: 'relative flex w-full items-start gap-3 rounded-lg border border-border bg-popover p-4 text-sm ' \
+      base: 'relative flex w-full flex-col gap-3 rounded-lg border border-border bg-popover p-4 text-sm ' \
             'text-popover-foreground shadow-lg pointer-events-auto transition-[opacity,translate] duration-300 ' \
             'ease-out data-[state=closed]:translate-y-2 data-[state=closed]:opacity-0 data-[state=closing]:opacity-0'
     )
