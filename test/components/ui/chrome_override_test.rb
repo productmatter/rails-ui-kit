@@ -126,6 +126,34 @@ module Ui
       end
     end
 
+    # FI — Ui::FieldComponent's character-counter chrome, rendered when the bound control asks
+    # for one (ui-character-counter § Behavior, items 10-11).
+
+    def render_counter_field(**overrides)
+      render_inline(Ui::FieldComponent.new(name: 'post[bio]', **overrides)) do |field|
+        field.with_control(Ui::TextareaComponent, counter: true, limit: 20)
+      end
+    end
+
+    def counter_text
+      page.find('[data-ui--character-count-target=count]', visible: :all).text
+    end
+
+    test 'FI1 a call-site count: format wins over the locale file' do
+      template = "#{I18n.t('rails_ui_kit.character_counter.count')} total"
+      render_counter_field(count: template)
+
+      assert_equal format(template, count: 0, limit: 20), counter_text
+    end
+
+    test 'FI2 without count: Field reads the locale file, per render' do
+      I18n.with_locale(:fr) do
+        render_counter_field
+
+        assert_equal I18n.t('rails_ui_kit.character_counter.count', locale: :fr, count: 0, limit: 20), counter_text
+      end
+    end
+
     # <template> content is inert, so its buttons aren't in the document Capybara queries; the
     # rendered HTML is (test/components/ui/toast_container_component_test.rb does the same).
     def template_close_labels
@@ -144,7 +172,7 @@ module Ui
         Ui::ToastComponent => %w[close_label default_title],
         Ui::ToastContainerComponent => %w[close_label default_title],
         Ui::SelectComponent => %w[search_placeholder no_results],
-        Ui::FieldComponent => %w[required_label]
+        Ui::FieldComponent => %w[required_label count remaining over]
       }.each do |component, keywords|
         accepted = component.instance_method(:initialize).parameters
                             .filter_map { |kind, name| name.to_s if %i[key keyreq].include?(kind) }

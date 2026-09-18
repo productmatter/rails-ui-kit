@@ -54,6 +54,20 @@ class LocalizationSwitchTest < ApplicationSystemTestCase
     assert_selector '#demo_city-status', text: '0 résultat', exact_text: true, visible: :all
   end
 
+  test 'LS7 the character counter shows French, the visible count and both announcements' do
+    visit character_counter_path(**FRENCH)
+
+    field = find('#demo_bio')
+    assert_selector '#demo_bio-description', text: '0 sur 60'
+
+    # Ten percent of 60, rounded down, is 6: 54 characters leaves exactly 6 remaining.
+    field.send_keys('x' * 54)
+    assert_selector '#demo_bio-status', text: 'caractères restants', visible: :all
+
+    field.send_keys('y' * 10)
+    assert_selector '#demo_bio-status', text: 'au-delà de la limite', visible: :all
+  end
+
   test 'LS6 the same page in English is English' do
     visit toast_path
 

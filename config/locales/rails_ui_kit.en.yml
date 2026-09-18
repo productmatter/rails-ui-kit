@@ -37,6 +37,21 @@ en:
       # trigger's accessible name instead (a hidden span named directly by aria-labelledby);
       # every other control states it on its own, and never renders this text.
       required_label: "required"
+    character_counter:
+      # The visible count at the end of the description line. Kept as a template, not composed
+      # in the browser, so a locale can change the separator without a kit change.
+      count: "%{count} / %{limit}"
+      # Announced once, when the room left first reaches ten percent of the limit or less. The
+      # whole plural map is handed to ui--character-count, which picks a category with
+      # Intl.PluralRules once the count is known -- the same reason select.results is a map.
+      remaining:
+        one: "%{count} character remaining"
+        other: "%{count} characters remaining"
+      # Announced once, when the count first exceeds the limit (and again, once, when it comes
+      # back under).
+      over:
+        one: "%{count} character over the limit"
+        other: "%{count} characters over the limit"
     turbo_disable_with:
       processing: "Processing..."
     dark_mode:

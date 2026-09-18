@@ -29,6 +29,7 @@ Rails.application.routes.draw do
   post   'demos/select', to: 'docs#select_submit', as: :demo_select
   post   'demos/field',  to: 'docs#field_submit',  as: :demo_field
   post   'demos/choices', to: 'docs#choices_submit', as: :demo_choices
+  post   'demos/character_counter', to: 'docs#character_counter_submit', as: :demo_character_counter
   delete 'demos/item',   to: 'docs#demo_delete',  as: :demo_delete
 
   # The Toast page's demo endpoints: a Turbo Stream toast, a flash toast across a redirect, and

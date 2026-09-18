@@ -1,1 +1,2 @@
-<%= tag.textarea(content, **root_attributes) %>
+<%= tag.textarea(content, **root_attributes(data: counter? ? { 'ui--character-count-target': 'input',
+                                                                    action: 'input->ui--character-count#recount' } : {})) %>

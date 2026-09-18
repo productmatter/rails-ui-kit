@@ -1,8 +1,14 @@
 <%= tag.div(**wrapper_attributes) do %>
   <%= label_part %>
   <%= control_part %>
-  <%= description %>
+  <%= description_part %>
   <% if invalid? %>
     <%= render(Ui::Field::ErrorComponent.new(id: error_id)) { errors.to_sentence } %>
+  <% end %>
+  <% if counter? %>
+    <%# Announced only at the three thresholds (ui-character-counter § Behavior, item 10); the
+        visible count above is silent, part of the accessible description read on focus. %>
+    <%= tag.div(id: status_id, role: 'status', class: 'sr-only', aria: { live: 'polite' },
+                data: { 'ui--character-count-target': 'status' }) %>
   <% end %>
 <% end %>

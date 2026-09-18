@@ -31,14 +31,21 @@ module Ui
     # (Ui::Field::LabelComponent); every other required control states "required" itself.
     chrome_string :required_label, key: 'field.required_label'
 
+    # The character counter's three strings. Rendered here rather than by Textarea, because
+    # Field is what actually draws the count (the description part) and the status region --
+    # the same reason `required_label` above lives here rather than on Select
+    # (ui-character-counter § Behavior, items 10-11).
+    chrome_string :count, key: 'character_counter.count'
+    chrome_plural :remaining, key: 'character_counter.remaining'
+    chrome_plural :over, key: 'character_counter.over'
+
     renders_one :label, ->(**attributes) { Ui::Field::LabelComponent.new(field: self, **attributes) }
 
     # An invalid field's description gives way to its error. It stays in the DOM, hidden:
     # aria-describedby still names it, and ui--field animates it back when a morph makes
-    # the field valid.
-    renders_one :description, lambda { |**attributes|
-      Ui::Field::DescriptionComponent.new(id: description_id, **(invalid? ? { hidden: true } : {}), **attributes)
-    }
+    # the field valid. When the bound control asked for a character counter, the count rides
+    # along as the description's last child (ui-character-counter § Behavior, item 4).
+    renders_one :description, ->(**attributes) { build_description(**attributes) }
 
     # The control is any component that takes HTML attributes — Ui::InputComponent by
     # default, or a textarea, select or other custom control through the block form.
@@ -52,13 +59,16 @@ module Ui
     # ActiveModel object, or any array — so nothing here depends on an ORM. The
     # HTML `name` (`user[email]`) is not the model attribute (`email`).
     def initialize(name: nil, errors: nil, control_id: nil, model: NO_MODEL, attribute: nil, required: nil,
-                   required_label: nil, **html_attributes)
+                   required_label: nil, count: nil, remaining: nil, over: nil, **html_attributes)
       @model_binding = bind(model, attribute, name)
       @name = (name || field_name(@model_binding.param_key, @model_binding.attribute)).to_s
       @errors = Array(errors.nil? ? @model_binding&.errors : errors).map(&:to_s).reject(&:empty?)
       @control_id = (control_id || derive_control_id).to_s
       @required = required
       @required_label = required_label
+      @count = count
+      @remaining = remaining
+      @over = over
       super(**html_attributes)
     end
 
@@ -80,6 +90,13 @@ module Ui
 
     def error_id
       "#{control_id}-error"
+    end
+
+    # The polite status region ui--character-count announces the three thresholds into
+    # (ui-character-counter § Behavior, item 10). Only rendered, and only ever targeted, when
+    # counter? is true.
+    def status_id
+      "#{control_id}-status"
     end
 
     def invalid?
@@ -105,6 +122,45 @@ module Ui
     # The value form.text_field would render for the record, or nil without one.
     def value
       @model_binding&.value
+    end
+
+    # Whether the bound control asked for a character counter, and its limit -- read straight
+    # off with_control's raw attributes (Ui::Field::ControlComponent#stated_counter/stated_limit),
+    # the same way required? reads stated_required, so nothing here has to build the control
+    # early to find out.
+    def counter?
+      control? && boolean_attribute?(control.stated_counter)
+    end
+
+    def counter_limit
+      control&.stated_limit&.to_i
+    end
+
+    # Code points, as Ruby's own String#length counts them (ui-character-counter § Behavior,
+    # item 6).
+    #
+    # **Correction, verified in this repo's Rails/Turbo/Rack versions:** § Behavior, item 7
+    # and § Assumptions expected the browser to submit CRLF for every LF a textarea's value
+    # carries, so a line break would reach `validates length:` as two characters. Posting a
+    # value with a line break through the Character Counter docs demo (a Turbo-intercepted
+    # form, submitted as `FormData` over `fetch`) shows Rails receiving it as one -- the
+    # `params` length equals the DOM value's own length, with no CRLF expansion. The
+    # assumption's own escape hatch applies: follow what Rails actually does. Counting a line
+    # break as one, not two, is what keeps this agreeing with the server (§ Business rules,
+    # rule 2), which is the rule that actually matters; § Behavior items 6-7 are superseded by
+    # this correction, not by a v2 of the counter.
+    def character_count
+      value.to_s.length
+    end
+
+    def character_over_limit?
+      character_count > counter_limit
+    end
+
+    # The visible "N / limit" text, from the chrome template so a locale can change the
+    # separator without a kit change (ui-character-counter § Behavior, item 11).
+    def counter_text
+      format(count, { count: character_count, limit: counter_limit })
     end
 
     # The bound record's class, for a control that infers model: from an enum: it was given
@@ -142,7 +198,21 @@ module Ui
     end
 
     def wrapper_attributes
-      root_attributes(data: { controller: 'ui--field', invalid: (true if invalid?), required: (true if required?) })
+      controllers = ['ui--field', ('ui--character-count' if counter?)].compact.join(' ')
+      root_attributes(data: { controller: controllers, invalid: (true if invalid?),
+                              required: (true if required?) }.merge(character_counter_data))
+    end
+
+    # The Stimulus values ui--character-count reads off the wrapper it connects on -- the same
+    # shape select.results reaches ui--select in (ui-character-counter § Behavior, items 10-11):
+    # the whole plural map for each announcement, and the locale that resolved them, so the
+    # browser picks a category with Intl.PluralRules once the count is known.
+    def character_counter_data
+      return {} unless counter?
+
+      { 'ui--character-count-limit-value': counter_limit, 'ui--character-count-format-value': count,
+        'ui--character-count-remaining-value': remaining.to_json, 'ui--character-count-over-value': over.to_json,
+        'ui--character-count-locale-value': chrome_locale }
     end
 
     # With a record, a Field the caller gave no label or control still renders both.
@@ -158,9 +228,28 @@ module Ui
       render(Ui::Field::ControlComponent.new(field: self)) if model_bound?
     end
 
-    # Only the parts that actually render are named, in reading order.
+    # The description part, rendered even without with_description when the control asked for
+    # a counter: help text is optional, but the count still needs somewhere to live
+    # (ui-character-counter § Behavior, item 4).
+    def description_part
+      return description if description?
+      return render(build_description) if counter?
+
+      nil
+    end
+
+    # `field: self` is what lets Ui::Field::DescriptionComponent read the counter's state lazily,
+    # inside its own `call` rather than here: this method runs the instant with_description is
+    # called, which renders_one's lambda can do before with_control ever runs, so counter? has
+    # to be asked later, not now (see the comment atop Ui::Field::DescriptionComponent).
+    def build_description(**attributes)
+      Ui::Field::DescriptionComponent.new(field: self, id: description_id, **(invalid? ? { hidden: true } : {}), **attributes)
+    end
+
+    # Only the parts that actually render are named, in reading order. A counter with no
+    # description still renders the description part (above), so it is still named here.
     def described_by
-      [(description_id if description?), (error_id if invalid?)].compact.join(' ').presence
+      [(description_id if description? || counter?), (error_id if invalid?)].compact.join(' ').presence
     end
 
     # Rails' own id derivation, so `user[email]` yields the `user_email` that

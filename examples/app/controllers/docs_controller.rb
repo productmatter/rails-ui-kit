@@ -72,8 +72,28 @@ class DocsController < ApplicationController
     end
   end
 
+  # The Character Counter docs page's server round trip: the same morphing-stream shape as
+  # field_submit, and the response also carries the raw param's length, which the browser lane
+  # compares against what the counter showed before posting (ui-character-counter § Behavior,
+  # item 7).
+  def character_counter_submit
+    note = DemoNote.new(body: params.dig(:note, :body).to_s)
+    status = note.valid? ? :ok : :unprocessable_entity
+    locals = { note: note,
+               submission: self.class.character_counter_submissions = self.class.character_counter_submissions.to_i + 1 }
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace('character-counter-swap-demo', partial: 'docs/character_counter_swap_demo',
+                                                   locals: locals, method: :morph),
+               status: status
+      end
+      format.html { render partial: 'docs/character_counter_swap_demo', locals: locals, status: status }
+    end
+  end
+
   class << self
-    attr_accessor :select_submissions, :field_submissions, :choices_submissions
+    attr_accessor :select_submissions, :field_submissions, :choices_submissions, :character_counter_submissions
   end
 
   # The Choices docs page's collection: objects, so the page can show description_method: and

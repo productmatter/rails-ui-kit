@@ -16,6 +16,7 @@ import OverlayController from "rails_ui_kit/controllers/overlay_controller"
 import SelectController from "rails_ui_kit/controllers/select_controller"
 import FieldController from "rails_ui_kit/controllers/field_controller"
 import ChoicesController from "rails_ui_kit/controllers/choices_controller"
+import CharacterCountController from "rails_ui_kit/controllers/character_count_controller"
 
 export {
   ModalController,
@@ -35,7 +36,8 @@ export {
   OverlayController,
   SelectController,
   FieldController,
-  ChoicesController
+  ChoicesController,
+  CharacterCountController
 }
 
 const MODAL_SELECTOR = '[data-controller~="ui--modal"]'
@@ -91,4 +93,5 @@ export function registerControllers(application) {
   application.register("ui--select", SelectController)
   application.register("ui--field", FieldController)
   application.register("ui--choices", ChoicesController)
+  application.register("ui--character-count", CharacterCountController)
 }

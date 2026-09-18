@@ -23,6 +23,14 @@ fr:
       required_message: "Sélectionnez au moins une option."
     field:
       required_label: "obligatoire"
+    character_counter:
+      count: "%{count} sur %{limit}"
+      remaining:
+        one: "%{count} caractère restant"
+        other: "%{count} caractères restants"
+      over:
+        one: "%{count} caractère au-delà de la limite"
+        other: "%{count} caractères au-delà de la limite"
     turbo_disable_with:
       processing: "Traitement en cours..."
     dark_mode:
