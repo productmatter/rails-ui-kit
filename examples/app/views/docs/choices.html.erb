@@ -2,7 +2,15 @@
 <%
   roles = DocsController.roles
   plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
-  plan_icon = ->(plan) { tag.svg(tag.path(d: "M12 2 2 7l10 5 10-5-10-5Z"), class: "size-5", viewBox: "0 0 24 24",
+  # One icon per plan, so the card variant's icon slot shows what it is for: a person for one
+  # seat, people for a team, a rising line for scale.
+  plan_icon_paths = {
+    "starter" => [tag.path(d: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"), tag.circle(cx: 12, cy: 7, r: 4)],
+    "growth"  => [tag.path(d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"), tag.circle(cx: 9, cy: 7, r: 4),
+                  tag.path(d: "M23 21v-2a4 4 0 0 0-3-3.87"), tag.path(d: "M16 3.13a4 4 0 0 1 0 7.75")],
+    "scale"   => [tag.path(d: "M23 6l-9.5 9.5-5-5L1 18"), tag.path(d: "M17 6h6v6")]
+  }
+  plan_icon = ->(plan) { tag.svg(safe_join(plan_icon_paths.fetch(plan.id)), class: "size-5", viewBox: "0 0 24 24",
                                  fill: "none", stroke: "currentColor", "stroke-width": 2,
                                  "stroke-linecap": "round", "stroke-linejoin": "round") }
   card_plans = [Struct.new(:id, :name, :tagline).new("starter", "Starter", "One project, one seat."),

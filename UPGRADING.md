@@ -260,11 +260,12 @@ After:
 
 ## 3. Colour drift if your app defines no tokens
 
-Every component reads colour from a fixed set of CSS variables (shadcn/ui's names, Product
-Matter's values) rather than hard-coded Tailwind classes. If your app never defined them, you
-were getting the kit's own palette — a warm neutral ramp with one indigo accent — sitting next
-to whatever your app's Tailwind config uses everywhere else. Upgrading doesn't change this, but
-it's the point in an upgrade where a drift nobody fixed becomes visible again.
+Every component reads colour from a fixed set of CSS variables (shadcn/ui's names; the kit's
+own values, which since 0.3.0's successor are Tailwind's slate for every surface with indigo as
+the one accent) rather than hard-coded Tailwind classes. If your app never defined them, you
+were getting the kit's default palette sitting next to whatever your app's Tailwind config uses
+everywhere else. Upgrading doesn't change this, but it's the point in an upgrade where a drift
+nobody fixed becomes visible again.
 
 **Fix:** redefine the token names in your app's CSS, mapped onto your existing palette. Tailwind
 v4 exposes your theme's colors as CSS variables, so if you already have a Tailwind palette this
