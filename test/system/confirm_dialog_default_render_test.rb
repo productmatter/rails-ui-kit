@@ -28,7 +28,9 @@ class ConfirmDialogDefaultRenderTest < ApplicationSystemTestCase
   NARROW = { viewport: [375, 812], panel_width: 343.0, body_padding: [20, 16, 16, 16], footer_padding: [12, 16, 12, 16],
              text_align: 'center' }.freeze
 
-  BUTTON_HEIGHT = 36.0
+  # The default control step: 32px since 2026-09-18, when the shared scale became Tailwind's five
+  # steps and `default` moved down from 36px (docs/specs/ui-control-sizing § Business rules, rule 3).
+  BUTTON_HEIGHT = 32.0
   BUTTON_GAP = 12.0
 
   # Padding is [top, right, bottom, left] in px, as CSS shorthand orders it, measured in LTR. Every box
