@@ -139,7 +139,11 @@
        dark label. */
     --destructive: oklch(0.704 0.191 22.216); /* red-400 */
 
-    --border: oklch(0.279 0.041 260.031); /* slate-800 */
+    /* One step lighter than the surfaces around it would suggest. In light mode a shadow
+       separates a floating surface and the border is decoration; in dark mode the shadow is
+       invisible and the border is the only edge there is. slate-800 was 1.22:1 on --popover,
+       which did not read; slate-700 is 1.73:1 (decided 2026-09-18). */
+    --border: oklch(0.372 0.044 257.287); /* slate-700 */
     /* Light enough to reach 3:1 against the surface and against the translucent
        fill a control paints on it. Boundaries only: a control's fill comes from a
        surface token, never from --input. */
@@ -170,7 +174,7 @@
     --sidebar-primary-foreground: oklch(0.129 0.042 264.695); /* slate-950 */
     --sidebar-accent: oklch(0.279 0.041 260.031); /* slate-800 */
     --sidebar-accent-foreground: oklch(0.984 0.003 247.858); /* slate-50 */
-    --sidebar-border: oklch(0.279 0.041 260.031); /* slate-800 */
+    --sidebar-border: oklch(0.372 0.044 257.287); /* slate-700, mirroring --border */
     --sidebar-ring: oklch(0.673 0.182 276.935); /* indigo-400 */
   }
 }

@@ -15,8 +15,11 @@ module Ui
     # keys' leaves. Centring is `inset-x-0 mx-auto`, not the `left-1/2` this pin first recorded:
     # the stress page found `left-1/2` follows the inline start, so a centred 320px dialog sat at
     # x = -160 in RTL (modal_test M10 pins the fix).
+    # 2026-09-18, after the retrofit: Modal joined the kit's other floating surfaces -- bg-popover
+    # with a border -- because on the page's own token with no edge it vanished in dark mode. The
+    # pin moved with that decision; it was not edited to make anything pass.
     MODAL_DIALOG_CLASSES = %w[
-      fixed p-0 m-0 bg-background text-foreground shadow-2xl
+      fixed p-0 m-0 bg-popover text-popover-foreground border border-border shadow-2xl
       opacity-0 data-[state=open]:opacity-100 transition-all duration-300 ease-in-out focus-visible:outline-none
       backdrop:backdrop-blur-sm backdrop:opacity-0 data-[state=open]:backdrop:opacity-100
       backdrop:transition-opacity backdrop:duration-300 backdrop:ease-in-out
