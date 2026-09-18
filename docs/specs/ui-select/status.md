@@ -1,12 +1,15 @@
 ## State
 
-ready-for-review
+building
 
-v1 is built: both modes, the Rails option API, Field, Turbo, the submission model and the
-removal of Dropdown's `kind: :listbox`, with every agent-loopable acceptance check
-passing. What remains is the judgeable review and
-Jonathan's three human gates — VoiceOver in Safari, the throttled-connection swap, and the
-phone check that confirms or overturns the coarse-pointer default. Remote search is designed
+Reshaped 2026-09-18 (Jonathan Simmons): search mode moves from the APG editable combobox
+to a trigger button with the search field in its popup — § Behavior, items 13, 17, 18 and
+24, § Business rules 4 and 5, and the search, pointer, validation and accessibility
+acceptance checks are amended; the old shape is retired, not kept beside the new one. v1
+as built on 2026-09-14 stands for select-only mode, the Rails option API, Field, Turbo and
+the submission model. Search mode is being rebuilt to the amended contract and
+`select_search_test.rb` rewritten to item 17's new table. Jonathan's three human gates
+remain, and the VoiceOver gate now also judges the new shape. Remote search stays designed
 in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are recorded below.
 
 ## Done
@@ -51,8 +54,14 @@ in § Behavior, items 27–31 and deliberately unbuilt. Two corrections are reco
 
 ## In progress
 
-None. The next unit in this scope's line is deliberately later: building remote search
-behind `search_url:` (§ Behavior, items 27–31), which the v1 API is already shaped for.
+Search mode to the 2026-09-18 shape (§ Behavior, item 17): a trigger button; the search
+field first in the popup; focus in on open and back on close through `ui--overlay`'s
+`initialFocus` and focus return, with a Tab-close that lets focus move on; the show-options
+button and `rails_ui_kit.select.show_options_label` removed and `search_placeholder` added;
+`Ui::Select::Primitives` carrying the mode difference as values, as before;
+`select_search_test.rb` rewritten to the new key table, with the pointer, validation and
+accessibility checks amended; the docs page's "With search" section and behaviour notes
+brought to the new shape. Remote search (items 27–31) stays deliberately later.
 
 ## Last green checkpoint
 

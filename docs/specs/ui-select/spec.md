@@ -207,8 +207,8 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     - other `data:` and `aria:` attributes go on the root, where `change` events bubble
       to.
 13. **Search is a flag.** `search: false` is the default. `search: true` switches the
-    combobox to its editable mode (item 17). Nothing else in the API changes between
-    modes.
+    control to its searchable shape (item 17): a trigger button whose popup carries the
+    search field. Nothing else in the API changes between modes.
 14. **No form-builder method. That decision is deferred, not planned.** There is no
     `form.ui_select`, and no scope is queued to add one. A form builder would be the
     first time the kit extends a Rails API rather than supplying a component. The
@@ -221,7 +221,7 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     Rails-shaped option API (items 8–11) still leaves a builder possible later without
     an API change. That is a property of the API, not a commitment to build one.
 
-### Two modes, two APG patterns, one component
+### Two modes, two documented patterns, one component
 
 15. **One component, not a Select plus a Combobox.** The two modes share the submission
     model, the option API, Field integration, positioning, the overlay, the listbox
@@ -252,57 +252,63 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     | open | `Escape` | Closes with no change. |
 
     `Enter` never submits the form in this mode.
-17. **`search: true` is the APG editable combobox with list autocomplete**, verified
-    against the w3.org example on 2026-09-13, restricted to the list's values.
-    - **Markup.** The combobox is an `<input type="text" role="combobox"
-      aria-autocomplete="list" autocomplete="off">`. It has no `name`, so it never
-      submits. It has the same `aria-labelledby`, `aria-controls`, `aria-expanded`,
-      `aria-activedescendant` and `aria-required` as select-only mode.
-    - **Show-options button.** A chevron `<button type="button" tabindex="-1">`, named
-      through i18n, opens the listbox for touch screen-reader users. APG keeps it for
-      exactly that reason.
-    - **Primitive values.** `ui--roving-focus` runs with `loop: true`. The input is
-      editable, so the primitive leaves `Home`, `End` and typing to the text field.
+17. **`search: true` is a trigger button whose popup carries the search field** (decided
+    2026-09-18, Jonathan Simmons; replaces, rather than sits beside, the APG editable
+    combobox this item specified on 2026-09-13). One element doing two jobs — showing the
+    chosen label *and* taking filter text — was the confusion: the text in the control
+    was sometimes the value and sometimes a query. The two jobs now have two elements:
+    the trigger shows the value, the field in the popup takes the query. This is the
+    kit's own shape, decided for that reason. APG has no example of it, so this item is
+    the record, and the key table below is written here, not transcribed.
+    - **Trigger.** A `<button type="button" aria-haspopup="listbox" aria-expanded
+      aria-controls="<listbox id>">` in the same box select-only mode's combobox uses,
+      showing the selected option's label, or the prompt in `text-muted-foreground`.
+      Named by the Field label through `aria-labelledby`; `aria-required` where the
+      select is required (item 12). It never submits: it is a button, not a field.
+    - **Search field.** First in the popup: an `<input type="text" role="combobox"
+      aria-autocomplete="list" autocomplete="off" aria-controls="<listbox id>"
+      aria-activedescendant>`, a search glyph beside it and `border-b border-border`
+      under the row, placeholder `rails_ui_kit.select.search_placeholder`. It is the
+      only `role="combobox"` in the widget, and it has no `name`. Named by the Field
+      label too, so a screen reader hears the field's name, then "combobox".
+    - **The text is a query, never the value.** It is empty when the popup opens and
+      discarded when it closes. The trigger shows the truth from the native select at
+      all times, so there is nothing to restore and no rule about what an empty field
+      selects: clearing a choice is what `include_blank:` and `prompt:` are for.
+    - **Focus.** Opening moves DOM focus into the search field; closing returns it to
+      the trigger (rule 5). Both are `ui--overlay`'s (`initialFocus`, focus return), not
+      Select's.
+    - **No show-options button.** The trigger is a button, so a touch screen-reader user
+      opens the list the way everyone does. `rails_ui_kit.select.show_options_label` is
+      removed.
+    - **Primitive values.** `ui--roving-focus` runs with `loop: true` and its `input`
+      target on the search field; the field is editable, so the primitive leaves `Home`,
+      `End` and typing to it.
 
     | State | Key | Result |
     |---|---|---|
-    | closed | `ArrowDown` / `ArrowUp` | Opens and moves visual focus to the first / last option. |
-    | closed | `Alt+ArrowDown` | Opens without moving visual focus. |
-    | closed | `Escape` | Puts the text back to the selected option's label, and changes nothing else. A deliberate deviation from the APG table, which clears the field — see below. |
-    | closed | `Enter` | Not handled: implicit form submission proceeds, as for any text field. |
-    | open | `ArrowDown` / `ArrowUp` | Next / previous option, wrapping. |
-    | open | `Enter` | With an active option, selects it and closes; with none, closes. Either way the key never submits the form while the listbox is open. |
-    | open | `Escape` | Closes; the text reverts to the selected label. |
-    | open | `ArrowLeft`, `ArrowRight`, `Home`, `End`, printable characters | Visual focus returns to the text field (`aria-activedescendant` is cleared) and the key edits the text. |
-    | open | `Tab` | Closes without selecting; focus moves on. |
+    | closed, on the trigger | `Enter`, `Space`, `Alt+ArrowDown` | Opens; DOM focus moves to the empty search field; no option is active. |
+    | closed, on the trigger | `ArrowDown` / `ArrowUp` | Opens, DOM focus moves to the search field, and visual focus goes to the first / last option. |
+    | closed, on the trigger | printable character | Opens, seeds the search field with the character, and filters (item 21): typing on a closed select keeps working. |
+    | closed, on the trigger | `Escape`, `Tab` | Not handled: Escape reaches a surrounding Modal (item 25); Tab moves on. |
+    | open, in the search field | `ArrowDown` / `ArrowUp` | Next / previous option, wrapping. |
+    | open | `Enter` | With an active option, selects it, closes, and returns focus to the trigger; with none, closes the same way. It never submits the form. |
+    | open | `Escape` | Closes with no change; focus returns to the trigger. |
+    | open | `Tab` | Closes without selecting, and focus moves on to the element after the trigger — the overlay's focus return is skipped for this one close. What was typed is never silently turned into a choice. |
+    | open | `ArrowLeft`, `ArrowRight`, `Home`, `End`, `Backspace`, printable characters | Edit the text: visual focus returns to the field (`aria-activedescendant` cleared) and the list filters (item 21). |
 
-    Typing opens the listbox and filters it (item 21).
-
-    **Committing on close.** The text field only ever shows a real option's label once
-    the listbox closes:
-    - an option was chosen: its label;
-    - the text is empty and the select has a blank option: blank is selected;
-    - anything else: the selected option's label is restored.
-
-    Tab doesn't select in this mode because APG's list-autocomplete example uses manual
-    selection: what the user typed is never silently turned into a choice.
-
-    **Escape on a closed field restores rather than clears.** In the APG example the text
-    field *is* the value, so clearing it is a complete operation. Here the value lives in
-    the select, and a transcribed "clear the field" would have to do one of two wrong
-    things: leave an empty field over a select still holding a value, which breaks
-    § Business rules, rule 1, or clear the selection, which turns the cancel key into a
-    destructive one that dispatches `input` and `change` from a keystroke the user meant
-    as "never mind" — and which behaves differently depending on whether the caller
-    offered a blank option. Escape therefore leaves the value alone in both modes, and
-    clearing a choice is what `include_blank:` and `prompt:` are for. The key is left
-    unclaimed when the text already matches the label, so it still reaches a surrounding
-    Modal (§ Behavior, item 25).
-18. **DOM focus never leaves the combobox** while the user is working in the widget. The
-    popup opens without taking focus (§ Assumptions, prerequisite 1). Options are
-    `tabindex="-1"`, and a `mousedown` on an option is cancelled by the primitive.
-    Clicking an option selects it and closes the listbox. Hover moves the active option
-    through `ui--roving-focus#activate`.
+    Typing filters the listbox (item 21); the empty state and count (item 22) are
+    unchanged. The retired 2026-09-13 table's two deviations — Escape restoring rather
+    than clearing, and committing on close — existed because the text field was the
+    control; they retire with it.
+18. **DOM focus never lands on an option, a group or the popup wrapper.** In select-only
+    mode it stays on the combobox throughout, and the popup opens without taking focus
+    (§ Assumptions, prerequisite 1). In search mode it is on the trigger while closed and
+    on the search field while open (item 17); nothing else in the widget is ever
+    focused. Options are `tabindex="-1"`, and a `mousedown` on an option is cancelled by
+    the primitive, so a click selects without moving focus. Clicking an option selects
+    it and closes the listbox. Hover moves the active option through
+    `ui--roving-focus#activate`.
 19. **`aria-selected`** follows both APG examples: `aria-selected="true"` is on the
     option `aria-activedescendant` references, and on no other. The option matching the
     select's current value is marked separately, with `data-selected` for a check-mark
@@ -319,7 +325,7 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
     - Non-matching options, and any group left with no matching option, get the `hidden`
       attribute. The primitive already skips hidden items.
     - After each filter, `aria-activedescendant` is cleared, per APG: visual focus is on
-      the text field.
+      the search field.
     - Clearing the text shows every option again.
     - The native select is never filtered, so the value that submits can't be hidden away.
 22. **Empty state.** When no option matches, the popup shows a "No results" message from
@@ -345,15 +351,19 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
 
 24. **Composition.** The root element stacks `ui--select`, `ui--overlay`, `ui--anchor`
     and `ui--roving-focus`, the way Dropdown already stacks its controllers.
-    - **`ui--overlay`** runs in `layer` mode. Its `trigger` is the combobox and its
+    - **`ui--overlay`** runs in `layer` mode. Its `trigger` is the control — the
+      combobox in select-only mode, the trigger button in search mode — and its
       `content` is the popup, which is placed in the top layer as `popover="auto"`. It
-      has `scrollLock: false`, and opens without moving focus (prerequisite 1). Escape
-      and outside-click dismissal, top-layer placement and presence are all the
-      overlay's.
-    - **`ui--anchor`** has `anchor` on the combobox and `floating` on the popup, with
+      has `scrollLock: false`. Select-only mode opens without moving focus
+      (prerequisite 1); search mode opens with `initialFocus` on the search field and
+      returns focus to the trigger on close, both the overlay's own values (item 17).
+      Escape and outside-click dismissal, top-layer placement, focus return and presence
+      are all the overlay's.
+    - **`ui--anchor`** has `anchor` on the control and `floating` on the popup, with
       `placement: "bottom-start"`, `matchWidth: true` and `strategy: "fixed"`, because
       the popup is in the top layer.
-    - **`ui--roving-focus`** has `input` on the combobox and `item` on every option.
+    - **`ui--roving-focus`** has `input` on the combobox — select-only mode's control,
+      or search mode's search field — and `item` on every option.
     - **`ui--select`** owns only what no primitive does: the submission mirror
       (items 1–7), the mode key tables above (open, select, commit), filtering and the
       empty state. It sets `ui--anchor`'s `active` while open, and writes
@@ -425,7 +435,7 @@ ui-presence-and-overlay-stack).
     - the popup is closed (the overlay already does this);
     - the filter is cleared and every option unhidden;
     - `activeId` is empty;
-    - in search mode, the text field shows the selected label.
+    - in search mode, the search field is empty and the trigger shows the selected label.
 
     The selected value is not reset: it lives in the native select, and Turbo's snapshot
     carries a select's selectedness. So Back restores a closed Select showing the value
@@ -474,12 +484,15 @@ numbering is referenced as-is; the rules below are scope-local.
    `prompt:`, `required:`'s implicit blank and enum labelling behave exactly as Rails'
    helpers do. The native options are rendered by those helpers
    (§ Behavior, items 8–11; `ui-component-library` § Business rules, rule 8).
-4. **One APG pattern per mode, never blended.** `search: false` is the select-only
-   combobox; `search: true` is the editable combobox with list autocomplete. Each
-   follows its w3.org example's key table as recorded in § Behavior, items 16 and 17. A
-   key that behaves differently from that table is a defect, unless a correction
-   records why.
-5. **DOM focus stays on the combobox.** No option, popup or group is ever focused.
+4. **One documented pattern per mode, never blended.** `search: false` is the APG
+   select-only combobox; `search: true` is a trigger button with the search field in its
+   popup (amended 2026-09-18 from the APG editable combobox). Each follows the key table
+   recorded for it in § Behavior, items 16 and 17 — item 16's transcribed from w3.org,
+   item 17's written here because APG has no example of that shape. A key that behaves
+   differently from its table is a defect, unless a correction records why.
+5. **DOM focus stays on the control that owns the listbox.** In select-only mode that is
+   the combobox throughout; in search mode it is the trigger while closed and the search
+   field while open (amended 2026-09-18). No option, popup or group is ever focused.
    Visual focus is `aria-activedescendant` plus the primitive's `active` class
    (§ Business rules of ui-positioning-and-navigation, rule 4).
 6. **Composes the primitives; reimplements none** (`ui-component-library` § Business
@@ -507,7 +520,7 @@ numbering is referenced as-is; the rules below are scope-local.
 11. **Local first.** Remote search ships in a later phase, behind `search_url:`, with no
     change to the v1 API (§ Behavior, items 27–31).
 12. **Every user-facing string goes through i18n.** "No results", the result count and
-    the show-options button's name come from `rails_ui_kit.select.*`. The prompt comes
+    the search field's placeholder come from `rails_ui_kit.select.*`. The prompt comes
     from Rails' own `helpers.select.prompt`.
 
 **May**
@@ -529,6 +542,11 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
      itself, and `keepFocusInside()` calls it again when focus lands on `<body>`. A
      combobox must keep DOM focus on its input (rule 5). Needed: a value that opens with
      no focus move and no refocus, leaving focus restore untouched.
+     **2026-09-18:** select-only mode still needs exactly this. Search mode now uses the
+     other half of the same primitive — `initialFocus` on the search field, focus return
+     to the trigger — so no new prerequisite is added. The one thing to check exists is
+     a way to skip focus return on a Tab-close (item 17); if it doesn't, it lands under
+     ui-presence-and-overlay-stack as a small addition, not in `ui--select`.
   2. **`ui--overlay` respects an existing `aria-controls`.** `prepareContent()`
      overwrites the trigger's `aria-controls` with the content target's id. For a
      combobox, that has to name the listbox inside the popup, not the popup wrapper,
@@ -603,7 +621,8 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
   `kind: :listbox` (§ Behavior, item 36).
 - `app/components/ui/native_select_component.rb` — being deleted. Its token classes are
   the starting point for the unenhanced select's styling (§ Behavior, item 2).
-- `config/locales/rails_ui_kit.en.yml` — gains `rails_ui_kit.select.*`.
+- `config/locales/rails_ui_kit.en.yml` — gains `rails_ui_kit.select.*`. 2026-09-18:
+  `show_options_label` leaves with the show-options button; `search_placeholder` arrives.
 - `examples/config/initializers/docs_pages.rb`, `examples/app/views/docs/` — a Select
   page with both modes, every option source, a Field with a real `422`, a Select in a
   Modal, and a Turbo Stream replace.
@@ -618,16 +637,16 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - Each option source (collection, array, hash, enum, grouped) renders a native select identical to Rails' `collection_select`, `select` or `grouped_collection_select` output for the same arguments, including `selected:`, `include_blank:`, `prompt:`, `disabled_values:` and `required:`'s implicit blank — run: `bundle exec rake test TEST=test/components/ui/select_component_test.rb`
 - The listbox's option value, text, disabled and selected sequence equals the native select's for every source, and enum labels resolve through `human_attribute_name` with a humanised fallback — run: `bundle exec rake test TEST=test/components/ui/select_options_test.rb`
 - Choosing an option by keyboard and by pointer posts its value with the form, dispatches `input` and `change` from the native select, and a `422` re-render shows the submitted value still selected — run: `bundle exec rake test:system TEST=test/system/select_form_submission_test.rb`
-- A `required` Select left blank blocks submission with no request sent and focus on the combobox; a server-side error re-rendered through Field puts `aria-invalid` and an `aria-describedby` naming the error on the combobox — run: `bundle exec rake test:system TEST=test/system/select_validation_test.rb`
+- A `required` Select left blank blocks submission with no request sent and focus on the control (the combobox, or search mode's trigger); a server-side error re-rendered through Field puts `aria-invalid` and an `aria-describedby` naming the error on the combobox — run: `bundle exec rake test:system TEST=test/system/select_validation_test.rb`
 - Form reset restores the default selection in both the native select and the combobox's label, and a disabled Select neither opens nor submits — run: `bundle exec rake test:system TEST=test/system/select_form_reset_test.rb`
 - Every key in the select-only table (§ Behavior, item 16), driven with real keypresses, produces its result, with `aria-expanded`, `aria-activedescendant` and `aria-selected` correct after each and `document.activeElement` always the combobox — run: `bundle exec rake test:system TEST=test/system/select_keyboard_test.rb`
-- Every key in the search table (§ Behavior, item 17) produces its result; typing filters case- and diacritic-insensitively, hides emptied groups, clears `aria-activedescendant`, shows and announces the empty state, commits on close as specified, and DOM focus never leaves the input — run: `bundle exec rake test:system TEST=test/system/select_search_test.rb`
-- Clicking the Field label focuses the combobox, clicking an option selects it without moving DOM focus off the combobox, and a disabled option is reachable but never selected — run: `bundle exec rake test:system TEST=test/system/select_pointer_test.rb`
+- Every key in the search table (§ Behavior, item 17), driven with real keypresses, produces its result: the trigger opens into the search field, a printable key on the closed trigger seeds the filter, typing filters case- and diacritic-insensitively, hides emptied groups, clears `aria-activedescendant`, shows and announces the empty state, Enter and Escape return focus to the trigger, Tab moves on without choosing, the search field is empty on every open, and the trigger always shows the native select's label — run: `bundle exec rake test:system TEST=test/system/select_search_test.rb`
+- Clicking the Field label focuses the control (the combobox, or search mode's trigger), clicking an option selects it without moving DOM focus off the control that owns the listbox, and a disabled option is reachable but never selected — run: `bundle exec rake test:system TEST=test/system/select_pointer_test.rb`
 - With JavaScript disabled the native select is visible, labelled by the Field label, and posts the chosen value — run: `bundle exec rake test:system TEST=test/system/select_no_javascript_test.rb`
 - A Select inside a Modal opens above the dialog unclipped; the first Escape closes only the listbox and the second closes the Modal — run: `bundle exec rake test:system TEST=test/system/select_in_modal_test.rb`
 - Back to a page cached with a Select open restores it closed, unfiltered, showing the value the user left and without pulling focus in — run: `bundle exec rake test:system TEST=test/system/select_turbo_cache_test.rb`
 - A Turbo Stream replacing a Select, a frame swap containing one, and a morphing refresh that changes its selection each leave a working Select showing the select's current value — run: `bundle exec rake test:system TEST=test/system/select_turbo_stream_test.rb`
-- Both modes pass `assert_accessible` closed, open, filtered, empty and invalid, in light and dark mode, and the combobox text, option text, active indicator and focus ring meet contrast on their surfaces — run: `bundle exec rake test:system TEST=test/system/select_accessibility_test.rb`
+- Both modes pass `assert_accessible` closed, open, filtered, empty and invalid, in light and dark mode, with exactly one `role="combobox"` in the tree per Select; and the control's text, the search field's placeholder, option text, active indicator and focus ring meet contrast on their surfaces — run: `bundle exec rake test:system TEST=test/system/select_accessibility_test.rb`
 - `registerControllers` registers `ui--select` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 - `kind: :listbox` is no longer a recognised Dropdown kind: passing it falls back to `:menu` rather than raising — run: `bundle exec rake test TEST=test/components/ui/dropdown_component_test.rb`
 
@@ -640,7 +659,7 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 
 ### human-gate
 
-- Jonathan uses both modes with a keyboard and with VoiceOver in Safari, and judges that each reads as a select a person would trust with a form.
+- Jonathan uses both modes with a keyboard and with VoiceOver in Safari, and judges that each reads as a select a person would trust with a form — and, in search mode, that the trigger reads as the value and the popup field as a search: the two jobs the 2026-09-18 amendment separated.
 - Jonathan loads the Select docs page on a throttled connection and accepts the native-to-enhanced swap as invisible, or rules otherwise.
 - Jonathan uses select-only mode on a phone and confirms or overturns the coarse-pointer decision in `open-questions.md`.
 
@@ -658,6 +677,9 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - **Virtualised listboxes** — large collections use remote search.
 - **Inline autocomplete** (`aria-autocomplete="both"`) — APG's third variant; no
   consuming need.
+- **The APG editable combobox as a search mode** — the 2026-09-13 shape, replaced on
+  2026-09-18 by the trigger-and-popup-search shape (§ Behavior, item 17). Not kept as an
+  alternative: one search UI, not two.
 - **RTL arrow mapping** — deferred with `ui--roving-focus`'s own deferral.
 - **Customizable `<select>`** — a future replacement for select-only mode to watch once
   it is cross-browser; see § Assumptions.

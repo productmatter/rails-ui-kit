@@ -110,9 +110,11 @@ other controls do.
 the swap still shifts nothing at any step (ui-select § Behavior, item 26). Its popup already
 takes the control's width through `ui--anchor`'s width matching, and keeps doing that at
 every step, while its option rows keep one height at every step: a list's density is its
-own, and at 32px a row already clears the target-size floor. Search mode's show-options
-button spans the control's height at every step — today it hardcodes `h-9`, which a `sm`
-or `lg` Select would visibly break.
+own, and at 32px a row already clears the target-size floor. Search mode's trigger is the
+control itself, so it takes the step by construction (ui-select § Behavior, item 17,
+amended 2026-09-18 — the show-options button this paragraph once sized is gone with the
+shape that needed it), and the popup's search field keeps one height at every step, like
+the option rows.
 
 **How the tokens reach a class.** Each height is a complete literal class that uses
 Tailwind's arbitrary-value syntax, such as `h-(--control-height-sm)`. It is never a
@@ -208,7 +210,8 @@ any of them.
 - `app/components/ui/input_component.rb`, `app/components/ui/textarea_component.rb`:
   gain the `size:` axis.
 - `app/components/ui/select_component.rb` and `select_component.html.erb`:
-  `CONTROL_CLASSES` and the show-options button.
+  `CONTROL_CLASSES`. (The show-options button this line once named left on 2026-09-18,
+  ui-select § Behavior, item 17.)
 - `app/javascript/rails_ui_kit/controllers/anchor_controller.js`: the width matching
   the popup relies on. Not modified.
 - `test/system/select_enhancement_test.rb`: SE2 (same box) and SE3 (popup width), the
@@ -222,7 +225,7 @@ any of them.
 ### agent-loopable
 
 - At its defaults every control, and Button at each of `sm`, `default`, `lg` and `icon`, renders v0.3.0's box: rendered height, `min-height`, padding, font size, line height and the icon Button's width. This holds under the default `--spacing` and a `:root` `--spacing` retune, and passed against the unmodified components before they changed (§ Business rules, rule 3) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/unchanged/"`
-- At each step, Button, Input, the native Select, the select-only and search comboboxes, and search mode's show-options button all measure the step token's height. Textarea's `min-height` is that height plus seven spacing units. The enhanced popup matches the control's width. Redefining `--control-height-sm` on `:root`, and separately on a wrapping element, moves every `sm` control inside it together (§ Behavior) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/align/"`
+- At each step, Button, Input, the native Select, the select-only combobox and search mode's trigger button all measure the step token's height, and search mode's popup search field keeps one height across steps. Textarea's `min-height` is that height plus seven spacing units. The enhanced popup matches the control's width. Redefining `--control-height-sm` on `:root`, and separately on a wrapping element, moves every `sm` control inside it together (§ Behavior) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/align/"`
 - At the kit's default tokens, every control at `sm`, an icon-only `sm` Button and the `icon` Button each measure at least 24×24 CSS px in the browser (§ Business rules, rule 5) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/target/"`
 - No height literal is left in the four controls. For each of them at each step, a caller's `class:` height (`h-12`, or `min-h-24` on Textarea, or `size-12` on `icon`) is the only height class rendered. An unknown `size:` raises (§ Business rules, rules 2, 4 and 6) — run: `! grep -nE '(^|[^-])\b(h-8|h-9|h-10|size-9|min-h-16)\b' app/components/ui/button_component.rb app/components/ui/input_component.rb app/components/ui/textarea_component.rb app/components/ui/select_component.rb app/components/ui/select_component.html.erb && bundle exec rake test TEST=test/components/ui/control_size_test.rb`
 
