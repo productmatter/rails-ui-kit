@@ -153,7 +153,8 @@ mode.
      returns HTML-safe markup. Descriptions and icons need a collection source: an
      array, hash or enum source that passes them raises `ArgumentError`, because
      there's no object to call them on.
-   - **`size:`** is `sm`, `default` or `lg` (item 17).
+   - **`size:`** is any step of the shared control scale — `xs`, `sm`, `default`, `lg`
+     or `xl` (item 17).
    - **`variant:`** is `:list`, the default, or `:card` (items 15 and 16).
    - **`required_message:`** is the per-instance override for the one chrome string
      (item 14).
@@ -432,13 +433,14 @@ mode.
       and the mark went white-on-white. The mark names the system colour itself
       (`forced-colors:text-[CanvasText]`), and the acceptance check measures it.
 17. **`size:` is accepted and changes nothing on Choices** (decided 2026-09-18, Jonathan
-    Simmons). `sm`, `default` and `lg` are validated, so a form can hand every control
+    Simmons). Every step of the shared control scale is validated — `xs`, `sm`,
+    `default`, `lg` and `xl` — so a form can hand every control
     one size, and an unknown size fails the way an unknown variant does; but no choice
     reads a `--control-height*` token. Every choice, row or card, is sized by its
     content, with a flat 24px floor (WCAG 2.5.8). This item first said a step set each
     choice's minimum block size, so a one-line card would match the Input or Select
     beside it. That never held: a card's padding and one line of text come to 46px,
-    taller than the largest step's 40px, so no step's minimum ever bound and the three
+    taller than the largest step of the day, 40px, so no step's minimum ever bound and the
     sizes rendered identically (`status.md` § Corrections). Alignment is by content, not
     size: a one-line list row centers its indicator on the 24px floor (`items-center`);
     a row with a description, and every card row regardless, stays top-aligned

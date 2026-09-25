@@ -528,8 +528,8 @@ module CodeExamplesHelper
 
   def example_theming_control_heights
     <<~'CSS'
-      :root       { --control-height-sm: 1.75rem; --control-height: 2rem; --control-height-lg: 2.25rem; }
-      .data-table { --control-height: 1.75rem; }
+      :root       { --control-height: 2.25rem; --control-height-lg: 2.5rem; } /* a roomier app: 36 and 40px */
+      .data-table { --control-height: 1.75rem; }                              /* a denser table: 28px */
     CSS
   end
 
