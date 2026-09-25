@@ -46,6 +46,12 @@ in § Behavior, items 27–31 and deliberately unbuilt. The corrections are reco
 - Closed both open questions on their defaults: select-only mode keeps the platform picker on
   a coarse pointer (`native_on_touch:`, default true), and the `ui_select` Capybara helper
   ships in `lib/rails_ui_kit/test_helpers.rb` with its own system test and a docs section.
+- Added `native:` (default false) on 2026-09-25, specced in § Behavior, item 2: the select is
+  the control at every pointer, in the same box the coarse-pointer path renders, with no
+  combobox, popup, clear button or controller around it — the consumer-surface case the first
+  open question only answered for touch. Covered by five unit tests in
+  `select_component_test.rb` (every size step, the absent apparatus, the options and the form
+  attributes) and SE12/SE13 in `select_enhancement_test.rb`, on both pointers.
 - Removed Dropdown's `kind: :listbox` (§ Behavior, item 36), on the decider's confirmation
   that no live consumer renders it: dropped from `KINDS`, with the fallback to `:menu` for
   an unrecognised kind pinned in `dropdown_component_test.rb`. Landed in the same release as

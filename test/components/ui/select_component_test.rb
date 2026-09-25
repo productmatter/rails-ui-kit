@@ -432,6 +432,86 @@ module Ui
       assert_empty classes.grep(pattern), message
     end
 
+    # Native mode (§ Behavior, item 2): the platform's own control at every pointer, in the kit's
+    # box, with nothing rendered that could take its place.
+
+    def native_select(**)
+      render_inline(Ui::SelectComponent.new(native: true, **))
+      page.find('select', visible: :all)
+    end
+
+    test 'native: true renders the select alone -- no combobox, no popup, no controller' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, native: true,
+                                            prompt: 'Pick one'))
+
+      assert_selector "select[name='post[state]']", visible: :all
+      assert_no_selector '[role=combobox]', visible: :all
+      assert_no_selector '[role=listbox]', visible: :all
+      assert_no_selector '#post_state-popup', visible: :all
+      assert_no_selector 'button', visible: :all
+      assert_no_selector "[data-ui--select-target='clear']", visible: :all
+
+      root = page.find("[data-slot='select']", visible: :all)
+      assert_nil root['data-controller'], 'native mode wired a controller with nothing to enhance'
+      assert_nil root['data-action']
+      assert_nil root['data-ui--select-search-value']
+      assert_nil page.find('select', visible: :all)['data-ui--select-target']
+      # The box is still the kit's box: the chevron is the half of it the select can't draw itself.
+      assert_selector "[data-slot='select'] svg[aria-hidden='true']", visible: :all
+    end
+
+    test 'the select wears the whole box at every size, and none of the classes that uncover a control' do
+      Ui::Select::Box::SIZES.each do |size, step|
+        classes = native_select(name: 'post[state]', options: STATES, size: size)['class'].split
+        expected = [Ui::Select::Box::CONTROL, step, Ui::Select::Box::NATIVE].join(' ').split
+
+        expected.each { |utility| assert_includes classes, utility, "size: #{size.inspect} lost #{utility}" }
+        assert_empty classes.grep(/group-data-\[enhanced=true\]/),
+                     "size: #{size.inspect} hid the select behind a control that is never rendered"
+        assert_not_includes classes, 'pointer-coarse:hidden'
+      end
+    end
+
+    test 'native mode renders the options Rails renders, groups, selection and all' do
+      groups = { 'Europe' => [%w[France fr]], 'Asia' => [%w[Japan jp]] }
+      expected = view.select(:trip, :country, view.grouped_options_for_select(groups, 'jp'))
+
+      assert_equal helper_options(expected),
+                   component_options(name: 'trip[country]', options: groups, selected: 'jp', native: true)
+      assert_selector 'optgroup[label=Europe] option[value=fr]', text: 'France', visible: :all
+      assert_selector 'option[value=jp][selected]', text: 'Japan', visible: :all
+
+      assert_equal helper_options(view.collection_select(:post, :author_id, authors, :id, :name, disabled: [3])),
+                   component_options(name: 'post[author_id]', collection: authors, value_method: :id,
+                                     text_method: :name, disabled_values: [3], native: true)
+    end
+
+    test 'native mode is still the form control, named the way the enhanced one is' do
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, native: true,
+                                            required: true, disabled: true, form: 'other-form',
+                                            aria: { describedby: 'state-error', invalid: true, label: 'State' }))
+
+      select = page.find('select', visible: :all)
+      assert_equal 'post_state', select['id']
+      assert_equal 'post[state]', select['name']
+      assert select.matches_css?('[required][disabled]')
+      assert_equal 'other-form', select['form']
+      assert select.matches_css?("[aria-describedby='state-error'][aria-invalid='true'][aria-label='State']")
+    end
+
+    test 'native: settles the pointer question by itself, and reads a form value like every other boolean' do
+      # native_on_touch: governs the coarse-pointer half of a swap that never happens here, and
+      # search mode has nothing to put a search field in.
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, native: true,
+                                            search: true, native_on_touch: false))
+      assert_no_selector '#post_state-trigger', visible: :all
+      assert_no_selector '#post_state-search', visible: :all
+      assert_not_includes page.find('select', visible: :all)['class'].split, 'pointer-coarse:hidden'
+
+      render_inline(Ui::SelectComponent.new(name: 'post[state]', options: STATES, native: 'false'))
+      assert_selector '#post_state-combobox', visible: :all
+    end
+
     test 'exactly one option source is required' do
       assert_raises(ArgumentError) { Ui::SelectComponent.new(name: 'a') }
       assert_raises(ArgumentError) { Ui::SelectComponent.new(name: 'a', options: STATES, enum: :status, model: TestOrder) }

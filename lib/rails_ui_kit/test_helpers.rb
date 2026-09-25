@@ -136,8 +136,9 @@ module RailsUiKit
             "the Select for #{from.inspect} has no option #{text.inspect}. It offers: #{offered.inspect}"
     end
 
-    # Not enhanced -- JavaScript never ran, or select-only mode kept the platform picker on a
-    # touch screen. The native select is the control, and it is chosen the way any select is.
+    # Not enhanced -- JavaScript never ran, select-only mode kept the platform picker on a touch
+    # screen, or the Select was rendered `native: true` and has no other control at any pointer.
+    # The native select is the control, and it is chosen the way any select is.
     def ui_select_natively(root, text, from)
       native = ui_select_native(root)
       option = native.all('option', text: text, exact_text: true, visible: :all, minimum: 0).first

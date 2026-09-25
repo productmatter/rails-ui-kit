@@ -24,7 +24,7 @@ themes the kit by redefining variables, not by overriding components.
 | Component | Stimulus identifier | What it's for |
 |---|---|---|
 | `Ui::FieldComponent` | `ui--field` | A label, control, description and error as one accessible unit, built from `model:` and `attribute:` — name, id, label, value, errors and `required` all derived ([forms guide](docs/guides/forms.md)) |
-| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field |
+| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field; `native: true` keeps the platform's own picker at every pointer |
 | `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card` |
 | `Ui::InputComponent` | — | A native `<input>` on the tokens, sized from the shared control scale; in a form, render it through Field |
 | `Ui::TextareaComponent` | — | A native `<textarea>`, styled and sized like Input |
@@ -298,6 +298,21 @@ showed as checked. A hidden input can be removed or edited in the browser, and a
 re-enabled: the server still decides what a user may change. Filter or merge locked values there
 — the forms guide shows how.
 
+**A consumer surface can keep the platform's own control.** A Select enhances into a combobox on a
+fine pointer and keeps the phone's native picker on a coarse one. `native: true` settles that for
+every pointer at once: the browser's own `<select>`, in the kit's box and under the same chevron,
+with no combobox, no popup and no Stimulus controller.
+
+```erb
+<% field.with_control(Ui::SelectComponent, options: currencies, native: true, size: :"2xl") %>
+```
+
+It's what a public form — a quote, a checkout, anything a stranger fills in on their own phone —
+usually wants, and it's the way to have it without hand-rolling a `<select>` in the kit's classes.
+Everything else is unchanged: the same option sources, `prompt:` and `selected:`, the same `size:`
+scale, the same Field integration, and the value still lives in the select. `native_on_touch:`
+decides the same question for coarse pointers only, so it has nothing left to say here.
+
 ### A modal
 
 `Ui::ModalComponent` opens as soon as it's rendered. Put one inline in a page and it opens on every
@@ -477,9 +492,9 @@ ui_select "Invited", from: "Status"
 ```
 
 It drives the control the way a person does — press it, then choose the option — in either mode,
-and falls back to the native select where the component wasn't enhanced (JavaScript off, or the
-platform picker on a phone). The value still lives in the native `<select>`, so assert it the way
-you always did.
+and falls back to the native select where the component wasn't enhanced (JavaScript off, the
+platform picker on a phone, or `native: true`). The value still lives in the native `<select>`, so
+assert it the way you always did.
 
 ## Overriding
 

@@ -102,9 +102,10 @@ module Ui
       SEARCH_FIELD = 'h-full w-full min-w-0 bg-transparent text-sm outline-none ' \
                      'placeholder:text-muted-foreground'
 
-      def initialize(size:, search:, native_on_touch:)
+      def initialize(size:, search:, native:, native_on_touch:)
         @size = size
         @search = search
+        @native = native
         @native_on_touch = native_on_touch
       end
 
@@ -123,7 +124,18 @@ module Ui
 
       # The native select, in the same box, which gives it up only where the control is showing.
       def native_select(caller_class)
-        [CONTROL, SIZES[@size], NATIVE, @native_on_touch ? TOUCH_ENHANCED : ENHANCED, caller_class]
+        [CONTROL, SIZES[@size], NATIVE, enhancement, caller_class]
+      end
+
+      private
+
+      # What the select wears so another element can take its place. Nothing in native mode: no
+      # control is rendered there, so the select is the visible one at every pointer and keeps the
+      # box outright (ui-select § Behavior, item 2).
+      def enhancement
+        return if @native
+
+        @native_on_touch ? TOUCH_ENHANCED : ENHANCED
       end
     end
   end

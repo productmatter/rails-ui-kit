@@ -10,6 +10,13 @@ module Ui
   # with a decorative chevron — which is also the state a page keeps when JavaScript never
   # arrives (§ Behavior, item 2). Once `ui--select` connects, the combobox takes over the
   # same box and the select is laid over it, transparent and out of the accessibility tree.
+  #
+  # `native: true` stops there for good: the select stays the control at every pointer, in the
+  # kit's box, opening whatever picker the device brings — what a consumer surface usually wants,
+  # and the one way to ask for it without hand-rolling a `<select>` in the kit's classes. Nothing
+  # is enhanced, so there is no combobox, no popup and no controller, and `native_on_touch:`,
+  # which only ever governed the coarse-pointer half of the same question, has nothing left to
+  # decide.
   class SelectComponent < Ui::Base
     include Ui::Chrome
 
@@ -33,16 +40,16 @@ module Ui
     attr_reader :name, :control_id, :option_set, :size, :primitives, :box
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
-                   search: false, native_on_touch: true, size: :default,
+                   search: false, native: false, native_on_touch: true, size: :default,
                    search_placeholder: nil, no_results: nil, results: nil, clear_label: nil,
                    **attributes)
       assign_chrome(search_placeholder, no_results, results, clear_label)
       @name = name.to_s
       @control_id = (id || derive_control_id).to_s
       assign_flags(required: required, disabled: disabled, autofocus: autofocus, search: search,
-                   native_on_touch: native_on_touch)
+                   native: native, native_on_touch: native_on_touch)
       @size = resolve_size(size)
-      @box = Ui::Select::Box.new(size: @size, search: @search, native_on_touch: primitives.native_on_touch?)
+      @box = Ui::Select::Box.new(size: @size, search: @search, **primitives.pointer_flags)
       @form = form
       @option_set = Ui::OptionSet.new(component: self.class.name, **option_keywords(attributes))
       super(**attributes)
@@ -87,12 +94,13 @@ module Ui
                    css: 'size-4 shrink-0 text-muted-foreground')
     end
 
-    # What makes this a form control, plus the aria the control carries wherever it renders.
+    # What makes this a form control, plus the aria the control carries wherever it renders. The
+    # target is for the controller that mirrors it; native mode has none, so it says nothing.
     def select_attributes
       {
         id: control_id, name: name, required: @required, disabled: @disabled,
         form: @form, autofocus: @autofocus, class: select_class, aria: @control_aria.presence,
-        data: { 'ui--select-target': 'select' }
+        data: ({ 'ui--select-target': 'select' } unless primitives.native?)
       }.compact
     end
 
@@ -144,9 +152,9 @@ module Ui
 
     # The count is only known once the filter runs, so the forms and the locale that produced
     # them go over and ui--select picks one (ui-localization § Behavior, items 6 and 7). Only
-    # search mode announces a count.
+    # search mode announces a count, and only where there is a controller to announce it.
     def results_data
-      return {} unless search?
+      return {} if primitives.native? || !search?
 
       { 'ui--select-results-value': results.to_json, 'ui--select-locale-value': chrome_locale }
     end
@@ -215,12 +223,12 @@ module Ui
 
     # Every boolean a caller may spell as a string, and the primitive configuration two of them
     # decide (ui-select § Behavior, items 2 and 17).
-    def assign_flags(required:, disabled:, autofocus:, search:, native_on_touch:)
+    def assign_flags(required:, disabled:, autofocus:, search:, native:, native_on_touch:)
       @required = boolean_attribute?(required)
       @disabled = boolean_attribute?(disabled)
       @autofocus = boolean_attribute?(autofocus)
       @search = boolean_attribute?(search)
-      @primitives = Ui::Select::Primitives.new(search: @search,
+      @primitives = Ui::Select::Primitives.new(search: @search, native: boolean_attribute?(native),
                                                native_on_touch: boolean_attribute?(native_on_touch))
     end
 

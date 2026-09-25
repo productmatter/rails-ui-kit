@@ -116,6 +116,33 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     assert_operator laid_out_rect("##{ID}-combobox")['height'], :>, 0
   end
 
+  # native: true answers the same question as native_on_touch:, for every pointer at once: the
+  # platform's control, on the desktop too, with nothing rendered that could take it over.
+  test 'SE12: native: true leaves the select as the control on a fine pointer' do
+    id = 'consumer_currency'
+    root = "[data-slot='select']:has(select##{id})"
+
+    assert page.evaluate_script("matchMedia('(pointer: fine)').matches"), 'the page is not on a fine pointer'
+    assert_selector "select##{id}:not([tabindex]):not([aria-hidden])", visible: true
+    assert_operator laid_out_rect("select##{id}")['height'], :>, 0, 'the native select is not rendered to use'
+    assert_equal '1', style_of("select##{id}", 'opacity'), 'the native select is transparent'
+    assert ax_node("select##{id}"), 'the native select is not in the accessibility tree'
+
+    assert_no_selector "##{id}-combobox", visible: :all
+    assert_no_selector "##{id}-popup", visible: :all
+    assert_no_selector "#{root}[data-enhanced]", visible: :all
+    assert_nil find(root, visible: :all)['data-controller'], 'native mode wired a controller'
+  end
+
+  test 'SE13: it stays the native select on a coarse pointer, where the platform picker is the point' do
+    id = 'consumer_currency'
+    emulate_touch
+
+    assert_selector "select##{id}:not([tabindex]):not([aria-hidden])", visible: true
+    assert_operator laid_out_rect("select##{id}")['height'], :>, 0
+    assert_no_selector "##{id}-combobox", visible: :all
+  end
+
   # Checked again after each way a Select can be re-rendered, because that -- not page load -- is
   # where a stale copy left behind would show up as two elements sharing an id.
   test 'SE10: every id on the page is unique, on load and after a re-render' do
