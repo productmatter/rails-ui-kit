@@ -153,8 +153,8 @@ mode.
      returns HTML-safe markup. Descriptions and icons need a collection source: an
      array, hash or enum source that passes them raises `ArgumentError`, because
      there's no object to call them on.
-   - **`size:`** is any step of the shared control scale — `xs`, `sm`, `default`, `lg`
-     or `xl` (item 17).
+   - **`size:`** is any step of the shared control scale — `xs`, `sm`, `default`, `lg`,
+     `xl` or `"2xl"` (item 17).
    - **`variant:`** is `:list`, the default, or `:card` (items 15 and 16).
    - **`required_message:`** is the per-instance override for the one chrome string
      (item 14).
@@ -434,7 +434,7 @@ mode.
       (`forced-colors:text-[CanvasText]`), and the acceptance check measures it.
 17. **`size:` is accepted and changes nothing on Choices** (decided 2026-09-18, Jonathan
     Simmons). Every step of the shared control scale is validated — `xs`, `sm`,
-    `default`, `lg` and `xl` — so a form can hand every control
+    `default`, `lg`, `xl` and, from 2026-09-25, `"2xl"` — so a form can hand every control
     one size, and an unknown size fails the way an unknown variant does; but no choice
     reads a `--control-height*` token. Every choice, row or card, is sized by its
     content, with a flat 24px floor (WCAG 2.5.8). This item first said a step set each

@@ -9,10 +9,10 @@ module Ui
     class Variant
       # `size:` is accepted, so a form can hand every control one size, and changes nothing here
       # (ui-choices § Behavior, item 17, decided 2026-09-18). A list row is sized by its content,
-      # and a card's padding plus one line of text was always taller than the largest step's
-      # minimum, so a step never bound and the option never did anything visible. The keys are
+      # and a card's padding plus one line of text was always taller than the largest step of the
+      # day, so a step never bound and the option never did anything visible. The keys are
       # what validates the keyword; they carry no classes.
-      SIZES = { xs: nil, sm: nil, default: nil, lg: nil, xl: nil }.freeze
+      SIZES = { xs: nil, sm: nil, default: nil, lg: nil, xl: nil, '2xl': nil }.freeze
 
       # Every choice, row or card: WCAG 2.5.8's target size. A one-line list row centers its
       # indicator on it; a row with a description stays top-aligned so the indicator sits on the

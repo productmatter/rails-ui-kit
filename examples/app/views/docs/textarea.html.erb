@@ -49,6 +49,10 @@
     <%= render(Ui::LabelComponent.new(for: "xl-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :xl" } %>
     <%= render Ui::TextareaComponent.new(size: :xl, id: "xl-textarea", name: "xl", placeholder: "Add a note…") %>
   </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "2xl-textarea", class: "text-xs font-mono text-muted-foreground")) { "size: :\"2xl\"" } %>
+    <%= render Ui::TextareaComponent.new(size: :"2xl", id: "2xl-textarea", name: "2xl", placeholder: "Add a note…") %>
+  </div>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
   Tab to the "focused" field to see the focus ring — the same offset-outline idiom as Button and Input.
@@ -78,7 +82,7 @@
     </thead>
     <tbody class="divide-y divide-border">
       <% [
-        ["size",         "Symbol",  ":default", "One of :xs, :sm, :default, :lg, :xl. A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line."],
+        ["size",         "Symbol",  ":default", 'One of :xs, :sm, :default, :lg, :xl, :"2xl". A textarea grows with its content, so the size sets its minimum height: one control height at that size plus room for a line. :"2xl" is the touch step, with 16px text.'],
         ["class",        "String",  "nil", "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil", "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil", "Forwarded straight to the native disabled attribute."],

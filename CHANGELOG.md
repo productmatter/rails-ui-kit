@@ -4,6 +4,9 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- **A sixth control size, `2xl`, at 48px, for touch.** Button, Input, Select and Textarea's shared `size:` scale ran `xs`, `sm`, `default`, `lg`, `xl`, 24 to 40px, and no step on it sets its text above 14px. iOS Safari zooms the page whenever a field under 16px takes focus, so a consumer-facing form built on this scale either fought that zoom or left the scale behind. `size: :"2xl"` is the step for those surfaces: 48px tall, 16px text, and the `px-3.5` and `rounded-md` the top of the scale already has, on every control alike. Choices accepts the name too, as it accepts the other five, and reads no token. **Nothing changes at the sizes you already use:** the five existing steps keep their heights, padding, text sizes and radii, and no default moved. One token is new, `--control-height-2xl`, `calc(var(--spacing) * 12)`; a host that already defines that name keeps its own value, the way it does for the other five, and it is honoured wherever it is set, including on one part of a page.
+
 ## [0.4.0] - 2026-09-18
 
 ### Fixed

@@ -5,10 +5,13 @@ require_relative 'select_helpers'
 
 # The kit's control metrics, measured in the browser (docs/specs/ui-control-sizing).
 #
+# Amended 2026-09-25: a sixth step, 2xl, 48px with 16px text, for touch surfaces. It is the only
+# step whose font size differs from the one below it, so the recipe below is what proves it.
+#
 # Amended 2026-09-18: the scale gained two steps, xs and xl, and every step now carries inline
 # padding, text size and radius as well as its height token, so the old "every control renders
 # v0.3.0 unchanged" check (proved against the unmodified pre-scale components) is retired with
-# the promise it proved. In its place, the box tests below pin each of the five steps' boxes to
+# the promise it proved. In its place, the box tests below pin each of the six steps' boxes to
 # § Behavior's table -- a decision recorded once, in docs/specs/ui-control-sizing § Business
 # rules, rule 3, never a side effect from here on.
 #
@@ -31,7 +34,7 @@ class ControlSizingTest < ApplicationSystemTestCase
   # The shared scale: one height per step, whatever the control (§ Behavior). A textarea grows
   # with its content, so its step sets a minimum instead -- one control height plus a constant
   # one-line allowance of seven spacing units.
-  HEIGHT_UNITS = { xs: 6, sm: 7, default: 8, lg: 9, xl: 10 }.freeze
+  HEIGHT_UNITS = { xs: 6, sm: 7, default: 8, lg: 9, xl: 10, '2xl': 12 }.freeze
   STEPS = HEIGHT_UNITS.transform_values { |units| units * UNIT }.freeze
   TEXTAREA_ALLOWANCE_UNITS = 7
   TEXTAREA_ALLOWANCE = TEXTAREA_ALLOWANCE_UNITS * UNIT
@@ -44,7 +47,8 @@ class ControlSizingTest < ApplicationSystemTestCase
     sm: { padding: 2.0, font_size: 14.0, line_height: 20.0, radius: 4.0 },
     default: { padding: 2.5, font_size: 14.0, line_height: 20.0, radius: 6.0 },
     lg: { padding: 3.0, font_size: 14.0, line_height: 20.0, radius: 6.0 },
-    xl: { padding: 3.5, font_size: 14.0, line_height: 20.0, radius: 6.0 }
+    xl: { padding: 3.5, font_size: 14.0, line_height: 20.0, radius: 6.0 },
+    '2xl': { padding: 3.5, font_size: 16.0, line_height: 24.0, radius: 6.0 }
   }.freeze
 
   # Select's shared box (the native select, the combobox and search mode's trigger) widens its
@@ -127,7 +131,7 @@ class ControlSizingTest < ApplicationSystemTestCase
     open_all_sized_controls
     disable_transitions
 
-    # Five independent tokens rather than a derived scale, so a redefinition is honoured
+    # Independent tokens rather than a derived scale, so a redefinition is honoured
     # wherever it lands -- including below :root, where a derived scale would move `default`
     # and leave `sm` behind (docs/specs/ui-control-sizing, § Behavior).
     set_token(:root, '--control-height-sm', '3rem')

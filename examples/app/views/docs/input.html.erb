@@ -7,7 +7,7 @@
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::FieldComponent.new(model: @user, attribute: :email)</code> gives you this input already named, valued,
     labelled and marked invalid from the record, so you rarely render it yourself. On its own it is a native
     <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;input&gt;</code> drawn from the design tokens, with one option of its own, <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code>, the control
-    scale it shares with Button, Select and Textarea, from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xs</code> to <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xl</code>.
+    scale it shares with Button, Select and Textarea, from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:xs</code> to <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">:"2xl"</code>.
   </p>
 </div>
 
@@ -54,6 +54,10 @@
     <%= render(Ui::LabelComponent.new(for: "xl-input", class: "text-xs font-mono text-muted-foreground")) { "size: :xl" } %>
     <%= render Ui::InputComponent.new(size: :xl, id: "xl-input", name: "xl", value: "Jane Cooper") %>
   </div>
+  <div class="grid gap-2 w-56">
+    <%= render(Ui::LabelComponent.new(for: "2xl-input", class: "text-xs font-mono text-muted-foreground")) { "size: :\"2xl\"" } %>
+    <%= render Ui::InputComponent.new(size: :"2xl", id: "2xl-input", name: "2xl", value: "Jane Cooper") %>
+  </div>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
   Tab to the "focused" field to see the focus ring — an offset outline drawn from the
@@ -85,7 +89,7 @@
     <tbody class="divide-y divide-border">
       <% [
         ["type",         "String",  '"text"', "The input type attribute — text, email, password, and so on."],
-        ["size",         "Symbol",  ":default", "One of :xs, :sm, :default, :lg, :xl — the sizes Button's scale has, so controls at one size line up. The kit's scale, not the HTML size attribute."],
+        ["size",         "Symbol",  ":default", 'One of :xs, :sm, :default, :lg, :xl, :"2xl" — the sizes Button\'s scale has, so controls at one size line up. :"2xl" is the touch step: 48px and 16px text, so iOS Safari doesn\'t zoom the page on focus. The kit\'s scale, not the HTML size attribute.'],
         ["class",        "String",  "nil",    "Merged over the default classes with tailwind_merge — the caller always wins."],
         ["aria-invalid", "Boolean", "nil",    "Set aria: { invalid: true } to draw the invalid boundary and focus colour. In a Field, the Field sets it from the errors."],
         ["disabled",     "Boolean", "nil",    "Forwarded straight to the native disabled attribute."],

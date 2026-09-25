@@ -19,6 +19,7 @@ module Ui
       default: 'h-(--control-height)',
       lg: 'h-(--control-height-lg)',
       xl: 'h-(--control-height-xl)',
+      '2xl': 'h-(--control-height-2xl)',
       icon: 'size-(--control-height)'
     }.freeze
 

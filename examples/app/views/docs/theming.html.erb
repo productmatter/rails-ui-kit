@@ -89,12 +89,13 @@
   Button, Input, Select, Textarea and Choices share one <code class="<%= code %>">size:</code> scale, and every control at a step
   reads its height from the same token: <code class="<%= code %>">--control-height-xs</code>,
   <code class="<%= code %>">--control-height-sm</code>, <code class="<%= code %>">--control-height</code>,
-  <code class="<%= code %>">--control-height-lg</code> and <code class="<%= code %>">--control-height-xl</code> — 24, 28, 32,
-  36 and 40px at Tailwind's default spacing. Redefine them to make an app denser or roomier, on the whole page or on one part
-  of it, and a row of controls at one step still lines up.
+  <code class="<%= code %>">--control-height-lg</code>, <code class="<%= code %>">--control-height-xl</code> and
+  <code class="<%= code %>">--control-height-2xl</code> — 24, 28, 32, 36, 40 and 48px at Tailwind's default spacing. Redefine
+  them to make an app denser or roomier, on the whole page or on one part of it, and a row of controls at one step still lines
+  up. The last one is the touch step, the one size whose text is 16px.
 </p>
 <div id="theming-heights-preview" class="rounded-lg border border-border bg-background grid gap-4 p-8 mb-4">
-  <% %i[xs sm default lg xl].each do |step| %>
+  <% %i[xs sm default lg xl 2xl].each do |step| %>
     <div class="flex flex-wrap items-center gap-3">
       <span class="w-16 text-xs font-mono text-muted-foreground"><%= step %></span>
       <%= render Ui::InputComponent.new(size: step, name: "theming_#{step}", placeholder: "Search", class: "w-48",

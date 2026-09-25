@@ -23,7 +23,8 @@ module Ui
         sm: 'h-(--control-height-sm) ps-2 pe-7 text-sm rounded-sm',
         default: 'h-(--control-height) ps-2.5 pe-7.5 text-sm rounded-md',
         lg: 'h-(--control-height-lg) ps-3 pe-8 text-sm rounded-md',
-        xl: 'h-(--control-height-xl) ps-3.5 pe-8.5 text-sm rounded-md'
+        xl: 'h-(--control-height-xl) ps-3.5 pe-8.5 text-sm rounded-md',
+        '2xl': 'h-(--control-height-2xl) ps-3.5 pe-8.5 text-base rounded-md'
       }.freeze
 
       # The visible control's box, shared by the select and whatever takes over from it. Filled in
