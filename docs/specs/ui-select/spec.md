@@ -116,6 +116,24 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
    `ui--select` keeps a `matchMedia` listener for the one thing CSS can't do: the select
    is `aria-hidden="true"` with `tabindex="-1"` where the combobox is showing, and
    neither where the native select is, so a screen reader meets exactly one control.
+
+   **Added 2026-09-25: `native:`, default `false`.** `native: true` answers the same
+   question for every pointer at once — the select is the control, everywhere. The
+   component renders it exactly as the coarse-pointer path does, `Ui::Select::Box`'s
+   `CONTROL` + the step's box + `NATIVE` and the chevron beside it, and renders nothing
+   else: no combobox, no trigger, no clear button, no popup or listbox, and no controller
+   on the root, so no `data-enhanced` ever appears and the enhancement classes
+   (`ENHANCED`, `TOUCH_ENHANCED`, `TOUCH_CONTROL`) are not on it. Everything else in this
+   spec is unchanged, because everything else is the select's: the option sources, item
+   10's blank and prompt rules, item 12's attribute routing, the `size:` scale and Field
+   integration (item 26). This is for a consumer surface — a public quote form, a
+   checkout — where the platform's picker beats anything the kit draws, and it is the
+   supported way to have one: a host that instead hand-rolls a `<select>` in these
+   classes owns a copy of the kit's box that the kit will not keep current. `native:`
+   subsumes both other mode flags: `native_on_touch:` decides the coarse-pointer half of
+   a swap that no longer happens, and `search:` has no popup to put a field in (item 13),
+   so neither renders anything. `ui_select` drives it as the native select it is, through
+   the fallback it already had for the unenhanced page.
 3. **User choice writes the select, then announces it.** Choosing an option sets
    `select.value`, then dispatches bubbling `input` and `change` events from the select.
    `ui--select` re-renders from its own `change` listener, so there is exactly one
@@ -218,7 +236,7 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       press while the popup is open closes the popup first, as any press outside it
       does. A disabled Select shows none, and neither does select-only mode where the
       native picker is showing on a coarse pointer (item 2): that picker lists the prompt
-      itself.
+      itself. A `native:` Select shows none at any pointer, for that same reason.
     - **What the build settled, where this item was silent** (2026-09-18). Which
       empty-valued option is the prompt, when `include_blank:` is given too: the first,
       because Rails renders the prompt before the blank, and the button only exists when
@@ -254,7 +272,9 @@ keypresses in `test/system/`, and it passes `assert_accessible` in light and dar
       to.
 13. **Search is a flag.** `search: false` is the default. `search: true` switches the
     control to its searchable shape (item 17): a trigger button whose popup carries the
-    search field. Nothing else in the API changes between modes.
+    search field. Nothing else in the API changes between modes. `native: true` (item 2)
+    is the flag that removes the control instead of reshaping it, and it wins: there is
+    no popup to put a search field in, and no native picker searches.
 14. **No form-builder method. That decision is deferred, not planned.** There is no
     `form.ui_select`, and no scope is queued to add one. A form builder would be the
     first time the kit extends a Rails API rather than supplying a component. The
@@ -715,6 +735,8 @@ ui-positioning-and-navigation and ui-presence-and-overlay-stack.
 - A Turbo Stream replacing a Select, a frame swap containing one, and a morphing refresh that changes its selection each leave a working Select showing the select's current value — run: `bundle exec rake test:system TEST=test/system/select_turbo_stream_test.rb`
 - Both modes pass `assert_accessible` closed, open, filtered, empty and invalid, in light and dark mode, with exactly one `role="combobox"` in the tree per Select; and the control's text, the search field's placeholder, option text, active indicator and focus ring meet contrast on their surfaces — run: `bundle exec rake test:system TEST=test/system/select_accessibility_test.rb`
 - With `prompt:`, the listbox never lists the prompt in either mode; after a choice a clear button shows, and pressing it selects the native select's prompt option, dispatches `input` and `change`, shows the prompt, moves focus to the control and leaves a `required` form blocked; rendered with a value, or with `include_blank:` and no prompt, or disabled, no clear button shows; the button is a sibling of the control, at least 24px square, named "Clear" and the field's name, and the page passes `assert_accessible` with it showing, in light and dark mode — run: `bundle exec rake test:system TEST=test/system/select_clear_test.rb`
+- `native: true` renders the select in the kit's whole box at every step of the size scale and none of the classes that uncover a control, with no combobox, listbox, popup, clear button or controller anywhere, while the options, groups, selection, form attributes and naming aria stay what they are without it — run: `bundle exec rake test TEST=test/components/ui/select_component_test.rb`
+- On a fine pointer the docs page's `native:` Select is a visible, opaque native `<select>` in the accessibility tree, with no combobox, no popup, no `data-enhanced` and no controller on its root, and a coarse pointer changes none of it — run: `bundle exec rake test:system TEST=test/system/select_enhancement_test.rb`
 - `registerControllers` registers `ui--select` — run: `bundle exec rake test TEST=test/javascript/register_controllers_test.rb`
 - `kind: :listbox` is no longer a recognised Dropdown kind: passing it falls back to `:menu` rather than raising — run: `bundle exec rake test TEST=test/components/ui/dropdown_component_test.rb`
 

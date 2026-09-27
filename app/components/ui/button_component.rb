@@ -43,6 +43,7 @@ module Ui
           default: 'h-(--control-height) px-2.5 text-sm rounded-md has-[>svg]:px-2',
           lg: 'h-(--control-height-lg) px-3 text-sm rounded-md has-[>svg]:px-2.5',
           xl: 'h-(--control-height-xl) gap-2.5 px-3.5 text-sm rounded-md has-[>svg]:px-3',
+          '2xl': 'h-(--control-height-2xl) gap-2.5 px-3.5 text-base rounded-md has-[>svg]:px-3',
           icon: 'size-(--control-height) rounded-md text-sm'
         }
       },

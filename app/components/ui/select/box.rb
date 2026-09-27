@@ -23,7 +23,8 @@ module Ui
         sm: 'h-(--control-height-sm) ps-2 pe-7 text-sm rounded-sm',
         default: 'h-(--control-height) ps-2.5 pe-7.5 text-sm rounded-md',
         lg: 'h-(--control-height-lg) ps-3 pe-8 text-sm rounded-md',
-        xl: 'h-(--control-height-xl) ps-3.5 pe-8.5 text-sm rounded-md'
+        xl: 'h-(--control-height-xl) ps-3.5 pe-8.5 text-sm rounded-md',
+        '2xl': 'h-(--control-height-2xl) ps-3.5 pe-8.5 text-base rounded-md'
       }.freeze
 
       # The visible control's box, shared by the select and whatever takes over from it. Filled in
@@ -101,9 +102,10 @@ module Ui
       SEARCH_FIELD = 'h-full w-full min-w-0 bg-transparent text-sm outline-none ' \
                      'placeholder:text-muted-foreground'
 
-      def initialize(size:, search:, native_on_touch:)
+      def initialize(size:, search:, native:, native_on_touch:)
         @size = size
         @search = search
+        @native = native
         @native_on_touch = native_on_touch
       end
 
@@ -122,7 +124,18 @@ module Ui
 
       # The native select, in the same box, which gives it up only where the control is showing.
       def native_select(caller_class)
-        [CONTROL, SIZES[@size], NATIVE, @native_on_touch ? TOUCH_ENHANCED : ENHANCED, caller_class]
+        [CONTROL, SIZES[@size], NATIVE, enhancement, caller_class]
+      end
+
+      private
+
+      # What the select wears so another element can take its place. Nothing in native mode: no
+      # control is rendered there, so the select is the visible one at every pointer and keeps the
+      # box outright (ui-select § Behavior, item 2).
+      def enhancement
+        return if @native
+
+        @native_on_touch ? TOUCH_ENHANCED : ENHANCED
       end
     end
   end

@@ -64,7 +64,7 @@ were three steps, and every control rendered as v0.3.0 did at its defaults — s
 
 ## Behavior
 
-**The tokens.** Five kit extensions, per § Business rules of ui-design-tokens, rule 5.
+**The tokens.** Six kit extensions, per § Business rules of ui-design-tokens, rule 5.
 They are defined once, under `:root` only (like `--radius`), in the kit's
 `theme.rails-ui-kit` layer, and listed with the other kit extensions in `engine.css`:
 
@@ -75,19 +75,26 @@ They are defined once, under `:root` only (like `--radius`), in the kit's
 | `--control-height` | `calc(var(--spacing) * 8)` | 32px |
 | `--control-height-lg` | `calc(var(--spacing) * 9)` | 36px |
 | `--control-height-xl` | `calc(var(--spacing) * 10)` | 40px |
+| `--control-height-2xl` | `calc(var(--spacing) * 12)` | 48px |
 
-These are the heights of Tailwind's own five button sizes (decided 2026-09-18, Jonathan
-Simmons). Until then there were three tokens, at 32, 36 and 40px: the top three of the
+The first five are the heights of Tailwind's own five button sizes (decided 2026-09-18,
+Jonathan Simmons). Until then there were three tokens, at 32, 36 and 40px: the top three of the
 same ramp, adjacent steps 4px apart with nothing else changing on Input or Select, so
 the sizes were nearly indistinguishable. The three existing names keep their names and
 each drops one step: `--control-height-sm` from 32px to 28px, `--control-height` from
 36px to 32px, `--control-height-lg` from 40px to 36px. A host that set any of them keeps
 its own value.
 
-The defaults are written in `--spacing` units, the lengths `h-6` to `h-10` compute to,
+`--control-height-2xl` was added 2026-09-25, above the ramp, for touch and consumer
+surfaces, where the text has to be 16px — iOS Safari zooms the page whenever a field
+under 16px takes focus — and 48px is the height that text needs. Adding it moved nothing
+below it: the five steps already in use keep their values, and a host that already
+defines the name keeps its own.
+
+The defaults are written in `--spacing` units, the lengths `h-6` to `h-12` compute to,
 so a host that has retuned Tailwind's `--spacing` on `:root` sees the scale move with
-it. The five tokens are independent plain values and
-none is derived from another. A host sets one, two or all three, on `:root` or on any
+it. The six tokens are independent plain values and
+none is derived from another. A host sets one, some or all of them, on `:root` or on any
 subtree, and each is honoured wherever it lands. A derived scale, such as `-sm` defined
 as `calc(var(--control-height) - …)` on `:root`, would compute once at the root. A
 subtree that redefined `--control-height` would then move `default` and leave `sm` and
@@ -97,12 +104,12 @@ External shadcn themes don't define these names, so they keep the kit's default,
 theme loses nothing by not knowing about them.
 
 **The scale, per component.** Every control takes `size:` with `:xs`, `:sm`,
-`:default`, `:lg` and `:xl`, with `:default` as the default; the middle step keeps the
-name it has always had, so no call site breaks. A step is more than a height. Tailwind's
-ramp reads as five sizes because inline padding grows with it and the smallest drops its
-text a size, and a control that changed height alone looked like the same control three
-times. So at each step every control takes the same height token, the same inline
-padding, the same text size and the same corner radius:
+`:default`, `:lg`, `:xl` and `:"2xl"`, with `:default` as the default; the middle step of
+the original five keeps the name it has always had, so no call site breaks. A step is
+more than a height. Tailwind's ramp reads as five sizes because inline padding grows with
+it and the smallest drops its text a size, and a control that changed height alone looked
+like the same control three times. So at each step every control takes the same height
+token, the same inline padding, the same text size and the same corner radius:
 
 | Step | Height token | Height | Inline padding | Text | Radius |
 |---|---|---|---|---|---|
@@ -111,6 +118,7 @@ padding, the same text size and the same corner radius:
 | `default` | `--control-height` | 32px | `px-2.5` | `text-sm` | `rounded-md` |
 | `lg` | `--control-height-lg` | 36px | `px-3` | `text-sm` | `rounded-md` |
 | `xl` | `--control-height-xl` | 40px | `px-3.5` | `text-sm` | `rounded-md` |
+| `2xl` | `--control-height-2xl` | 48px | `px-3.5` | `text-base` | `rounded-md` |
 
 Only the height is a token (rule 1); the rest are classes on the component, per step.
 Button, Input and Select's one shared box (native select, combobox and search trigger)
@@ -120,12 +128,12 @@ step's token plus `--spacing` × 7. A Button whose first child is an icon tighte
 inline padding by half a step at every size, as its `has-[>svg]:` forms did before, and
 keeps its per-step `gap`. `icon` stays a single square that follows the default step, so
 an icon Button beside a default Input still lines up when a host retunes. Choices
-accepts the same five names and reads none of the tokens (ui-choices § Behavior,
+accepts the same six names and reads none of the tokens (ui-choices § Behavior,
 item 17).
 
 **Textarea** grows with its content, so its steps set a *minimum*, not a height. That
 minimum is one control height at the step plus a fixed seven spacing units: 52, 56, 60,
-64 and 68px from `xs` to `xl`. (At the old default it was `--spacing` × 16, 64px, which
+64, 68 and 76px from `xs` to `2xl`. (At the old default it was `--spacing` × 16, 64px, which
 is now the `lg` step's.) The textarea keeps the same one-line allowance above a
 single-line control at every step, and it tracks a host's density retune the way the
 other controls do.
@@ -158,7 +166,7 @@ any of them.
    the host's to retune. The kit adds no padding or font-size token, and no single
    density multiplier (§ Assumptions records why each lost).
 2. **One scale, one vocabulary.** Button, Input, Select and Textarea take the same
-   `size:` values, `:xs`, `:sm`, `:default`, `:lg` and `:xl`. At a given step every one
+   `size:` values, `:xs`, `:sm`, `:default`, `:lg`, `:xl` and `:"2xl"`. At a given step every one
    of them reads the same token and takes the same inline padding, text size and radius. An unknown value fails the way every variant axis does
    (`Ui::Base::UnknownVariantError` in development and test). Button's `icon` size is
    kept, bound to the default step.
@@ -171,7 +179,7 @@ any of them.
    kit's defaults sees: the default control is 32px where it was 36px, `sm` is 28px
    where it was 32px, `lg` is 36px where it was 40px, and Button's inline padding at
    each step is Tailwind's rather than v0.3.0's. The v0.3.0 check is retired with the
-   promise it proved. In its place a browser check pins each of the five steps' boxes
+   promise it proved. In its place a browser check pins each of the six steps' boxes
    to the table in § Behavior — rendered height, `min-height`, inline padding, font
    size, line height, radius and, for `icon`, width — under Tailwind's default
    `--spacing` and under a `--spacing` redefined on `:root`. From here a change to any
@@ -256,18 +264,18 @@ any of them.
 
 ### agent-loopable
 
-- Each of the five steps renders the box in § Behavior's table on Button, Input, the native Select, the select-only combobox, search mode's trigger and Textarea: rendered height or `min-height`, inline padding, font size, line height and radius, and the `icon` Button's width at the default step. This holds under the default `--spacing` and a `:root` `--spacing` retune (§ Business rules, rule 3) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/box/"`
+- Each of the six steps renders the box in § Behavior's table on Button, Input, the native Select, the select-only combobox, search mode's trigger and Textarea: rendered height or `min-height`, inline padding, font size, line height and radius, and the `icon` Button's width at the default step. This holds under the default `--spacing` and a `:root` `--spacing` retune (§ Business rules, rule 3) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/box/"`
 - At each step, Button, Input, the native Select, the select-only combobox and search mode's trigger button all measure the step token's height, and search mode's popup search row keeps one height, the option rows' 32px, across steps. Textarea's `min-height` is that height plus seven spacing units. The enhanced popup matches the control's width. Redefining `--control-height-sm` on `:root`, and separately on a wrapping element, moves every `sm` control inside it together (§ Behavior) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/align/"`
 - At the kit's default tokens, every control at `xs`, an icon-only `xs` Button and the `icon` Button each measure at least 24×24 CSS px in the browser (§ Business rules, rule 5) — run: `bundle exec rake test:system TEST=test/system/control_sizing_test.rb TESTOPTS="--name=/target/"`
 - No height literal is left in the four controls. For each of them at each step, a caller's `class:` height (`h-12`, or `min-h-24` on Textarea, or `size-12` on `icon`) is the only height class rendered. An unknown `size:` raises (§ Business rules, rules 2, 4 and 6) — run: `! grep -nE '(^|[^-])\b(h-6|h-7|h-8|h-9|h-10|size-8|size-9|min-h-16)\b' app/components/ui/button_component.rb app/components/ui/input_component.rb app/components/ui/textarea_component.rb app/components/ui/select_component.rb app/components/ui/select_component.html.erb && bundle exec rake test TEST=test/components/ui/control_size_test.rb`
 
 ### judgeable
 
-- The token surface is exactly the five `--control-height*` names. Each is documented in `engine.css`'s kit-extension block with a default that an external shadcn theme leaves in place. No padding, font-size or density token has crept in. Every class that consumes a token uses arbitrary-value syntax, never a named theme key. Judged against § Business rules, rules 1 and 4, and ui-design-tokens rule 5.
+- The token surface is exactly the six `--control-height*` names. Each is documented in `engine.css`'s kit-extension block with a default that an external shadcn theme leaves in place. No padding, font-size or density token has crept in. Every class that consumes a token uses arbitrary-value syntax, never a named theme key. Judged against § Business rules, rules 1 and 4, and ui-design-tokens rule 5.
 
 ### human-gate
 
-- Jonathan looks at the five steps side by side on the Button, Input, Select and Textarea docs pages and judges that each reads as a different size at a glance, which is what the 2026-09-18 amendment was for; accepts the more compact 32px default on a real form; and looks at a mixed row of controls at each step, once at the kit's tokens and once with a denser host value, and accepts the scale.
+- Jonathan looks at the six steps side by side on the Button, Input, Select and Textarea docs pages and judges that each reads as a different size at a glance, which is what the 2026-09-18 amendment was for; accepts the more compact 32px default on a real form; and looks at a mixed row of controls at each step, once at the kit's tokens and once with a denser host value, and accepts the scale.
 
 ## Out of scope / deferred
 

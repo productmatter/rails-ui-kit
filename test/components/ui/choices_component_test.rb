@@ -246,7 +246,7 @@ module Ui
     end
 
     test 'CH18 a list row takes the 24px floor at every size step, never the control-height token' do
-      %i[sm default lg].each do |step|
+      Ui::Choices::Variant::SIZES.each_key do |step|
         render_choices(name: 'a[b]', options: %w[x y], size: step)
 
         label_classes.each do |classes|
@@ -257,7 +257,7 @@ module Ui
     end
 
     test 'CH19 size: is accepted on a card and changes nothing, as on a list' do
-      rendered = %i[sm default lg].map do |step|
+      rendered = Ui::Choices::Variant::SIZES.each_key.map do |step|
         render_choices(name: 'a[b]', options: %w[x y], variant: :card, size: step)
         label_classes
       end

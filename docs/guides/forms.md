@@ -87,7 +87,8 @@ your locale files is the label, falling back to "Invited". The value submitted i
 which is what the enum writer takes. The Field gives the Select the record's status as `selected:`.
 
 The Select is a real `<select>` that submits, with a combobox over it; with JavaScript off, the
-native select is what the user gets.
+native select is what the user gets. On a consumer-facing form, `native: true` makes that native
+select the control everywhere — the kit's box around the platform's own picker, nothing enhanced.
 
 ## 4. A `belongs_to`
 

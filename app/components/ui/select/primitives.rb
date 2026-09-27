@@ -13,13 +13,23 @@ module Ui
       # Where ui--overlay puts focus when search mode's popup opens.
       SEARCH_FIELD = "[data-ui--select-target='search']"
 
-      def initialize(search:, native_on_touch:)
+      def initialize(search:, native:, native_on_touch:)
         @search = search
+        @native = native
         @native_on_touch = native_on_touch
+      end
+
+      # Native mode composes none of them: the platform's own control is the whole widget, so
+      # there is no popup to place, no list to navigate and no controller to connect
+      # (ui-select § Behavior, item 2).
+      def native?
+        @native
       end
 
       # The primitives Select composes.
       def root_data
+        return {} if native?
+
         {
           controller: 'ui--select ui--overlay ui--anchor ui--roving-focus',
           action: 'change->ui--select#render ui--roving-focus:activated->ui--select#markActive ' \
@@ -33,6 +43,13 @@ module Ui
       # because no native picker searches.
       def native_on_touch?
         !search? && @native_on_touch
+      end
+
+      # Both answers to item 2's pointer question, which is all Ui::Select::Box needs to know to
+      # dress the select: whether anything replaces it at all, and whether a coarse pointer hands
+      # it back. The component holds neither -- it asks here and passes them on.
+      def pointer_flags
+        { native: native?, native_on_touch: native_on_touch? }
       end
 
       # The control is pressable in both modes now — a div in one, a button in the other — so the

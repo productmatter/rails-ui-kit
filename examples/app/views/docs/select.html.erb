@@ -14,6 +14,7 @@
   }
   plans = [["Starter", "starter"], ["Growth", "growth"], ["Enterprise", "enterprise"]]
   roles = [["Owner", "owner"], ["Admin", "admin"], ["Member", "member"]]
+  currencies = [["US dollar", "usd"], ["Euro", "eur"], ["Pound sterling", "gbp"], ["Japanese yen", "jpy"]]
 %>
 <div class="mb-8">
   <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Forms</p>
@@ -121,6 +122,36 @@
       <% field.with_label { "Region" } %>
       <% field.with_control(Ui::SelectComponent, options: regions, search: true, prompt: "Search regions") %>
       <% field.with_description { "Grouped: a group with nothing left in it is hidden." } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Native everywhere %>
+<h2 class="text-base font-semibold mb-3">The platform's own control</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">native: true</code> keeps the browser's own
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code> as the control at every pointer, in
+  the kit's box and with the same chevron — the phone behaviour, on the desktop too. Nothing is enhanced: no combobox,
+  no popup, no Stimulus controller, no search. It is what a consumer surface usually wants — a public quote form, a
+  checkout — where the picker the device already knows beats anything we could draw, and it is the way to have that
+  without hand-rolling a <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code> in the kit's
+  classes. <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">native_on_touch:</code> decides the same
+  question for coarse pointers only, so it has nothing left to say here.
+</p>
+<div id="select-native-preview" class="rounded-lg border border-border bg-background flex flex-wrap items-start gap-6 p-12 mb-8">
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "consumer[currency]") do |field| %>
+      <% field.with_label { "Currency" } %>
+      <% field.with_control(Ui::SelectComponent, options: currencies, prompt: "Choose a currency", native: true) %>
+      <% field.with_description { "The platform picker, on every device. A prompt is the way back to nothing chosen — there is no clear button, because the picker lists the prompt itself." } %>
+    <% end %>
+  </div>
+
+  <div class="w-64">
+    <%= render Ui::FieldComponent.new(name: "consumer[region]") do |field| %>
+      <% field.with_label { "Delivery region" } %>
+      <% field.with_control(Ui::SelectComponent, options: regions, selected: "fr", native: true, size: :"2xl") %>
+      <% field.with_description { "Grouped options, at size: :\"2xl\" — 48px and 16px text, so a phone never zooms on focus." } %>
     <% end %>
   </div>
 </div>
@@ -326,9 +357,10 @@
         ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
         ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
         ["search",             "Boolean",       "false",    "Switches the control to a trigger button whose popup carries a search field."],
-        ["size",               "Symbol",        ":default", "One of :xs, :sm, :default, :lg, :xl — the heights Button's sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control's width, and its search row and option rows keep one height at every step."],
+        ["size",               "Symbol",        ":default", 'One of :xs, :sm, :default, :lg, :xl, :"2xl" — the heights Button\'s sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control\'s width, and its search row and option rows keep one height at every step. :"2xl" is the touch step, with 16px text.'],
         ["clear_label",        "String",        "nil",      "The clear button's own word, in front of the field's name. Falls through to rails_ui_kit.select.clear_label."],
-        ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances."],
+        ["native",            "Boolean",       "false",    "Keeps the native select as the control at every pointer: the kit's box around the platform's own picker, with no combobox, popup or controller. For a consumer surface that wants the control the device already knows. It answers the pointer question on its own, so native_on_touch: has nothing left to decide."],
+        ["native_on_touch",    "Boolean",       "true",     "On a coarse pointer, select-only mode stays the native select and its platform picker. Search mode always enhances. Redundant when native: is set."],
         ["class",              "String",        "nil",      "Merged over the control's default classes -- the caller always wins."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
@@ -423,7 +455,7 @@
   <li>The native <code class="text-xs bg-muted px-1 py-0.5 rounded">&lt;select&gt;</code> is the only value store. To change the value from your own code, set <code class="text-xs bg-muted px-1 py-0.5 rounded">select.value</code> and dispatch <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> — there is no second API.</li>
   <li>Choosing an option dispatches <code class="text-xs bg-muted px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> from the select, so <code class="text-xs bg-muted px-1 py-0.5 rounded">ui--form-change</code>, an auto-submitting form and your own <code class="text-xs bg-muted px-1 py-0.5 rounded">change-&gt;</code> action all keep working. Choosing what is already chosen dispatches nothing.</li>
   <li>Options change by re-rendering the component — a Turbo Stream <code class="text-xs bg-muted px-1 py-0.5 rounded">replace</code> of its root or of the Field around it. A stream that patches individual options is unsupported: it would desync the select from the listbox.</li>
-  <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere.</li>
+  <li>On a phone, select-only mode stays the native select, so you get the platform picker. Pass <code class="text-xs bg-muted px-1 py-0.5 rounded">native_on_touch: false</code> to enhance everywhere, or <code class="text-xs bg-muted px-1 py-0.5 rounded">native: true</code> to enhance nowhere and keep the platform's control at every pointer.</li>
   <li>In search mode the trigger shows the value and the field in the popup takes the query — two jobs, two elements. The trigger is a button, so a pointer, a keyboard and a touch screen reader all open the list the same way.</li>
   <li>What is typed is a query, never the value: the field is empty on every open and discarded on every close, and the trigger goes on showing whatever the native select holds. So Escape has nothing to restore, and walking away with Tab commits nothing. Clearing a choice is what <code class="text-xs bg-muted px-1 py-0.5 rounded">include_blank:</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">prompt:</code> are for.</li>
   <li>A <code class="text-xs bg-muted px-1 py-0.5 rounded">prompt:</code> is a placeholder: the native select keeps it, the list never offers it, and the clear button is the only way back to it — no key on the control clears. Pressing it is a choice like any other, so <code class="text-xs bg-muted px-1 py-0.5 rounded">input</code> and <code class="text-xs bg-muted px-1 py-0.5 rounded">change</code> dispatch and focus moves to the control.</li>

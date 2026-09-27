@@ -29,7 +29,8 @@ module Ui
           sm: 'min-h-[calc(var(--control-height-sm)+var(--spacing)*7)] px-2 text-sm rounded-sm',
           default: 'min-h-[calc(var(--control-height)+var(--spacing)*7)] px-2.5 text-sm rounded-md',
           lg: 'min-h-[calc(var(--control-height-lg)+var(--spacing)*7)] px-3 text-sm rounded-md',
-          xl: 'min-h-[calc(var(--control-height-xl)+var(--spacing)*7)] px-3.5 text-sm rounded-md'
+          xl: 'min-h-[calc(var(--control-height-xl)+var(--spacing)*7)] px-3.5 text-sm rounded-md',
+          '2xl': 'min-h-[calc(var(--control-height-2xl)+var(--spacing)*7)] px-3.5 text-base rounded-md'
         }
       },
       defaults: { size: :default }

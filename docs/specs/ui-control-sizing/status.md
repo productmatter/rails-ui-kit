@@ -16,6 +16,12 @@ the judgeable review and Jonathan's human gate, which is
 rewritten to match: the five steps read as five sizes, and the 32px default is accepted
 on a real form.
 
+Amended again 2026-09-25: the scale gained a sixth step, `2xl`, 48px with 16px text, for
+touch and consumer surfaces — the one size iOS Safari doesn't zoom the page to reach.
+Purely additive: one new token (`--control-height-2xl`), one row per component, Choices
+accepting the name, and the six-step versions of the box and token tests. No existing
+step moved, so rule 3's "the defaults moved once, on purpose" is untouched.
+
 ## Done
 
 - Shaped the scope from the orchestrator's directive against the live repository:

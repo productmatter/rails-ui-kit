@@ -32,7 +32,8 @@ module Ui
           sm: 'h-(--control-height-sm) px-2 text-sm rounded-sm',
           default: 'h-(--control-height) px-2.5 text-sm rounded-md',
           lg: 'h-(--control-height-lg) px-3 text-sm rounded-md',
-          xl: 'h-(--control-height-xl) px-3.5 text-sm rounded-md'
+          xl: 'h-(--control-height-xl) px-3.5 text-sm rounded-md',
+          '2xl': 'h-(--control-height-2xl) px-3.5 text-base rounded-md'
         }
       },
       defaults: { size: :default }
