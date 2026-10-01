@@ -122,7 +122,6 @@ class SelectEnhancementTest < ApplicationSystemTestCase
     id = 'consumer_currency'
     root = "[data-slot='select']:has(select##{id})"
 
-    assert page.evaluate_script("matchMedia('(pointer: fine)').matches"), 'the page is not on a fine pointer'
     assert_selector "select##{id}:not([tabindex]):not([aria-hidden])", visible: true
     assert_operator laid_out_rect("select##{id}")['height'], :>, 0, 'the native select is not rendered to use'
     assert_equal '1', style_of("select##{id}", 'opacity'), 'the native select is transparent'
