@@ -84,7 +84,7 @@ repository, pinned to a release tag, so an upgrade is a change you make on purpo
 1. **Add it to your Gemfile:**
 
    ```ruby
-   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.4.0"
+   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.5.0"
    ```
 
    Use `branch: "main"` instead of `tag:` only if you want unreleased work.
@@ -178,7 +178,7 @@ The Gemfile entry above uses SSH, which works on developer machines with an SSH 
 CI and headless environments use HTTPS with a token:
 
 ```ruby
-gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.4.0"
+gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.5.0"
 ```
 
 Bundler honours `BUNDLE_GITHUB__COM=<token>:x-oauth-basic` (set in CI) to authenticate HTTPS git
@@ -196,7 +196,7 @@ the Ruby and JavaScript halves match:
 
 ```bash
 npm install @floating-ui/dom @hotwired/stimulus
-npm install github:productmatter/rails-ui-kit#v0.3.0
+npm install github:productmatter/rails-ui-kit#v0.5.0
 ```
 
 Then in your JS entrypoint (e.g. `app/javascript/application.js`):
