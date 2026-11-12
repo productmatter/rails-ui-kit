@@ -59,6 +59,18 @@ module Ui
       assert page.find("input[type='hidden']", visible: :all).disabled?
     end
 
+    test 'a multiple select renders the clear button, chosen or not, and the control leaves it room' do
+      [{}, { selected: %w[cyber] }, { search: true }].each do |options|
+        render_multiple(empty_label: 'Any round', **options)
+
+        button = page.find('#post_tags-clear', visible: :all)
+        assert_equal 'click->ui--select#clear', button['data-action'], options.inspect
+        assert button[:hidden], 'server-rendered visible: ui--select shows it once something is chosen'
+        control = page.find("[data-ui--overlay-target='trigger']", visible: :all)
+        assert_includes control[:class], 'group-data-[clearable=true]/select:pe-14', options.inspect
+      end
+    end
+
     test 'a required multiple select gets no blank option, as Rails gives it none' do
       render_multiple(required: true)
 

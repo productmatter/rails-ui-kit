@@ -20,9 +20,10 @@ module Ui
   #
   # `multiple: true` is a <select multiple> under the same box: the listbox becomes
   # `aria-multiselectable`, a pick toggles an option and leaves the popup open, and the control
-  # shows the chosen labels joined, or `empty_label:` while nothing is chosen. It posts `name[]`,
-  # with Rails' own hidden empty value first, so un-choosing everything clears the attribute rather
-  # than leaving it untouched -- what `select(..., multiple: true)` renders.
+  # shows the chosen labels joined, or `empty_label:` while nothing is chosen -- which the clear
+  # button goes back to. It posts `name[]`, with Rails' own hidden empty value first, so
+  # un-choosing everything clears the attribute rather than leaving it untouched -- what
+  # `select(..., multiple: true)` renders.
   class SelectComponent < Ui::Base
     include Ui::Chrome
     include Ui::Select::Glyphs
@@ -86,9 +87,10 @@ module Ui
     end
 
     # A clear button only where the native select holds the prompt option: that is the one
-    # placeholder state there is to return to (§ Behavior, item 10, and Ui::OptionSet).
+    # placeholder state there is to return to (§ Behavior, item 10, and Ui::OptionSet). A multiple
+    # select always has one, because choosing nothing -- `empty_label:` -- is always a state it holds.
     def clear?
-      option_set.prompt_option?
+      multiple? || option_set.prompt_option?
     end
 
     # What makes this a form control, plus the aria the control carries wherever it renders. The

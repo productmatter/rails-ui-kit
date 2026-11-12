@@ -20,8 +20,9 @@ import { Controller } from "@hotwired/stimulus"
 // what a host's change-> action, ui--form-change and an auto-submitting form already listen for.
 //
 // `multiple` is a <select multiple>. A pick toggles one option and leaves the popup open, Space and
-// Enter toggle the active option, and the control shows the chosen labels joined, or the empty
-// label. Every branch for it is marked; a single Select never takes one.
+// Enter toggle the active option, typing makes the first match active, the clear button un-chooses
+// everything, and the control shows the chosen labels joined, or the empty label. Every branch for
+// it is marked; a single Select never takes one.
 const OPTION = '[role="option"]'
 const GROUP = '[role="group"]'
 // Keys that edit the search field rather than move the list. They hand visual focus back to the
@@ -266,7 +267,7 @@ export default class extends Controller {
   renderClear() {
     if (!this.hasClearTarget) return
 
-    const show = !this.selectTarget.disabled && this.selectTarget.value !== "" && !!this.promptOption
+    const show = !this.selectTarget.disabled && this.clearable
     this.clearTarget.hidden = !show
     this.element.dataset.clearable = show ? "true" : "false"
   }
@@ -281,18 +282,33 @@ export default class extends Controller {
     return first && first.value === "" ? first : null
   }
 
+  // Whether there is a placeholder to go back to: a prompt with something else chosen, or --
+  // multiple -- anything chosen at all, since choosing nothing is the empty label's state.
+  get clearable() {
+    if (this.multipleValue) return this.selectTarget.selectedOptions.length > 0
+
+    return this.selectTarget.value !== "" && !!this.promptOption
+  }
+
   // The only way to clear, and a user choice like any other (§ Behavior, item 3): it selects the
   // prompt option, which dispatches input and change, shows the prompt, and puts a required select
   // back to blocking its form. The button goes with the state that justified it, so focus moves to
   // the control rather than being left on an element that is no longer there.
+  //
+  // Multiple: every chosen option is un-chosen at once, with one input and one change, and the
+  // control shows the empty label again.
   clear(event) {
     event.preventDefault()
-    const prompt = this.promptOption
-    if (!prompt || this.selectTarget.disabled) return
+    if (!this.clearable || this.selectTarget.disabled) return
 
     // A press anywhere outside the popup closes it, and this button is outside it.
     this.close()
-    this.commitOption(prompt.value, prompt.index)
+    if (this.multipleValue) {
+      Array.from(this.selectTarget.selectedOptions).forEach((option) => { option.selected = false })
+      this.dispatchChange()
+    } else {
+      this.commitOption(this.promptOption.value, this.promptOption.index)
+    }
     this.control.focus()
   }
 
@@ -359,8 +375,7 @@ export default class extends Controller {
     if (!native || native.disabled) return
 
     native.selected = !native.selected
-    this.selectTarget.dispatchEvent(new Event("input", { bubbles: true }))
-    this.selectTarget.dispatchEvent(new Event("change", { bubbles: true }))
+    this.dispatchChange()
   }
 
   // Writing the select is what choosing means; the events are what make it observable, and
@@ -373,6 +388,11 @@ export default class extends Controller {
 
     if (index === null) this.selectTarget.value = value
     else this.selectTarget.selectedIndex = index
+    this.dispatchChange()
+  }
+
+  // What a native select dispatches when the user changes it.
+  dispatchChange() {
     this.selectTarget.dispatchEvent(new Event("input", { bubbles: true }))
     this.selectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
@@ -446,6 +466,10 @@ export default class extends Controller {
     // After a filter, visual focus is back on the search field: the list under it has changed,
     // so an option that was active is no longer the one the user was looking at.
     this.clearActive()
+    // Multiple: the first match is made active instead, so Enter toggles what the query found and
+    // the list stays open for the next query -- otherwise every pick would need an ArrowDown first.
+    // A single Select keeps Enter-with-nothing-active as "close without choosing" (§ Behavior, item 17).
+    if (this.multipleValue && query !== "" && matches.length > 0) this.rovingFocus?.focusFirst()
     this.announce(matches.length)
   }
 

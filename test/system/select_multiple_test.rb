@@ -142,6 +142,74 @@ class SelectMultipleTest < ApplicationSystemTestCase
     assert_popup(ROUNDS, 'closed')
   end
 
+  test 'SM11: typing makes the first match active, so Enter toggles it without an arrow' do
+    # Keys only: a pointer left resting where the list re-renders would activate the option that
+    # moves under it, which is hover doing its job and not what this test measures.
+    page.driver.browser.action.move_to_location(5, 5).perform
+    focus_trigger(CITIES)
+    press(:enter)
+    assert_popup(CITIES, 'open')
+    press('i')
+    press('s')
+    assert_active(CITIES, TIMEZONES.index('Lisbon'), 'the first match is not active after typing')
+
+    press(:enter)
+    assert_popup(CITIES, 'open')
+    assert_equal %w[lisbon london paris], chosen(CITIES)
+
+    press(:enter)
+    assert_equal %w[london paris], chosen(CITIES), 'Enter again did not un-choose the first match'
+
+    # An empty query matches everything, and leaves nothing active, as the open list does.
+    press(:backspace)
+    press(:backspace)
+    assert_no_active(CITIES, 'an emptied query left an option active')
+  end
+
+  test 'SM12: the clear button appears once something is chosen and goes back to the empty label' do
+    assert page.has_no_css?("##{ROUNDS}-clear"), 'a clear button shows with nothing chosen'
+    control(ROUNDS).click
+    find("##{ROUNDS}-option-0").click
+    find("##{ROUNDS}-option-3").click
+    assert page.has_css?("##{ROUNDS}-clear"), 'no clear button once something is chosen'
+
+    record_events(ROUNDS)
+    find("##{ROUNDS}-clear").click
+
+    assert_popup(ROUNDS, 'closed')
+    assert_empty chosen(ROUNDS)
+    assert_equal 'Any round', control_label(ROUNDS)
+    assert_selector "##{ROUNDS}-combobox [data-placeholder='true']"
+    assert_equal [''], posted('filter[rounds][]')
+    assert_equal ['input::true', 'change::true'], recorded_events, 'clearing is not one input and one change'
+    assert_focus_on_combobox(ROUNDS)
+    assert page.has_no_css?("##{ROUNDS}-clear"), 'the clear button outlived what it cleared'
+  end
+
+  test 'SM13: Tab from the control reaches the clear button, and Enter and Space press it' do
+    %i[enter space].each do |key|
+      ui_select 'Growth', from: 'Offer on'
+      focus_combobox(ROUNDS)
+      press(:tab)
+      assert_equal "#{ROUNDS}-clear", focused_id, "Tab from the control did not reach the clear button (#{key})"
+
+      press(key)
+      assert_empty chosen(ROUNDS), "#{key} did not press the clear button"
+      assert_focus_on_combobox(ROUNDS)
+    end
+  end
+
+  test 'SM14: the search Select clears the same way, and ui_select with the empty label presses it' do
+    ui_select 'Anywhere', from: 'Cities'
+
+    assert_empty chosen(CITIES)
+    assert_equal 'Anywhere', control_label(CITIES)
+    assert_focus_on_trigger(CITIES)
+
+    ui_select 'Anywhere', from: 'Cities'
+    assert_empty chosen(CITIES), 'ui_select with the empty label and nothing chosen did something'
+  end
+
   test 'SM10: the open multiple Select passes axe' do
     control(ROUNDS).click
     find("##{ROUNDS}-option-0").click

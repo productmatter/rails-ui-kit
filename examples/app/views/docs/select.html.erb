@@ -133,8 +133,10 @@
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select multiple&gt;</code> under the same box. A pick
   toggles one option and the list stays open for the next; Space and Enter toggle the active option, and Escape closes.
   The control shows the chosen labels joined, or <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">empty_label:</code>
-  while nothing is chosen. It posts <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name[]</code>, with
-  Rails' hidden empty value first, so un-choosing everything clears the attribute. Search works the same way.
+  while nothing is chosen; the clear button beside the chevron goes back to it in one press. It posts
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">name[]</code>, with Rails' hidden empty value first, so
+  un-choosing everything clears the attribute. Search works the same way, and the first match is active, so Enter
+  toggles it.
 </p>
 <div id="select-multiple-preview" class="rounded-lg border border-border bg-background p-12 mb-8">
   <form id="select-multiple-form" class="flex flex-wrap items-start gap-6">
@@ -152,7 +154,7 @@
         <% field.with_label { "Cities" } %>
         <% field.with_control(Ui::SelectComponent, multiple: true, search: true, options: timezones,
                               selected: %w[london paris], empty_label: "Anywhere") %>
-        <% field.with_description { "Searchable: Enter toggles the active city." } %>
+        <% field.with_description { "Searchable: type, then Enter toggles the first match." } %>
       <% end %>
     </div>
   </form>
@@ -413,7 +415,7 @@
         ["required",           "Boolean",       "false",    "Sets required on the select, and adds the empty option Rails adds when there is no blank or prompt."],
         ["disabled",           "Boolean",       "false",    "Disables the select, so it never submits, and takes the combobox out of the tab order."],
         ["search",             "Boolean",       "false",    "Switches the control to a trigger button whose popup carries a search field."],
-        ["multiple",           "Boolean",       "false",    "A <select multiple>: a pick toggles and the list stays open, Space and Enter toggle, Escape closes. Posts name[] with Rails' hidden empty value first. Refuses prompt:, include_blank: and native: true."],
+        ["multiple",           "Boolean",       "false",    "A <select multiple>: a pick toggles and the list stays open, Space and Enter toggle, Escape closes; a clear button returns to empty_label. Posts name[] with Rails' hidden empty value first. Refuses prompt:, include_blank: and native: true."],
         ["empty_label",        "String",        "nil",      "With multiple:, what the control shows while nothing is chosen, e.g. \"Any round\". Your content, so you translate it."],
         ["include_hidden",     "Boolean",       "true",     "With multiple:, Rails' hidden empty value, so un-choosing everything clears the attribute. Disabled with the select."],
         ["size",               "Symbol",        ":default", 'One of :xs, :sm, :default, :lg, :xl, :"2xl" — the heights Button\'s sizes have. The control and the select under it both take it, in either mode; the popup keeps matching the control\'s width, and its search row and option rows keep one height at every step. :"2xl" is the touch step, with 16px text.'],
