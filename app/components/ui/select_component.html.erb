@@ -1,4 +1,8 @@
-<%= tag.div(**root_attributes(data: primitives.root_data.merge(results_data))) do %>
+<%= tag.div(**root_attributes(data: primitives.root_data.merge(results_data, multiple_select.root_data))) do %>
+  <%# A multiple select's hidden empty value, first so a chosen value is the later one. %>
+  <% if (hidden = multiple_select.hidden_field_attributes) %>
+    <%= tag.input(**hidden) %>
+  <% end %>
   <%= content_tag(:select, native_options, select_attributes) %>
   <%# The element that takes the select's place, and the button beside it: neither is rendered in
       native mode, where the select itself is the control at every pointer (§ Behavior, item 2). %>
@@ -34,7 +38,7 @@
           <%= tag.input(**search_attributes) %>
         <% end %>
       <% end %>
-      <%= render Ui::Select::ListboxComponent.new(id: control_id, option_set: option_set) %>
+      <%= render Ui::Select::ListboxComponent.new(id: control_id, option_set: option_set, multiple: multiple?) %>
       <% if search? %>
         <%= tag.div(no_results, id: empty_id, hidden: true, class: 'px-2 py-6 text-center text-sm text-muted-foreground',
                     data: { 'ui--select-target': 'empty' }) %>

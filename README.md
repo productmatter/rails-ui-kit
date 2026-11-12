@@ -24,7 +24,7 @@ themes the kit by redefining variables, not by overriding components.
 | Component | Stimulus identifier | What it's for |
 |---|---|---|
 | `Ui::FieldComponent` | `ui--field` | A label, control, description and error as one accessible unit, built from `model:` and `attribute:` — name, id, label, value, errors and `required` all derived ([forms guide](docs/guides/forms.md)) |
-| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field; `native: true` keeps the platform's own picker at every pointer |
+| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field; `multiple: true` for several choices; `native: true` keeps the platform's own picker at every pointer |
 | `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card` |
 | `Ui::InputComponent` | — | A native `<input>` on the tokens, sized from the shared control scale; in a form, render it through Field |
 | `Ui::TextareaComponent` | — | A native `<textarea>`, styled and sized like Input |

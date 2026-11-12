@@ -23,9 +23,10 @@ module Ui
 
       attr_reader :control_id, :option_set, :labelledby
 
-      def initialize(id:, option_set: nil, labelledby: nil, **attributes)
+      def initialize(id:, option_set: nil, labelledby: nil, multiple: false, **attributes)
         @control_id = id.to_s
         @labelledby = labelledby
+        @multiple = multiple
         @option_set = option_set ||
                       Ui::OptionSet.new(component: self.class.name, **attributes.extract!(*Ui::OptionSet::KEYS))
         super(**attributes)
@@ -33,6 +34,10 @@ module Ui
 
       def listbox_id
         "#{control_id}-listbox"
+      end
+
+      def multiple?
+        @multiple
       end
 
       def items
@@ -68,6 +73,10 @@ module Ui
       # every option until the combobox makes one active (§ Behavior, item 19). The current
       # value is marked separately, with data-selected, which is what draws the check.
       #
+      # A multiple listbox is the exception ARIA itself makes: in an `aria-multiselectable` listbox
+      # aria-selected *is* the chosen state, one per option, and aria-activedescendant alone says
+      # where visual focus is. So there it starts as the value, and ui--select keeps it so.
+      #
       # Hover moves the active option through the primitive rather than through a second
       # implementation here; the click writes the select and closes.
       def option_attributes(item, index)
@@ -76,7 +85,7 @@ module Ui
           data: { value: item.value, selected: ('true' if item.selected),
                   'ui--roving-focus-target': 'item',
                   action: 'click->ui--select#choose mouseenter->ui--roving-focus#activate' }.compact,
-          aria: { selected: 'false', disabled: ('true' if item.disabled) }.compact
+          aria: { selected: (multiple? && item.selected).to_s, disabled: ('true' if item.disabled) }.compact
         }
       end
     end

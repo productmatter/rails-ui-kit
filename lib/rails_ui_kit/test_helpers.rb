@@ -38,11 +38,14 @@ module RailsUiKit
     JS
 
     # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
-    # id or name of the select inside it.
+    # id or name of the select inside it. On a `multiple: true` Select it adds `text` to what is
+    # chosen -- an option already chosen stays chosen -- and closes the list, which a pick leaves
+    # open there.
     def ui_select(text, from:)
       root = ui_select_root(from)
       control = root.first(CONTROL, minimum: 0, wait: 0)
       return ui_select_natively(root, text, from) unless control&.visible?
+      return ui_select_multiple(root, control, text, from) if ui_select_multiple?(root)
 
       cleared = ui_select_clear(root, text)
       if cleared
@@ -58,6 +61,22 @@ module RailsUiKit
     end
 
     private
+
+    def ui_select_multiple?(root)
+      ui_select_native(root).matches_css?('[multiple]', wait: 0)
+    end
+
+    # A multiple list stays open after a pick, so the helper presses the option only when it isn't
+    # already chosen, then closes the list with Escape, as a person would.
+    def ui_select_multiple(root, control, text, from)
+      ui_select_open(control, from)
+      option = ui_select_option(root, control, text, from)
+      option.click unless option[:'aria-selected'] == 'true'
+      page.send_keys(:escape)
+      ui_select_expanded?(control, 'false') ||
+        raise(OptionNotFound, "the Select for #{from.inspect} did not close after choosing #{text.inspect}")
+      control
+    end
 
     # Exactly one Select may answer to a name: two that do is the same mistake Capybara's own
     # Ambiguous error exists to catch, and silently taking the first would write the value into a

@@ -1,4 +1,4 @@
-<%= tag.div(**root_attributes(id: listbox_id, role: 'listbox', aria: { labelledby: labelledby })) do %>
+<%= tag.div(**root_attributes(id: listbox_id, role: 'listbox', aria: { labelledby: labelledby, multiselectable: ('true' if multiple?) }.compact)) do %>
   <% groups.each do |label, entries| %>
     <% options = capture do %>
       <% entries.each do |item, index| %>

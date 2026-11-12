@@ -17,8 +17,15 @@ module Ui
   # is enhanced, so there is no combobox, no popup and no controller, and `native_on_touch:`,
   # which only ever governed the coarse-pointer half of the same question, has nothing left to
   # decide.
+  #
+  # `multiple: true` is a <select multiple> under the same box: the listbox becomes
+  # `aria-multiselectable`, a pick toggles an option and leaves the popup open, and the control
+  # shows the chosen labels joined, or `empty_label:` while nothing is chosen. It posts `name[]`,
+  # with Rails' own hidden empty value first, so un-choosing everything clears the attribute rather
+  # than leaving it untouched -- what `select(..., multiple: true)` renders.
   class SelectComponent < Ui::Base
     include Ui::Chrome
+    include Ui::Select::Glyphs
 
     data_slot 'select'
 
@@ -37,17 +44,19 @@ module Ui
     chrome_string :clear_label, key: 'select.clear_label'
     chrome_plural :results, key: 'select.results'
 
-    attr_reader :name, :control_id, :option_set, :size, :primitives, :box
+    attr_reader :name, :control_id, :option_set, :size, :primitives, :box, :multiple_select
 
     def initialize(name:, id: nil, required: false, disabled: false, form: nil, autofocus: false,
                    search: false, native: false, native_on_touch: true, size: :default,
+                   multiple: false, empty_label: nil, include_hidden: true,
                    search_placeholder: nil, no_results: nil, results: nil, clear_label: nil,
                    **attributes)
       assign_chrome(search_placeholder, no_results, results, clear_label)
-      @name = name.to_s
-      @control_id = (id || derive_control_id).to_s
+      @control_id = (id || derive_control_id(name)).to_s
       assign_flags(required: required, disabled: disabled, autofocus: autofocus, search: search,
                    native: native, native_on_touch: native_on_touch)
+      assign_multiple(name: name, form: form, multiple: multiple, empty_label: empty_label,
+                      include_hidden: include_hidden, native: native)
       @size = resolve_size(size)
       @box = Ui::Select::Box.new(size: @size, search: @search, **primitives.pointer_flags)
       @form = form
@@ -58,6 +67,10 @@ module Ui
 
     def search?
       @search
+    end
+
+    def multiple?
+      multiple_select.enabled?
     end
 
     def native_options
@@ -78,28 +91,13 @@ module Ui
       option_set.prompt_option?
     end
 
-    # The same decorative chevron in both modes: the control is one box, whichever element plays it.
-    def render_chevron
-      render_glyph(tag.path(d: 'm6 9 6 6 6-6'))
-    end
-
-    # The clear button's glyph. Decorative: the button is named by its hidden text and the field's.
-    def render_clear_glyph
-      render_glyph(safe_join([tag.path(d: 'M18 6 6 18'), tag.path(d: 'm6 6 12 12')]), css: 'size-3.5')
-    end
-
-    # The search row's glyph, which is what says "this field filters" without a second label.
-    def render_search_glyph
-      render_glyph(safe_join([tag.circle(cx: 11, cy: 11, r: 8), tag.path(d: 'm21 21-4.3-4.3')]),
-                   css: 'size-4 shrink-0 text-muted-foreground')
-    end
-
     # What makes this a form control, plus the aria the control carries wherever it renders. The
     # target is for the controller that mirrors it; native mode has none, so it says nothing.
     def select_attributes
       {
         id: control_id, name: name, required: @required, disabled: @disabled,
-        form: @form, autofocus: @autofocus, class: select_class, aria: @control_aria.presence,
+        form: @form, autofocus: @autofocus, multiple: (true if multiple?), class: select_class,
+        aria: @control_aria.presence,
         data: ({ 'ui--select-target': 'select' } unless primitives.native?)
       }.compact
     end
@@ -203,15 +201,6 @@ module Ui
       MERGER.merge(classes.compact.join(' '))
     end
 
-    # One 24×24 line glyph, drawn the way every other icon in the kit is.
-    def render_glyph(paths, css: 'size-4')
-      attributes = { class: css, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
-                     'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-                     aria: { hidden: true } }
-
-      tag.svg(paths, **attributes)
-    end
-
     # The strings Select says in its own voice, each falling through to the locale file when the
     # call site leaves it out (ui-localization § Behavior, item 2).
     def assign_chrome(search_placeholder, no_results, results, clear_label)
@@ -240,8 +229,20 @@ module Ui
       sizes.key?(key) ? key : (unknown_variant(:size, value, sizes.keys) || :default)
     end
 
+    # A required multiple select gets no blank option: Rails adds one only to a single select, so
+    # it can start with no value, and a multiple one already can.
+    # `multiple: true`'s half (Ui::Select::Multiple), which also owns the name a multiple select posts.
+    def assign_multiple(name:, form:, multiple:, empty_label:, include_hidden:, native:)
+      @multiple_select = Ui::Select::Multiple.new(
+        component: self.class.name, name: name, form: form, disabled: @disabled, multiple: boolean_attribute?(multiple),
+        empty_label: empty_label, include_hidden: boolean_attribute?(include_hidden), native: boolean_attribute?(native)
+      )
+      @name = @multiple_select.name
+    end
+
     def option_keywords(attributes)
-      attributes.extract!(*Ui::OptionSet::KEYS).merge(required: @required)
+      multiple_select.refuse!(attributes.keys)
+      attributes.extract!(*Ui::OptionSet::KEYS).merge(required: @required && !multiple?)
     end
 
     def extract_control_aria!
@@ -252,9 +253,10 @@ module Ui
     end
 
     # Rails' own id derivation, the same one Ui::FieldComponent uses, so `post[author_id]`
-    # yields the `post_author_id` that form_with would have produced.
-    def derive_control_id
-      name.delete(']').tr('^-a-zA-Z0-9:.', '_')
+    # yields the `post_author_id` that form_with would have produced. Derived from the name as
+    # given, before a multiple select's `[]`, so `post[tag_ids]` is `post_tag_ids` as in Rails.
+    def derive_control_id(name)
+      name.to_s.delete(']').tr('^-a-zA-Z0-9:.', '_')
     end
   end
 end
