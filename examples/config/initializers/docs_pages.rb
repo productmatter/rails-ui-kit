@@ -38,6 +38,9 @@ module DocsPages
     { slug: :choices, prefix: 'components', title: 'Choices', section: 'Forms',
       summary: 'A radio or checkbox group over real inputs, with collection_radio_buttons / collection_check_boxes ' \
                'names, ids and hidden field, in a list or card variant.' },
+    { slug: :file, prefix: 'components', title: 'File', section: 'Forms',
+      summary: 'A file control over a native <input type="file">: a drop area while empty, a file row once chosen, ' \
+               'with accept, required and Field integration that work with JavaScript off.' },
     { slug: :input, prefix: 'components', title: 'Input', section: 'Forms',
       summary: 'A native <input> drawn from the design tokens, with invalid and disabled states read from the element itself.' },
     { slug: :textarea, prefix: 'components', title: 'Textarea', section: 'Forms',
