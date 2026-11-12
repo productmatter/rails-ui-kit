@@ -66,6 +66,74 @@
   <% end %>
 </div>
 
+<%# Segmented %>
+<h2 class="text-base font-semibold mb-3">The segmented variant</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">variant: :segmented</code> draws a radio group as one
+  row of segments in a sunken track, the checked one raised. The radios are still there, visually hidden: Tab enters
+  at the checked segment, the arrow keys move and choose, and the form submits and resets it as any radio group.
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">size:</code> takes Button's scale, so the whole control is
+  one control height. One choice only — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multiple: true</code>
+  raises.
+</p>
+<%
+  zooms = [["Fit", "fit"], ["150%", "150"], ["200%", "200"]]
+%>
+<div id="choices-segmented-preview" class="rounded-lg border border-border bg-background grid gap-6 p-12 mb-8">
+  <div class="flex flex-wrap items-center gap-6">
+    <%= render Ui::ChoicesComponent.new(name: "view[zoom]", variant: :segmented, size: :sm, options: zooms,
+                                        checked: "fit", aria: { label: "Zoom" }) %>
+    <%= render Ui::ChoicesComponent.new(name: "view[zoom_default]", variant: :segmented, options: zooms,
+                                        checked: "150", aria: { label: "Zoom, default size" }) %>
+    <%= render Ui::ChoicesComponent.new(name: "view[zoom_disabled]", variant: :segmented, options: zooms,
+                                        checked: "fit", disabled_values: ["200"], aria: { label: "Zoom, 200% unavailable" }) %>
+  </div>
+  <div class="flex flex-wrap items-center gap-3">
+    <% %i[xs sm default lg xl 2xl].each do |step| %>
+      <%= render Ui::ChoicesComponent.new(name: "view[zoom_size_#{step}]", variant: :segmented, size: step, options: zooms,
+                                          checked: "fit", aria: { label: "Zoom at #{step}" }) %>
+      <%= render(Ui::ButtonComponent.new(variant: :outline, size: step)) { step.to_s } %>
+    <% end %>
+  </div>
+</div>
+
+<%# Chips %>
+<h2 class="text-base font-semibold mb-3">The chips variant</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">variant: :chips</code> is a row of toggle chips: radios
+  for one filter at a time, checkboxes with <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">multiple: true</code>.
+  Each chip takes an optional leading mark from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">icon_method:</code>
+  and a count from <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">count_method:</code>, which joins the
+  chip's accessible name ("Unmapped 250"). They wrap in a row; for columns, pass <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">class: "grid grid-cols-3"</code>.
+</p>
+<%
+  chip_state = Struct.new(:id, :name, :count, :swatch)
+  chip_states = [chip_state.new("unmapped", "Unmapped", 250, "border-warning bg-warning/20"),
+                 chip_state.new("suggested", "Suggested", 36, "border-dashed border-info bg-info/10"),
+                 chip_state.new("salt", "SALT", 210, "border-success bg-success/20"),
+                 chip_state.new("accepted", "Accepted", 0, "border-dashed border-success bg-success/10"),
+                 chip_state.new("yours", "Yours", 0, "border-success bg-background"),
+                 chip_state.new("not_filled", "Not filled", 0, "border-muted-foreground bg-muted")]
+  chip_mark = ->(state) { tag.span(class: "block size-3 rounded-xs border #{state.swatch}") }
+%>
+<div id="choices-chips-preview" class="rounded-lg border border-border bg-background grid gap-8 p-12 mb-8">
+  <%= render Ui::FieldComponent.new(name: "filter[state]", class: "max-w-sm") do |field| %>
+    <% field.with_label { "Show" } %>
+    <% field.with_control(Ui::ChoicesComponent, variant: :chips, size: :sm, collection: chip_states, value_method: :id,
+                          text_method: :name, icon_method: chip_mark, count_method: :count, checked: "salt",
+                          class: "grid grid-cols-3") %>
+    <% field.with_description { "One filter at a time: radios, so the arrow keys move." } %>
+  <% end %>
+
+  <%= render Ui::FieldComponent.new(name: "filter[states]") do |field| %>
+    <% field.with_label { "Show several" } %>
+    <% field.with_control(Ui::ChoicesComponent, variant: :chips, multiple: true, collection: chip_states,
+                          value_method: :id, text_method: :name, icon_method: chip_mark, count_method: :count,
+                          checked: %w[unmapped suggested], disabled_values: ["not_filled"]) %>
+    <% field.with_description { "Toggles: checkboxes, and Not filled is locked." } %>
+  <% end %>
+</div>
+
 <%# Required %>
 <h2 class="text-base font-semibold mb-3">Required</h2>
 <p class="text-sm text-muted-foreground mb-3">
@@ -175,10 +243,11 @@
         ["required",            "Boolean",       "false",    "Radios: required on every radio. Checkboxes: the marker, the screen-reader hint and ui--choices' \"at least one\"."],
         ["disabled",            "Boolean",       "false",    "Renders <fieldset disabled>, so every input and hidden field is disabled and the attribute is left untouched."],
         ["form",                "String",        "nil",      "The id of a form elsewhere on the page; goes on every input and the hidden fields, as in Rails."],
-        ["variant",             "Symbol",        ":list",    "One of :list, :card. A card is a bordered box with the indicator, an optional icon, and the text column."],
-        ["size",                "Symbol",        ":default", "One of :sm, :default, :lg. Accepted so a form can give every control one size; it changes nothing on Choices, whose rows and cards are sized by their content with a 24px floor."],
+        ["variant",             "Symbol",        ":list",    "One of :list, :card, :segmented, :chips. A card is a bordered box with the indicator, an optional icon, and the text column. Segmented is one row of radio segments in a track (one choice only); chips are toggle chips, radios or checkboxes, with a mark and a count. Both hide the input and make the label the control."],
+        ["size",                "Symbol",        ":default", "One of :xs, :sm, :default, :lg, :xl, :\"2xl\". On :segmented and :chips it is Button's scale: a segmented track and each chip are one control height at that step. On :list and :card it is accepted so a form can give every control one size, and changes nothing: rows and cards are sized by their content with a 24px floor."],
         ["description_method",  "Symbol/Proc",   "nil",      "A second line per choice. Needs collection:, since there is no object to call it on otherwise."],
-        ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. Needs collection: too."],
+        ["icon_method",         "Symbol/Proc",   "nil",      "Decorative HTML-safe markup per choice, aria-hidden. On a chip it is the leading mark — a state swatch, say. Needs collection: too."],
+        ["count_method",        "Symbol/Proc",   "nil",      "variant: :chips only. A count per chip, shown at its inline-end and joined to its accessible name. Needs collection:."],
         ["required_message",    "String",        "nil",      "Overrides rails_ui_kit.choices.required_message for this instance."],
         ["class",               "String",        "nil",      "Merged onto the fieldset — the caller always wins. This is where grid columns go."],
       ].each do |name, type, default, desc| %>
