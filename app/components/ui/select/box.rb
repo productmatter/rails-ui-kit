@@ -30,7 +30,14 @@ module Ui
       # The visible control's box, shared by the select and whatever takes over from it. Filled in
       # both modes, as Input is, so it reads as a control on any surface; the popup is bg-popover,
       # a different token, so the open list never blends into the box it hangs from.
-      CONTROL = 'flex w-full min-w-0 appearance-none items-center border border-input ' \
+      #
+      # `py-0` is what centres a native select's text. `flex items-center` centres the combobox's
+      # and the trigger's label, but a <select> ignores both: its text sits wherever its own
+      # vertical padding leaves it. The kit set none, so a host stylesheet that pads every select --
+      # `@tailwindcss/forms` gives each one 8px top and bottom -- pushed the text down inside the
+      # fixed step height until descenders clipped at the smaller steps. Zero is stated outright,
+      # so a host's base-layer padding can never reach the box.
+      CONTROL = 'flex w-full min-w-0 appearance-none items-center border border-input py-0 ' \
                 'bg-background dark:bg-muted/50 shadow-xs transition-colors ' \
                 'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
                 'disabled:pointer-events-none disabled:opacity-50 ' \

@@ -156,6 +156,30 @@
   </div>
 </div>
 
+<%# Native text centring, under a host stylesheet that pads every select %>
+<h3 class="text-sm font-semibold mb-3">Centred at every size, whatever the host pads</h3>
+<p class="text-sm text-muted-foreground mb-3">
+  A native <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;select&gt;</code> ignores flex
+  alignment, so its text sits wherever its vertical padding puts it. The box states that padding as zero, so a host
+  stylesheet that pads every select — <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">@tailwindcss/forms</code>
+  gives each one 8px top and bottom — can't push the text down and clip it in a short control. This preview loads
+  that same padding into the base layer, the way the plugin does, and every step still centres.
+</p>
+<style>
+  @layer base {
+    #select-centring-preview select,
+    #select-centring-preview input { padding: 0.5rem 2.5rem 0.5rem 0.75rem; line-height: 1.5rem; }
+  }
+</style>
+<div id="select-centring-preview" class="rounded-lg border border-border bg-background grid gap-3 p-12 mb-8 sm:grid-cols-2">
+  <% %i[xs sm default lg xl 2xl].each do |step| %>
+    <%= render Ui::SelectComponent.new(name: "centring[#{step}]", options: [["Named insured 1 — gjpqy", "1"]], native: true,
+                                       size: step, aria: { label: "Native select at #{step}" }) %>
+    <%= render Ui::InputComponent.new(name: "centring_input[#{step}]", value: "Named insured 1 — gjpqy", size: step,
+                                      aria: { label: "Input at #{step}" }) %>
+  <% end %>
+</div>
+
 <%# Prompt and clearing %>
 <h2 class="text-base font-semibold mb-3">A prompt, and clearing back to it</h2>
 <p class="text-sm text-muted-foreground mb-3">

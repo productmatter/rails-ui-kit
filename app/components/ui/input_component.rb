@@ -16,10 +16,12 @@ module Ui
     #
     # The shared control scale (ui-control-sizing § Behavior): height, inline padding, text size
     # and radius all move together, read from the same tokens as Button, Select and Textarea. No
-    # vertical padding: an <input>'s text centres on its own, the way a native <select>'s already
-    # does, and a fixed py would have overflowed the box at the smaller steps.
+    # vertical padding, stated as `py-0` rather than left unset: an <input>'s text centres on its
+    # own, a fixed py would have overflowed the box at the smaller steps, and a host stylesheet
+    # that pads every input (`@tailwindcss/forms` does, 8px top and bottom) would otherwise reach
+    # the box and squeeze its text.
     class_variants(
-      base: 'flex w-full min-w-0 border border-input bg-background dark:bg-muted/50 ' \
+      base: 'flex w-full min-w-0 border border-input py-0 bg-background dark:bg-muted/50 ' \
             'shadow-xs transition-colors ' \
             'placeholder:text-muted-foreground ' \
             'focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring ' \
