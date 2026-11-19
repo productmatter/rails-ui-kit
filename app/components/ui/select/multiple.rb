@@ -52,7 +52,8 @@ module Ui
       def hidden_field_attributes
         return unless enabled? && @include_hidden
 
-        { type: 'hidden', name: name, value: '', form: @form, disabled: (true if @disabled) }.compact
+        { type: 'hidden', name: name, value: '', autocomplete: hidden_autocomplete,
+          form: @form, disabled: (true if @disabled) }.compact
       end
 
       # What ui--select reads to take its multiple branches, and the placeholder it shows.
@@ -63,6 +64,14 @@ module Ui
       end
 
       private
+
+      # Rails renders its multiple-select hidden field with autocomplete="off", so a browser can't
+      # restore a stale value to it, unless the app has dropped that hack
+      # (ActionView::Base.remove_hidden_field_autocomplete, the Rails 8.1 default). Read the same
+      # flag Rails' own select renderer reads, so the kit's hidden field matches it on every version.
+      def hidden_autocomplete
+        'off' unless ActionView::Base.remove_hidden_field_autocomplete
+      end
 
       # Rails appends `[]` to a multiple select's name, so the param is an array; a name that
       # already says so is left alone.
