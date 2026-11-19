@@ -4,6 +4,11 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-19
+
+### Fixed
+- **`Ui::ChoicesComponent`'s hidden field carries the `autocomplete` Rails renders, on every supported Rails.** The blank entry and the carriers built from it were hand-built with no `autocomplete`, so on Rails 7.2 and 8.0 — which always set `autocomplete="off"` on the collection helpers' hidden field, so a browser can't restore a stale value to it — they diverged from what `collection_check_boxes` renders. The field now reads the same `ActionView::Base.remove_hidden_field_autocomplete` flag Rails' own renderer reads (absent before 8.1, where the attribute is unconditional), matching Rails on 7.2, 8.0 and 8.1 alike, the way the multiple Select's hidden field did in 0.5.1. Only a Choices group on Rails 7.2 or 8.0 was affected.
+
 ## [0.5.1] - 2026-11-19
 
 ### Fixed
