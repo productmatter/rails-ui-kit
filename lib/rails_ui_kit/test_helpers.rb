@@ -38,17 +38,15 @@ module RailsUiKit
     JS
 
     # Chooses `text` in the Select named by `from:` -- its Field label, its own aria-label, or the
-    # id or name of the select inside it.
+    # id or name of the select inside it. On a `multiple: true` Select it adds `text` to what is
+    # chosen -- an option already chosen stays chosen -- and closes the list, which a pick leaves
+    # open there.
     def ui_select(text, from:)
       root = ui_select_root(from)
       control = root.first(CONTROL, minimum: 0, wait: 0)
       return ui_select_natively(root, text, from) unless control&.visible?
-
-      cleared = ui_select_clear(root, text)
-      if cleared
-        cleared.click
-        return control
-      end
+      return control if ui_select_cleared?(root, text)
+      return ui_select_multiple(root, control, text, from) if ui_select_multiple?(root)
 
       ui_select_open(control, from)
       ui_select_option(root, control, text, from).click
@@ -58,6 +56,22 @@ module RailsUiKit
     end
 
     private
+
+    def ui_select_multiple?(root)
+      ui_select_native(root).matches_css?('[multiple]', wait: 0)
+    end
+
+    # A multiple list stays open after a pick, so the helper presses the option only when it isn't
+    # already chosen, then closes the list with Escape, as a person would.
+    def ui_select_multiple(root, control, text, from)
+      ui_select_open(control, from)
+      option = ui_select_option(root, control, text, from)
+      option.click unless option[:'aria-selected'] == 'true'
+      page.send_keys(:escape)
+      ui_select_expanded?(control, 'false') ||
+        raise(OptionNotFound, "the Select for #{from.inspect} did not close after choosing #{text.inspect}")
+      control
+    end
 
     # Exactly one Select may answer to a name: two that do is the same mistake Capybara's own
     # Ambiguous error exists to catch, and silently taking the first would write the value into a
@@ -104,14 +118,24 @@ module RailsUiKit
 
     # A prompt is a placeholder rather than a choice, so the listbox does not list it: the way back
     # to it is the clear button, which is what a person presses (ui-select § Behavior, item 10).
-    # Asking for the prompt by name means that button, where the component rendered one -- Rails
-    # renders the prompt first, and only while nothing is chosen, so it is the leading option.
-    def ui_select_clear(root, text)
-      prompt = ui_select_native(root)&.first('option', visible: :all, minimum: 0, wait: 0)
-      return unless prompt && prompt[:value].to_s.empty? && prompt.text(:all).strip == text.to_s.strip
+    # Asking for the prompt by name means that button -- Rails renders the prompt first, and only
+    # while nothing is chosen, so it is the leading option. A multiple Select's placeholder is its
+    # empty label, and its clear button goes back to it the same way. No button rendered means no
+    # placeholder: an include_blank option is a listed choice, chosen from the list.
+    def ui_select_placeholder(root)
+      return unless root.first(CLEAR, visible: :all, minimum: 0, wait: 0)
+      return root[:'data-ui--select-empty-label-value'].to_s.strip if ui_select_multiple?(root)
 
-      button = root.first(CLEAR, minimum: 0, wait: 0)
-      button if button&.visible?
+      prompt = ui_select_native(root)&.first('option', visible: :all, minimum: 0, wait: 0)
+      prompt.text(:all).strip if prompt && prompt[:value].to_s.empty?
+    end
+
+    # Presses the clear button when `text` names the placeholder. A Select already showing it shows
+    # no button, and has nothing to clear.
+    def ui_select_cleared?(root, text)
+      return false unless ui_select_placeholder(root) == text.to_s.strip
+
+      root.find(CLEAR, visible: :all).tap { |button| button.click if button.visible? }
     end
 
     # Both modes open on a press of the control, which is what a person does.

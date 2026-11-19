@@ -445,6 +445,15 @@ mode.
     size: a one-line list row centers its indicator on the 24px floor (`items-center`);
     a row with a description, and every card row regardless, stays top-aligned
     (`items-start`) so the indicator sits on the first line of text.
+    **Amended 2026-11-11 (v0.5.0), for two new appearances only:** `variant: :segmented`
+    (a radio group as one row of segments in a track) and `variant: :chips` (toggle chips
+    with a leading mark and a `count_method:` count) hide the input inside the label and
+    make the label the control, so they *are* controls on the shared scale: a segmented
+    track and each chip read the step's `--control-height*` token, inline padding, text
+    size and radius, the same as Button at that step. List and card are unchanged by this
+    item. The forms-and-send redesign pulled both (a zoom "Fit · 150% · 200%" and the
+    mapping filter chips); building them on Choices keeps one implementation of names,
+    ids, the hidden field, keyboard and Field wiring (`ui-component-library` rule 4).
 18. **Long text and narrow widths: controls truncate, lists wrap**
     (`ui-localization` § Behavior, item 12). Choices is a list, so it never truncates.
     - Choice text and description wrap. An unbreakable string breaks rather than

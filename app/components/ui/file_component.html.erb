@@ -1,0 +1,32 @@
+<%= tag.div(**wrapper_attributes) do %>
+  <%= tag.input(**input_attributes) %>
+  <%# Empty: the drop area. Hidden, not removed, once a file is chosen, so a reset or a cancelled
+      pick can bring it straight back. %>
+  <%= tag.div(hidden: chosen?, class: 'flex flex-col items-center gap-1.5 px-4 py-6 text-center',
+              aria: part_aria, data: { slot: 'file-drop', 'ui--file-target': 'empty' }) do %>
+    <%= render_upload_glyph %>
+    <%# The sentence and its button are the sighted affordance for the input over them; the input is
+        the control a screen reader meets, so they are hidden from it. %>
+    <p class="text-sm text-foreground" aria-hidden="true">
+      <%= drop_label %>
+      <%= render(Ui::ButtonComponent.new(variant: :link, size: :sm,
+                                         **affordance_attributes('h-auto px-0 align-baseline group-hover/file:underline'))) { choose_label } %>
+    </p>
+    <% if meta.present? %>
+      <%= tag.p(meta, id: meta_id, class: 'text-xs text-muted-foreground', data: { slot: 'file-meta' }) %>
+    <% end %>
+  <% end %>
+  <%# Chosen: the file row. Its name and meta are the server's for a file the record already has, and
+      ui--file's for one just picked. %>
+  <%= tag.div(hidden: !chosen?, class: 'flex items-center gap-3 p-3', aria: part_aria,
+              data: { slot: 'file-row', 'ui--file-target': 'chosen' }) do %>
+    <span aria-hidden="true" class="flex size-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground"><%= render_file_glyph %></span>
+    <%= tag.span(id: file_id, class: 'grid min-w-0 flex-1 gap-0.5') do %>
+      <%= tag.span(filename, class: 'truncate text-sm font-medium text-foreground', data: { 'ui--file-target': 'name' }) %>
+      <%= tag.span(file_meta, hidden: file_meta.blank?, class: 'truncate text-xs text-muted-foreground',
+                              data: { 'ui--file-target': 'meta' }) %>
+    <% end %>
+    <%= render(Ui::ButtonComponent.new(variant: :ghost, size: :sm,
+                                       **affordance_attributes('group-hover/file:bg-accent group-hover/file:text-accent-foreground'))) { change_label } %>
+  <% end %>
+<% end %>

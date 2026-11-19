@@ -24,8 +24,9 @@ themes the kit by redefining variables, not by overriding components.
 | Component | Stimulus identifier | What it's for |
 |---|---|---|
 | `Ui::FieldComponent` | `ui--field` | A label, control, description and error as one accessible unit, built from `model:` and `attribute:` — name, id, label, value, errors and `required` all derived ([forms guide](docs/guides/forms.md)) |
-| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field; `native: true` keeps the platform's own picker at every pointer |
-| `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card` |
+| `Ui::SelectComponent` | `ui--select` | A real `<select>` that submits, built from a collection, an enum or options, mirrored into a keyboard-driven listbox: a WAI-ARIA combobox by default, or with `search: true` a trigger whose popup carries a search field; `multiple: true` for several choices; `native: true` keeps the platform's own picker at every pointer |
+| `Ui::ChoicesComponent` | `ui--choices` | A radio or checkbox group over native inputs, with the names, ids and hidden field `collection_check_boxes` renders; `variant: :list` or `:card`, `:segmented` (a radio track, e.g. zoom) or `:chips` (toggle chips with a mark and a count) |
+| `Ui::FileComponent` | `ui--file` | A file control over a native `<input type="file">`: a drop area while empty, a file row once chosen; `accept:`, `required:`, Field integration, and a refused drop `accept:` doesn't allow |
 | `Ui::InputComponent` | — | A native `<input>` on the tokens, sized from the shared control scale; in a form, render it through Field |
 | `Ui::TextareaComponent` | — | A native `<textarea>`, styled and sized like Input |
 | `Ui::LabelComponent` | — | A native `<label>`, dimmed when its control is disabled; Field renders one for you |
@@ -83,7 +84,7 @@ repository, pinned to a release tag, so an upgrade is a change you make on purpo
 1. **Add it to your Gemfile:**
 
    ```ruby
-   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.4.0"
+   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.5.0"
    ```
 
    Use `branch: "main"` instead of `tag:` only if you want unreleased work.
@@ -177,7 +178,7 @@ The Gemfile entry above uses SSH, which works on developer machines with an SSH 
 CI and headless environments use HTTPS with a token:
 
 ```ruby
-gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.4.0"
+gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.5.0"
 ```
 
 Bundler honours `BUNDLE_GITHUB__COM=<token>:x-oauth-basic` (set in CI) to authenticate HTTPS git
@@ -195,7 +196,7 @@ the Ruby and JavaScript halves match:
 
 ```bash
 npm install @floating-ui/dom @hotwired/stimulus
-npm install github:productmatter/rails-ui-kit#v0.3.0
+npm install github:productmatter/rails-ui-kit#v0.5.0
 ```
 
 Then in your JS entrypoint (e.g. `app/javascript/application.js`):

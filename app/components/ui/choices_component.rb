@@ -14,6 +14,13 @@ module Ui
   # The group is a <fieldset> named, described and marked invalid through Ui::FieldComponent
   # (item 10): `aria-labelledby` points at the field's label, which for this control renders
   # without `for`, because `for` has to name one labelable element and a group is not one.
+  #
+  # Two compact appearances sit beside list and card, on the same inputs: `variant: :segmented`, a
+  # radio group drawn as one row of segments in a track (a zoom "Fit · 150% · 200%"), and
+  # `variant: :chips`, a row of toggle chips -- radios or checkboxes -- each with an optional leading
+  # mark (`icon_method:`) and a count (`count_method:`). The input is visually hidden there and the
+  # label is the control, so arrows, Space, single selection, submission and reset are still the
+  # platform's, and both read the shared control scale through `size:`.
   class ChoicesComponent < Ui::Base
     include Ui::Chrome
 
@@ -46,12 +53,13 @@ module Ui
 
     def initialize(name:, id: nil, multiple: false, checked: nil, disabled_values: nil, include_hidden: true,
                    required: false, disabled: false, form: nil, size: :default, variant: :list,
-                   description_method: nil, icon_method: nil, required_message: nil, **attributes)
+                   description_method: nil, icon_method: nil, count_method: nil, required_message: nil, **attributes)
       @required_message = required_message
       @multiple = boolean_attribute?(multiple)
       assign_names(name, id)
       assign_flags(required: required, disabled: disabled, include_hidden: include_hidden, form: form)
-      assign_option_methods(description_method, icon_method)
+      @option_methods = Ui::Choices::OptionMethods.new(component: self.class.name, description: description_method,
+                                                       icon: icon_method, count: count_method)
       @option_set = Ui::OptionSet.new(component: self.class.name, selected: checked,
                                       disabled_values: disabled_values, **option_keywords(attributes))
       assign_style(size, variant)
@@ -105,22 +113,18 @@ module Ui
     end
 
     # Named by its own text and described by its own description line: a wrapping label would
-    # otherwise name the input with every word inside it (§ Behavior, item 9).
+    # otherwise name the input with every word inside it (§ Behavior, item 9). A chip's count joins
+    # its name ("Unmapped 250"), because it is what the chip says, not help about it.
     def input_aria(item)
-      { labelledby: text_id(item), describedby: (description_id(item) if description_for(item)) }.compact
+      labelledby = [text_id(item), (count_id(item) unless count_for(item).nil?)].compact.join(' ')
+      { labelledby: labelledby, describedby: (description_id(item) if description_for(item)) }.compact
     end
 
     def input_data
       { 'ui--choices-target': 'checkbox' } if required_hint?
     end
 
-    def description_for(item)
-      call_on(item, @description_method)
-    end
-
-    def icon_for(item)
-      call_on(item, @icon_method)
-    end
+    delegate :description_for, :icon_for, :count_for, to: :@option_methods
 
     def input_id(item)
       "#{control_id}_#{sanitized_value(item.value)}"
@@ -132,6 +136,10 @@ module Ui
 
     def description_id(item)
       "#{input_id(item)}-description"
+    end
+
+    def count_id(item)
+      "#{input_id(item)}-count"
     end
 
     def required_id
@@ -147,16 +155,17 @@ module Ui
       @name = group_name(name)
     end
 
-    def assign_option_methods(description_method, icon_method)
-      @description_method = description_method
-      @icon_method = icon_method
-    end
-
     # An unknown step or variant fails the way an unknown variant does everywhere else.
     def assign_style(size, variant)
       @size = resolve_key(:size, size, Ui::Choices::Variant::SIZES)
       @variant = resolve_key(:variant, variant, Ui::Choices::Variant::VARIANTS)
-      @style = Ui::Choices::Variant.new(variant: @variant, multiple: multiple?, described: described?)
+      @style = Ui::Choices::Variant.new(variant: @variant, multiple: multiple?, described: described?, size: @size)
+      @style.validate!(component: self.class.name, description: @option_methods.description?, count: @option_methods.count?)
+    end
+
+    # The compact appearances' own track or row, merged over the base grid (Ui::Choices::Variant).
+    def variant_classes
+      [super, style.root_class].compact.join(' ').presence
     end
 
     # Whether the group renders a description line at all -- decided once, since every choice in
@@ -222,17 +231,8 @@ module Ui
     # object to call: both are caller errors rather than a silent half-rendering.
     def validate_items!
       raise ArgumentError, refused_message([:group_method]) if items.any?(&:group)
-      return unless (@description_method || @icon_method) && items.all? { |item| item.object.nil? }
 
-      raise ArgumentError,
-            "#{self.class.name}: description_method: and icon_method: need collection:, " \
-            'because an array, hash or enum source has no object to call them on.'
-    end
-
-    def call_on(item, method)
-      return if method.nil? || item.object.nil?
-
-      method.respond_to?(:call) ? method.call(item.object) : item.object.public_send(method)
+      @option_methods.validate!(items)
     end
 
     def resolve_key(axis, value, classes)

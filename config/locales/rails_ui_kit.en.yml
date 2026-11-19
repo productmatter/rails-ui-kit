@@ -41,6 +41,14 @@ en:
       # trigger's accessible name instead (a hidden span named directly by aria-labelledby);
       # every other control states it on its own, and never renders this text.
       required_label: "required"
+    file:
+      # The drop area's sentence, before its button: "Drop a file here or [Choose file]". Generic
+      # on purpose -- a call site that knows what it takes says so with drop_label: and
+      # choose_label: ("Drop a PDF here or", "Choose PDF").
+      drop_label: "Drop a file here or"
+      choose_label: "Choose file"
+      # The file row's button, once a file is chosen.
+      change_label: "Change"
     character_counter:
       # The visible count at the end of the description line. Kept as a template, not composed
       # in the browser, so a locale can change the separator without a kit change.

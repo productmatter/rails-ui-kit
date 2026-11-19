@@ -18,6 +18,11 @@ import { Controller } from "@hotwired/stimulus"
 //
 // Events: none of its own. Choosing dispatches `input` and `change` from the select, which is
 // what a host's change-> action, ui--form-change and an auto-submitting form already listen for.
+//
+// `multiple` is a <select multiple>. A pick toggles one option and leaves the popup open, Space and
+// Enter toggle the active option, typing makes the first match active, the clear button un-chooses
+// everything, and the control shows the chosen labels joined, or the empty label. Every branch for
+// it is marked; a single Select never takes one.
 const OPTION = '[role="option"]'
 const GROUP = '[role="group"]'
 // Keys that edit the search field rather than move the list. They hand visual focus back to the
@@ -44,7 +49,10 @@ export default class extends Controller {
     // The platform picker beats anything we can draw on a phone, and the unenhanced select is
     // already the no-JavaScript path, so select-only mode keeps it on a coarse pointer
     // (ui-select open-questions.md). Search mode always enhances: no native picker searches.
-    nativeOnTouch: { type: Boolean, default: true }
+    nativeOnTouch: { type: Boolean, default: true },
+    multiple: { type: Boolean, default: false },
+    // What a multiple Select's control shows while nothing is chosen: the caller's content.
+    emptyLabel: { type: String, default: "" }
   }
 
   initialize() {
@@ -191,6 +199,7 @@ export default class extends Controller {
     // Only the select's own change is the mirror's: the search field fires change of its own when
     // it loses focus after an edit, and that is a query, not a new value.
     if (event && event.target !== this.selectTarget) return
+    if (this.multipleValue) return this.renderMultiple()
 
     const chosen = this.selectTarget.selectedOptions[0]
     const value = chosen ? chosen.value : ""
@@ -204,6 +213,34 @@ export default class extends Controller {
       } else {
         option.removeAttribute("data-selected")
       }
+    })
+
+    this.renderDisabled()
+    this.renderClear()
+    this.mirrorAria("aria-invalid")
+    this.mirrorAria("aria-describedby")
+    this.mirrorRequired()
+  }
+
+  // Multiple: every chosen option is marked, and in a multiselectable listbox aria-selected is that
+  // mark too -- where visual focus is, aria-activedescendant alone says. The control shows the
+  // chosen labels in the select's own order, joined, or the empty label as a placeholder.
+  renderMultiple() {
+    const chosen = Array.from(this.selectTarget.selectedOptions)
+    const values = new Set(chosen.map((option) => option.value))
+
+    if (this.hasLabelTarget) {
+      this.labelTarget.textContent = chosen.length
+        ? chosen.map((option) => option.textContent.trim()).join(", ")
+        : this.emptyLabelValue
+      this.labelTarget.dataset.placeholder = chosen.length ? "false" : "true"
+    }
+
+    this.options.forEach((option) => {
+      const holds = values.has(option.dataset.value)
+      if (holds) option.setAttribute("data-selected", "true")
+      else option.removeAttribute("data-selected")
+      option.setAttribute("aria-selected", holds ? "true" : "false")
     })
 
     this.renderDisabled()
@@ -230,7 +267,7 @@ export default class extends Controller {
   renderClear() {
     if (!this.hasClearTarget) return
 
-    const show = !this.selectTarget.disabled && this.selectTarget.value !== "" && !!this.promptOption
+    const show = !this.selectTarget.disabled && this.clearable
     this.clearTarget.hidden = !show
     this.element.dataset.clearable = show ? "true" : "false"
   }
@@ -245,18 +282,33 @@ export default class extends Controller {
     return first && first.value === "" ? first : null
   }
 
+  // Whether there is a placeholder to go back to: a prompt with something else chosen, or --
+  // multiple -- anything chosen at all, since choosing nothing is the empty label's state.
+  get clearable() {
+    if (this.multipleValue) return this.selectTarget.selectedOptions.length > 0
+
+    return this.selectTarget.value !== "" && !!this.promptOption
+  }
+
   // The only way to clear, and a user choice like any other (§ Behavior, item 3): it selects the
   // prompt option, which dispatches input and change, shows the prompt, and puts a required select
   // back to blocking its form. The button goes with the state that justified it, so focus moves to
   // the control rather than being left on an element that is no longer there.
+  //
+  // Multiple: every chosen option is un-chosen at once, with one input and one change, and the
+  // control shows the empty label again.
   clear(event) {
     event.preventDefault()
-    const prompt = this.promptOption
-    if (!prompt || this.selectTarget.disabled) return
+    if (!this.clearable || this.selectTarget.disabled) return
 
     // A press anywhere outside the popup closes it, and this button is outside it.
     this.close()
-    this.commitOption(prompt.value, prompt.index)
+    if (this.multipleValue) {
+      Array.from(this.selectTarget.selectedOptions).forEach((option) => { option.selected = false })
+      this.dispatchChange()
+    } else {
+      this.commitOption(this.promptOption.value, this.promptOption.index)
+    }
     this.control.focus()
   }
 
@@ -310,8 +362,20 @@ export default class extends Controller {
   // same options.
   commit(option) {
     if (!option || this.isDisabled(option)) return
+    if (this.multipleValue) return this.toggleOption(option)
 
     this.commitOption(option.dataset.value)
+  }
+
+  // Multiple: choosing flips one option and leaves the rest, then dispatches what a native
+  // <select multiple> dispatches on a pick, so the mirror re-renders from the select as it always
+  // does.
+  toggleOption(option) {
+    const native = Array.from(this.selectTarget.options).find((candidate) => candidate.value === option.dataset.value)
+    if (!native || native.disabled) return
+
+    native.selected = !native.selected
+    this.dispatchChange()
   }
 
   // Writing the select is what choosing means; the events are what make it observable, and
@@ -324,6 +388,11 @@ export default class extends Controller {
 
     if (index === null) this.selectTarget.value = value
     else this.selectTarget.selectedIndex = index
+    this.dispatchChange()
+  }
+
+  // What a native select dispatches when the user changes it.
+  dispatchChange() {
     this.selectTarget.dispatchEvent(new Event("input", { bubbles: true }))
     this.selectTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
@@ -397,6 +466,10 @@ export default class extends Controller {
     // After a filter, visual focus is back on the search field: the list under it has changed,
     // so an option that was active is no longer the one the user was looking at.
     this.clearActive()
+    // Multiple: the first match is made active instead, so Enter toggles what the query found and
+    // the list stays open for the next query -- otherwise every pick would need an ArrowDown first.
+    // A single Select keeps Enter-with-nothing-active as "close without choosing" (§ Behavior, item 17).
+    if (this.multipleValue && query !== "" && matches.length > 0) this.rovingFocus?.focusFirst()
     this.announce(matches.length)
   }
 
@@ -561,6 +634,10 @@ export default class extends Controller {
   // aria-activedescendant names and on no other (§ Behavior, item 19). Driven by the group's own
   // activated event, so there is no second place that decides which option is active.
   markActive() {
+    // Multiple: aria-selected is the chosen state, which render keeps; the active option is
+    // aria-activedescendant's to say, and the group's active class is what draws it.
+    if (this.multipleValue) return
+
     const activeId = this.rovingFocus?.activeIdValue
     this.options.forEach((option) => {
       option.setAttribute("aria-selected", option.id === activeId ? "true" : "false")
@@ -638,6 +715,7 @@ export default class extends Controller {
     const { key, altKey, ctrlKey, metaKey } = event
     if (ctrlKey || metaKey) return false
     if (this.searchValue) return this.openSearchKeydown(key, altKey)
+    if (this.multipleValue) return this.openMultipleKeydown(key, altKey)
 
     if (key === "Enter" || key === " " || (altKey && key === "ArrowUp")) {
       this.commit(this.activeOption)
@@ -655,6 +733,30 @@ export default class extends Controller {
     return false
   }
 
+  // Multiple, select-only, open: Space and Enter toggle the active option and keep the list open,
+  // so several can be chosen in one visit; Alt+ArrowUp closes, and Tab closes on the way out. None
+  // of them chooses anything by leaving -- in a multiple list, the active option is where the user
+  // is, not what they picked. Escape is the browser's light dismiss, as everywhere else.
+  openMultipleKeydown(key, altKey) {
+    if (altKey && key === "ArrowUp") {
+      this.close()
+      return true
+    }
+    if (altKey) return false
+
+    if (key === "Enter" || key === " ") {
+      this.commit(this.activeOption)
+      return true
+    }
+
+    if (key === "Tab") {
+      this.close()
+      return false
+    }
+
+    return false
+  }
+
   // Search mode, open: DOM focus is in the search field, and the arrows are the group's. Enter
   // takes the active option if there is one and closes either way, always prevented, so the key
   // can never submit the form; the overlay hands focus back to the trigger. Escape is left to the
@@ -664,7 +766,8 @@ export default class extends Controller {
 
     if (key === "Enter") {
       this.commit(this.activeOption)
-      this.close()
+      // Multiple: a toggle, and the list stays open for the next one. Space is the field's.
+      if (!this.multipleValue) this.close()
       return true
     }
 
@@ -703,7 +806,8 @@ export default class extends Controller {
     if (this.isDisabled(option)) return
 
     this.commit(option)
-    this.close()
+    // Multiple: the pick is a toggle, and the list stays open for the next one.
+    if (!this.multipleValue) this.close()
   }
 
   // A press on the control, in either mode. Where focus goes from here is the overlay's:
