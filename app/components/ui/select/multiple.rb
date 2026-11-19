@@ -66,10 +66,13 @@ module Ui
       private
 
       # Rails renders its multiple-select hidden field with autocomplete="off", so a browser can't
-      # restore a stale value to it, unless the app has dropped that hack
-      # (ActionView::Base.remove_hidden_field_autocomplete, the Rails 8.1 default). Read the same
-      # flag Rails' own select renderer reads, so the kit's hidden field matches it on every version.
+      # restore a stale value to it. Rails 8.1 added a flag to drop that hack and defaults it on
+      # (ActionView::Base.remove_hidden_field_autocomplete); 7.2 and 8.0 have no such flag and always
+      # emit it. Mirror Rails' own select renderer -- omit only when the flag exists and is set -- so
+      # the kit's hidden field matches it on every supported version.
       def hidden_autocomplete
+        return 'off' unless ActionView::Base.respond_to?(:remove_hidden_field_autocomplete)
+
         'off' unless ActionView::Base.remove_hidden_field_autocomplete
       end
 
