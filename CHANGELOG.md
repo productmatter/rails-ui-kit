@@ -4,6 +4,11 @@ All notable changes to rails-ui-kit are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-19
+
+### Fixed
+- **A multiple Select's hidden field carries the `autocomplete` Rails renders, on every supported Rails.** `multiple: true`'s hidden empty field was built by hand with no `autocomplete`, so on Rails 7.2 and 8.0 — which always set `autocomplete="off"` on the hidden field `select(..., multiple: true)` renders, so a browser can't restore a stale value to it — the kit's field diverged from Rails', and the test holding the two equal failed there. Rails 8.1 added `ActionView::Base.remove_hidden_field_autocomplete` and defaults it on, dropping the attribute, which is where the kit happened to match. The field now mirrors Rails' own select renderer — `autocomplete="off"` unless that flag exists and is set — so it matches on 7.2, 8.0 and 8.1 alike. Only a multiple Select on Rails 7.2 or 8.0 was affected; 0.5.0 shipped without the fix.
+
 ## [0.5.0] - 2026-11-19
 
 ### Added
