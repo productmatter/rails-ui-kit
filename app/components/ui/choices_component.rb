@@ -93,9 +93,11 @@ module Ui
 
     # Rails' own blank entry: what empties an association when the user unchecks everything
     # (§ Behavior, item 5). Disabled with the group, unlike Rails' collection helpers, so a
-    # disabled group submits nothing at all (item 12).
+    # disabled group submits nothing at all (item 12). It carries autocomplete="off" like Rails'
+    # own, so a browser can't restore a stale value to it (see hidden_autocomplete), and the
+    # carriers, built from this, inherit it.
     def hidden_field_attributes
-      { type: 'hidden', name: name, value: '', form: @form }.compact
+      { type: 'hidden', name: name, value: '', autocomplete: hidden_autocomplete, form: @form }.compact
     end
 
     # A value that is checked and locked can't submit through its own disabled input, so it is
@@ -147,6 +149,17 @@ module Ui
     end
 
     private
+
+    # Rails renders the collection helpers' hidden field with autocomplete="off", so a browser
+    # can't restore a stale value to it. Rails 8.1 added a flag to drop that hack and defaults it
+    # on (ActionView::Base.remove_hidden_field_autocomplete); 7.2 and 8.0 have no such flag and
+    # always emit it. Mirror Rails -- omit only when the flag exists and is set -- so the kit's
+    # hidden field matches it on every supported version.
+    def hidden_autocomplete
+      return 'off' unless ActionView::Base.respond_to?(:remove_hidden_field_autocomplete)
+
+      'off' unless ActionView::Base.remove_hidden_field_autocomplete
+    end
 
     # The id is derived from the name before `[]` is appended, so `user[role_ids]` yields
     # `user_role_ids` and each input `user_role_ids_1`, exactly as Rails would.

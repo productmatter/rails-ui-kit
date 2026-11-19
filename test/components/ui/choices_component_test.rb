@@ -297,5 +297,24 @@ module Ui
         assert_not_includes classes, 'items-center'
       end
     end
+
+    # autocomplete is outside the submitting surface the entries above compare, but Rails sets it
+    # on its collection hidden field (autocomplete="off" through Rails 8.0, dropped by the 8.1
+    # default) to stop a browser restoring a stale value. The kit's blank entry and its carriers
+    # must track that on every supported version, the way the multiple Select's hidden field does.
+    test 'CH22 the blank hidden field and its carriers carry the autocomplete Rails renders' do
+      render_choices(name: 'user[role_ids]', multiple: true, checked: [1, 2], disabled_values: [2],
+                     **collection_source)
+
+      rails_markup = ApplicationController.new.view_context.collection_check_boxes(:user, :role_ids, roles, :id, :name)
+      rails_autocomplete = Nokogiri::HTML5.fragment(rails_markup).at_css('input[type=hidden]')['autocomplete']
+
+      hidden = page.all('input[type=hidden]', visible: :all)
+      blank = hidden.find { |input| input.value.blank? }
+      carrier = hidden.find { |input| input.value.present? }
+
+      assert_equal rails_autocomplete.to_s, blank['autocomplete'].to_s
+      assert_equal rails_autocomplete.to_s, carrier['autocomplete'].to_s
+    end
   end
 end
