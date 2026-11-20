@@ -30,7 +30,9 @@ Three files carry the version string and **must** be bumped together:
 2. `package.json` — `"version"`
 3. `README.md` — the `tag: "vX.Y.Z"` in both Gemfile snippets (the docs app's Installation page renders `RailsUiKit::VERSION` and needs nothing)
 
-If the first two drift, consumers using importmap (Ruby) and consumers using a JS bundler (npm) will resolve different versions for the same git ref. If the README drifts, a first-time reader copies a stale tag. The release script below covers all three.
+If the first two drift, consumers using importmap (Ruby) and consumers using a JS bundler (npm) will resolve different versions for the same git ref. If the README drifts, a first-time reader copies a stale tag.
+
+A fourth file follows from these: `Gemfile.lock` pins `rails_ui_kit` at the gemspec's version (read from `version.rb`), so bumping the version leaves the lock stale until `bundle install` refreshes it — and a frozen `bundle install`, which is what CI runs, then fails on the gemspec/lock mismatch. The release script below covers all four.
 
 ## Pre-release checklist
 
@@ -41,6 +43,7 @@ Before tagging, verify on a clean working tree:
 - [ ] CI is green on the commit you intend to tag
 - [ ] `CHANGELOG.md` has an `## [Unreleased]` section with the changes for this release
 - [ ] Both version files agree (see the script below)
+- [ ] `Gemfile.lock` pins the new version — `bundle install` refreshes its `rails_ui_kit` line from `version.rb`
 - [ ] You are on `main` and up to date with `origin/main`
 
 ## Cutting the release
@@ -55,6 +58,9 @@ sed -i '' "s/VERSION = '.*'/VERSION = '${NEW_VERSION}'/" lib/rails_ui_kit/versio
 jq ".version = \"${NEW_VERSION}\"" package.json > package.json.tmp && mv package.json.tmp package.json
 # README's Gemfile snippets pin the tag consumers copy
 sed -i '' -E "s/tag: \"v[0-9]+\.[0-9]+\.[0-9]+\"/tag: \"v${NEW_VERSION}\"/g" README.md
+# version.rb feeds the gemspec, so Gemfile.lock's rails_ui_kit pin is now stale -- refresh it, or a
+# frozen `bundle install` (what CI runs) fails on the gemspec/lock mismatch.
+bundle install
 
 # 3. Verify they match
 ruby -r./lib/rails_ui_kit/version -e "puts RailsUiKit::VERSION"
@@ -66,7 +72,7 @@ grep -o 'tag: "v[0-9.]*"' README.md | sort -u
 #    and add a fresh empty [Unreleased] section above it.
 
 # 5. Commit
-git add lib/rails_ui_kit/version.rb package.json README.md CHANGELOG.md
+git add lib/rails_ui_kit/version.rb package.json README.md Gemfile.lock CHANGELOG.md
 git commit -m "Release v${NEW_VERSION}"
 
 # 6. Tag (annotated, signed if you sign commits)
