@@ -86,6 +86,15 @@ class Project
     id.present? && self.class.exists?(id)
   end
 
+  # What ActiveRecord's dirty tracking answers: whether the attributes differ from the stored row.
+  # A rejected update leaves it true, which is how the re-rendered form knows it is still unsaved.
+  def changed?
+    return false unless persisted?
+
+    stored = self.class.find(id)
+    name != stored.name || summary != stored.summary
+  end
+
   # Static demo data, so the activity modal (the read-only frame-target pattern) has something
   # real to read.
   def activity

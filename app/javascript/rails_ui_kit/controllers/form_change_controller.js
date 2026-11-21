@@ -40,7 +40,14 @@ export default class extends Controller {
     this.markPristine()
   }
 
-  dirtyValueChanged() {
+  // Stimulus calls this once on connect with the initial value (previousValue undefined). A form
+  // that starts clean has nothing to report, and reporting it anyway is what made a 422 forget its
+  // unsaved changes: the re-rendered form connected, said "pristine", and the modal believed it.
+  // A form the server renders dirty (data-ui--form-change-dirty-value="true", which
+  // Ui::ModalContentComponent sets for a changed model) does report it.
+  dirtyValueChanged(dirty, previousValue) {
+    if (previousValue === undefined && !dirty) return
+
     if (this.dirtyValue) {
       this.dispatchChangeEvent('form:changed')
       this.dispatchChangeEvent('ui--form-change:changed')

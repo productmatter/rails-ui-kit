@@ -135,6 +135,17 @@ module Ui
       assert_equal 1, page.all('form').size
     end
 
+    test 'form: renders the form dirty for a model with unsaved changes, and clean otherwise' do
+      project = Project.find(1)
+      render_inline(Ui::ModalContentComponent.new(id: 'c', form: { model: project }))
+      assert_nil page.find('form')['data-ui--form-change-dirty-value']
+
+      # What a rejected update leaves behind, and what a 422 re-renders.
+      project.name = 'Q3 campaign'
+      render_inline(Ui::ModalContentComponent.new(id: 'c', form: { model: [project] }))
+      assert_equal 'true', page.find('form')['data-ui--form-change-dirty-value']
+    end
+
     test "form: joins ui--form-change with the caller's controller and keeps its other data and class" do
       render_inline(Ui::ModalContentComponent.new(
                       id: 'c', form: { url: '/demos/invitations', data: { controller: 'autosave', action: 'turbo:submit-end->ui--modal#closeOnSuccess' },

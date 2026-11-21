@@ -22,10 +22,12 @@ class ChoicesTurboTest < ApplicationSystemTestCase
       form.setAttribute('data-controller', 'ui--form-change')
     JS
     assert_selector '#choices-round-trip form[data-controller="ui--form-change"]'
-    # ui--form-change announces its starting state on connect; what is under test is what happens
-    # to a choice after that, so the log starts once it has settled.
-    assert_equal %w[pristine], form_change_events
-    page.execute_script('window.__formChange = []')
+    # A form that connects clean announces nothing (form_change_test FC2); what is under test is
+    # what happens to a choice once the controller has connected, so wait for that.
+    Timeout.timeout(Capybara.default_max_wait_time) do
+      sleep 0.02 until page.evaluate_script("Boolean(document.querySelector('#choices-round-trip form').formChangeController)")
+    end
+    assert_empty form_change_events
   end
 
   def form_change_events

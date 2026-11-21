@@ -121,6 +121,32 @@ class ModalContentTest < ApplicationSystemTestCase
     assert_named 'Edit project'
   end
 
+  # The unsaved-changes prompt survives a 422: the re-rendered form is rendered dirty (the rejected
+  # model is still changed) and no longer announces "pristine" just for connecting.
+  test 'after a 422, closing still asks about the unsaved changes' do
+    open_modal(1, trigger: 'edit')
+    fill_in 'Name', with: 'Q3 campaign'
+    within('#modal') { click_on 'Save' }
+    assert_selector '#modal turbo-frame#project_modal_content', text: 'is already taken'
+    assert_selector '#modal form[data-ui--form-change-dirty-value="true"]'
+
+    press :escape
+
+    assert_selector 'dialog[open]#default-confirm', text: 'unsaved changes'
+    find('#default-confirm button[value="cancel"]').click
+    assert_state '#modal dialog', 'open'
+  end
+
+  test 'a fresh, untouched form is not dirty: Escape closes it without asking' do
+    open_modal(1, trigger: 'edit')
+    assert_no_selector '#modal form[data-ui--form-change-dirty-value]'
+
+    press :escape
+
+    no_modal
+    assert_no_selector 'dialog[open]#default-confirm'
+  end
+
   # The guide's next step and one-time result: a stream that replaces the content frame with the
   # same component, same id, swaps what the modal shows and leaves the modal alone.
   test 'a stream that replaces the content frame shows the next step in the same, still-named dialog' do
