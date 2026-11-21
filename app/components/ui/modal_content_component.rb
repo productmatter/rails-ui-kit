@@ -127,8 +127,9 @@ module Ui
     # The caller's form_with options, with ui--form-change joined onto any controller it names,
     # so Ui::ModalComponent's track_changes: works with no extra wiring (§ Behavior, item 4).
     #
-    # A model with unsaved changes -- what a rejected update leaves behind, re-rendered by a 422 --
-    # renders the form dirty, so the modal still asks before closing it.
+    # A model with errors -- a rejected submission, re-rendered by a 422 -- renders the form dirty,
+    # so the modal still asks before closing it. Errors, not changed?: a new form built with preset
+    # attributes (Contact.new(property: ...)) is changed before anyone has typed a thing.
     def form_options
       options = form.to_h.symbolize_keys
       options.merge(data: form_data(options), class: MERGER.merge([FORM_CLASSES, options[:class]].compact.join(' ')))
@@ -148,14 +149,14 @@ module Ui
     def form_data(options)
       data = options.fetch(:data, {}).to_h.symbolize_keys
       data[:controller] = join_tokens('ui--form-change', data[:controller])
-      data[:ui__form_change_dirty_value] = true if unsaved_model?(options[:model])
+      data[:ui__form_change_dirty_value] = true if rejected_submission?(options[:model])
       data
     end
 
     # form_with's model: may be a namespaced array ([:admin, project]); the record is the last.
-    def unsaved_model?(model)
+    def rejected_submission?(model)
       record = Array(model).last
-      record.respond_to?(:changed?) && record.changed?
+      record.respond_to?(:errors) && record.errors.any?
     end
   end
 end

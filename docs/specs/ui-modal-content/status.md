@@ -38,7 +38,7 @@ the demos (§ Acceptance checks, human-gate) is still open.
   - A `<form>` inside `form:` mode raises in development and test. After a frame swap it turned
     Save into the inner form's DELETE.
   - The unsaved-changes prompt survives a 422. `ui--form-change` no longer announces `pristine`
-    as it connects, and a changed model renders the form dirty. This bug predates this scope and
+    as it connects, and a model with errors renders the form dirty. This bug predates this scope and
     exists on 0.5.2.
   - `title:` or `description:` given with `with_header` raises.
   - A blank `id:` raises.

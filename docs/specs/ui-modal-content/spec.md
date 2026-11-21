@@ -80,7 +80,7 @@ skips the component.
    header, body and footer, so a submit button in the header and one in the footer submit
    the same form. The form carries `data-controller="ui--form-change"`, joined with any
    controller the caller passes, so `track_changes: true` works with no extra wiring. A
-   `model:` that is still changed — what a rejected update leaves behind — renders the form
+   `model:` with errors — a rejected submission — renders the form
    with `data-ui--form-change-dirty-value="true"`, so the unsaved-changes prompt survives a
    422. A `<form>` inside the parts raises in development and test (logged elsewhere): a
    frame swap drops the inner form tag and its fields, `_method=delete` included, submit with
@@ -195,7 +195,7 @@ Inherits `ui-component-library` § Assumptions and `ui-modal-turbo` § Assumptio
 
 ### agent-loopable
 
-- The component renders a `<turbo-frame>` root with the id and `data-slot`, with or without a title, description, header slot and footer slot; `title_id` names the heading; `close: false` drops the close button; `form:` wraps every part in one form carrying `ui--form-change` joined with the caller's controller, renders it dirty for a changed model and raises on a nested form; a blank id, and `title:` or `description:` with the header slot, raise; class keywords merge and attributes forward — run: `bundle exec rake test TEST=test/components/ui/modal_content_component_test.rb`
+- The component renders a `<turbo-frame>` root with the id and `data-slot`, with or without a title, description, header slot and footer slot; `title_id` names the heading; `close: false` drops the close button; `form:` wraps every part in one form carrying `ui--form-change` joined with the caller's controller, renders it dirty for a model with errors (not one merely changed) and raises on a nested form; a blank id, and `title:` or `description:` with the header slot, raise; class keywords merge and attributes forward — run: `bundle exec rake test TEST=test/components/ui/modal_content_component_test.rb`
 - Strict mode off renders any content; on, it raises `MissingContentError` unless the content starts with the component (past whitespace and comments), including content from a template, and raises for a component buried in hand-rolled markup; the docs app runs with it on — run: `bundle exec rake test TEST=test/components/ui/modal_component_test.rb`
 - In a `:right` modal the footer's bottom edge sits on the dialog's bottom when the content is short; in every position, long content stays inside the viewport and scrolls inside the dialog with the header and footer in view — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
 - A 422 keeps the same `<dialog>` element and the same frame id, and closing after it still asks about the unsaved changes while a fresh form doesn't; a redirect answering a form in the content frame renders "Content missing"; the header's close button closes the modal — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
