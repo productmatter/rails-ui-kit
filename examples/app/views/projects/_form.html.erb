@@ -1,16 +1,16 @@
-<div class="p-6 sm:p-8">
-  <h2 id="project_modal_title" class="text-base font-semibold text-foreground">Edit project</h2>
-
-  <%# ui--form-change is what makes track_changes: true mean anything: it tells the modal when
-      the form is dirty, so closing it asks first. %>
-  <%= form_with model: project, class: "mt-5 grid gap-4", data: { controller: "ui--form-change" } do |form| %>
+<%# The edit state: the same component and the same id as the read state. form: wraps the header,
+    body and footer in one form and puts ui--form-change on it, which is what makes
+    track_changes: true mean anything: it tells the modal when the form is dirty, so closing it
+    asks first. The fields bind through model:, so the block needs no form builder. %>
+<%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: "Edit project", form: { model: project }) do |modal| %>
+  <div class="grid gap-4">
     <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
     <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
+  </div>
 
-    <div class="mt-2 flex items-center justify-end gap-2">
-      <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
-      <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
-      <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
-    </div>
+  <% modal.with_footer do %>
+    <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
+    <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+    <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
   <% end %>
-</div>
+<% end %>

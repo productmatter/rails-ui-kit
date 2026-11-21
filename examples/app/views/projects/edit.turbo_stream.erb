@@ -1,8 +1,6 @@
 <%# Opening straight into the edit state, from the list's Edit link. %>
 <%= turbo_stream.update "modal" do %>
-  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_title" }) do %>
-    <%= turbo_frame_tag "project_modal_content" do %>
-      <%= render "projects/form", project: @project %>
-    <% end %>
+  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_content_title" }) do %>
+    <%= render "projects/form", project: @project %>
   <% end %>
 <% end %>

@@ -49,6 +49,64 @@
   <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-response" class="text-card-foreground"><%= h(example_modal_response) %></code></pre>
 </div>
 
+<%# Content %>
+<h2 id="modal-content" class="text-base font-semibold mb-3">Content</h2>
+<p class="text-sm text-muted-foreground mb-3">
+  The modal is a wrapper, mounted once. What goes inside it is
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalContentComponent</code>: a sticky header with the title and a close
+  button, the body, and a sticky footer for the actions, filling a side panel top to bottom. Its root is always a
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">&lt;turbo-frame&gt;</code> with the id you give it, so render the same
+  component on its own for every response after the open — a 422, the next step, a result — and the frame is replaced while
+  the modal stays put. Name the modal by the component's <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">title_id</code>,
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">"#{id}_title"</code>.
+</p>
+<div class="rounded-lg overflow-hidden border border-border mb-4">
+  <div class="flex items-center justify-between bg-muted px-4 py-2">
+    <span class="text-xs text-muted-foreground">ERB — _form.html.erb</span>
+    <button data-copy-target="#modal-content-usage" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Copy</button>
+  </div>
+  <pre class="bg-card px-5 py-4 overflow-x-auto text-sm leading-relaxed"><code id="modal-content-usage" class="text-card-foreground"><%= h(example_modal_content) %></code></pre>
+</div>
+<div class="overflow-x-auto rounded-lg border border-border mb-4">
+  <table class="w-full text-sm">
+    <thead class="bg-muted">
+      <tr>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Default</th>
+        <th class="text-start px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      <% [
+        ["id",                                     "String",  "required", "The turbo-frame's id. Unique on the page, and the same in every state."],
+        ["title",                                  "String",  "nil",      "The heading, an <h2> with the id title_id. Pass aria: { labelledby: content.title_id } to the modal."],
+        ["description",                            "String",  "nil",      "A muted line under the title."],
+        ["close",                                  "Boolean", "true",     "An icon close button in the header, wired to ui--modal#close."],
+        ["close_label",                            "String",  "nil",      "Overrides rails_ui_kit.modal.close_label, the close button's accessible name."],
+        ["form",                                   "Hash",    "nil",      "form_with options. One form wraps header, body and footer, with ui--form-change joined onto its data-controller."],
+        ["header_class / body_class / footer_class", "String", "nil",     "Merged over each part's classes with tailwind_merge."],
+        ["class and other attributes",             "—",       "—",        "Forwarded to the turbo-frame; class merges over its flex column."],
+        ["with_header / with_footer",              "Slot",    "—",        "A header of your own, inside the sticky header; the actions, in the sticky footer. The block is the body."],
+      ].each do |name, type, default, desc| %>
+        <tr class="hover:bg-muted/50">
+          <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= type %></td>
+          <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= default %></td>
+          <td class="px-4 py-3 text-muted-foreground"><%= desc %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<p class="text-sm text-muted-foreground mb-8">
+  To make sure every modal is built this way, set
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalComponent.require_content_component = true</code> in a
+  <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">to_prepare</code> block for development and test: a modal whose content
+  has no content component then raises <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalComponent::MissingContentError</code>.
+  It is off by default.
+</p>
+
 <%# Turbo %>
 <h2 class="text-base font-semibold mb-3">Driving it with Turbo</h2>
 <p class="text-sm text-muted-foreground mb-3">

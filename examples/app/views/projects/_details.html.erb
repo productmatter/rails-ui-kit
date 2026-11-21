@@ -1,9 +1,10 @@
-<div class="p-6 sm:p-8">
-  <%# The id the modal is named by. It has to exist in every state this content frame renders. %>
-  <h2 id="project_modal_title" class="text-base font-semibold text-foreground"><%= project.name %></h2>
-  <p class="mt-1.5 text-sm text-muted-foreground"><%= project.summary %></p>
+<%# The read state. The content is one Ui::ModalContentComponent, and so is the edit state's, with
+    the same id: the frame later responses replace, and the heading that names the modal
+    (project_modal_content_title), exist in every state by construction. %>
+<%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: project.name) do |modal| %>
+  <p class="text-sm text-muted-foreground"><%= project.summary %></p>
 
-  <div class="mt-6 flex flex-wrap items-center justify-end gap-2">
+  <% modal.with_footer do %>
     <%# Destructive, so it asks first -- through the kit's ConfirmDialog, which opens above the
         modal and leaves it open when the answer is no. %>
     <%= form_with url: project_path(project), method: :delete, data: { turbo_confirm: "Delete #{project.name}? This cannot be undone." } do %>
@@ -16,5 +17,5 @@
 
     <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Close" } %>
     <%= render(Ui::ButtonComponent.new(href: edit_project_path(project), size: :sm)) { "Edit" } %>
-  </div>
-</div>
+  <% end %>
+<% end %>

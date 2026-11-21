@@ -150,8 +150,8 @@ class ModalTest < ApplicationSystemTestCase
   test "M7: the demo modal's dialog is named via aria-labelledby pointing at its heading" do
     open_modal(1)
 
-    assert_equal 'project_modal_title', dialog['aria-labelledby']
-    assert_equal 'Acme rebrand', find('#project_modal_title').text
+    assert_equal 'project_modal_content_title', dialog['aria-labelledby']
+    assert_equal 'Acme rebrand', find('#project_modal_content_title').text
   end
 
   test 'closing then reopening via stream ends with the new modal open, locked, and focused' do

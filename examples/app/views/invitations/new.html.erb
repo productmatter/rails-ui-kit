@@ -1,5 +1,4 @@
-<%# The bare frame, which is what `render :new, formats: :html` answers an invalid submission
-    with: the error re-renders inside the content frame and the modal stays exactly as it is. %>
-<%= turbo_frame_tag "invitation_modal_content" do %>
-  <%= render "invitations/form", invitation: @invitation %>
-<% end %>
+<%# The content without the modal, which is what `render :new, formats: :html` answers an invalid
+    submission with: the error re-renders inside the content frame and the modal stays exactly as
+    it is. %>
+<%= render "invitations/form", invitation: @invitation %>
