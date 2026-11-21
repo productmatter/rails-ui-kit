@@ -255,7 +255,7 @@ Modal, so it doesn't wait for the retrofit, and the retrofit keeps its tests gre
 | Scope | Owns | Depends on | Status |
 |---|---|---|---|
 | `ui-modal-turbo` | The blessed Modal + Turbo patterns and their full lifecycle, as real `examples/` demos driven by system tests; `ui--modal#closeOnSuccess` and the `turbo_stream.ui_close_modal` action; the canonical guide shipped in the gem; the opt-in `rails_ui_kit:agent_skill` generator. | `ui-test-harness` | ready-for-review |
-| `ui-modal-content` | `Ui::ModalContentComponent`: a modal's header, body and footer as one component whose root is always its own `<turbo-frame>`, so every later response replaces the frame and never re-mounts the modal; the layout contract (sticky header, `flex-1` body, sticky footer, fills a full-height pane); the opt-in `Ui::ModalComponent.require_content_component` check. Additive. | `ui-modal-turbo`, `ui-localization`, `ui-test-harness` | building |
+| `ui-modal-content` | `Ui::ModalContentComponent`: a modal's header, body and footer as one component whose root is always its own `<turbo-frame>`, so every later response replaces the frame and never re-mounts the modal; the layout contract (sticky header, `flex-1` body, sticky footer, fills a full-height pane); the opt-in `Ui::ModalComponent.require_content_component` check. Additive. | `ui-modal-turbo`, `ui-localization`, `ui-test-harness` | ready-for-review |
 
 **Phase B — Controls without a controller of their own.**
 
