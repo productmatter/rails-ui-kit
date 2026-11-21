@@ -37,4 +37,27 @@ class FormChangeTest < ApplicationSystemTestCase
     page.execute_script("document.getElementById('fc-demo-form').reset()")
     assert_equal %w[form:pristine ui--form-change:pristine], events
   end
+
+  # Connecting is not a change. A form that connects clean says nothing -- announcing "pristine"
+  # made a modal forget its unsaved changes when a 422 re-rendered the form -- and a form the server
+  # renders dirty says so as it connects.
+  test 'FC2 a form announces only a dirty state as it connects' do
+    page.execute_script(<<~JS)
+      window.__connectEvents = []
+      document.addEventListener('ui--form-change:pristine', () => window.__connectEvents.push('pristine'))
+      document.addEventListener('ui--form-change:changed', () => window.__connectEvents.push('changed'))
+      for (const dirty of [null, 'true']) {
+        const form = document.createElement('form')
+        form.className = 'fc2-form'
+        form.setAttribute('data-controller', 'ui--form-change')
+        if (dirty) form.setAttribute('data-ui--form-change-dirty-value', dirty)
+        document.body.appendChild(form)
+      }
+    JS
+    Timeout.timeout(Capybara.default_max_wait_time) do
+      sleep 0.02 until page.evaluate_script("[...document.querySelectorAll('.fc2-form')].every((f) => f.formChangeController)")
+    end
+
+    assert_equal %w[changed], page.evaluate_script('window.__connectEvents')
+  end
 end

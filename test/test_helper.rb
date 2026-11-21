@@ -18,3 +18,17 @@ I18n.backend.reload!
 # is what makes a hardcoded string and a box that can't take a longer word both visible.
 require_relative 'support/pseudo_locale'
 PseudoLocale.install!
+
+# The docs app runs with Ui::ModalComponent.require_content_component on (its own initializer). A
+# test of the modal wrapper itself, rendered with throwaway content, opts out for its block.
+module ActiveSupport
+  class TestCase
+    def without_required_modal_content
+      original = Ui::ModalComponent.require_content_component
+      Ui::ModalComponent.require_content_component = false
+      yield
+    ensure
+      Ui::ModalComponent.require_content_component = original
+    end
+  end
+end

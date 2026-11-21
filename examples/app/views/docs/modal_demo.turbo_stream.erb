@@ -1,164 +1,145 @@
+<%# The Modal page's eight position previews. Each is a Ui::ModalContentComponent inside the modal,
+    named by the content's title_id (and described by its description_id where it has one): the
+    docs app runs with Ui::ModalComponent.require_content_component on, so the kit's own modals
+    keep its rule. %>
+<% content = case @position
+   when :center then Ui::ModalContentComponent.new(id: "position_demo", title: "Delete project", close: false)
+   when :right then Ui::ModalContentComponent.new(id: "position_demo", title: "Edit member", description: "Update profile and permissions",
+                                                  footer_class: "justify-between")
+   when :left then Ui::ModalContentComponent.new(id: "position_demo", title: "Filters", body_class: "p-0 divide-y divide-border",
+                                                 footer_class: "justify-between")
+   when :top then Ui::ModalContentComponent.new(id: "position_demo", title: "Invite team member",
+                                                description: "They'll receive an email with a link to join your workspace.")
+   when :top_full then Ui::ModalContentComponent.new(id: "position_demo", header_class: "items-center gap-3 px-4 py-3.5",
+                                                     body_class: "px-0 py-2", footer_class: "justify-start gap-4 px-4 pt-2.5 pb-2.5")
+   when :bottom then Ui::ModalContentComponent.new(id: "position_demo", title: "Share",
+                                                   description: "Share this project with others via link or app.")
+   when :bottom_full then Ui::ModalContentComponent.new(id: "position_demo", title: "Move to project",
+                                                        description: "Select where you'd like to move Homepage redesign.",
+                                                        body_class: "px-3")
+   when :full_screen then Ui::ModalContentComponent.new(id: "position_demo", body_class: "flex p-0")
+   end %>
+<% dialog_name = @position == :top_full ? { label: "Command palette" } : { labelledby: content.title_id, describedby: (content.description_id if content.description) }.compact %>
 <%= turbo_stream.update "modal" do %>
-  <%= render Ui::ModalComponent.new(position: @position) do %>
+  <%= render Ui::ModalComponent.new(position: @position, aria: dialog_name) do %>
+    <%= render content do |modal| %>
 
-    <%# ─── CENTER: Destructive confirmation ──────────────────────────────── %>
-    <% if @position == :center %>
-      <div class="p-6 sm:p-8">
+      <%# ─── CENTER: Destructive confirmation ──────────────────────────────── %>
+      <% if @position == :center %>
         <div class="flex items-start gap-4">
           <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 ring-1 ring-destructive/20">
             <svg class="h-5 w-5 text-destructive" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
             </svg>
           </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="text-base font-semibold text-foreground">Delete project</h2>
-            <p class="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-              Are you sure you want to delete <span class="font-medium text-foreground">Acme rebrand</span>?
-              All assets, comments, and version history will be permanently removed.
-              This action cannot be undone.
-            </p>
-          </div>
+          <p class="min-w-0 flex-1 text-sm text-muted-foreground leading-relaxed">
+            Are you sure you want to delete <span class="font-medium text-foreground">Acme rebrand</span>?
+            All assets, comments, and version history will be permanently removed.
+            This action cannot be undone.
+          </p>
         </div>
-        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <%= render(Ui::ButtonComponent.new(variant: :outline, class: "w-full sm:w-auto", data: { action: "click->ui--modal#close" })) { "Cancel" } %>
-          <%= render(Ui::ButtonComponent.new(variant: :destructive, class: "w-full sm:w-auto", data: { action: "click->ui--modal#close" })) { "Delete project" } %>
-        </div>
-      </div>
+        <% modal.with_footer do %>
+          <%= render(Ui::ButtonComponent.new(variant: :outline, data: { action: "click->ui--modal#close" })) { "Cancel" } %>
+          <%= render(Ui::ButtonComponent.new(variant: :destructive, data: { action: "click->ui--modal#close" })) { "Delete project" } %>
+        <% end %>
 
-    <%# ─── RIGHT: Edit member slide-in panel ──────────────────────────────── %>
-    <% elsif @position == :right %>
-      <div class="flex flex-col h-full">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+      <%# ─── RIGHT: Edit member slide-in panel ──────────────────────────────── %>
+      <% elsif @position == :right %>
+        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-border">
+          <div class="h-14 w-14 rounded-full bg-accent flex items-center justify-center shrink-0">
+            <span class="text-lg font-semibold text-accent-foreground">JD</span>
+          </div>
           <div>
-            <h2 class="text-base font-semibold text-foreground">Edit member</h2>
-            <p class="text-xs text-muted-foreground mt-0.5">Update profile and permissions</p>
-          </div>
-          <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, data: { action: "click->ui--modal#close" }) do %>
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-          <% end %>
-        </div>
-        <div class="flex-1 overflow-y-auto">
-          <div class="px-6 py-5">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-border">
-              <div class="h-14 w-14 rounded-full bg-accent flex items-center justify-center shrink-0">
-                <span class="text-lg font-semibold text-accent-foreground">JD</span>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-foreground">Jane Doe</p>
-                <p class="text-xs text-muted-foreground">jane@acme.com</p>
-                <span class="inline-flex items-center mt-1 rounded-full bg-green-50 dark:bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:text-green-400 ring-1 ring-green-100 dark:ring-green-500/20">Active</span>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label for="member-first-name" class="block text-xs font-medium text-foreground mb-1.5">First name</label>
-                  <input id="member-first-name" type="text" value="Jane" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
-                </div>
-                <div>
-                  <label for="member-last-name" class="block text-xs font-medium text-foreground mb-1.5">Last name</label>
-                  <input id="member-last-name" type="text" value="Doe" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
-                </div>
-              </div>
-              <div>
-                <label for="member-email" class="block text-xs font-medium text-foreground mb-1.5">Email address</label>
-                <input id="member-email" type="email" value="jane@acme.com" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
-              </div>
-              <div>
-                <label for="member-role" class="block text-xs font-medium text-foreground mb-1.5">Role</label>
-                <select id="member-role" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow">
-                  <option>Viewer — read only access</option>
-                  <option selected>Editor — can edit content</option>
-                  <option>Admin — full access</option>
-                </select>
-              </div>
-              <div>
-                <label for="member-department" class="block text-xs font-medium text-foreground mb-1.5">Department</label>
-                <input id="member-department" type="text" value="Design" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
-              </div>
-              <div>
-                <label for="member-notes" class="block text-xs font-medium text-foreground mb-1.5">Notes</label>
-                <textarea id="member-notes" rows="3" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none transition-shadow">Lead designer on the Acme account.</textarea>
-              </div>
-            </div>
+            <p class="text-sm font-semibold text-foreground">Jane Doe</p>
+            <p class="text-xs text-muted-foreground">jane@acme.com</p>
+            <span class="inline-flex items-center mt-1 rounded-full bg-green-50 dark:bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:text-green-400 ring-1 ring-green-100 dark:ring-green-500/20">Active</span>
           </div>
         </div>
-        <div class="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="member-first-name" class="block text-xs font-medium text-foreground mb-1.5">First name</label>
+              <input id="member-first-name" type="text" value="Jane" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+            </div>
+            <div>
+              <label for="member-last-name" class="block text-xs font-medium text-foreground mb-1.5">Last name</label>
+              <input id="member-last-name" type="text" value="Doe" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+            </div>
+          </div>
+          <div>
+            <label for="member-email" class="block text-xs font-medium text-foreground mb-1.5">Email address</label>
+            <input id="member-email" type="email" value="jane@acme.com" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+          </div>
+          <div>
+            <label for="member-role" class="block text-xs font-medium text-foreground mb-1.5">Role</label>
+            <select id="member-role" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow">
+              <option>Viewer — read only access</option>
+              <option selected>Editor — can edit content</option>
+              <option>Admin — full access</option>
+            </select>
+          </div>
+          <div>
+            <label for="member-department" class="block text-xs font-medium text-foreground mb-1.5">Department</label>
+            <input id="member-department" type="text" value="Design" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+          </div>
+          <div>
+            <label for="member-notes" class="block text-xs font-medium text-foreground mb-1.5">Notes</label>
+            <textarea id="member-notes" rows="3" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none transition-shadow">Lead designer on the Acme account.</textarea>
+          </div>
+        </div>
+        <% modal.with_footer do %>
           <%= render(Ui::ButtonComponent.new(variant: :ghost, size: :sm)) { "Remove member" } %>
           <div class="flex gap-2">
             <%= render(Ui::ButtonComponent.new(variant: :outline, data: { action: "click->ui--modal#close" })) { "Cancel" } %>
             <%= render(Ui::ButtonComponent.new(data: { action: "click->ui--modal#close" })) { "Save changes" } %>
           </div>
-        </div>
-      </div>
+        <% end %>
 
-    <%# ─── LEFT: Filters panel ──────────────────────────────────────────────── %>
-    <% elsif @position == :left %>
-      <div class="flex flex-col h-full">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 class="text-base font-semibold text-foreground">Filters</h2>
-          <div class="flex items-center gap-3">
-            <button class="text-xs font-medium text-primary hover:text-primary/80 transition-colors">Clear all</button>
-            <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, data: { action: "click->ui--modal#close" }) do %>
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+      <%# ─── LEFT: Filters panel ──────────────────────────────────────────────── %>
+      <% elsif @position == :left %>
+        <div class="px-6 py-5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Status</p>
+          <div class="space-y-3">
+            <% [["Active", true, "bg-green-500"], ["Draft", false, "bg-muted-foreground"], ["Archived", false, "bg-muted-foreground/50"], ["Scheduled", true, "bg-blue-500"]].each do |label, checked, dot| %>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
+                <div class="h-2 w-2 rounded-full <%= dot %>"></div>
+                <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
+              </label>
             <% end %>
           </div>
         </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-border">
-          <div class="px-6 py-5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Status</p>
-            <div class="space-y-3">
-              <% [["Active", true, "bg-green-500"], ["Draft", false, "bg-muted-foreground"], ["Archived", false, "bg-muted-foreground/50"], ["Scheduled", true, "bg-blue-500"]].each do |label, checked, dot| %>
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
-                  <div class="h-2 w-2 rounded-full <%= dot %>"></div>
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
-                </label>
-              <% end %>
-            </div>
-          </div>
-          <div class="px-6 py-5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Assignee</p>
-            <div class="space-y-3">
-              <% [["Jane Doe", true, "JD", "bg-accent text-accent-foreground"], ["Alex Smith", false, "AS", "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"], ["Maria Garcia", true, "MG", "bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300"], ["Tom Chen", false, "TC", "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"]].each do |label, checked, initials, avatar| %>
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
-                  <div class="h-6 w-6 rounded-full <%= avatar %> flex items-center justify-center text-[10px] font-semibold shrink-0"><%= initials %></div>
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
-                </label>
-              <% end %>
-            </div>
-          </div>
-          <div class="px-6 py-5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Priority</p>
-            <div class="space-y-3">
-              <% [["Urgent", false, "text-destructive"], ["High", true, "text-orange-500"], ["Medium", true, "text-amber-500"], ["Low", false, "text-muted-foreground"]].each do |label, checked, color| %>
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
-                  <svg class="h-3.5 w-3.5 <%= color %>" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="8"/></svg>
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
-                </label>
-              <% end %>
-            </div>
+        <div class="px-6 py-5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Assignee</p>
+          <div class="space-y-3">
+            <% [["Jane Doe", true, "JD", "bg-accent text-accent-foreground"], ["Alex Smith", false, "AS", "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"], ["Maria Garcia", true, "MG", "bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300"], ["Tom Chen", false, "TC", "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"]].each do |label, checked, initials, avatar| %>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
+                <div class="h-6 w-6 rounded-full <%= avatar %> flex items-center justify-center text-[10px] font-semibold shrink-0"><%= initials %></div>
+                <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
+              </label>
+            <% end %>
           </div>
         </div>
-        <div class="border-t border-border px-6 py-4">
-          <%= render(Ui::ButtonComponent.new(class: "w-full", data: { action: "click->ui--modal#close" })) { "Apply 4 filters" } %>
+        <div class="px-6 py-5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Priority</p>
+          <div class="space-y-3">
+            <% [["Urgent", false, "text-destructive"], ["High", true, "text-orange-500"], ["Medium", true, "text-amber-500"], ["Low", false, "text-muted-foreground"]].each do |label, checked, color| %>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" <%= "checked" if checked %> class="h-4 w-4 rounded border-input text-primary focus:ring-ring focus:ring-offset-0"/>
+                <svg class="h-3.5 w-3.5 <%= color %>" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="8"/></svg>
+                <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors"><%= label %></span>
+              </label>
+            <% end %>
+          </div>
         </div>
-      </div>
+        <% modal.with_footer do %>
+          <button class="text-xs font-medium text-primary hover:text-primary/80 transition-colors">Clear all</button>
+          <%= render(Ui::ButtonComponent.new(data: { action: "click->ui--modal#close" })) { "Apply 4 filters" } %>
+        <% end %>
 
-    <%# ─── TOP: Invite team member ────────────────────────────────────────── %>
-    <% elsif @position == :top %>
-      <div class="px-6 py-6 sm:px-8">
-        <div class="flex items-start justify-between mb-5">
-          <div>
-            <h2 class="text-base font-semibold text-foreground">Invite team member</h2>
-            <p class="text-sm text-muted-foreground mt-0.5">They'll receive an email with a link to join your workspace.</p>
-          </div>
-          <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, class: "ms-4 shrink-0", data: { action: "click->ui--modal#close" }) do %>
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-          <% end %>
-        </div>
+      <%# ─── TOP: Invite team member ────────────────────────────────────────── %>
+      <% elsif @position == :top %>
         <div class="flex flex-col sm:flex-row gap-3">
           <input type="email" placeholder="colleague@company.com"
                  class="flex-1 rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
@@ -172,42 +153,38 @@
         <p class="mt-3 text-xs text-muted-foreground">
           Invites expire after 7 days. You can resend or revoke them from <span class="text-primary cursor-pointer hover:underline">Team settings</span>.
         </p>
-      </div>
 
-    <%# ─── TOP FULL: Command palette ──────────────────────────────────────── %>
-    <% elsif @position == :top_full %>
-      <div>
-        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-border">
+      <%# ─── TOP FULL: Command palette ──────────────────────────────────────── %>
+      <% elsif @position == :top_full %>
+        <% modal.with_header do %>
           <svg class="h-4 w-4 text-muted-foreground shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
-          <input type="text" placeholder="Search or jump to…" autofocus
+          <input type="text" placeholder="Search or jump to…" aria-label="Search or jump to" autofocus
                  class="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"/>
           <button data-action="click->ui--modal#close"
                   class="shrink-0 rounded border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-ring transition-colors">
             ESC
           </button>
+        <% end %>
+        <div class="px-3 mb-1">
+          <p class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent</p>
         </div>
-        <div class="max-h-72 overflow-y-auto py-2">
-          <div class="px-3 mb-1">
-            <p class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent</p>
-          </div>
-          <% [
-            ["Acme rebrand", "Project", "📁"],
-            ["Q3 campaign brief", "Document", "📄"],
-            ["Jane Doe", "Member", "👤"],
-            ["Invoice #1042", "Finance", "💳"],
-            ["Brand guidelines v2", "Document", "📄"],
-          ].each_with_index do |(name, type, icon), i| %>
-            <button class="flex w-full items-center gap-3 rounded-md mx-1 px-3 py-2 text-start hover:bg-accent transition-colors <%= i == 0 ? 'bg-muted' : '' %>">
-              <span class="text-base w-5 text-center shrink-0"><%= icon %></span>
-              <span class="flex-1 text-sm font-medium text-foreground truncate"><%= name %></span>
-              <span class="text-xs text-muted-foreground shrink-0"><%= type %></span>
-              <% if i == 0 %>
-                <span class="ms-1 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">↵</span>
-              <% end %>
-            </button>
-          <% end %>
-        </div>
-        <div class="border-t border-border px-4 py-2.5 flex items-center gap-4">
+        <% [
+          ["Acme rebrand", "Project", "📁"],
+          ["Q3 campaign brief", "Document", "📄"],
+          ["Jane Doe", "Member", "👤"],
+          ["Invoice #1042", "Finance", "💳"],
+          ["Brand guidelines v2", "Document", "📄"],
+        ].each_with_index do |(name, type, icon), i| %>
+          <button class="flex w-full items-center gap-3 rounded-md mx-1 px-3 py-2 text-start hover:bg-accent transition-colors <%= i == 0 ? 'bg-muted' : '' %>">
+            <span class="text-base w-5 text-center shrink-0"><%= icon %></span>
+            <span class="flex-1 text-sm font-medium text-foreground truncate"><%= name %></span>
+            <span class="text-xs text-muted-foreground shrink-0"><%= type %></span>
+            <% if i == 0 %>
+              <span class="ms-1 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">↵</span>
+            <% end %>
+          </button>
+        <% end %>
+        <% modal.with_footer do %>
           <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <kbd class="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">↑↓</kbd> navigate
           </div>
@@ -217,15 +194,10 @@
           <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <kbd class="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">esc</kbd> close
           </div>
-        </div>
-      </div>
+        <% end %>
 
-    <%# ─── BOTTOM: Share sheet ────────────────────────────────────────────── %>
-    <% elsif @position == :bottom %>
-      <div class="px-6 pt-3 pb-8 sm:pb-6">
-        <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-border"></div>
-        <h2 class="text-base font-semibold text-foreground mb-1">Share</h2>
-        <p class="text-sm text-muted-foreground mb-5">Share this project with others via link or app.</p>
+      <%# ─── BOTTOM: Share sheet ────────────────────────────────────────────── %>
+      <% elsif @position == :bottom %>
         <div class="grid grid-cols-4 gap-4 mb-6">
           <% [["Copy link", "🔗"], ["Email", "✉️"], ["Slack", "💬"], ["More", "•••"]].each do |label, icon| %>
             <button class="flex flex-col items-center gap-2">
@@ -239,24 +211,19 @@
           <span class="flex-1 text-xs text-muted-foreground truncate">https://app.example.com/projects/acme-rebrand</span>
           <%= render(Ui::ButtonComponent.new(size: :sm, class: "shrink-0")) { "Copy" } %>
         </div>
-        <%= render(Ui::ButtonComponent.new(variant: :secondary, class: "w-full", data: { action: "click->ui--modal#close" })) { "Cancel" } %>
-      </div>
+        <% modal.with_footer do %>
+          <%= render(Ui::ButtonComponent.new(variant: :secondary, class: "w-full", data: { action: "click->ui--modal#close" })) { "Cancel" } %>
+        <% end %>
 
-    <%# ─── BOTTOM FULL: Move to project ──────────────────────────────────── %>
-    <% elsif @position == :bottom_full %>
-      <div class="pt-3 pb-8 sm:pb-4">
-        <div class="mx-auto mb-5 h-1 w-10 rounded-full bg-border"></div>
-        <div class="px-6 mb-4">
-          <h2 class="text-base font-semibold text-foreground">Move to project</h2>
-          <p class="text-sm text-muted-foreground mt-0.5">Select where you'd like to move <span class="font-medium text-foreground">Homepage redesign</span>.</p>
-        </div>
-        <div class="px-3 mb-3">
+      <%# ─── BOTTOM FULL: Move to project ──────────────────────────────────── %>
+      <% elsif @position == :bottom_full %>
+        <div class="mb-3">
           <div class="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
             <svg class="h-3.5 w-3.5 text-muted-foreground shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
             <input type="text" placeholder="Search projects…" class="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"/>
           </div>
         </div>
-        <div class="max-h-56 overflow-y-auto px-3">
+        <div>
           <% [["Acme rebrand", "12 tasks", "bg-primary"], ["Q3 campaign", "8 tasks", "bg-blue-500"], ["Website refresh", "24 tasks", "bg-emerald-500"], ["Brand guidelines", "5 tasks", "bg-amber-500"], ["Mobile app", "17 tasks", "bg-pink-500"]].each do |name, count, color| %>
             <button class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-start hover:bg-accent active:bg-muted transition-colors group">
               <div class="h-8 w-8 rounded-lg <%= color %> flex items-center justify-center shrink-0">
@@ -270,65 +237,62 @@
             </button>
           <% end %>
         </div>
-        <div class="border-t border-border mt-3 px-6 pt-4">
+        <% modal.with_footer do %>
           <%= render(Ui::ButtonComponent.new(variant: :secondary, class: "w-full", data: { action: "click->ui--modal#close" })) { "Cancel" } %>
-        </div>
-      </div>
+        <% end %>
 
-    <%# ─── FULL SCREEN: Workspace settings ───────────────────────────────── %>
-    <% elsif @position == :full_screen %>
-      <div class="flex flex-col h-full">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+      <%# ─── FULL SCREEN: Workspace settings ───────────────────────────────── %>
+      <% elsif @position == :full_screen %>
+        <%# A header of its own -- back, title, save -- whose heading carries title_id. %>
+        <% modal.with_header do %>
           <div class="flex items-center gap-3">
             <%= render Ui::ButtonComponent.new(variant: :ghost, size: :icon, aria: { label: "Close" }, data: { action: "click->ui--modal#close" }) do %>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
             <% end %>
-            <h2 class="text-base font-semibold text-foreground">Workspace settings</h2>
+            <h2 id="<%= content.title_id %>" class="text-base font-semibold text-foreground">Workspace settings</h2>
           </div>
           <%= render(Ui::ButtonComponent.new(data: { action: "click->ui--modal#close" })) { "Save changes" } %>
-        </div>
-        <div class="flex flex-1 overflow-hidden">
-          <nav class="w-48 shrink-0 border-e border-border px-3 py-4 overflow-y-auto">
-            <% [["General", true], ["Members", false], ["Billing", false], ["Integrations", false], ["Notifications", false], ["Security", false], ["API", false]].each do |label, active| %>
-              <button class="w-full text-start px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors <%= active ? 'bg-accent font-semibold text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' %>"><%= label %></button>
-            <% end %>
-          </nav>
-          <div class="flex-1 overflow-y-auto px-8 py-6">
-            <div class="max-w-lg space-y-8">
-              <div>
-                <h3 class="text-sm font-semibold text-foreground mb-1">General</h3>
-                <p class="text-sm text-muted-foreground mb-5">Manage your workspace name, slug, and public information.</p>
-                <div class="space-y-4">
-                  <div>
-                    <label for="workspace-name" class="block text-xs font-medium text-foreground mb-1.5">Workspace name</label>
-                    <input id="workspace-name" type="text" value="Acme Corp" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+        <% end %>
+        <nav class="w-48 shrink-0 border-e border-border px-3 py-4 overflow-y-auto">
+          <% [["General", true], ["Members", false], ["Billing", false], ["Integrations", false], ["Notifications", false], ["Security", false], ["API", false]].each do |label, active| %>
+            <button class="w-full text-start px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors <%= active ? 'bg-accent font-semibold text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' %>"><%= label %></button>
+          <% end %>
+        </nav>
+        <div class="flex-1 overflow-y-auto px-8 py-6">
+          <div class="max-w-lg space-y-8">
+            <div>
+              <h3 class="text-sm font-semibold text-foreground mb-1">General</h3>
+              <p class="text-sm text-muted-foreground mb-5">Manage your workspace name, slug, and public information.</p>
+              <div class="space-y-4">
+                <div>
+                  <label for="workspace-name" class="block text-xs font-medium text-foreground mb-1.5">Workspace name</label>
+                  <input id="workspace-name" type="text" value="Acme Corp" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"/>
+                </div>
+                <div>
+                  <label for="workspace-slug" class="block text-xs font-medium text-foreground mb-1.5">Slug</label>
+                  <div class="flex">
+                    <span class="flex items-center rounded-s-lg border border-e-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">app.example.com/</span>
+                    <input id="workspace-slug" type="text" value="acme-corp" class="block flex-1 rounded-e-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] min-w-0 transition-shadow"/>
                   </div>
-                  <div>
-                    <label for="workspace-slug" class="block text-xs font-medium text-foreground mb-1.5">Slug</label>
-                    <div class="flex">
-                      <span class="flex items-center rounded-s-lg border border-e-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">app.example.com/</span>
-                      <input id="workspace-slug" type="text" value="acme-corp" class="block flex-1 rounded-e-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] min-w-0 transition-shadow"/>
-                    </div>
-                    <p class="mt-1.5 text-xs text-muted-foreground">Changing the slug will break existing links.</p>
-                  </div>
-                  <div>
-                    <label for="workspace-description" class="block text-xs font-medium text-foreground mb-1.5">Description</label>
-                    <textarea id="workspace-description" rows="3" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none transition-shadow">Design & brand agency based in NYC.</textarea>
-                  </div>
+                  <p class="mt-1.5 text-xs text-muted-foreground">Changing the slug will break existing links.</p>
+                </div>
+                <div>
+                  <label for="workspace-description" class="block text-xs font-medium text-foreground mb-1.5">Description</label>
+                  <textarea id="workspace-description" rows="3" class="block w-full rounded-lg border border-input bg-background dark:bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none transition-shadow">Design & brand agency based in NYC.</textarea>
                 </div>
               </div>
-              <div class="border-t border-border pt-8">
-                <div class="rounded-xl border border-destructive bg-destructive/5 p-5">
-                  <h3 class="text-sm font-semibold text-foreground mb-1">Danger zone</h3>
-                  <p class="text-sm text-muted-foreground mb-4">Permanently delete this workspace and all of its contents. This action cannot be undone and all data will be lost.</p>
-                  <%= render(Ui::ButtonComponent.new(variant: :destructive, size: :sm)) { "Delete workspace" } %>
-                </div>
+            </div>
+            <div class="border-t border-border pt-8">
+              <div class="rounded-xl border border-destructive bg-destructive/5 p-5">
+                <h3 class="text-sm font-semibold text-foreground mb-1">Danger zone</h3>
+                <p class="text-sm text-muted-foreground mb-4">Permanently delete this workspace and all of its contents. This action cannot be undone and all data will be lost.</p>
+                <%= render(Ui::ButtonComponent.new(variant: :destructive, size: :sm)) { "Delete workspace" } %>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
 
+    <% end %>
   <% end %>
 <% end %>

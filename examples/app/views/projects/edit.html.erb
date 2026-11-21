@@ -1,5 +1,3 @@
-<%# The edit state as a bare frame: what an "Edit" link inside the open modal navigates to, and
+<%# The edit state, without the modal: what an "Edit" link inside the open modal navigates to, and
     what `render :edit, formats: :html` answers an invalid submission with. %>
-<%= turbo_frame_tag "project_modal_content" do %>
-  <%= render "projects/form", project: @project %>
-<% end %>
+<%= render "projects/form", project: @project %>

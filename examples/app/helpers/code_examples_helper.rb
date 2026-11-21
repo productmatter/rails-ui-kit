@@ -138,10 +138,23 @@ module CodeExamplesHelper
     <<~'RUBY'
       <%# app/views/projects/edit.turbo_stream.erb %>
       <%= turbo_stream.update "modal" do %>
-        <%= render Ui::ModalComponent.new(aria: { labelledby: "project_modal_title" }) do %>
-          <%= turbo_frame_tag "project_modal_content" do %>
-            <%= render "form", project: @project %>
-          <% end %>
+        <%= render Ui::ModalComponent.new(aria: { labelledby: "project_modal_content_title" }) do %>
+          <%= render "form", project: @project %>
+        <% end %>
+      <% end %>
+    RUBY
+  end
+
+  def example_modal_content
+    <<~'RUBY'
+      <%# app/views/projects/_form.html.erb -- the content, and the frame every later response replaces %>
+      <%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: "Edit project",
+                                               form: { model: project }) do |modal| %>
+        <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
+
+        <% modal.with_footer do %>
+          <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+          <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
         <% end %>
       <% end %>
     RUBY

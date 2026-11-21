@@ -49,7 +49,7 @@ module Ui
     DROPDOWN_CONTENT_CLASSES = %w[transition duration-100 ease-out origin-top].freeze
 
     test 'RP1: Modal renders its wrapper wiring and dialog as at v0.3.0 HEAD' do
-      render_inline(Ui::ModalComponent.new(aria: { label: 'Edit record' })) { 'hello' }
+      without_required_modal_content { render_inline(Ui::ModalComponent.new(aria: { label: 'Edit record' })) { 'hello' } }
 
       root = page.find('div[data-controller]')
       assert_tokens root['data-controller'], %w[ui--modal ui--overlay]

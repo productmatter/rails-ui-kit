@@ -24,8 +24,8 @@ class ModalTurboFrameTest < ApplicationSystemTestCase
     open_activity_modal(1)
 
     dialog = find("#{FRAME} dialog")
-    assert_equal 'project_activity_title', dialog['aria-labelledby']
-    assert_selector '#project_activity_title', text: 'Activity'
+    assert_equal 'project_activity_content_title', dialog['aria-labelledby']
+    assert_selector '#project_activity_content_title', text: 'Activity'
 
     within(FRAME) { click_on 'Close' }
 

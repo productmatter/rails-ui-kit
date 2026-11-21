@@ -3,6 +3,9 @@ en:
     modal:
       unsaved_changes_title: "Unsaved Changes"
       unsaved_changes_message: "You have unsaved changes. Are you sure you want to close?"
+      # Ui::ModalContentComponent's icon close button, in its header: the glyph is aria-hidden,
+      # so this is the button's whole accessible name.
+      close_label: "Close dialog"
     confirm_dialog:
       title: "Confirmation required"
       message: "Are you sure?"

@@ -17,6 +17,12 @@ module Ui
     MAX_WIDE = 'max-w-full sm:max-w-[42rem]'
     MAX_NARROW = 'max-w-full sm:max-w-[32rem]'
 
+    # A sheet docked to the top or bottom edge stops short of the opposite edge and scrolls itself,
+    # so a long one never pushes its header or footer out of reach under the scroll lock. dvh, not
+    # vh: on a phone, vh is the viewport with the browser's toolbars hidden, which is taller than
+    # what is visible while they show. The side panels are h-dvh for the same reason.
+    SHEET_MAX_HEIGHT = 'max-h-[90dvh]'
+
     # Centred horizontally with auto inline margins, not `left-1/2` and a translate: a fixed
     # element's `left` follows the inline start in a right-to-left document, which put a centred
     # Modal half off-screen (docs/specs/ui-stress-page/status.md).
@@ -32,35 +38,55 @@ module Ui
       ].freeze,
       right: [
         'inset-y-0', 'right-0', 'left-auto', 'modal-right-hidden',
-        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
+        'h-dvh', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       left: [
         'inset-y-0', 'left-0', 'right-auto', 'modal-left-hidden',
-        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
+        'h-dvh', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       top: [
         'top-0', 'inset-x-0', 'mx-auto', 'modal-top-hidden',
-        DEFAULT_WIDE, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE, SHEET_MAX_HEIGHT,
         'rounded-none sm:rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       top_full: [
         'top-0', 'left-0', 'right-0', 'modal-top-full-hidden',
-        'w-full', 'rounded-b-lg', 'overflow-y-auto'
+        'w-full', SHEET_MAX_HEIGHT, 'rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       bottom: [
         'bottom-0', 'top-auto', 'inset-x-0', 'mx-auto', 'modal-bottom-hidden',
-        DEFAULT_WIDE, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE, SHEET_MAX_HEIGHT,
         'rounded-none sm:rounded-t-lg', 'overflow-y-auto'
       ].freeze,
       bottom_full: [
         'bottom-0', 'top-auto', 'left-0', 'right-0', 'modal-bottom-full-hidden',
-        'w-full', 'rounded-t-lg', 'overflow-y-auto'
+        'w-full', SHEET_MAX_HEIGHT, 'rounded-t-lg', 'overflow-y-auto'
       ].freeze
     }.freeze
 
     POSITIONS = POSITION_CLASSES.keys.freeze
+
+    # Raised, when require_content_component is on, by a modal whose content isn't a
+    # Ui::ModalContentComponent at its root.
+    class MissingContentError < StandardError; end
+
+    # Off by default, so nothing changes for a host that doesn't ask. On, it enforces structure:
+    # a modal's content must start with a Ui::ModalContentComponent's <turbo-frame> -- the first
+    # element inside the dialog, whitespace and comments aside -- or rendering raises. That catches
+    # hand-rolled content, and a content component buried inside hand-rolled chrome.
+    #
+    # It does not, and can't, prevent a re-mount. A response that renders Ui::ModalComponent again
+    # passes the check like any other modal; what prevents re-mounts is the pattern, in which every
+    # response after the open renders the content component on its own (ui-modal-content
+    # § Behavior, item 10). Set it where a reload re-runs it:
+    #
+    #   # config/initializers/rails_ui_kit.rb
+    #   Rails.application.config.to_prepare do
+    #     Ui::ModalComponent.require_content_component = Rails.env.local?
+    #   end
+    class_attribute :require_content_component, instance_writer: false, default: false
 
     # The <dialog> is the modal's root in Ui::Base's sense: `data-slot`, a caller's `class:` and any
     # forwarded attribute (aria: { labelledby: 'heading-id' } or { label: 'Command palette' } to name
@@ -97,6 +123,23 @@ module Ui
 
     def variant_values
       { position: position }
+    end
+
+    # The content's opening tag, past any whitespace and HTML comments.
+    CONTENT_ROOT = /\A(?:\s|<!--.*?-->)*<turbo-frame\b[^>]*\sdata-slot="modal-content"/m
+
+    # Reads the rendered HTML rather than the block, so content a partial or another component
+    # renders counts. Rendering content here memoizes it; the template doesn't render it twice.
+    def before_render
+      return unless require_content_component
+      return if CONTENT_ROOT.match?(content.to_s)
+
+      raise MissingContentError,
+            "#{self.class.name}.require_content_component is on, and this modal's content doesn't start with a " \
+            'Ui::ModalContentComponent. Render the content through ' \
+            'Ui::ModalContentComponent.new(id: "<resource>_modal_content", title: ...) as the first thing inside ' \
+            'the modal -- not wrapped in markup of your own -- and name the modal with ' \
+            'aria: { labelledby: content.title_id }.'
     end
 
     def controller_data

@@ -3,6 +3,7 @@ fr:
     modal:
       unsaved_changes_title: "Modifications non enregistrées"
       unsaved_changes_message: "Vous avez des modifications non enregistrées. Voulez-vous vraiment fermer ?"
+      close_label: "Fermer la boîte de dialogue"
     confirm_dialog:
       title: "Confirmation requise"
       message: "Êtes-vous sûr ?"

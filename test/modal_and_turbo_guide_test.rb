@@ -29,6 +29,7 @@ class ModalAndTurboGuideTest < ActiveSupport::TestCase
     examples/app/views/projects/activity.html.erb
     examples/app/views/invitations/_form.html.erb
     examples/app/views/docs/modal_turbo.html.erb
+    examples/config/initializers/rails_ui_kit.rb
   ].freeze
 
   # [language, title, body] per fenced block.

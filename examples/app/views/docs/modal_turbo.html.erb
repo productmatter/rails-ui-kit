@@ -56,7 +56,7 @@
 <h2 class="text-base font-semibold mb-3">What the guide covers</h2>
 <ul class="mb-8 space-y-2 text-sm text-muted-foreground list-disc list-inside">
   <li>The two blessed patterns — a stream into a layout container, and a frame target for read-only modals — and when each one is wrong.</li>
-  <li>An inner content frame, so show ↔ edit and validation errors never re-mount the dialog.</li>
+  <li><code class="font-mono text-xs">Ui::ModalContentComponent</code>, the content as a frame of its own, so show ↔ edit, validation errors and the next step replace the frame and never re-mount the dialog.</li>
   <li><code class="font-mono text-xs">turbo_stream.ui_close_modal</code>, the server closing the modal it opened, with its exit animation.</li>
   <li><code class="font-mono text-xs">ui--modal#closeOnSuccess</code>, for a success response with nothing to render.</li>
   <li>Focus, naming, the Back button, morphing refreshes and format negotiation — each one a gotcha that has bitten a real app.</li>

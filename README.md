@@ -84,7 +84,7 @@ repository, pinned to a release tag, so an upgrade is a change you make on purpo
 1. **Add it to your Gemfile:**
 
    ```ruby
-   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.5.2"
+   gem "rails_ui_kit", git: "git@github.com:productmatter/rails-ui-kit.git", tag: "v0.5.3"
    ```
 
    Use `branch: "main"` instead of `tag:` only if you want unreleased work.
@@ -178,7 +178,7 @@ The Gemfile entry above uses SSH, which works on developer machines with an SSH 
 CI and headless environments use HTTPS with a token:
 
 ```ruby
-gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.5.2"
+gem "rails_ui_kit", git: "https://github.com/productmatter/rails-ui-kit.git", tag: "v0.5.3"
 ```
 
 Bundler honours `BUNDLE_GITHUB__COM=<token>:x-oauth-basic` (set in CI) to authenticate HTTPS git
@@ -327,18 +327,35 @@ layout's `<div id="modal">`:
 
 ```erb title="examples/app/views/projects/edit.turbo_stream.erb"
 <%= turbo_stream.update "modal" do %>
-  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_title" }) do %>
-    <%= turbo_frame_tag "project_modal_content" do %>
-      <%= render "projects/form", project: @project %>
-    <% end %>
+  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_content_title" }) do %>
+    <%= render "projects/form", project: @project %>
   <% end %>
 <% end %>
 ```
 
-The frame inside the modal lets a 422 or a show ↔ edit link swap the content without re-mounting
-the dialog, and the server closes it on success with `turbo_stream.ui_close_modal`. Name every
-modal (`aria: { labelledby: }`). `track_changes: true` asks before closing a form with unsaved
-changes, which needs `data-controller="ui--form-change"` on the `<form>` itself.
+The partial is the modal's content, a `Ui::ModalContentComponent` — header, body and footer as a
+Turbo Frame of its own:
+
+```erb title="examples/app/views/projects/_form.html.erb"
+<%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: "Edit project", form: { model: project }) do |modal| %>
+  <div class="grid gap-4">
+    <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
+    <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
+  </div>
+
+  <% modal.with_footer do %>
+    <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
+    <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+    <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
+  <% end %>
+<% end %>
+```
+
+The modal is mounted once; a 422 or a show ↔ edit link renders the same component and replaces its
+frame without re-mounting the dialog, and the server closes it on success with
+`turbo_stream.ui_close_modal`. Name every modal (`aria: { labelledby: }`) — the content
+component's heading id is `"#{id}_title"`. `track_changes: true` asks before closing a form with
+unsaved changes; the content component's `form:` puts `ui--form-change` on its form for you.
 [`modal-and-turbo.md`](docs/guides/modal-and-turbo.md) is the whole lifecycle, step by step.
 
 ### A dropdown menu

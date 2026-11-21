@@ -6,7 +6,8 @@ it away — is Turbo's job. This guide is how to do that job, in the order you w
 
 Every sample below is a slice of code the kit's demo app actually runs (`examples/` in the
 rails-ui-kit repository, browsable at the docs site's **Modal & Turbo** page), and every claim
-here is driven by a browser test (`test/system/modal_turbo_*_test.rb`). Paths in the prose are
+here is driven by a browser test (`test/system/modal_turbo_*_test.rb` and
+`test/system/modal_content_test.rb`). Paths in the prose are
 written the way a host app writes them. Each sample's code fence records the demo file it is
 quoted from (`title="…"`, in the Markdown source), and a test fails if the two ever drift apart.
 
@@ -17,8 +18,9 @@ in a modal.
 
 1. The layout holds one container: `<div id="modal" data-turbo-permanent></div>`.
 2. A link asks for a Turbo Stream. The response renders `Ui::ModalComponent` into that container.
-3. Inside the modal, a Turbo Frame wraps the content, so show ↔ edit and validation errors swap
-   the frame and leave the dialog alone.
+3. Inside the modal, `Ui::ModalContentComponent` renders the content — header, body, footer — as
+   a Turbo Frame of its own. The modal is the wrapper and is mounted once; every later response
+   (show ↔ edit, a validation error, the next step) replaces the content's frame, never the modal.
 4. On success the **server** closes the modal, with `turbo_stream.ui_close_modal`, in the same
    response that updates the list row and shows a toast.
 
@@ -107,84 +109,166 @@ The action is the ordinary one. The template is what makes it a modal:
 <%# Opens the modal: the response renders it into the layout's <div id="modal">. Any other region
     this response changed would be updated by further turbo_stream lines in this same template. %>
 <%= turbo_stream.update "modal" do %>
-  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_title" }) do %>
-    <%= turbo_frame_tag "project_modal_content" do %>
-      <%= render "projects/details", project: @project %>
-    <% end %>
+  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_content_title" }) do %>
+    <%= render "projects/details", project: @project %>
   <% end %>
 <% end %>
 ```
+
+The modal's only content is the partial, and the partial is one `Ui::ModalContentComponent` (§4).
 
 `turbo_stream.update "modal"` replaces the container's contents, so the same response can open a
 modal over an already-open one (§9), and any other region this response changed goes in the same
 template, as further `turbo_stream` lines.
 
-**Name every modal.** `aria: { labelledby: "project_modal_title" }` points at a heading the
-content renders; `aria: { label: "Command palette" }` names one that has no visible title. The id
-you name must exist in *every* state the content frame renders — the read state and the edit
-state both carry `id="project_modal_title"` below. An unnamed dialog is announced as nothing.
+**Name every modal.** `aria: { labelledby: "project_modal_content_title" }` points at the heading
+the content component renders from its `title:`. Its id is the component's `title_id`, which is
+the frame id plus `_title`, so a content component with the same id in every state names the
+modal in every state — the read state and the edit state below both carry it.
+`aria: { label: "Command palette" }` names a modal that has no visible title. An unnamed dialog is
+announced as nothing. A content component with a `description:` has a `description_id` too
+(`"#{id}_description"`); pass it as `aria: { describedby: }` alongside the name. The modal renders
+the content, not the other way round, so neither id is wired for you.
 
 On open, the kit moves focus into the dialog, locks the page behind it, and remembers the element
 to give focus back to. You do not wire any of that.
 
-## 4. The content frame
+## 4. The content component
 
-Inside the modal, wrap the content in a frame:
+The modal is a wrapper: it owns opening, closing, focus, the scroll lock, its position and its
+animation, and it is mounted once. What goes inside it is `Ui::ModalContentComponent`, and the
+component's root is always a `<turbo-frame>` with the `id:` you give it. That is the whole idea:
+
+**The content owns its frame. Every later response replaces the frame — never the modal.**
+
+Render the content from a partial, and the partial is the component:
+
+```erb title="examples/app/views/projects/_details.html.erb"
+<%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: project.name) do |modal| %>
+  <p class="text-sm text-muted-foreground"><%= project.summary %></p>
+```
+
+`title:` is the heading (an `<h2>` with the id the modal is named by), the block is the body, and
+`with_footer` holds the actions. The header also carries a close button, named by
+`rails_ui_kit.modal.close_label` and wired to `ui--modal#close`; pass `close: false` to leave it
+out, or `description:` for a muted line under the title. `with_header` replaces the heading and
+close button with your own — a phone-style bar with Cancel, a title and Save, say. It takes no
+`title:` or `description:` (passing either raises, since neither would render), so your header's
+own heading carries the id: `id: content.title_id`.
+
+The same partial, without the modal around it, is the response to everything after the open:
 
 ```erb title="examples/app/views/projects/show.html.erb"
-<%# The same content as a bare frame. An in-modal "Cancel" link navigates the content frame here,
-    which swaps the frame alone: the dialog is never re-mounted and never re-animates. %>
-<%= turbo_frame_tag "project_modal_content" do %>
-  <%= render "projects/details", project: @project %>
-<% end %>
+<%# The same content, without the modal: the partial renders the content component, whose root is
+    the frame. An in-modal "Cancel" link navigates the content frame here, which swaps the frame
+    alone -- the dialog is never re-mounted and never re-animates. %>
+<%= render "projects/details", project: @project %>
 ```
 
 ```erb title="examples/app/views/projects/edit.html.erb"
-<%# The edit state as a bare frame: what an "Edit" link inside the open modal navigates to, and
+<%# The edit state, without the modal: what an "Edit" link inside the open modal navigates to, and
     what `render :edit, formats: :html` answers an invalid submission with. %>
-<%= turbo_frame_tag "project_modal_content" do %>
-  <%= render "projects/form", project: @project %>
+<%= render "projects/form", project: @project %>
+```
+
+Because the component renders the frame, the frame id cannot differ between the open and every
+state after it. A link inside the modal navigates that frame and nothing else. Show → edit is an
+ordinary link; the dialog is never re-mounted, so it does not re-animate, and focus stays inside
+it. The edit state is the same component with the same id, and `form:` makes it a form:
+
+```erb title="examples/app/views/projects/_form.html.erb"
+<%# The edit state: the same component and the same id as the read state. form: wraps the header,
+    body and footer in one form and puts ui--form-change on it, which is what makes
+    track_changes: true mean anything: it tells the modal when the form is dirty, so closing it
+    asks first. The fields bind through model:, so the block needs no form builder. %>
+<%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: "Edit project", form: { model: project }) do |modal| %>
+  <div class="grid gap-4">
+    <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
+    <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
+  </div>
+
+  <% modal.with_footer do %>
+    <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
+    <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+    <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
+  <% end %>
 <% end %>
 ```
 
-Now a link inside the modal navigates that frame and nothing else. Show → edit is an ordinary
-`link_to`; the dialog is never re-mounted, so it does not re-animate, and focus stays inside it:
-
-```erb title="examples/app/views/projects/_form.html.erb"
-<div class="p-6 sm:p-8">
-  <h2 id="project_modal_title" class="text-base font-semibold text-foreground">Edit project</h2>
-
-  <%# ui--form-change is what makes track_changes: true mean anything: it tells the modal when
-      the form is dirty, so closing it asks first. %>
-  <%= form_with model: project, class: "mt-5 grid gap-4", data: { controller: "ui--form-change" } do |form| %>
-    <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
-    <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
-
-    <div class="mt-2 flex items-center justify-end gap-2">
-      <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
-      <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
-      <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
-    </div>
-  <% end %>
-</div>
-```
-
-The frame's id has to be unique **on the whole page**, not just inside the modal. If the page
-behind the modal has a frame with the same id, a link inside the modal resolves to that one and
-your modal's content never changes.
+`form:` takes `form_with`'s options. One `<form>` wraps the header, the body and the footer, so a
+submit button in a custom header and one in the footer submit the same form. Its
+`data-controller` always includes `ui--form-change`, joined with any controller you pass, so the
+modal's `track_changes: true` needs no other wiring.
 
 Opening straight into the edit state is the same stream response with a different partial:
 
 ```erb title="examples/app/views/projects/edit.turbo_stream.erb"
 <%# Opening straight into the edit state, from the list's Edit link. %>
 <%= turbo_stream.update "modal" do %>
-  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_title" }) do %>
-    <%= turbo_frame_tag "project_modal_content" do %>
-      <%= render "projects/form", project: @project %>
-    <% end %>
+  <%= render Ui::ModalComponent.new(track_changes: true, aria: { labelledby: "project_modal_content_title" }) do %>
+    <%= render "projects/form", project: @project %>
   <% end %>
 <% end %>
 ```
+
+The frame's id has to be unique **on the whole page**, not just inside the modal. If the page
+behind the modal has a frame with the same id, a link inside the modal resolves to that one and
+your modal's content never changes.
+
+### The layout it gives you
+
+The component's layout holds in every position, so a hand-rolled header and footer never have to:
+
+- **The header sticks to the top** — title and description at the start, close at the end.
+- **The body takes the rest** (`flex-1`), padded.
+- **The footer sticks to the bottom**, its actions at the end. It renders only when you fill it.
+- **The content fills a full-height pane.** In a `position: :right` or `:left` modal the content
+  is as tall as the panel, so a short body still leaves the footer on the panel's bottom edge
+  rather than floating under the last line; when the body overflows and the panel scrolls, the
+  header and footer stay in view. In a centred or bottom modal it takes its natural height.
+
+The read-only activity panel in §10 is a `:right` modal built this way.
+
+### Every response after the open
+
+Each later response renders the same component, with the same id, and replaces the frame:
+
+- **A validation error** answers `422` with the form state (§5).
+- **A multi-step flow** — step 2, a server-decided confirmation, a review page — answers with the
+  next step as the same component and id: a link to a page that renders it, or, from a form
+  submission, `turbo_stream.replace "project_modal_content"` rendering it.
+- **A create that shows a one-time result** — an API key, an invite link — answers
+  `turbo_stream.replace` with the result as the same component, so the modal that asked is the
+  modal that answers.
+
+None of them renders `Ui::ModalComponent` again. A response that does re-mounts the modal: it
+re-animates, drops its unsaved-changes state, and jumps if its width changed.
+
+A form submission that succeeds never redirects, either. The form is inside the content's frame,
+so Turbo follows the redirect inside that frame, finds no frame of that id in the page it lands on,
+and writes "Content missing" into the modal. Success is a stream (§6) or a `204` (§7).
+
+Two modals open at once — one in `#modal`, a second in a container of its own — are two frames on
+one page, so their content ids must differ, the same as any two frames (see the Gotchas).
+
+### Holding every modal to the structure
+
+`Ui::ModalComponent.require_content_component` enforces the structure: a modal whose content does
+not *start* with a content component's frame — the first element inside the dialog, whitespace and
+comments aside — raises `Ui::ModalComponent::MissingContentError`, naming the fix. It reads the
+rendered HTML, so content from a partial or another component counts, and a content component
+buried inside hand-rolled markup does not. It is off by default. The demo app turns it on for
+development and test, in a `to_prepare` block so a code reload doesn't reset it:
+
+```ruby title="examples/config/initializers/rails_ui_kit.rb"
+Rails.application.config.to_prepare do
+  Ui::ModalComponent.require_content_component = Rails.env.local?
+end
+```
+
+The check is about shape, not about re-mounting. A response that renders `Ui::ModalComponent`
+again passes it like any other modal. What keeps the modal mounted is the pattern above: every
+response after the open renders the content component on its own.
 
 ## 5. Validation errors: always `422`
 
@@ -259,19 +343,11 @@ Some modals change nothing on the page behind them. There is no stream to send, 
 nothing to close the modal — that is what `ui--modal#closeOnSuccess` is for:
 
 ```erb title="examples/app/views/invitations/_form.html.erb"
-  <%# The convenience close: Turbo reports the outcome of the submission, and a 2xx is the server
-      having accepted it. It is safe only because the invalid case answers 422, never a 2xx. %>
-  <%= form_with model: invitation, class: "mt-5 grid gap-4",
-        data: { action: "turbo:submit-end->ui--modal#closeOnSuccess" } do |form| %>
-    <%= render Ui::FieldComponent.new(model: invitation, attribute: :email) do |field| %>
-      <% field.with_control(Ui::InputComponent, type: "email") %>
-    <% end %>
-
-    <div class="mt-2 flex items-center justify-end gap-2">
-      <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Cancel" } %>
-      <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Send invite" } %>
-    </div>
-  <% end %>
+<%# The convenience close: Turbo reports the outcome of the submission, and a 2xx is the server
+    having accepted it. It is safe only because the invalid case answers 422, never a 2xx. form:'s
+    data: joins the form the component builds. %>
+<%= render Ui::ModalContentComponent.new(id: "invitation_modal_content", title: "Invite a teammate",
+      form: { model: invitation, data: { action: "turbo:submit-end->ui--modal#closeOnSuccess" } }) do |modal| %>
 ```
 
 ```ruby title="examples/app/controllers/invitations_controller.rb"
@@ -299,7 +375,8 @@ nothing at all.
 
 ## 8. Closing without saving
 
-A close button is one action on any element inside the modal:
+The content component's header has a close button already (§4). Any other close button is one
+action on any element inside the modal:
 
 ```erb title="examples/app/views/projects/_details.html.erb"
     <%= render(Ui::ButtonComponent.new(variant: :outline, size: :sm, data: { action: "click->ui--modal#close" })) { "Close" } %>
@@ -362,18 +439,22 @@ pattern:
     into a turbo-frame of its own. Never a form -- a redirect after a successful submission
     renders "Content missing" inside a frame. %>
 <%= turbo_frame_tag "project_activity_modal" do %>
-  <%= render Ui::ModalComponent.new(position: :right, aria: { labelledby: "project_activity_title" }) do %>
+  <%= render Ui::ModalComponent.new(position: :right, aria: { labelledby: "project_activity_content_title" }) do %>
 ```
 
-**Never put a form in it.** The redirect a successful submission answers with renders "Content
-missing" inside the frame, because the redirect target has no frame of that id. Give the frame
+**Never put a form in it.** A modal form succeeds with a stream or a `204` (§6–§7), never a
+redirect, and a redirect is what a form in a frame-target modal reaches for: it renders "Content
+missing" inside the frame, because the redirect target has no frame of that id. Forms belong in the
+stream pattern's container. Give the frame
 pattern its own container id, too: the layout's shared `<div id="modal">` belongs to the stream
 pattern.
 
 ## Gotchas
 
 **A `200` HTML response to a form submission is rejected by Turbo.** Answer `422` on failure and
-a stream, a redirect or `204` on success. See §5.
+a stream (`turbo_stream.ui_close_modal` plus the regions that changed) or a `204` with
+`closeOnSuccess` on success — never a redirect, which lands inside the content's frame and renders
+"Content missing". See §5–§7.
 
 **`render :edit` picks the Turbo Stream template.** A form submission asks for Turbo Stream
 first, so the template that opens your modal wins over the one that re-renders its contents.
@@ -383,11 +464,25 @@ first, so the template that opens your modal wins over the one that re-renders i
 @project` targets `id="project_1"`; any element id works. A frame also changes how every link and
 form inside that region behaves, which is a large price for an id you already had. See §2.
 
+**Don't re-render the modal to change what is in it.** A `422`, the next step or a result that
+renders `Ui::ModalComponent` again re-mounts it: it re-animates, forgets its unsaved changes and
+jumps width. Render the content component, with the same id, and replace the frame. See §4.
+
+**A form inside `form:` mode turns Save into the other form's action.** `form:` wraps the header,
+body and footer in one `<form>`, and a form inside a form is invalid HTML. After a frame swap the
+browser drops the inner `<form>` tag and keeps its fields, so a `button_to "Delete"` in the footer
+puts `_method=delete` into the edit form, and Save deletes the record. The component raises on it
+in development and test. Keep destructive actions in the read state, as the demo does (§8), or
+render the second form outside the content and point its button at it with the HTML `form=`
+attribute.
+
 **Content-frame ids must be unique on the page.** A frame inside the modal whose id matches a
 frame on the page behind it resolves to the wrong one, and the modal appears not to respond.
 
 **Name the modal, in every state.** `aria: { labelledby: }` must point at an id that the content
 frame renders in each state it can be in, or the dialog loses its name halfway through a flow.
+The content component's `title_id` is that id, as long as every state renders its heading — from
+`title:`, or from your own `with_header` heading carrying `id: content.title_id`.
 
 **The Back button never restores a modal.** The kit removes an open modal before Turbo caches the
 page, which is what stops Back from restoring a stuck, un-closable modal. Nothing to do; be aware
@@ -418,6 +513,23 @@ pattern than this guide's.
 | `close_on_backdrop:` | `true` | Whether a backdrop click closes it. Escape and the close button are unaffected. |
 | `position:` | `:center` | `:center`, `:right`, `:left`, `:top`, `:bottom`, `:top_full`, `:bottom_full`, `:full_screen`. |
 
+`Ui::ModalContentComponent` — the modal's content, and the frame later responses replace:
+
+| Option | Default | What it does |
+|---|---|---|
+| `id:` | required | The `<turbo-frame>` id. Page-unique, and the same in every state. |
+| `title:` | `nil` | The heading, an `<h2>` with the id `title_id` (`"#{id}_title"`). Name the modal by it. |
+| `description:` | `nil` | A muted line under the title, with the id `description_id` (`"#{id}_description"`) for the modal's `aria: { describedby: }`. |
+| `close:` | `true` | An icon close button in the header (`ui--modal#close`), named by `rails_ui_kit.modal.close_label`. |
+| `form:` | `nil` | `form_with` options. One form wraps header, body and footer, with `ui--form-change` on it. |
+| `header_class:`, `body_class:`, `footer_class:` | `nil` | Merged over each part's classes. `class:` and other attributes go on the frame. |
+| `with_header` / `with_footer` | — | Slots: a header of your own inside the sticky header (no `title:` with it; its heading takes `id: content.title_id`), and the actions. The block is the body. |
+
+`Ui::ModalComponent.require_content_component` (default `false`): when `true`, a modal whose
+content does not start with a `Ui::ModalContentComponent` raises
+`Ui::ModalComponent::MissingContentError`. It enforces that structure; it does not stop a response
+re-rendering the modal. Set it in a `to_prepare` block for development and test.
+
 Actions and helpers:
 
 | Name | Where | What it does |
@@ -432,9 +544,11 @@ Actions and helpers:
 - [ ] The trigger is a link with `data-turbo-stream`, and it has an id.
 - [ ] The response is `turbo_stream.update "modal"` rendering `Ui::ModalComponent`.
 - [ ] The modal is named with `aria:`, and that id exists in every state.
-- [ ] The content is wrapped in a `turbo_frame_tag` with a page-unique id.
+- [ ] The content is a `Ui::ModalContentComponent` with a page-unique id, rendered from a partial.
+- [ ] Every later response renders that component with the same id, and never `Ui::ModalComponent`.
+- [ ] `Ui::ModalComponent.require_content_component` is on in development and test.
 - [ ] Every invalid submission answers `422`, in every format.
 - [ ] Invalid re-renders use `formats: :html`.
-- [ ] Success sends `turbo_stream.ui_close_modal` plus the regions that changed.
+- [ ] Success sends `turbo_stream.ui_close_modal` plus the regions that changed, or a `204` — never a redirect.
 - [ ] A form whose success renders nothing uses `turbo:submit-end->ui--modal#closeOnSuccess`.
 - [ ] No form lives inside the frame-target pattern.
