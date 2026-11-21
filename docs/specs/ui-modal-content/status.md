@@ -29,6 +29,28 @@ the demos (§ Acceptance checks, human-gate) is still open.
   (new): the side-panel layout short and overflowing, a 422 and a stream replace keeping the same
   dialog, the header close, and an axe audit. The layout assertions were checked against a
   mutant without `min-h-full` and the sticky footer, and both failed it.
+- **Adversarial review, fixed (2026-11-21).** Each finding was confirmed in a browser by the
+  reviewer, and each fix has a test that fails without it:
+  - The top and bottom positions had no max-height, so long content grew past the viewport. They
+    are now `max-h-[90dvh]`, and the overflow and sticky check runs in every position.
+  - The side panels are `h-dvh`, and the footer's bottom padding respects
+    `env(safe-area-inset-bottom)`.
+  - A `<form>` inside `form:` mode raises in development and test. After a frame swap it turned
+    Save into the inner form's DELETE.
+  - The unsaved-changes prompt survives a 422. `ui--form-change` no longer announces `pristine`
+    as it connects, and a changed model renders the form dirty. This bug predates this scope and
+    exists on 0.5.2.
+  - `title:` or `description:` given with `with_header` raises.
+  - A blank `id:` raises.
+  - `description_id` is exposed for the modal's `aria-describedby`.
+  - Strict mode now requires the content component to be the content's root, and every doc says it
+    enforces structure rather than preventing re-mounts. The kit's own remaining modals (the
+    position previews, the Select page's and the stress page's) are converted, and `examples/`
+    runs with strict mode on.
+  - The guide says a modal form succeeds with a stream or a `204`, never a redirect. A system test
+    proves the redirect renders "Content missing".
+  - The guide notes that two open modals need distinct content ids, and the README sample is
+    complete.
 
 ## In progress
 
@@ -45,4 +67,6 @@ None.
 
 ## Corrections
 
-None.
+- § Behavior, items 1–4, 6, 9, 10 and 12, and the new item 13: amended for the review's findings.
+  Strict mode's first text implied it prevented re-mounts; it enforces structure. — provable —
+  adversarial review

@@ -81,13 +81,13 @@
       <% [
         ["id",                                     "String",  "required", "The turbo-frame's id. Unique on the page, and the same in every state."],
         ["title",                                  "String",  "nil",      "The heading, an <h2> with the id title_id. Pass aria: { labelledby: content.title_id } to the modal."],
-        ["description",                            "String",  "nil",      "A muted line under the title."],
+        ["description",                            "String",  "nil",      "A muted line under the title, with the id description_id. Pass aria: { describedby: content.description_id } to the modal."],
         ["close",                                  "Boolean", "true",     "An icon close button in the header, wired to ui--modal#close."],
         ["close_label",                            "String",  "nil",      "Overrides rails_ui_kit.modal.close_label, the close button's accessible name."],
         ["form",                                   "Hash",    "nil",      "form_with options. One form wraps header, body and footer, with ui--form-change joined onto its data-controller."],
         ["header_class / body_class / footer_class", "String", "nil",     "Merged over each part's classes with tailwind_merge."],
         ["class and other attributes",             "—",       "—",        "Forwarded to the turbo-frame; class merges over its flex column."],
-        ["with_header / with_footer",              "Slot",    "—",        "A header of your own, inside the sticky header; the actions, in the sticky footer. The block is the body."],
+        ["with_header / with_footer",              "Slot",    "—",        "A header of your own, inside the sticky header (no title: with it; its heading takes id: content.title_id); the actions, in the sticky footer. The block is the body."],
       ].each do |name, type, default, desc| %>
         <tr class="hover:bg-muted/50">
           <td class="px-4 py-3 font-mono text-xs text-primary"><%= name %></td>
@@ -100,11 +100,12 @@
   </table>
 </div>
 <p class="text-sm text-muted-foreground mb-8">
-  To make sure every modal is built this way, set
+  To hold every modal to this structure, set
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalComponent.require_content_component = true</code> in a
   <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">to_prepare</code> block for development and test: a modal whose content
-  has no content component then raises <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalComponent::MissingContentError</code>.
-  It is off by default.
+  doesn't start with a content component then raises <code class="text-xs bg-muted px-1 py-0.5 rounded font-mono">Ui::ModalComponent::MissingContentError</code>.
+  It checks the shape, not your responses — the modal stays mounted because later responses render the content component on
+  its own. It is off by default; this docs app runs with it on, so every modal on these pages is built this way.
 </p>
 
 <%# Turbo %>

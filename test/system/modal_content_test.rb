@@ -147,6 +147,26 @@ class ModalContentTest < ApplicationSystemTestCase
     assert_no_selector 'dialog[open]#default-confirm'
   end
 
+  # Why the guide says a modal form never succeeds with a redirect: the form is inside the content's
+  # frame, so Turbo follows the redirect inside it, and the page it lands on has no such frame. The
+  # demo's own success is a stream, so the form is pointed at the one demo endpoint that redirects
+  # (MembersController#update, the forms guide's).
+  test 'a redirect answering a form in the content frame renders "Content missing" in the modal' do
+    open_modal(1, trigger: 'edit')
+    page.execute_script(<<~JS)
+      const form = document.querySelector('#modal form')
+      form.setAttribute('action', '/demos/members/1')
+      form.querySelector('input[name="project[name]"]').setAttribute('name', 'member[name]')
+      form.querySelector('[name="project[summary]"]').remove()
+    JS
+
+    within('#modal') { click_on 'Save' }
+
+    assert_selector '#modal turbo-frame#project_modal_content', text: 'Content missing'
+  ensure
+    Member.reset!
+  end
+
   # The guide's next step and one-time result: a stream that replaces the content frame with the
   # same component, same id, swaps what the modal shows and leaves the modal alone.
   test 'a stream that replaces the content frame shows the next step in the same, still-named dialog' do

@@ -338,6 +338,17 @@ Turbo Frame of its own:
 
 ```erb title="examples/app/views/projects/_form.html.erb"
 <%= render Ui::ModalContentComponent.new(id: "project_modal_content", title: "Edit project", form: { model: project }) do |modal| %>
+  <div class="grid gap-4">
+    <%= render Ui::FieldComponent.new(model: project, attribute: :name) %>
+    <%= render Ui::FieldComponent.new(model: project, attribute: :summary) %>
+  </div>
+
+  <% modal.with_footer do %>
+    <%# Back to the read state: a plain link, so it swaps the content frame and nothing else. %>
+    <%= render(Ui::ButtonComponent.new(href: project_path(project), variant: :outline, size: :sm)) { "Cancel" } %>
+    <%= render(Ui::ButtonComponent.new(type: "submit", size: :sm)) { "Save" } %>
+  <% end %>
+<% end %>
 ```
 
 The modal is mounted once; a 422 or a show ↔ edit link renders the same component and replaces its

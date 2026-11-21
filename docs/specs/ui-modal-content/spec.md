@@ -59,22 +59,32 @@ skips the component.
 1. **`Ui::ModalContentComponent.new(id:, ...)` always renders a `<turbo-frame>` as its
    root**, with `id:` as the frame id and `data-slot="modal-content"`. The same component
    renders inside the modal on open and on its own (a bare frame) for a 422, a next step or
-   an in-modal navigation, so the frame id can't differ between states.
+   an in-modal navigation, so the frame id can't differ between states. A blank or nil
+   `id:` raises `ArgumentError` (amended 2026-11-21, adversarial review).
 2. **The header.** `title:` renders an `<h2>` with the id `title_id`, which is
    `"#{id}_title"` and public, so the caller names the dialog with
    `Ui::ModalComponent.new(aria: { labelledby: content.title_id })`. `description:` renders
-   a muted line under the title. `close:` (default `true`) renders an icon button with
+   a muted line under the title with the id `description_id` (`"#{id}_description"`), which
+   the caller passes as the modal's `aria: { describedby: }`. Neither id is wired into the
+   modal for the caller, because the modal renders the content. `close:` (default `true`) renders an icon button with
    `data-action="click->ui--modal#close"`, named by the chrome string
    `rails_ui_kit.modal.close_label` (`close_label:` overrides it). With no title, no
    description, no header slot and `close: false`, the header isn't rendered at all.
 3. **Slots.** `header` replaces the default heading and close button inside the sticky
    header wrapper, for a custom header such as a phone title bar with Cancel, a title and
-   Save. The content block is the body. `footer` holds the actions; with no footer slot,
+   Save. `title:` or `description:` with it raises `ArgumentError`, since neither would render
+   and `title_id` would name nothing; a custom header puts `id: content.title_id` on its own
+   heading (amended 2026-11-21, adversarial review). The content block is the body. `footer` holds the actions; with no footer slot,
    no footer is rendered.
 4. **`form:`** takes a Hash of `form_with` options. When it's given, one `<form>` wraps the
    header, body and footer, so a submit button in the header and one in the footer submit
    the same form. The form carries `data-controller="ui--form-change"`, joined with any
-   controller the caller passes, so `track_changes: true` works with no extra wiring.
+   controller the caller passes, so `track_changes: true` works with no extra wiring. A
+   `model:` that is still changed — what a rejected update leaves behind — renders the form
+   with `data-ui--form-change-dirty-value="true"`, so the unsaved-changes prompt survives a
+   422. A `<form>` inside the parts raises in development and test (logged elsewhere): a
+   frame swap drops the inner form tag and its fields, `_method=delete` included, submit with
+   the outer one (amended 2026-11-21, adversarial review).
 5. **Classes and attributes.** `header_class:`, `body_class:` and `footer_class:` merge
    over each part's defaults through `tailwind_merge`. Every other keyword is forwarded to
    the root frame, and `class:` merges over the root's defaults.
@@ -82,8 +92,10 @@ skips the component.
 ### Layout contract
 
 6. **The root fills a full-height pane.** The frame is `flex min-h-full flex-col`. In a
-   `:right` or `:left` modal (`h-screen overflow-y-auto`) it fills the dialog. In a
-   `:center` or `:bottom` modal it takes its natural height. With `form:`, the form is
+   `:right` or `:left` modal (`h-dvh overflow-y-auto`) it fills the dialog. In any other
+   position it takes its natural height, and every position caps the dialog inside the
+   viewport (`:top`, `:top_full`, `:bottom` and `:bottom_full` at `max-h-[90dvh]`, amended
+   2026-11-21), so long content scrolls inside it. With `form:`, the form is
    `flex flex-1 flex-col`, so the chain keeps filling.
 7. **The header is sticky at the top**, `sticky top-0`, on the popover background with a
    bottom border: title and description at the inline start, close at the inline end.
@@ -92,17 +104,23 @@ skips the component.
 9. **The footer is sticky at the bottom**, `sticky bottom-0`, on the popover background
    with a top border, actions aligned to the inline end. When the content is short, its
    bottom edge sits on the dialog's bottom edge. When the content overflows and the dialog
-   scrolls, it stays in view.
+   scrolls, it stays in view, in every position. Its bottom padding grows into
+   `env(safe-area-inset-bottom)` where a device has one.
 
 ### Strict mode
 
 10. **`Ui::ModalComponent.require_content_component`**, a class-level setting, defaults to
-    `false`. When it's `true`, rendering a `Ui::ModalComponent` whose rendered content
-    doesn't contain `data-slot="modal-content"` raises
-    `Ui::ModalComponent::MissingContentError`, naming the fix. The check reads the
-    rendered HTML, so content built through partials or other components counts. A host
-    turns it on in development and test, from a `to_prepare` block, so it survives a code
-    reload.
+    `false`. When it's `true`, rendering a `Ui::ModalComponent` whose rendered content does
+    not *start* with the content component's `<turbo-frame data-slot="modal-content">` —
+    the first element, whitespace and comments aside — raises
+    `Ui::ModalComponent::MissingContentError`, naming the fix. The check reads the rendered
+    HTML, so content built through partials or other components counts, and a content
+    component buried inside hand-rolled markup doesn't. A host turns it on in development
+    and test, from a `to_prepare` block, so it survives a code reload. **It enforces
+    structure; it does not prevent re-mounts.** A response that renders `Ui::ModalComponent`
+    again passes it. Re-mounts are prevented by the pattern — every response after the open
+    renders the content component on its own — not by the check (amended 2026-11-21,
+    adversarial review: the first text implied otherwise).
 
 ### Guide and demos
 
@@ -112,9 +130,14 @@ skips the component.
     guide's scenarios include a multi-step flow, a server-decided confirm step and a
     create that answers with a one-time result. The reference tables gain the component
     and strict mode, and the checklist gains lines for both.
-12. **The demos use it.** The `examples/` Modal & Turbo resource (projects and invitations,
-    including the read-only activity modal) renders its content through the component, so
-    the guide's verbatim samples show the pattern.
+12. **The demos use it, and the kit keeps its own rule.** The `examples/` Modal & Turbo
+    resource (projects and invitations, including the read-only activity modal) renders its
+    content through the component, so the guide's verbatim samples show the pattern. So do
+    the Modal page's position previews, the Select page's modal and the stress page's, and
+    `examples/` runs with strict mode on in development and test.
+13. **A modal form never succeeds with a redirect.** The form is inside the content's frame,
+    so a redirect renders "Content missing" in the modal. The guide says success is a stream
+    (`ui_close_modal` plus updates) or a `204` with `closeOnSuccess`.
 
 ## Business rules
 
@@ -161,18 +184,24 @@ Inherits `ui-component-library` § Assumptions and `ui-modal-turbo` § Assumptio
 - `docs/guides/modal-and-turbo.md`, `test/modal_and_turbo_guide_test.rb`.
 - `test/components/ui/modal_content_component_test.rb` (new),
   `test/components/ui/modal_component_test.rb`, `test/system/modal_content_test.rb` (new).
+- `app/javascript/rails_ui_kit/controllers/form_change_controller.js` — no `pristine` on a
+  clean connect (amended 2026-11-21).
+- `examples/config/initializers/rails_ui_kit.rb`, `examples/app/views/docs/modal_demo.turbo_stream.erb`,
+  `examples/app/views/docs/select.html.erb`, `examples/app/views/stress/_modal.html.erb` — the
+  kit keeping its own rule (amended 2026-11-21).
 - `CHANGELOG.md`.
 
 ## Acceptance checks
 
 ### agent-loopable
 
-- The component renders a `<turbo-frame>` root with the id and `data-slot`, with or without a title, description, header slot and footer slot; `title_id` names the heading; `close: false` drops the close button; `form:` wraps every part in one form carrying `ui--form-change` joined with the caller's controller; class keywords merge and attributes forward — run: `bundle exec rake test TEST=test/components/ui/modal_content_component_test.rb`
-- Strict mode off renders any content; on, it raises `MissingContentError` without the component and renders with it, including content from a partial — run: `bundle exec rake test TEST=test/components/ui/modal_component_test.rb`
-- In a `:right` modal the footer's bottom edge sits on the dialog's bottom when the content is short, and stays in view when the content overflows and the dialog scrolls; the header stays at the top — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
-- A 422 keeps the same `<dialog>` element and the same frame id, and the header's close button closes the modal — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
+- The component renders a `<turbo-frame>` root with the id and `data-slot`, with or without a title, description, header slot and footer slot; `title_id` names the heading; `close: false` drops the close button; `form:` wraps every part in one form carrying `ui--form-change` joined with the caller's controller, renders it dirty for a changed model and raises on a nested form; a blank id, and `title:` or `description:` with the header slot, raise; class keywords merge and attributes forward — run: `bundle exec rake test TEST=test/components/ui/modal_content_component_test.rb`
+- Strict mode off renders any content; on, it raises `MissingContentError` unless the content starts with the component (past whitespace and comments), including content from a template, and raises for a component buried in hand-rolled markup; the docs app runs with it on — run: `bundle exec rake test TEST=test/components/ui/modal_component_test.rb`
+- In a `:right` modal the footer's bottom edge sits on the dialog's bottom when the content is short; in every position, long content stays inside the viewport and scrolls inside the dialog with the header and footer in view — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
+- A 422 keeps the same `<dialog>` element and the same frame id, and closing after it still asks about the unsaved changes while a fresh form doesn't; a redirect answering a form in the content frame renders "Content missing"; the header's close button closes the modal — run: `bundle exec rake test:system TEST=test/system/modal_content_test.rb`
 - Every guide sample is still a verbatim slice of its demo file — run: `bundle exec rake test TEST=test/modal_and_turbo_guide_test.rb`
 - The close label is chrome, in English and the `fr` fixture, and documented — run: `bundle exec rake test TEST=test/i18n/chrome_contract_test.rb`
+- A clean form connecting announces nothing, and a server-rendered dirty one announces `changed` — run: `bundle exec rake test:system TEST=test/system/form_change_test.rb`
 - Every existing Modal & Turbo lifecycle test stays green on the converted demos — run: `bundle exec rake test:system TEST="test/system/modal_*_test.rb"`
 
 ### judgeable
