@@ -121,6 +121,71 @@ module Ui
       assert_selector "div[data-ui--modal-unsaved-changes-message-value='#{I18n.t('rails_ui_kit.modal.unsaved_changes_message')}']"
     end
 
+    # require_content_component (ui-modal-content § Behavior, item 10): off by default, and on it
+    # reads the rendered HTML, so content from a template or another component counts.
+
+    def with_required_content
+      Ui::ModalComponent.require_content_component = true
+      yield
+    ensure
+      Ui::ModalComponent.require_content_component = false
+    end
+
+    test 'strict mode is off by default, and any content renders' do
+      assert_equal false, Ui::ModalComponent.require_content_component
+
+      render_inline(Ui::ModalComponent.new) { '<div class="p-6">Hand-rolled</div>'.html_safe }
+
+      assert_text 'Hand-rolled'
+    end
+
+    test 'strict mode raises for content without Ui::ModalContentComponent, naming the fix' do
+      with_required_content do
+        error = assert_raises(Ui::ModalComponent::MissingContentError) do
+          render_inline(Ui::ModalComponent.new) { '<div class="p-6">Hand-rolled</div>'.html_safe }
+        end
+
+        assert_includes error.message, 'Ui::ModalContentComponent.new(id:'
+        assert_includes error.message, 'require_content_component'
+      end
+    end
+
+    test 'strict mode raises for a modal with no content at all' do
+      with_required_content do
+        assert_raises(Ui::ModalComponent::MissingContentError) { render_inline(Ui::ModalComponent.new) }
+      end
+    end
+
+    test 'strict mode renders a modal whose content is Ui::ModalContentComponent' do
+      with_required_content do
+        content = Ui::ModalContentComponent.new(id: 'project_modal_content', title: 'Edit project')
+        render_inline(Ui::ModalComponent.new(aria: { labelledby: content.title_id })) do
+          content.render_in(vc_test_controller.view_context)
+        end
+
+        assert_selector "dialog[aria-labelledby='project_modal_content_title'] turbo-frame#project_modal_content"
+        assert_selector '#project_modal_content_title', text: 'Edit project'
+      end
+    end
+
+    test 'strict mode counts the content component however it was rendered, a template included' do
+      with_required_content do
+        render_inline(Ui::ModalComponent.new) do
+          vc_test_controller.view_context.render(
+            inline: '<div class="wrapper"><%= render Ui::ModalContentComponent.new(id: "from_a_template") %></div>'
+          )
+        end
+
+        assert_selector "dialog turbo-frame#from_a_template[data-slot='modal-content']"
+      end
+    end
+
+    test 'a subclass inherits the setting' do
+      with_required_content do
+        assert LenientModalComponent.require_content_component
+      end
+    end
+
     test 'switching I18n.locale changes the confirm title and message values' do
       I18n.with_locale(:fr) do
         render_inline(Ui::ModalComponent.new(track_changes: true)) { 'hello' }

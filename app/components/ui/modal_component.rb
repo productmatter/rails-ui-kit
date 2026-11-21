@@ -62,6 +62,21 @@ module Ui
 
     POSITIONS = POSITION_CLASSES.keys.freeze
 
+    # Raised, when require_content_component is on, by a modal whose content skipped
+    # Ui::ModalContentComponent.
+    class MissingContentError < StandardError; end
+
+    # Off by default, so nothing changes for a host that doesn't ask. On, a modal whose rendered
+    # content has no Ui::ModalContentComponent raises: the content is what later responses
+    # replace, and hand-rolled content is how a 422 ends up re-mounting the modal
+    # (ui-modal-content § Behavior, item 10). Set it where a reload re-runs it:
+    #
+    #   # config/initializers/rails_ui_kit.rb
+    #   Rails.application.config.to_prepare do
+    #     Ui::ModalComponent.require_content_component = Rails.env.local?
+    #   end
+    class_attribute :require_content_component, instance_writer: false, default: false
+
     # The <dialog> is the modal's root in Ui::Base's sense: `data-slot`, a caller's `class:` and any
     # forwarded attribute (aria: { labelledby: 'heading-id' } or { label: 'Command palette' } to name
     # it) land there. Its controllers sit on the wrapper, which is where ui--overlay's events fire.
@@ -97,6 +112,19 @@ module Ui
 
     def variant_values
       { position: position }
+    end
+
+    # Reads the rendered HTML rather than the block, so content a partial or another component
+    # renders counts. Rendering content here memoizes it; the template doesn't render it twice.
+    def before_render
+      return unless require_content_component
+      return if content.to_s.include?(%(data-slot="#{Ui::ModalContentComponent.data_slot}"))
+
+      raise MissingContentError,
+            "#{self.class.name}.require_content_component is on, and this modal's content has no " \
+            'Ui::ModalContentComponent. Render the content through ' \
+            'Ui::ModalContentComponent.new(id: "<resource>_modal_content", title: ...) -- the frame every ' \
+            'later response replaces -- and name the modal with aria: { labelledby: content.title_id }.'
     end
 
     def controller_data
