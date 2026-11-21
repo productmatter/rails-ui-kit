@@ -17,6 +17,12 @@ module Ui
     MAX_WIDE = 'max-w-full sm:max-w-[42rem]'
     MAX_NARROW = 'max-w-full sm:max-w-[32rem]'
 
+    # A sheet docked to the top or bottom edge stops short of the opposite edge and scrolls itself,
+    # so a long one never pushes its header or footer out of reach under the scroll lock. dvh, not
+    # vh: on a phone, vh is the viewport with the browser's toolbars hidden, which is taller than
+    # what is visible while they show. The side panels are h-dvh for the same reason.
+    SHEET_MAX_HEIGHT = 'max-h-[90dvh]'
+
     # Centred horizontally with auto inline margins, not `left-1/2` and a translate: a fixed
     # element's `left` follows the inline start in a right-to-left document, which put a centred
     # Modal half off-screen (docs/specs/ui-stress-page/status.md).
@@ -32,31 +38,31 @@ module Ui
       ].freeze,
       right: [
         'inset-y-0', 'right-0', 'left-auto', 'modal-right-hidden',
-        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
+        'h-dvh', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       left: [
         'inset-y-0', 'left-0', 'right-auto', 'modal-left-hidden',
-        'h-screen', 'min-h-screen', DEFAULT_NARROW, MAX_NARROW,
+        'h-dvh', DEFAULT_NARROW, MAX_NARROW,
         'rounded-none', 'overflow-y-auto'
       ].freeze,
       top: [
         'top-0', 'inset-x-0', 'mx-auto', 'modal-top-hidden',
-        DEFAULT_WIDE, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE, SHEET_MAX_HEIGHT,
         'rounded-none sm:rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       top_full: [
         'top-0', 'left-0', 'right-0', 'modal-top-full-hidden',
-        'w-full', 'rounded-b-lg', 'overflow-y-auto'
+        'w-full', SHEET_MAX_HEIGHT, 'rounded-b-lg', 'overflow-y-auto'
       ].freeze,
       bottom: [
         'bottom-0', 'top-auto', 'inset-x-0', 'mx-auto', 'modal-bottom-hidden',
-        DEFAULT_WIDE, MAX_WIDE,
+        DEFAULT_WIDE, MAX_WIDE, SHEET_MAX_HEIGHT,
         'rounded-none sm:rounded-t-lg', 'overflow-y-auto'
       ].freeze,
       bottom_full: [
         'bottom-0', 'top-auto', 'left-0', 'right-0', 'modal-bottom-full-hidden',
-        'w-full', 'rounded-t-lg', 'overflow-y-auto'
+        'w-full', SHEET_MAX_HEIGHT, 'rounded-t-lg', 'overflow-y-auto'
       ].freeze
     }.freeze
 

@@ -16,17 +16,19 @@ module Ui
     data_slot 'modal-content'
 
     # Inline by default, a turbo-frame becomes a flex column that fills a full-height dialog
-    # (:right, :left are h-screen) and takes its natural height in any other (§ Behavior, item 6).
+    # (:right, :left are h-dvh) and takes its natural height in any other (§ Behavior, item 6).
     class_variants(base: 'flex min-h-full flex-col')
 
     # Each the default a matching *_class: keyword merges onto. The header and footer stick to
-    # the dialog's own scroll box, on the dialog's background, so content scrolls under them.
+    # the dialog's own scroll box, on the dialog's background, so content scrolls under them. The
+    # footer's bottom padding grows into a phone's home-indicator inset where there is one, and is
+    # the same 1rem as its top everywhere else.
     DEFAULT_CLASSES = {
       header: 'sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border ' \
               'bg-popover px-6 py-4',
       body: 'flex-1 px-6 py-5',
       footer: 'sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-2 border-t border-border ' \
-              'bg-popover px-6 py-4'
+              'bg-popover px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]'
     }.freeze
 
     CLASS_KEYWORDS = DEFAULT_CLASSES.keys.to_h { |part| [:"#{part}_class", part] }.freeze

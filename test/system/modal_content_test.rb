@@ -11,21 +11,24 @@ class ModalContentTest < ApplicationSystemTestCase
 
   ACTIVITY = 'turbo-frame#project_activity_modal'
 
-  # The activity modal is position: :right, an h-screen dialog that scrolls itself. Transitions
-  # are off so the slide-in is not what gets measured.
+  # The activity modal is position: :right, an h-dvh dialog that scrolls itself. Transitions are
+  # off so the slide-in is not what gets measured.
   def open_side_panel
     disable_transitions
     open_activity_modal(1)
   end
 
   # The dialog's padding box (inside its border) beside the content's three parts, as laid out now.
-  PANEL_METRICS = <<~JS.freeze
-    (() => {
-      const dialog = document.querySelector('#{ACTIVITY} dialog')
-      const box = (selector) => dialog.querySelector(selector).getBoundingClientRect().toJSON()
+  PANEL_METRICS = <<~JS
+    ((selector) => {
+      const dialog = document.querySelector(selector)
+      const box = (part) => dialog.querySelector(part).getBoundingClientRect().toJSON()
       const style = getComputedStyle(dialog)
       const rect = dialog.getBoundingClientRect()
       return {
+        top: rect.top,
+        bottom: rect.bottom,
+        viewport: innerHeight,
         inner_top: rect.top + parseFloat(style.borderTopWidth),
         inner_bottom: rect.bottom - parseFloat(style.borderBottomWidth),
         client_height: dialog.clientHeight,
@@ -34,15 +37,36 @@ class ModalContentTest < ApplicationSystemTestCase
         header: box('[data-slot=modal-content-header]'),
         footer: box('[data-slot=modal-content-footer]')
       }
-    })()
+    })(arguments[0])
   JS
 
-  def panel_metrics
-    page.evaluate_script(PANEL_METRICS)
+  def panel_metrics(dialog = "#{ACTIVITY} dialog")
+    page.evaluate_script(PANEL_METRICS, dialog)
   end
 
-  def scroll_panel_to_end
-    page.execute_script("const d = document.querySelector('#{ACTIVITY} dialog'); d.scrollTop = d.scrollHeight")
+  def scroll_to_end(dialog = "#{ACTIVITY} dialog")
+    page.execute_script('const d = document.querySelector(arguments[0]); d.scrollTop = d.scrollHeight', dialog)
+  end
+
+  # A modal in the given position whose content is far taller than any viewport.
+  LONG_MODAL = <<~ERB
+    <%= render Ui::ModalComponent.new(position: position, aria: { labelledby: "position_probe_title" }) do %>
+      <%= render Ui::ModalContentComponent.new(id: "position_probe", title: "Position probe") do |modal| %>
+        <% 150.times do |line| %><p class="text-sm">Line <%= line %></p><% end %>
+        <% modal.with_footer do %><button type="button">Done</button><% end %>
+      <% end %>
+    <% end %>
+  ERB
+
+  def open_long_modal(position)
+    html = ApplicationController.render(inline: LONG_MODAL, locals: { position: position })
+    stream(%(<turbo-stream action="update" target="modal"><template>#{html}</template></turbo-stream>))
+    assert_modal_open(content_frame: 'position_probe')
+  end
+
+  def assert_parts_in_view(metrics, position, moment)
+    assert_in_delta metrics['inner_top'], metrics['header']['top'], 1, "#{position}: the header is not at the top #{moment}"
+    assert_in_delta metrics['inner_bottom'], metrics['footer']['bottom'], 1, "#{position}: the footer is not at the bottom #{moment}"
   end
 
   test 'in a full-height pane, short content still fills it and the footer sits on its bottom edge' do
@@ -56,30 +80,26 @@ class ModalContentTest < ApplicationSystemTestCase
                     'the footer floats instead of sitting on the bottom of the pane'
   end
 
-  test 'when the content overflows, the header and footer stay in view as the pane scrolls' do
-    open_side_panel
-    page.execute_script(<<~JS)
-      const list = document.querySelector('#{ACTIVITY} [data-slot=modal-content-body] ul')
-      for (let i = 0; i < 80; i++) {
-        const entry = document.createElement('li')
-        entry.className = 'text-sm'
-        entry.textContent = `Extra entry ${i}`
-        list.appendChild(entry)
-      }
-    JS
+  # Every position caps its height inside the viewport and scrolls itself, so long content never
+  # pushes the header and its close button, or the footer and its actions, out of reach.
+  test 'in every position, long content scrolls inside the dialog with the header and footer in view' do
+    disable_transitions
 
-    metrics = panel_metrics
-    assert_operator metrics['scroll_height'], :>, metrics['client_height'] * 1.5, 'the content does not overflow the pane'
-    assert_in_delta metrics['inner_bottom'], metrics['footer']['bottom'], 1, 'the footer is not in view before scrolling'
+    Ui::ModalComponent::POSITIONS.each do |position|
+      open_long_modal(position)
+      metrics = panel_metrics('#modal dialog')
 
-    scroll_panel_to_end
-    metrics = panel_metrics
-    assert_in_delta metrics['inner_top'], metrics['header']['top'], 1, 'the header scrolled away with the content'
-    assert_in_delta metrics['inner_bottom'], metrics['footer']['bottom'], 1, 'the footer is not at the bottom after scrolling'
+      assert_operator metrics['top'], :>=, 0, "#{position}: the dialog starts above the viewport"
+      assert_operator metrics['bottom'], :<=, metrics['viewport'], "#{position}: the dialog runs past the viewport"
+      assert_operator metrics['scroll_height'], :>, metrics['client_height'], "#{position}: the dialog grew instead of scrolling"
+      assert_parts_in_view(metrics, position, 'before scrolling')
 
-    # The footer is still a working control at the bottom of the pane.
-    within(ACTIVITY) { click_on 'Close' }
-    assert_no_selector "#{ACTIVITY} dialog"
+      scroll_to_end('#modal dialog')
+      assert_parts_in_view(panel_metrics('#modal dialog'), position, 'after scrolling')
+
+      stream('<turbo-stream action="ui_close_modal" target="modal"><template></template></turbo-stream>')
+      no_modal
+    end
   end
 
   test 'a 422 replaces the content frame, keeping the same dialog element and the same frame id' do
