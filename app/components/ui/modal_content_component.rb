@@ -44,7 +44,9 @@ module Ui
     # The close button's accessible name: chrome, under the modal it closes.
     chrome_string :close_label, key: 'modal.close_label'
 
-    # Replaces the default heading and close button, inside the sticky header.
+    # Replaces the default heading and close button, inside the sticky header. A custom header
+    # names the modal by putting id: content.title_id on its own heading; title: and description:
+    # render nothing with it, so passing either alongside raises.
     renders_one :header
     # The actions, in the sticky footer. No footer is rendered without it.
     renders_one :footer
@@ -52,6 +54,9 @@ module Ui
     attr_reader :id, :title, :description, :form
 
     def initialize(id:, title: nil, description: nil, close: true, close_label: nil, form: nil, **options)
+      # The frame id is the whole contract: a blank one renders a frame no response can address.
+      raise ArgumentError, "#{self.class.name} needs an id: -- the frame id every later response replaces" if id.blank?
+
       @id = id
       @title = title
       @description = description
@@ -68,6 +73,39 @@ module Ui
     #   Ui::ModalComponent.new(aria: { labelledby: content.title_id })
     def title_id
       "#{id}_title"
+    end
+
+    # The description line's id, so the modal can be described by it:
+    #   Ui::ModalComponent.new(aria: { labelledby: content.title_id, describedby: content.description_id })
+    # The modal renders the content, not the other way round, so neither is wired for you.
+    def description_id
+      "#{id}_description"
+    end
+
+    # The slots are filled by the content block, so they are only known once it has run.
+    def before_render
+      content
+      return unless header? && (title.present? || description.present?)
+
+      raise ArgumentError, "#{self.class.name}: with_header replaces the heading, so title: and description: " \
+                           'would render nothing and the modal named by title_id would point at nothing. Drop them, ' \
+                           "and give your header's own heading id: <content>.title_id."
+    end
+
+    # A form inside form:'s form is invalid HTML. The parser keeps it on a full page load, but a
+    # Turbo frame swap drops the inner <form> tag and leaves its fields in the outer form: a
+    # destructive button_to's _method=delete then rides along with Save, and Save deletes. Loud in
+    # development and test, logged elsewhere, as an unknown variant is.
+    def guard_nested_form!(parts)
+      return unless form && parts.to_s.include?('<form')
+
+      message = "#{self.class.name}(form:) wraps its header, body and footer in one form, and something inside " \
+                'renders another <form> (a button_to, a form_with). A frame swap drops the inner form tag, so its ' \
+                'fields -- _method=delete included -- submit with the outer one. Keep destructive actions in the read ' \
+                'state, or render the second form outside the content and point its button at it with the HTML form= attribute.'
+      raise ArgumentError, message if self.class.raise_on_unknown_variant?
+
+      Rails.logger&.warn("[rails_ui_kit] #{message}")
     end
 
     def close?

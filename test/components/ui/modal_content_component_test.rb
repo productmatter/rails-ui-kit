@@ -23,11 +23,30 @@ module Ui
       assert_selector "[data-slot='modal-content-header'] h2#project_modal_content_title", text: 'Edit project'
     end
 
-    test 'description renders a muted line under the title' do
-      render_inline(Ui::ModalContentComponent.new(id: 'c', title: 'Invite', description: 'They get an email.'))
+    test 'description renders a muted line under the title, with description_id' do
+      component = Ui::ModalContentComponent.new(id: 'c', title: 'Invite', description: 'They get an email.')
+      render_inline(component)
 
-      assert_selector "[data-slot='modal-content-header'] h2 + p[data-slot='modal-content-description']", text: 'They get an email.'
+      assert_equal 'c_description', component.description_id
+      assert_selector "[data-slot='modal-content-header'] h2 + p#c_description[data-slot='modal-content-description']",
+                      text: 'They get an email.'
       assert_includes page.find("[data-slot='modal-content-description']")[:class], 'text-muted-foreground'
+    end
+
+    test 'title: or description: with the header slot raises, since neither would render' do
+      [{ title: 'Edit' }, { description: 'Lost' }].each do |text|
+        error = assert_raises(ArgumentError) do
+          render_inline(Ui::ModalContentComponent.new(id: 'c', **text)) { |content| content.with_header { 'Custom' } }
+        end
+        assert_includes error.message, 'title_id'
+      end
+    end
+
+    test 'a custom header names the modal by putting title_id on its own heading' do
+      component = Ui::ModalContentComponent.new(id: 'c')
+      render_inline(component) { |content| content.with_header { %(<h2 id="#{component.title_id}">New task</h2>).html_safe } }
+
+      assert_selector "[data-slot='modal-content-header'] h2#c_title", text: 'New task'
     end
 
     test 'without a title there is no heading, and title_id names nothing' do
@@ -65,7 +84,7 @@ module Ui
     end
 
     test 'the header slot replaces the heading and close button inside the sticky header' do
-      render_inline(Ui::ModalContentComponent.new(id: 'c', title: 'Ignored')) do |content|
+      render_inline(Ui::ModalContentComponent.new(id: 'c')) do |content|
         content.with_header { '<span id="custom">Cancel · New task · Save</span>'.html_safe }
         'Body'
       end
@@ -161,8 +180,51 @@ module Ui
       assert_raises(ArgumentError) { Ui::ModalContentComponent.new(id: 'c', title_class: 'text-lg') }
     end
 
-    test 'id is required' do
+    test 'id is required, and may not be blank' do
       assert_raises(ArgumentError) { Ui::ModalContentComponent.new(title: 'Edit') }
+      [nil, '', '  '].each do |blank|
+        error = assert_raises(ArgumentError) { Ui::ModalContentComponent.new(id: blank) }
+        assert_includes error.message, 'needs an id:'
+      end
+    end
+
+    # Behaves as Ui::ModalContentComponent does outside development and test.
+    class LenientModalContentComponent < Ui::ModalContentComponent
+      def self.raise_on_unknown_variant?
+        false
+      end
+    end
+
+    NESTED_FORM = '<form action="/demos/projects/1" method="post"><input type="hidden" name="_method" value="delete"></form>'
+
+    test 'form: with a form inside it raises in development and test, naming the two ways out' do
+      error = assert_raises(ArgumentError) do
+        render_inline(Ui::ModalContentComponent.new(id: 'c', form: { url: '/demos/projects/1' })) do |content|
+          content.with_footer { NESTED_FORM.html_safe }
+        end
+      end
+
+      assert_includes error.message, 'form= attribute'
+      assert_includes error.message, 'read state'
+    end
+
+    test 'outside development and test a nested form is logged and rendered' do
+      log = StringIO.new
+      original_logger = Rails.logger
+      Rails.logger = ActiveSupport::Logger.new(log)
+
+      render_inline(LenientModalContentComponent.new(id: 'c', form: { url: '/x' })) { NESTED_FORM.html_safe }
+
+      assert_selector 'turbo-frame#c form'
+      assert_match(/renders another <form>/, log.string)
+    ensure
+      Rails.logger = original_logger
+    end
+
+    test 'without form: a form inside the content is fine -- the read state is where a delete belongs' do
+      render_inline(Ui::ModalContentComponent.new(id: 'c')) { |content| content.with_footer { NESTED_FORM.html_safe } }
+
+      assert_selector "[data-slot='modal-content-footer'] form input[value='delete']", visible: :all
     end
   end
 end

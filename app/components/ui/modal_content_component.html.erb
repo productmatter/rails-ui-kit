@@ -9,7 +9,7 @@
             <h2 id="<%= title_id %>" class="<%= TITLE_CLASSES %>"><%= title %></h2>
           <% end %>
           <% if description.present? %>
-            <p data-slot="modal-content-description" class="<%= DESCRIPTION_CLASSES %>"><%= description %></p>
+            <p id="<%= description_id %>" data-slot="modal-content-description" class="<%= DESCRIPTION_CLASSES %>"><%= description %></p>
           <% end %>
         </div>
         <% if close? %>
@@ -23,6 +23,7 @@
     <div data-slot="modal-content-footer" class="<%= classes_for(:footer) %>"><%= footer %></div>
   <% end %>
 <% end %>
+<% guard_nested_form!(parts) %>
 <%= tag.turbo_frame(**frame_attributes) do %>
   <% if form %>
     <%= form_with(**form_options) { parts } %>
