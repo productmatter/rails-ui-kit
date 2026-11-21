@@ -4,6 +4,15 @@ require 'test_helper'
 
 module Ui
   class ModalComponentTest < ViewComponent::TestCase
+    # The wrapper's own behaviour, rendered with throwaway content. The docs app runs with
+    # require_content_component on; the strict-mode tests below set it explicitly.
+    setup do
+      @require_content_component = Ui::ModalComponent.require_content_component
+      Ui::ModalComponent.require_content_component = false
+    end
+
+    teardown { Ui::ModalComponent.require_content_component = @require_content_component }
+
     test 'renders a dialog with default center position' do
       render_inline(Ui::ModalComponent.new) { 'hello' }
 
@@ -121,20 +130,31 @@ module Ui
       assert_selector "div[data-ui--modal-unsaved-changes-message-value='#{I18n.t('rails_ui_kit.modal.unsaved_changes_message')}']"
     end
 
-    # require_content_component (ui-modal-content § Behavior, item 10): off by default, and on it
-    # reads the rendered HTML, so content from a template or another component counts.
+    # require_content_component (ui-modal-content § Behavior, item 10): it enforces structure. The
+    # content must start with the content component's frame, past whitespace and comments, however
+    # the content was rendered.
 
-    def with_required_content
-      Ui::ModalComponent.require_content_component = true
+    def with_required_content(value: true)
+      original = Ui::ModalComponent.require_content_component
+      Ui::ModalComponent.require_content_component = value
       yield
     ensure
-      Ui::ModalComponent.require_content_component = false
+      Ui::ModalComponent.require_content_component = original
     end
 
-    test 'strict mode is off by default, and any content renders' do
-      assert_equal false, Ui::ModalComponent.require_content_component
+    def render_in_view(template)
+      vc_test_controller.view_context.render(inline: template)
+    end
 
-      render_inline(Ui::ModalComponent.new) { '<div class="p-6">Hand-rolled</div>'.html_safe }
+    test 'the docs app keeps its own rule: strict mode is on in development and test' do
+      # Read before this file's setup turned it off.
+      assert @require_content_component, 'examples/config/initializers/rails_ui_kit.rb turns it on'
+    end
+
+    test 'strict mode off renders any content' do
+      with_required_content(value: false) do
+        render_inline(Ui::ModalComponent.new) { '<div class="p-6">Hand-rolled</div>'.html_safe }
+      end
 
       assert_text 'Hand-rolled'
     end
@@ -163,20 +183,28 @@ module Ui
           content.render_in(vc_test_controller.view_context)
         end
 
-        assert_selector "dialog[aria-labelledby='project_modal_content_title'] turbo-frame#project_modal_content"
+        assert_selector "dialog[aria-labelledby='project_modal_content_title'] > turbo-frame#project_modal_content"
         assert_selector '#project_modal_content_title', text: 'Edit project'
       end
     end
 
-    test 'strict mode counts the content component however it was rendered, a template included' do
+    test 'strict mode counts the content component however it was rendered, past whitespace and comments' do
       with_required_content do
         render_inline(Ui::ModalComponent.new) do
-          vc_test_controller.view_context.render(
-            inline: '<div class="wrapper"><%= render Ui::ModalContentComponent.new(id: "from_a_template") %></div>'
-          )
+          render_in_view(%(\n  <!-- from a partial -->\n  <%= render Ui::ModalContentComponent.new(id: "from_a_template") %>))
         end
 
-        assert_selector "dialog turbo-frame#from_a_template[data-slot='modal-content']"
+        assert_selector "dialog > turbo-frame#from_a_template[data-slot='modal-content']"
+      end
+    end
+
+    test 'strict mode raises for a content component buried inside hand-rolled chrome' do
+      with_required_content do
+        assert_raises(Ui::ModalComponent::MissingContentError) do
+          render_inline(Ui::ModalComponent.new) do
+            render_in_view('<div class="p-6"><h2>Mine</h2><%= render Ui::ModalContentComponent.new(id: "buried") %></div>')
+          end
+        end
       end
     end
 

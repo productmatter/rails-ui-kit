@@ -330,10 +330,10 @@
 <div id="select-modal"></div>
 <template id="select-modal-open">
   <turbo-stream action="append" target="select-modal"><template>
-    <%= render Ui::ModalComponent.new(aria: { labelledby: "select-modal-title" }) do %>
-      <div class="p-6">
-        <h2 id="select-modal-title" class="text-base font-semibold">Pick a city</h2>
-        <p class="mt-1.5 mb-6 text-sm text-muted-foreground">A Select inside a dialog behaves exactly as it does outside one.</p>
+    <% content = Ui::ModalContentComponent.new(id: "select-modal-content", title: "Pick a city",
+                                               description: "A Select inside a dialog behaves exactly as it does outside one.") %>
+    <%= render Ui::ModalComponent.new(aria: { labelledby: content.title_id, describedby: content.description_id }) do %>
+      <%= render content do %>
         <div class="w-64">
           <%= render Ui::FieldComponent.new(name: "modal[city]") do |field| %>
             <% field.with_label { "City" } %>
@@ -341,7 +341,7 @@
                                   native_on_touch: false) %>
           <% end %>
         </div>
-      </div>
+      <% end %>
     <% end %>
   </template></turbo-stream>
 </template>

@@ -68,14 +68,19 @@ module Ui
 
     POSITIONS = POSITION_CLASSES.keys.freeze
 
-    # Raised, when require_content_component is on, by a modal whose content skipped
-    # Ui::ModalContentComponent.
+    # Raised, when require_content_component is on, by a modal whose content isn't a
+    # Ui::ModalContentComponent at its root.
     class MissingContentError < StandardError; end
 
-    # Off by default, so nothing changes for a host that doesn't ask. On, a modal whose rendered
-    # content has no Ui::ModalContentComponent raises: the content is what later responses
-    # replace, and hand-rolled content is how a 422 ends up re-mounting the modal
-    # (ui-modal-content § Behavior, item 10). Set it where a reload re-runs it:
+    # Off by default, so nothing changes for a host that doesn't ask. On, it enforces structure:
+    # a modal's content must start with a Ui::ModalContentComponent's <turbo-frame> -- the first
+    # element inside the dialog, whitespace and comments aside -- or rendering raises. That catches
+    # hand-rolled content, and a content component buried inside hand-rolled chrome.
+    #
+    # It does not, and can't, prevent a re-mount. A response that renders Ui::ModalComponent again
+    # passes the check like any other modal; what prevents re-mounts is the pattern, in which every
+    # response after the open renders the content component on its own (ui-modal-content
+    # § Behavior, item 10). Set it where a reload re-runs it:
     #
     #   # config/initializers/rails_ui_kit.rb
     #   Rails.application.config.to_prepare do
@@ -120,17 +125,21 @@ module Ui
       { position: position }
     end
 
+    # The content's opening tag, past any whitespace and HTML comments.
+    CONTENT_ROOT = /\A(?:\s|<!--.*?-->)*<turbo-frame\b[^>]*\sdata-slot="modal-content"/m
+
     # Reads the rendered HTML rather than the block, so content a partial or another component
     # renders counts. Rendering content here memoizes it; the template doesn't render it twice.
     def before_render
       return unless require_content_component
-      return if content.to_s.include?(%(data-slot="#{Ui::ModalContentComponent.data_slot}"))
+      return if CONTENT_ROOT.match?(content.to_s)
 
       raise MissingContentError,
-            "#{self.class.name}.require_content_component is on, and this modal's content has no " \
+            "#{self.class.name}.require_content_component is on, and this modal's content doesn't start with a " \
             'Ui::ModalContentComponent. Render the content through ' \
-            'Ui::ModalContentComponent.new(id: "<resource>_modal_content", title: ...) -- the frame every ' \
-            'later response replaces -- and name the modal with aria: { labelledby: content.title_id }.'
+            'Ui::ModalContentComponent.new(id: "<resource>_modal_content", title: ...) as the first thing inside ' \
+            'the modal -- not wrapped in markup of your own -- and name the modal with ' \
+            'aria: { labelledby: content.title_id }.'
     end
 
     def controller_data

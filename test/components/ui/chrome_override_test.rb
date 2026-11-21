@@ -38,9 +38,11 @@ module Ui
     # site's value has to travel the same path the translation does (§ Behavior, item 5).
 
     test 'MO1 a call-site prompt wins, and reaches the controller values' do
-      render_inline(Ui::ModalComponent.new(track_changes: true,
-                                           unsaved_changes_title: 'Hold on',
-                                           unsaved_changes_message: 'Really discard?'))
+      without_required_modal_content do
+        render_inline(Ui::ModalComponent.new(track_changes: true,
+                                             unsaved_changes_title: 'Hold on',
+                                             unsaved_changes_message: 'Really discard?'))
+      end
 
       root = page.find('div[data-controller]')
       assert_equal 'Hold on', root['data-ui--modal-unsaved-changes-title-value']
@@ -49,7 +51,7 @@ module Ui
 
     test 'MO2 without a keyword the prompt is the locale file, per render' do
       I18n.with_locale(:fr) do
-        render_inline(Ui::ModalComponent.new(track_changes: true))
+        without_required_modal_content { render_inline(Ui::ModalComponent.new(track_changes: true)) }
 
         root = page.find('div[data-controller]')
         assert_equal 'Modifications non enregistrées', root['data-ui--modal-unsaved-changes-title-value']
